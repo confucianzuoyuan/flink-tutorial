@@ -1,0 +1,251 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>文件系统source连接器 - 尚硅谷Flink教程</title>
+        
+        
+
+
+        <!-- Custom HTML head -->
+        
+
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        
+        <link rel="icon" href="favicon.svg">
+        
+        
+        <link rel="shortcut icon" href="favicon.png">
+        
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        
+        <link rel="stylesheet" href="fonts/fonts.css">
+        
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="chapter01-第一章，有状态的流式处理简介.html"><strong aria-hidden="true">1.</strong> 第一章，有状态的流式处理简介</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter01-01-传统数据处理架构.html"><strong aria-hidden="true">1.1.</strong> 传统数据处理架构</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter01-01-01-事务处理.html"><strong aria-hidden="true">1.1.1.</strong> 事务处理</a></li><li class="chapter-item expanded "><a href="chapter01-01-02-分析处理.html"><strong aria-hidden="true">1.1.2.</strong> 分析处理</a></li></ol></li><li class="chapter-item expanded "><a href="chapter01-02-有状态的流式处理.html"><strong aria-hidden="true">1.2.</strong> 有状态的流式处理</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter01-02-01-事件驱动应用程序.html"><strong aria-hidden="true">1.2.1.</strong> 事件驱动应用程序</a></li><li class="chapter-item expanded "><a href="chapter01-02-02-数据管道.html"><strong aria-hidden="true">1.2.2.</strong> 数据管道</a></li><li class="chapter-item expanded "><a href="chapter01-02-03-流分析.html"><strong aria-hidden="true">1.2.3.</strong> 流分析</a></li></ol></li><li class="chapter-item expanded "><a href="chapter01-03-开源流处理的演进.html"><strong aria-hidden="true">1.3.</strong> 开源流处理的演进</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter01-03-01-流处理的历史.html"><strong aria-hidden="true">1.3.1.</strong> 流处理的历史</a></li></ol></li><li class="chapter-item expanded "><a href="chapter01-04-Flink简介.html"><strong aria-hidden="true">1.4.</strong> Flink简介</a></li></ol></li><li class="chapter-item expanded "><a href="chapter02-第二章，流处理基础.html"><strong aria-hidden="true">2.</strong> 第二章，流处理基础</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter02-01-数据流编程简介.html"><strong aria-hidden="true">2.1.</strong> 数据流编程简介</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter02-01-01-数据流图.html"><strong aria-hidden="true">2.1.1.</strong> 数据流图</a></li><li class="chapter-item expanded "><a href="chapter02-01-02-数据并行和任务并行.html"><strong aria-hidden="true">2.1.2.</strong> 数据并行和任务并行</a></li><li class="chapter-item expanded "><a href="chapter02-01-03-数据交换策略.html"><strong aria-hidden="true">2.1.3.</strong> 数据交换策略</a></li></ol></li><li class="chapter-item expanded "><a href="chapter02-02-并行处理流数据.html"><strong aria-hidden="true">2.2.</strong> 并行处理流数据</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter02-02-01-延迟和吞吐量.html"><strong aria-hidden="true">2.2.1.</strong> 延迟和吞吐量</a></li><li class="chapter-item expanded "><a href="chapter02-02-02-延迟.html"><strong aria-hidden="true">2.2.2.</strong> 延迟</a></li><li class="chapter-item expanded "><a href="chapter02-02-03-吞吐量.html"><strong aria-hidden="true">2.2.3.</strong> 吞吐量</a></li><li class="chapter-item expanded "><a href="chapter02-02-04-延迟与吞吐量的对比.html"><strong aria-hidden="true">2.2.4.</strong> 延迟与吞吐量的对比</a></li></ol></li><li class="chapter-item expanded "><a href="chapter02-03-数据流上的操作.html"><strong aria-hidden="true">2.3.</strong> 数据流上的操作</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter02-03-01-数据摄入和数据吞吐量.html"><strong aria-hidden="true">2.3.1.</strong> 数据摄入和数据吞吐量</a></li><li class="chapter-item expanded "><a href="chapter02-03-02-转换算子.html"><strong aria-hidden="true">2.3.2.</strong> 转换算子</a></li><li class="chapter-item expanded "><a href="chapter02-03-03-滚动聚合.html"><strong aria-hidden="true">2.3.3.</strong> 滚动聚合</a></li><li class="chapter-item expanded "><a href="chapter02-03-04-窗口操作符.html"><strong aria-hidden="true">2.3.4.</strong> 窗口操作符</a></li></ol></li><li class="chapter-item expanded "><a href="chapter02-04-时间语义.html"><strong aria-hidden="true">2.4.</strong> 时间语义</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter02-04-01-在流处理中一分钟代表什么？.html"><strong aria-hidden="true">2.4.1.</strong> 在流处理中一分钟代表什么？</a></li><li class="chapter-item expanded "><a href="chapter02-04-02-处理时间.html"><strong aria-hidden="true">2.4.2.</strong> 处理时间</a></li><li class="chapter-item expanded "><a href="chapter02-04-03-事件时间.html"><strong aria-hidden="true">2.4.3.</strong> 事件时间</a></li><li class="chapter-item expanded "><a href="chapter02-04-04-水位线.html"><strong aria-hidden="true">2.4.4.</strong> 水位线</a></li><li class="chapter-item expanded "><a href="chapter02-04-05-处理时间和事件时间.html"><strong aria-hidden="true">2.4.5.</strong> 处理时间和事件时间</a></li></ol></li><li class="chapter-item expanded "><a href="chapter02-05-状态和持久化模型.html"><strong aria-hidden="true">2.5.</strong> 状态和持久化模型</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter02-05-01-任务失败.html"><strong aria-hidden="true">2.5.1.</strong> 任务失败</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="chapter03-第三章，Flink运行架构.html"><strong aria-hidden="true">3.</strong> 第三章，Flink运行架构</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter03-01-系统架构.html"><strong aria-hidden="true">3.1.</strong> 系统架构</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter03-01-01-Flink运行时组件.html"><strong aria-hidden="true">3.1.1.</strong> Flink运行时组件</a></li><li class="chapter-item expanded "><a href="chapter03-01-02-应用部署.html"><strong aria-hidden="true">3.1.2.</strong> 应用部署</a></li><li class="chapter-item expanded "><a href="chapter03-01-03-任务执行.html"><strong aria-hidden="true">3.1.3.</strong> 任务执行</a></li><li class="chapter-item expanded "><a href="chapter03-01-04-高可用配置.html"><strong aria-hidden="true">3.1.4.</strong> 高可用配置</a></li></ol></li><li class="chapter-item expanded "><a href="chapter03-02-Flink中的数据传输.html"><strong aria-hidden="true">3.2.</strong> Flink中的数据传输</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter03-02-01-基于信任度的流控制.html"><strong aria-hidden="true">3.2.1.</strong> 基于信任度的流控制</a></li><li class="chapter-item expanded "><a href="chapter03-02-02-任务链.html"><strong aria-hidden="true">3.2.2.</strong> 任务链</a></li></ol></li><li class="chapter-item expanded "><a href="chapter03-03-事件时间处理.html"><strong aria-hidden="true">3.3.</strong> 事件时间处理</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter03-03-01-时间戳.html"><strong aria-hidden="true">3.3.1.</strong> 时间戳</a></li><li class="chapter-item expanded "><a href="chapter03-03-02-水位线.html"><strong aria-hidden="true">3.3.2.</strong> 水位线</a></li><li class="chapter-item expanded "><a href="chapter03-03-03-watermark的传递和事件时间.html"><strong aria-hidden="true">3.3.3.</strong> watermark的传递和事件时间</a></li><li class="chapter-item expanded "><a href="chapter03-03-04-时间戳的分配和水位线的产生.html"><strong aria-hidden="true">3.3.4.</strong> 时间戳的分配和水位线的产生</a></li></ol></li><li class="chapter-item expanded "><a href="chapter03-04-状态管理.html"><strong aria-hidden="true">3.4.</strong> 状态管理</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter03-04-01-算子状态.html"><strong aria-hidden="true">3.4.1.</strong> 算子状态</a></li><li class="chapter-item expanded "><a href="chapter03-04-02-键控状态.html"><strong aria-hidden="true">3.4.2.</strong> 键控状态</a></li><li class="chapter-item expanded "><a href="chapter03-04-03-状态后端.html"><strong aria-hidden="true">3.4.3.</strong> 状态后端</a></li><li class="chapter-item expanded "><a href="chapter03-04-04-调整有状态算子的并行度.html"><strong aria-hidden="true">3.4.4.</strong> 调整有状态算子的并行度</a></li></ol></li><li class="chapter-item expanded "><a href="chapter03-05-检查点，保存点和状态恢复.html"><strong aria-hidden="true">3.5.</strong> 检查点，保存点和状态恢复</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter03-05-01-一致的检查点.html"><strong aria-hidden="true">3.5.1.</strong> 一致的检查点</a></li><li class="chapter-item expanded "><a href="chapter03-05-02-从一致检查点中恢复状态.html"><strong aria-hidden="true">3.5.2.</strong> 从一致检查点中恢复状态</a></li><li class="chapter-item expanded "><a href="chapter03-05-03-Flink的检查点算法.html"><strong aria-hidden="true">3.5.3.</strong> Flink的检查点算法</a></li><li class="chapter-item expanded "><a href="chapter03-05-04-检查点的性能影响.html"><strong aria-hidden="true">3.5.4.</strong> 检查点的性能影响</a></li><li class="chapter-item expanded "><a href="chapter03-05-05-保存点.html"><strong aria-hidden="true">3.5.5.</strong> 保存点</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="chapter04-第四章，编写第一个Flink程序.html"><strong aria-hidden="true">4.</strong> 第四章，编写第一个Flink程序</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter04-01-在IDEA中编写Flink程序.html"><strong aria-hidden="true">4.1.</strong> 在IDEA中编写Flink程序</a></li><li class="chapter-item expanded "><a href="chapter04-02-下载Flink运行时环境，提交Jar包的运行方式.html"><strong aria-hidden="true">4.2.</strong> 下载Flink运行时环境，提交Jar包的运行方式</a></li></ol></li><li class="chapter-item expanded "><a href="chapter05-第五章，Flink-DataStream-API.html"><strong aria-hidden="true">5.</strong> 第五章，Flink-DataStream-API</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter05-01-你好，Flink！.html"><strong aria-hidden="true">5.1.</strong> 你好，Flink！</a></li><li class="chapter-item expanded "><a href="chapter05-02-搭建执行环境.html"><strong aria-hidden="true">5.2.</strong> 搭建执行环境</a></li><li class="chapter-item expanded "><a href="chapter05-03-读取输入流.html"><strong aria-hidden="true">5.3.</strong> 读取输入流</a></li><li class="chapter-item expanded "><a href="chapter05-04-转换算子的使用.html"><strong aria-hidden="true">5.4.</strong> 转换算子的使用</a></li><li class="chapter-item expanded "><a href="chapter05-05-输出结果.html"><strong aria-hidden="true">5.5.</strong> 输出结果</a></li><li class="chapter-item expanded "><a href="chapter05-06-执行.html"><strong aria-hidden="true">5.6.</strong> 执行</a></li><li class="chapter-item expanded "><a href="chapter05-07-产生传感器读数代码编写.html"><strong aria-hidden="true">5.7.</strong> 产生传感器读数代码编写</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter05-07-01-从批读取数据.html"><strong aria-hidden="true">5.7.1.</strong> 从批读取数据</a></li><li class="chapter-item expanded "><a href="chapter05-07-02-从文件读取数据.html"><strong aria-hidden="true">5.7.2.</strong> 从文件读取数据</a></li><li class="chapter-item expanded "><a href="chapter05-07-03-以Kafka消息队列的数据为数据来源.html"><strong aria-hidden="true">5.7.3.</strong> 以Kafka消息队列的数据为数据来源</a></li><li class="chapter-item expanded "><a href="chapter05-07-04-自定义数据源.html"><strong aria-hidden="true">5.7.4.</strong> 自定义数据源</a></li></ol></li><li class="chapter-item expanded "><a href="chapter05-08-转换算子.html"><strong aria-hidden="true">5.8.</strong> 转换算子</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter05-08-01-基本转换算子.html"><strong aria-hidden="true">5.8.1.</strong> 基本转换算子</a></li><li class="chapter-item expanded "><a href="chapter05-08-02-键控流转换算子.html"><strong aria-hidden="true">5.8.2.</strong> 键控流转换算子</a></li><li class="chapter-item expanded "><a href="chapter05-08-03-多流转换算子.html"><strong aria-hidden="true">5.8.3.</strong> 多流转换算子</a></li><li class="chapter-item expanded "><a href="chapter05-08-04-分布式转换算子.html"><strong aria-hidden="true">5.8.4.</strong> 分布式转换算子</a></li></ol></li><li class="chapter-item expanded "><a href="chapter05-09-设置并行度.html"><strong aria-hidden="true">5.9.</strong> 设置并行度</a></li><li class="chapter-item expanded "><a href="chapter05-10-类型.html"><strong aria-hidden="true">5.10.</strong> 类型</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter05-10-01-支持的数据类型.html"><strong aria-hidden="true">5.10.1.</strong> 支持的数据类型</a></li><li class="chapter-item expanded "><a href="chapter05-10-02-为数据类型创建类型信息.html"><strong aria-hidden="true">5.10.2.</strong> 为数据类型创建类型信息</a></li></ol></li><li class="chapter-item expanded "><a href="chapter05-11-定义Key以及引用字段.html"><strong aria-hidden="true">5.11.</strong> 定义Key以及引用字段</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter05-11-01-使用字段位置进行keyBy.html"><strong aria-hidden="true">5.11.1.</strong> 使用字段位置进行keyBy</a></li><li class="chapter-item expanded "><a href="chapter05-11-02-使用字段表达式来进行keyBy.html"><strong aria-hidden="true">5.11.2.</strong> 使用字段表达式来进行keyBy</a></li><li class="chapter-item expanded "><a href="chapter05-11-03-Key选择器.html"><strong aria-hidden="true">5.11.3.</strong> Key选择器</a></li></ol></li><li class="chapter-item expanded "><a href="chapter05-12-实现UDF函数，更细粒度的控制流.html"><strong aria-hidden="true">5.12.</strong> 实现UDF函数，更细粒度的控制流</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter05-12-01-函数类.html"><strong aria-hidden="true">5.12.1.</strong> 函数类</a></li><li class="chapter-item expanded "><a href="chapter05-12-02-匿名函数.html"><strong aria-hidden="true">5.12.2.</strong> 匿名函数</a></li><li class="chapter-item expanded "><a href="chapter05-12-03-富函数.html"><strong aria-hidden="true">5.12.3.</strong> 富函数</a></li></ol></li><li class="chapter-item expanded "><a href="chapter05-13-Sink.html"><strong aria-hidden="true">5.13.</strong> Sink</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter05-13-01-Kafka.html"><strong aria-hidden="true">5.13.1.</strong> Kafka</a></li><li class="chapter-item expanded "><a href="chapter05-13-02-Redis.html"><strong aria-hidden="true">5.13.2.</strong> Redis</a></li><li class="chapter-item expanded "><a href="chapter05-13-03-ElasticSearch.html"><strong aria-hidden="true">5.13.3.</strong> ElasticSearch</a></li><li class="chapter-item expanded "><a href="chapter05-13-04-JDBC自定义sink.html"><strong aria-hidden="true">5.13.4.</strong> JDBC自定义sink</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="chapter06-第六章，基于时间和窗口的操作符.html"><strong aria-hidden="true">6.</strong> 第六章，基于时间和窗口的操作符</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter06-01-设置时间属性.html"><strong aria-hidden="true">6.1.</strong> 设置时间属性</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter06-01-01-指定时间戳和产生水位线.html"><strong aria-hidden="true">6.1.1.</strong> 指定时间戳和产生水位线</a></li><li class="chapter-item expanded "><a href="chapter06-01-02-周期性的生成水位线.html"><strong aria-hidden="true">6.1.2.</strong> 周期性的生成水位线</a></li><li class="chapter-item expanded "><a href="chapter06-01-03-如何产生不规则的水位线.html"><strong aria-hidden="true">6.1.3.</strong> 如何产生不规则的水位线</a></li></ol></li><li class="chapter-item expanded "><a href="chapter06-02-处理函数.html"><strong aria-hidden="true">6.2.</strong> 处理函数</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter06-02-01-时间服务和定时器.html"><strong aria-hidden="true">6.2.1.</strong> 时间服务和定时器</a></li><li class="chapter-item expanded "><a href="chapter06-02-02-将事件发送到侧输出.html"><strong aria-hidden="true">6.2.2.</strong> 将事件发送到侧输出</a></li><li class="chapter-item expanded "><a href="chapter06-02-03-CoProcessFunction.html"><strong aria-hidden="true">6.2.3.</strong> CoProcessFunction</a></li></ol></li><li class="chapter-item expanded "><a href="chapter06-03-窗口操作符.html"><strong aria-hidden="true">6.3.</strong> 窗口操作符</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter06-03-01-定义窗口操作符.html"><strong aria-hidden="true">6.3.1.</strong> 定义窗口操作符</a></li><li class="chapter-item expanded "><a href="chapter06-03-02-内置的窗口分配器.html"><strong aria-hidden="true">6.3.2.</strong> 内置的窗口分配器</a></li><li class="chapter-item expanded "><a href="chapter06-03-03-调用窗口计算函数.html"><strong aria-hidden="true">6.3.3.</strong> 调用窗口计算函数</a></li><li class="chapter-item expanded "><a href="chapter06-03-04-自定义窗口操作符.html"><strong aria-hidden="true">6.3.4.</strong> 自定义窗口操作符</a></li></ol></li><li class="chapter-item expanded "><a href="chapter06-04-基于时间的双流Join.html"><strong aria-hidden="true">6.4.</strong> 基于时间的双流Join</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter06-04-01-基于间隔的Join.html"><strong aria-hidden="true">6.4.1.</strong> 基于间隔的Join</a></li><li class="chapter-item expanded "><a href="chapter06-04-02-基于窗口的Join.html"><strong aria-hidden="true">6.4.2.</strong> 基于窗口的Join</a></li></ol></li><li class="chapter-item expanded "><a href="chapter06-05-处理迟到的元素.html"><strong aria-hidden="true">6.5.</strong> 处理迟到的元素</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter06-05-01-抛弃迟到元素.html"><strong aria-hidden="true">6.5.1.</strong> 抛弃迟到元素</a></li><li class="chapter-item expanded "><a href="chapter06-05-02-重定向迟到元素.html"><strong aria-hidden="true">6.5.2.</strong> 重定向迟到元素</a></li><li class="chapter-item expanded "><a href="chapter06-05-03-使用迟到元素更新窗口计算结果.html"><strong aria-hidden="true">6.5.3.</strong> 使用迟到元素更新窗口计算结果</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="chapter07-第七章，有状态算子和应用.html"><strong aria-hidden="true">7.</strong> 第七章，有状态算子和应用</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter07-01-实现有状态的用户自定义函数.html"><strong aria-hidden="true">7.1.</strong> 实现有状态的用户自定义函数</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter07-01-01-在RuntimeContext中定义键控状态.html"><strong aria-hidden="true">7.1.1.</strong> 在RuntimeContext中定义键控状态</a></li><li class="chapter-item expanded "><a href="chapter07-01-02-使用ListCheckpointed接口来实现操作符的列表状态.html"><strong aria-hidden="true">7.1.2.</strong> 使用ListCheckpointed接口来实现操作符的列表状态</a></li><li class="chapter-item expanded "><a href="chapter07-01-03-使用连接的广播状态.html"><strong aria-hidden="true">7.1.3.</strong> 使用连接的广播状态</a></li></ol></li><li class="chapter-item expanded "><a href="chapter07-02-配置检查点.html"><strong aria-hidden="true">7.2.</strong> 配置检查点</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter07-02-01-将hdfs配置为状态后端.html"><strong aria-hidden="true">7.2.1.</strong> 将hdfs配置为状态后端</a></li></ol></li><li class="chapter-item expanded "><a href="chapter07-03-保证有状态应用的可维护性.html"><strong aria-hidden="true">7.3.</strong> 保证有状态应用的可维护性</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter07-03-01-指定唯一的操作符标识符.html"><strong aria-hidden="true">7.3.1.</strong> 指定唯一的操作符标识符</a></li><li class="chapter-item expanded "><a href="chapter07-03-02-指定操作符的最大并行度.html"><strong aria-hidden="true">7.3.2.</strong> 指定操作符的最大并行度</a></li></ol></li><li class="chapter-item expanded "><a href="chapter07-04-有状态应用的性能和健壮性.html"><strong aria-hidden="true">7.4.</strong> 有状态应用的性能和健壮性</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter07-04-01-选择一个状态后端.html"><strong aria-hidden="true">7.4.1.</strong> 选择一个状态后端</a></li><li class="chapter-item expanded "><a href="chapter07-04-02-防止状态泄露.html"><strong aria-hidden="true">7.4.2.</strong> 防止状态泄露</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="chapter08-第八章，读写外部系统.html"><strong aria-hidden="true">8.</strong> 第八章，读写外部系统</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter08-01-应用的一致性保证.html"><strong aria-hidden="true">8.1.</strong> 应用的一致性保证</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter08-01-01-幂等性写入.html"><strong aria-hidden="true">8.1.1.</strong> 幂等性写入</a></li><li class="chapter-item expanded "><a href="chapter08-01-02-事务性写入.html"><strong aria-hidden="true">8.1.2.</strong> 事务性写入</a></li></ol></li><li class="chapter-item expanded "><a href="chapter08-02-Flink提供的连接器.html"><strong aria-hidden="true">8.2.</strong> Flink提供的连接器</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter08-02-01-Apache-Kafka-Source连接器.html"><strong aria-hidden="true">8.2.1.</strong> Apache-Kafka-Source连接器</a></li><li class="chapter-item expanded "><a href="chapter08-02-02-Apache-Kafka-Sink连接器.html"><strong aria-hidden="true">8.2.2.</strong> Apache-Kafka-Sink连接器</a></li><li class="chapter-item expanded "><a href="chapter08-02-03-Kakfa-Sink的at-least-once保证.html"><strong aria-hidden="true">8.2.3.</strong> Kakfa-Sink的at-least-once保证</a></li><li class="chapter-item expanded "><a href="chapter08-02-04-Kafka-Sink的恰好处理一次语义保证.html"><strong aria-hidden="true">8.2.4.</strong> Kafka-Sink的恰好处理一次语义保证</a></li><li class="chapter-item expanded "><a href="chapter08-02-05-文件系统source连接器.html" class="active"><strong aria-hidden="true">8.2.5.</strong> 文件系统source连接器</a></li><li class="chapter-item expanded "><a href="chapter08-02-06-文件系统sink连接器.html"><strong aria-hidden="true">8.2.6.</strong> 文件系统sink连接器</a></li></ol></li><li class="chapter-item expanded "><a href="chapter08-03-实现自定义源函数.html"><strong aria-hidden="true">8.3.</strong> 实现自定义源函数</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter08-03-01-可重置的源函数.html"><strong aria-hidden="true">8.3.1.</strong> 可重置的源函数</a></li></ol></li><li class="chapter-item expanded "><a href="chapter08-04-实现自定义sink函数.html"><strong aria-hidden="true">8.4.</strong> 实现自定义sink函数</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter08-04-01-幂等性sink连接器.html"><strong aria-hidden="true">8.4.1.</strong> 幂等性sink连接器</a></li><li class="chapter-item expanded "><a href="chapter08-04-02-事务性sink连接器.html"><strong aria-hidden="true">8.4.2.</strong> 事务性sink连接器</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="chapter09-第九章，搭建Flink运行流式应用.html"><strong aria-hidden="true">9.</strong> 第九章，搭建Flink运行流式应用</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter09-01-部署方式.html"><strong aria-hidden="true">9.1.</strong> 部署方式</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter09-01-01-独立集群.html"><strong aria-hidden="true">9.1.1.</strong> 独立集群</a></li><li class="chapter-item expanded "><a href="chapter09-01-02-Apache-Hadoop-Yarn.html"><strong aria-hidden="true">9.1.2.</strong> Apache-Hadoop-Yarn</a></li></ol></li><li class="chapter-item expanded "><a href="chapter09-02-高可用配置.html"><strong aria-hidden="true">9.2.</strong> 高可用配置</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter09-02-01-独立集群高可用配置.html"><strong aria-hidden="true">9.2.1.</strong> 独立集群高可用配置</a></li><li class="chapter-item expanded "><a href="chapter09-02-02-yarn集群高可用配置.html"><strong aria-hidden="true">9.2.2.</strong> yarn集群高可用配置</a></li></ol></li><li class="chapter-item expanded "><a href="chapter09-03-与Hadoop集成.html"><strong aria-hidden="true">9.3.</strong> 与Hadoop集成</a></li><li class="chapter-item expanded "><a href="chapter09-04-保存点操作.html"><strong aria-hidden="true">9.4.</strong> 保存点操作</a></li><li class="chapter-item expanded "><a href="chapter09-05-取消一个应用.html"><strong aria-hidden="true">9.5.</strong> 取消一个应用</a></li><li class="chapter-item expanded "><a href="chapter09-06-从保存点启动应用程序.html"><strong aria-hidden="true">9.6.</strong> 从保存点启动应用程序</a></li><li class="chapter-item expanded "><a href="chapter09-07-扩容，改变并行度操作.html"><strong aria-hidden="true">9.7.</strong> 扩容，改变并行度操作</a></li></ol></li><li class="chapter-item expanded "><a href="chapter10-第十章，Flink和流式应用运维.html"><strong aria-hidden="true">10.</strong> 第十章，Flink和流式应用运维</a></li><li class="chapter-item expanded "><a href="chapter11-第十一章，Flink-CEP简介.html"><strong aria-hidden="true">11.</strong> 第十一章，Flink-CEP简介</a></li><li class="chapter-item expanded "><a href="chapter12-第十二章，Table-API和Flink-SQL.html"><strong aria-hidden="true">12.</strong> 第十二章，Table-API和Flink-SQL</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter12-01-整体介绍.html"><strong aria-hidden="true">12.1.</strong> 整体介绍</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter12-01-01-什么是Table-API和Flink-SQL.html"><strong aria-hidden="true">12.1.1.</strong> 什么是Table-API和Flink-SQL</a></li><li class="chapter-item expanded "><a href="chapter12-01-02-需要引入的依赖.html"><strong aria-hidden="true">12.1.2.</strong> 需要引入的依赖</a></li><li class="chapter-item expanded "><a href="chapter12-01-03-两种planner（old-&-blink）的区别.html"><strong aria-hidden="true">12.1.3.</strong> 两种planner（old-&amp;-blink）的区别</a></li></ol></li><li class="chapter-item expanded "><a href="chapter12-02-API调用.html"><strong aria-hidden="true">12.2.</strong> API调用</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter12-02-01-基本程序结构.html"><strong aria-hidden="true">12.2.1.</strong> 基本程序结构</a></li><li class="chapter-item expanded "><a href="chapter12-02-02-创建表环境.html"><strong aria-hidden="true">12.2.2.</strong> 创建表环境</a></li><li class="chapter-item expanded "><a href="chapter12-02-03-在Catalog中注册表.html"><strong aria-hidden="true">12.2.3.</strong> 在Catalog中注册表</a></li><li class="chapter-item expanded "><a href="chapter12-02-04-表的查询.html"><strong aria-hidden="true">12.2.4.</strong> 表的查询</a></li><li class="chapter-item expanded "><a href="chapter12-02-05-将DataStream转换成表.html"><strong aria-hidden="true">12.2.5.</strong> 将DataStream转换成表</a></li><li class="chapter-item expanded "><a href="chapter12-02-06-创建临时视图.html"><strong aria-hidden="true">12.2.6.</strong> 创建临时视图</a></li><li class="chapter-item expanded "><a href="chapter12-02-07-输出表.html"><strong aria-hidden="true">12.2.7.</strong> 输出表</a></li><li class="chapter-item expanded "><a href="chapter12-02-08-将表转换成DataStream.html"><strong aria-hidden="true">12.2.8.</strong> 将表转换成DataStream</a></li><li class="chapter-item expanded "><a href="chapter12-02-09-Query的解释和执行.html"><strong aria-hidden="true">12.2.9.</strong> Query的解释和执行</a></li></ol></li><li class="chapter-item expanded "><a href="chapter12-03-流处理中的特殊概念.html"><strong aria-hidden="true">12.3.</strong> 流处理中的特殊概念</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter12-03-01-流处理和关系代数（表，及SQL）的区别.html"><strong aria-hidden="true">12.3.1.</strong> 流处理和关系代数（表，及SQL）的区别</a></li><li class="chapter-item expanded "><a href="chapter12-03-02-动态表.html"><strong aria-hidden="true">12.3.2.</strong> 动态表</a></li><li class="chapter-item expanded "><a href="chapter12-03-03-流式持续查询的过程.html"><strong aria-hidden="true">12.3.3.</strong> 流式持续查询的过程</a></li><li class="chapter-item expanded "><a href="chapter12-03-04-时间特性.html"><strong aria-hidden="true">12.3.4.</strong> 时间特性</a></li></ol></li><li class="chapter-item expanded "><a href="chapter12-04-窗口.html"><strong aria-hidden="true">12.4.</strong> 窗口</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter12-04-01-分组窗口.html"><strong aria-hidden="true">12.4.1.</strong> 分组窗口</a></li><li class="chapter-item expanded "><a href="chapter12-04-02-Over-Windows.html"><strong aria-hidden="true">12.4.2.</strong> Over-Windows</a></li><li class="chapter-item expanded "><a href="chapter12-04-03-SQL中窗口的定义.html"><strong aria-hidden="true">12.4.3.</strong> SQL中窗口的定义</a></li><li class="chapter-item expanded "><a href="chapter12-04-04-代码练习（以分组滚动窗口为例）.html"><strong aria-hidden="true">12.4.4.</strong> 代码练习（以分组滚动窗口为例）</a></li></ol></li><li class="chapter-item expanded "><a href="chapter12-05-函数.html"><strong aria-hidden="true">12.5.</strong> 函数</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter12-05-01-系统内置函数.html"><strong aria-hidden="true">12.5.1.</strong> 系统内置函数</a></li><li class="chapter-item expanded "><a href="chapter12-05-02-UDF.html"><strong aria-hidden="true">12.5.2.</strong> UDF</a></li></ol></li><li class="chapter-item expanded "><a href="chapter12-06-Flink和Hive集成.html"><strong aria-hidden="true">12.6.</strong> Flink与Hive集成</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter12-06-01-Maven依赖.html"><strong aria-hidden="true">12.6.1.</strong> Maven依赖</a></li><li class="chapter-item expanded "><a href="chapter12-06-02-示例程序.html"><strong aria-hidden="true">12.6.2.</strong> 示例程序</a></li><li class="chapter-item expanded "><a href="chapter12-06-03-一个复杂一点的程序.html"><strong aria-hidden="true">12.6.3.</strong> 一个复杂一点的程序</a></li><li class="chapter-item expanded "><a href="chapter12-06-04-彻底重置hadoop和hive的方法.html"><strong aria-hidden="true">12.6.4.</strong> 彻底重置hadoop和hive的方法</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="chapter13-第十三章，尚硅谷大数据技术之电商用户行为分析.html"><strong aria-hidden="true">13.</strong> 第十三章，尚硅谷大数据技术之电商用户行为分析</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter13-01-数据集解析.html"><strong aria-hidden="true">13.1.</strong> 数据集解析</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter13-01-01-淘宝数据集解析.html"><strong aria-hidden="true">13.1.1.</strong> 淘宝数据集解析</a></li><li class="chapter-item expanded "><a href="chapter13-01-02-Apache服务器日志数据集解析.html"><strong aria-hidden="true">13.1.2.</strong> Apache服务器日志数据集解析</a></li></ol></li><li class="chapter-item expanded "><a href="chapter13-02-实时热门商品统计.html"><strong aria-hidden="true">13.2.</strong> 实时热门商品统计</a></li><li class="chapter-item expanded "><a href="chapter13-03-实时流量统计.html"><strong aria-hidden="true">13.3.</strong> 实时流量统计</a></li><li class="chapter-item expanded "><a href="chapter13-04-Uv统计的布隆过滤器实现.html"><strong aria-hidden="true">13.4.</strong> Uv统计的布隆过滤器实现</a></li><li class="chapter-item expanded "><a href="chapter13-05-APP分渠道数据统计.html"><strong aria-hidden="true">13.5.</strong> APP分渠道数据统计</a></li><li class="chapter-item expanded "><a href="chapter13-06-APP不分渠道数据统计.html"><strong aria-hidden="true">13.6.</strong> APP不分渠道数据统计</a></li><li class="chapter-item expanded "><a href="chapter13-07-恶意登陆实现.html"><strong aria-hidden="true">13.7.</strong> 恶意登陆实现</a></li><li class="chapter-item expanded "><a href="chapter13-08-订单支付实时监控.html"><strong aria-hidden="true">13.8.</strong> 订单支付实时监控</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter13-08-01-使用Flink-CEP来实现.html"><strong aria-hidden="true">13.8.1.</strong> 使用Flink-CEP来实现</a></li><li class="chapter-item expanded "><a href="chapter13-08-02-使用Process-Function实现订单超时需求.html"><strong aria-hidden="true">13.8.2.</strong> 使用Process-Function实现订单超时需求</a></li></ol></li><li class="chapter-item expanded "><a href="chapter13-09-实时对帐：实现两条流的Join.html"><strong aria-hidden="true">13.9.</strong> 实时对帐：实现两条流的Join</a></li><li class="chapter-item expanded "><a href="chapter13-10-使用Flink-SQL实现实时热门商品统计.html"><strong aria-hidden="true">13.10.</strong> 使用Flink-SQL实现实时热门商品统计</a></li><li class="chapter-item expanded "><a href="chapter13-11-使用Flink-SQL实现端到端的流式应用.html"><strong aria-hidden="true">13.11.</strong> 使用Flink-SQL实现端到端的流式应用</a></li></ol></li><li class="chapter-item expanded "><a href="chapter14-第十四章，常见面试题解答.html"><strong aria-hidden="true">14.</strong> 第十四章，常见面试题解答</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="chapter14-01-面试题一.html"><strong aria-hidden="true">14.1.</strong> 面试题一</a></li><li class="chapter-item expanded "><a href="chapter14-02-面试题二.html"><strong aria-hidden="true">14.2.</strong> 面试题二</a></li><li class="chapter-item expanded "><a href="chapter14-03-面试题三.html"><strong aria-hidden="true">14.3.</strong> 面试题三</a></li><li class="chapter-item expanded "><a href="chapter14-04-面试题四.html"><strong aria-hidden="true">14.4.</strong> 面试题四</a></li><li class="chapter-item expanded "><a href="chapter14-05-面试题五.html"><strong aria-hidden="true">14.5.</strong> 面试题五</a></li><li class="chapter-item expanded "><a href="chapter14-06-面试题六.html"><strong aria-hidden="true">14.6.</strong> 面试题六</a></li><li class="chapter-item expanded "><a href="chapter14-07-面试题七.html"><strong aria-hidden="true">14.7.</strong> 面试题七</a></li><li class="chapter-item expanded "><a href="chapter14-08-面试题八.html"><strong aria-hidden="true">14.8.</strong> 面试题八</a></li><li class="chapter-item expanded "><a href="chapter14-09-面试题九.html"><strong aria-hidden="true">14.9.</strong> 面试题九</a></li><li class="chapter-item expanded "><a href="chapter14-10-面试题十.html"><strong aria-hidden="true">14.10.</strong> 面试题十</a></li><li class="chapter-item expanded "><a href="chapter14-11-面试题十一.html"><strong aria-hidden="true">14.11.</strong> 面试题十一</a></li><li class="chapter-item expanded "><a href="chapter14-12-面试题十二.html"><strong aria-hidden="true">14.12.</strong> 面试题十二</a></li><li class="chapter-item expanded "><a href="chapter14-13-面试题十三.html"><strong aria-hidden="true">14.13.</strong> 面试题十三</a></li><li class="chapter-item expanded "><a href="chapter14-14-面试题十四.html"><strong aria-hidden="true">14.14.</strong> 面试题十四</a></li><li class="chapter-item expanded "><a href="chapter14-15-面试题十五.html"><strong aria-hidden="true">14.15.</strong> 面试题十五</a></li><li class="chapter-item expanded "><a href="chapter14-16-面试题十六.html"><strong aria-hidden="true">14.16.</strong> 面试题十六</a></li><li class="chapter-item expanded "><a href="chapter14-17-面试题十七.html"><strong aria-hidden="true">14.17.</strong> 面试题十七</a></li><li class="chapter-item expanded "><a href="chapter14-18-面试题十八.html"><strong aria-hidden="true">14.18.</strong> 面试题十八</a></li><li class="chapter-item expanded "><a href="chapter14-19-面试题十九.html"><strong aria-hidden="true">14.19.</strong> 面试题十九</a></li><li class="chapter-item expanded "><a href="chapter14-20-面试题二十.html"><strong aria-hidden="true">14.20.</strong> 面试题二十</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
+
+                    <h1 class="menu-title">尚硅谷Flink教程</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h3><a class="header" href="#文件系统source连接器" id="文件系统source连接器">文件系统source连接器</a></h3>
+<p>Apache Flink针对文件系统实现了一个可重置的source连接器，将文件看作流来读取数据。如下面的例子所示：</p>
+<pre><code class="language-java">val lineReader = new TextInputFormat(null) 
+
+val lineStream: DataStream[String] = env.readFile[String](
+  lineReader,                 // The FileInputFormat
+  &quot;hdfs:///path/to/my/data&quot;,  // The path to read
+  FileProcessingMode
+    .PROCESS_CONTINUOUSLY,    // The processing mode
+  30000L)                     // The monitoring interval in ms
+</code></pre>
+<p>StreamExecutionEnvironment.readFile()接收如下参数：</p>
+<ul>
+<li>FileInputFormat参数，负责读取文件中的内容。</li>
+<li>文件路径。如果文件路径指向单个文件，那么将会读取这个文件。如果路径指向一个文件夹，FileInputFormat将会扫描文件夹中所有的文件。</li>
+<li>PROCESS_CONTINUOUSLY将会周期性的扫描文件，以便扫描到文件新的改变。</li>
+<li>30000L表示多久扫描一次监听的文件。</li>
+</ul>
+<p>FileInputFormat是一个特定的InputFormat，用来从文件系统中读取文件。FileInputFormat分两步读取文件。首先扫描文件系统的路径，然后为所有匹配到的文件创建所谓的input splits。一个input split将会定义文件上的一个范围，一般通过读取的开始偏移量和读取长度来定义。在将一个大的文件分割成一堆小的splits以后，这些splits可以分发到不同的读任务，这样就可以并行的读取文件了。FileInputFormat的第二步会接收一个input split，读取被split定义的文件范围，然后返回对应的数据。</p>
+<p>DataStream应用中使用的FileInputFormat需要实现CheckpointableInputFormat接口。这个接口定义了方法来做检查点和重置文件片段的当前的读取位置。</p>
+<p>在Flink 1.7中，Flink提供了一些类，这些类继承了FileInputFormat，并实现了CheckpointableInputFormat接口。TextInputFormat一行一行的读取文件，而CsvInputFormat使用逗号分隔符来读取文件。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="chapter08-02-04-Kafka-Sink的恰好处理一次语义保证.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="chapter08-02-06-文件系统sink连接器.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a rel="prev" href="chapter08-02-04-Kafka-Sink的恰好处理一次语义保证.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a rel="next" href="chapter08-02-06-文件系统sink连接器.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+
+        
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+
+    </body>
+</html>

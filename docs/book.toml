@@ -1,0 +1,6 @@
+[book]
+authors = ["confucianzuoyuan"]
+language = "en"
+multilingual = false
+src = "src"
+title = "尚硅谷Flink教程"
