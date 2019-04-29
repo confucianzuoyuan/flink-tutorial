@@ -1,0 +1,107 @@
+== 编写第一个Flink程序
+
+=== 在IDEA中编写Flink程序
+
+本项目使用的Flink版本为最新版本，也就是1.10.0。现在提供maven项目的配置文件。
+
+. 使用Intellij IDEA创建一个Maven新项目
+. 勾选``Create from archetype``，然后点击``Add Archetype``按钮
+. ``GroupId``中输入``org.apache.flink``，``ArtifactId``中输入``flink-quickstart-scala``，``Version``中输入``1.10.0``，然后点击``OK``
+. 点击向右箭头，出现下拉列表，选中``flink-quickstart-scala:1.10.0``，点击``Next``
+. ``Name``中输入``FlinkTutorial``，``GroupId``中输入``com.atguigu``，``ArtifactId``中输入``FlinkTutorial``，点击``Next``
+. 最好使用IDEA默认的Maven工具：Bundled（Maven 3），点击``Finish``，等待一会儿，项目就创建好了
+
+编写``WordCount.scala``程序
+
+[source,scala]
+.WordCount.scala
+----
+package com.atguigu
+
+import org.apache.flink.streaming.api.scala._ // <1>
+import org.apache.flink.streaming.api.windowing.time.Time
+
+object StreamingJob {
+
+  /** Main program method */
+  def main(args: Array[String]) : Unit = {
+
+    // get the execution environment
+    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+
+    // get input data by connecting to the socket
+    val text: DataStream[String] = env.socketTextStream("localhost", 9999, '\n')
+
+    // parse the data, group it, window it, and aggregate the counts
+    val windowCounts = text
+      .flatMap { w => w.split("\\s") }
+      .map { w => WordWithCount(w, 1) }
+      .keyBy("word")
+      .timeWindow(Time.seconds(5))
+      .sum("count")
+
+    // print the results with a single thread, rather than in parallel
+    windowCounts.print().setParallelism(1)
+
+    env.execute("Socket Window WordCount")
+  }
+
+  /** Data type for words with count */
+  case class WordWithCount(word: String, count: Long)
+}
+----
+<1> 这一行必须导入，看清楚了别导错了，因为要把一些隐式类型转换导进来。
+
+打开一个终端（Terminal），运行以下命令
+
+[source,shell]
+----
+nc -lk 9999
+----
+
+接下来使用``IDEA``运行就可以了。
+
+=== 下载Flink运行时环境，提交Jar包的运行方式
+
+下载链接：http://mirror.bit.edu.cn/apache/flink/flink-1.10.0/flink-1.10.0-bin-scala_2.11.tgz
+
+然后解压
+
+[source,shell]
+----
+tar xvfz flink-1.10.0-bin-scala_2.11.tgz
+----
+
+启动Flink集群
+
+[source,shell]
+----
+cd flink-1.10.0
+./bin/start-cluster.sh
+----
+
+可以打开Flink WebUI查看集群状态：http://localhost:8081
+
+在``IDEA``中使用``maven package``打包。
+
+提交打包好的``JAR``包
+
+[source,shell]
+----
+cd flink-1.10.0
+./bin/flink run 打包好的JAR包的绝对路径
+----
+
+停止Flink集群
+
+[source,shell]
+----
+./bin/stop-cluster.sh
+----
+
+查看标准输出日志的位置，在``log``文件夹中。
+
+[source,shell]
+----
+cd flink-1.10.0/log
+----
