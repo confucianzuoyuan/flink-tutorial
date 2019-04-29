@@ -1,0 +1,10 @@
+### 时间戳的分配和水位线的产生
+
+我们已经解释了什么是时间戳和水位线，以及它们是如何由Flink内部处理的；然而我们还没有讨论它们的产生。流应用程序接收到数据流时，通常就会先分配时间戳并生成水位线（watermark）。因为时间戳的选择是由不同的应用程序决定的，而且watermark取决于时间戳和流的特性，所以应用程序必须首先显式地分配时间戳并生成watermark。Flink流应用程序可以通过三种方式分配时间戳和生成watermark：
+
+* 在数据源（source）处分配：当数据流被摄入到应用程序中时，可以由“源函数”SourceFunction分配和生成时间戳和watermark。SourceFunction可以产生并发送一个数据流；数据会与相关的时间戳一起发送出去，而watermark可以作为一条特殊数据在任何时间点发出。如果SourceFunction（暂时）不再发出watermark，它可以声明自己处于“空闲”（idle）状态。Flink会在后续算子的水位计算中，把空闲的SourceFunction产生的流分区排除掉。source的这一空闲机制，可以用来解决前面提到的水位不再上升的问题。源函数（Source Function）在“实现自定义源函数”一节中进行了更详细的讨论。
+* 定期分配：在Flink中，DataStream API提供一个名为AssignerWithPeriodicWatermarks的用户定义函数，它可以从每个数据中提取时间戳，并被定期调用以生成当前watermark。提取出的时间戳被分配给相应的数据，而生成的watermark也会添加到流中。这个函数将在“分配时间戳和生成水位线”一节中讨论。
+* 间断分配：AssignerWithPunctuatedWatermarks是另一个用户定义的函数，它同样会从每个数据中提取一个时间戳。它可以用于生成特殊输入数据中的watermark。与AssignerWithPeriodicWatermarks相比，此函数可以（但不是必须）从每个记录中提取watermark。我们在“分配时间戳和生成水位线”一节中同样讨论了该函数。
+
+用户定义的时间戳分配函数并没有严格的限制，通常会放在尽可能靠近source算子的位置，因为当经过一些算子处理后，数据及其时间戳的顺序就更加难以解释了。所以尽管我们可以在流应用程序的中段覆盖已有的时间戳和watermark——Flink通过用户定义的函数提供了这种灵活性，但这显然并不是推荐的做法。
+
