@@ -15,6 +15,10 @@ mvn archetype:generate \
 ```
 
 或者使用`Idea`来创建以上Maven项目。
+$$
+\frac{1}{2}
+$$
+
 
 使用上面的参数，Maven 将自动为你创建如下所示的项目结构：
 
