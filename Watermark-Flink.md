@@ -582,3 +582,7 @@ window中可以对input进行按照Event Time排序，使得完全按照Event Ti
 ### 8.3. Flink应该如何设置最大乱序时间？
 
 这个要结合自己的业务以及数据情况去设置。如果maxOutOfOrderness设置的太小，而自身数据发送时由于网络等原因导致乱序或者late太多，那么最终的结果就是会有很多单条的数据在window中被触发，数据的正确性影响太大。
+
+## 9. 示意图一张
+
+![](watermark.png)

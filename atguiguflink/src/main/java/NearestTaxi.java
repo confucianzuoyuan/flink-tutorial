@@ -25,11 +25,8 @@ import java.util.Map;
 import java.util.Random;
 
 /**
- * Java reference implementation for the "Nearest Future Taxi" exercise of the Flink training
- * (http://training.ververica.com). This solution doesn't worry about leaking state.
  *
- * Given a location that is broadcast, the goal of this exercise is to watch the stream of
- * taxi rides, and report on the taxis that complete their ride closest to the requested location.
+ * 广播打车的人的位置出去，观察taxi rides流，然后找出距离打车的人最近的并且已完成行程的出租车。
  *
  * Parameters:
  * -input path-to-input-file
@@ -112,18 +109,23 @@ public class NearestTaxi extends ProjectBase {
                 .broadcast(queryDescriptor);
 
         DataStream<Tuple3<Long, Long, Float>> reports = rides
+                // 根据taxiId分组
                 .keyBy((TaxiRide ride) -> ride.taxiId)
+                // 连接查询流
                 .connect(queryStream)
+                // 执行查询
                 .process(new QueryFunction());
 
         DataStream<Tuple3<Long, Long, Float>> nearest = reports
                 // key by the queryId
+                // 根据 queryId 分组
                 .keyBy(new KeySelector<Tuple3<Long, Long, Float>, Long>() {
                     @Override
                     public Long getKey(Tuple3<Long, Long, Float> value) throws Exception {
                         return value.f0;
                     }
                 })
+                // 找出最近的出租车
                 .process(new ClosestTaxi());
 
         printOrTest(nearest);
@@ -132,24 +134,29 @@ public class NearestTaxi extends ProjectBase {
     }
 
     // Only pass thru values that are new minima -- remove duplicates.
+    // KeyedProcessFunction<K, I, O>; type of Key; type of Input; type of Output;
     public static class ClosestTaxi extends KeyedProcessFunction<Long, Tuple3<Long, Long, Float>, Tuple3<Long, Long, Float>> {
         // store (taxiId, distance), keyed by queryId
         private transient ValueState<Tuple2<Long, Float>> closest;
 
+        // lifecycle开始的初始化操作
         @Override
         public void open(Configuration parameters) throws Exception {
+            // 值的状态的描述符
             ValueStateDescriptor<Tuple2<Long, Float>> descriptor =
                     new ValueStateDescriptor<Tuple2<Long, Float>>(
-                            // state name
+                            // state name; 状态的名字
                             "report",
-                            // type information of state
+                            // type information of state; 状态的类型信息
                             TypeInformation.of(new TypeHint<Tuple2<Long, Float>>() {}));
+            // 拿到运行时的上下文，再拿到值的状态，并赋值给closest变量
             closest = getRuntimeContext().getState(descriptor);
         }
 
         @Override
         // in and out tuples: (queryId, taxiId, distance)
         public void processElement(Tuple3<Long, Long, Float> report, Context ctx, Collector<Tuple3<Long, Long, Float>> out) throws Exception {
+            // 如果closest值为null, 或者report中的距离f2小于closest状态变量中的距离值f1, 则更新距离值和taxiId
             if (closest.value() == null || report.f2 < closest.value().f1) {
                 closest.update(new Tuple2<>(report.f1, report.f2));
                 out.collect(report);
@@ -162,6 +169,7 @@ public class NearestTaxi extends ProjectBase {
     // individual sub-task.
     public static class QueryFunction extends KeyedBroadcastProcessFunction<Long, TaxiRide, Query, Tuple3<Long, Long, Float>> {
 
+        // 处理的是广播元素
         @Override
         public void processBroadcastElement(Query query, Context ctx, Collector<Tuple3<Long, Long, Float>> out) throws Exception {
             System.out.println("new query " + query);
@@ -171,11 +179,14 @@ public class NearestTaxi extends ProjectBase {
         @Override
         // Output (queryId, taxiId, euclidean distance) for every query, if the taxi ride is now ending.
         public void processElement(TaxiRide ride, ReadOnlyContext ctx, Collector<Tuple3<Long, Long, Float>> out) throws Exception {
+            // 已经结束的ride
             if (!ride.isStart) {
+                // 广播状态中的值，定义为entry的迭代器
                 Iterable<Map.Entry<Long, Query>> entries = ctx.getBroadcastState(queryDescriptor).immutableEntries();
 
                 for (Map.Entry<Long, Query> entry: entries) {
                     final Query query = entry.getValue();
+                    // 本次结束的ride所在位置与打车的人的位置的距离
                     final float kilometersAway = (float) ride.getEuclideanDistance(query.getLongitude(), query.getLatitude());
 
                     out.collect(new Tuple3<>(

@@ -42,10 +42,10 @@ public class CheckpointedLongRides extends ProjectBase {
         // set up streaming execution environment
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
-        env.setParallelism(ProjectBase.parallelism);
-
+//        env.setParallelism(ProjectBase.parallelism);
+        env.setParallelism(1);
         // set up checkpointing
-        env.setStateBackend(new FsStateBackend("file:///tmp/checkpoints"));
+        env.setStateBackend(new FsStateBackend("file:///Users/yuanzuo/Desktop/checkpoints"));
         env.enableCheckpointing(1000);
         env.setRestartStrategy(RestartStrategies.fixedDelayRestart(60, Time.of(10, TimeUnit.SECONDS)));
 

@@ -31,8 +31,6 @@ import java.util.Map;
 import org.apache.http.HttpHost;
 
 /**
- * Java reference implementation for the "Popular Places" exercise of the Flink training
- * (http://training.ververica.com).
  *
  * The task of the exercise is to identify every five minutes popular areas where many taxi rides
  * arrived or departed in the last 15 minutes.
@@ -40,6 +38,21 @@ import org.apache.http.HttpHost;
  *
  * Parameters:
  * -input path-to-input-file
+ *
+ * ES和Kibana的版本为6.5.1
+ *
+ * curl -XPUT "http://localhost:9200/nyc-idx"
+ *
+ * curl -XPUT -H'Content-Type: application/json' "http://localhost:9200/nyc-idx/_mapping/popular-locations" -d'
+ * {
+ *  "popular-locations" : {
+ *    "properties" : {
+ *       "cnt": {"type": "integer"},
+ *       "location": {"type": "geo_point"},
+ *       "time": {"type": "date"}
+ *     }
+ *  }
+ * }'
  *
  */
 public class PopularPlacesToES {
@@ -82,6 +95,7 @@ public class PopularPlacesToES {
 
         popularPlaces.print();
 
+        // 连接ES
         List<HttpHost> httpHosts = new ArrayList<>();
         httpHosts.add(new HttpHost("127.0.0.1", 9200, "http"));
 
@@ -120,6 +134,7 @@ public class PopularPlacesToES {
     /**
      * Maps taxi ride to grid cell and event type.
      * Start records use departure location, end record use arrival location.
+     * 转成地理位置数据
      */
     public static class GridCellMatcher implements MapFunction<TaxiRide, Tuple2<Integer, Boolean>> {
 
@@ -134,10 +149,11 @@ public class PopularPlacesToES {
 
     /**
      * Counts the number of rides arriving or departing.
+     * 对到达和离开的ride计数
      */
     public static class RideCounter implements WindowFunction<
-            Tuple2<Integer, Boolean>,                // input type
-            Tuple4<Integer, Long, Boolean, Integer>, // output type
+            Tuple2<Integer, Boolean>,                // input type; Tuple2<cellId, isStart>
+            Tuple4<Integer, Long, Boolean, Integer>, // output type; Tuple4<cellId, windowTime, isStart, cnt>
             Tuple,                                   // key type
             TimeWindow>                              // window type
     {
@@ -165,6 +181,7 @@ public class PopularPlacesToES {
 
     /**
      * Maps the grid cell id back to longitude and latitude coordinates.
+     * grid cell id -> 位置数据
      */
     public static class GridToCoordinates implements
             MapFunction<Tuple4<Integer, Long, Boolean, Integer>, Tuple5<Float, Float, Long, Boolean, Integer>> {
@@ -182,6 +199,7 @@ public class PopularPlacesToES {
         }
     }
 
+    // 过滤出开始位置和结束位置都在纽约的ride
     public static class NYCFilter implements FilterFunction<TaxiRide> {
         @Override
         public boolean filter(TaxiRide taxiRide) throws Exception {
