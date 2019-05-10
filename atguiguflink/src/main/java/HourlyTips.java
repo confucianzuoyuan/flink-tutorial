@@ -12,11 +12,8 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 
 /**
- * Java reference implementation for the "Hourly Tips" exercise of the Flink training
- * (http://training.ververica.com).
  *
- * The task of the exercise is to first calculate the total tips collected by each driver, hour by hour, and
- * then from that stream, find the highest tip total in each hour.
+ * 计算每个司机收到的小费总数，一个小时一个小时算，并且找到每个小时里收到小费最高的司机
  *
  * Parameters:
  * -input path-to-input-file
@@ -42,21 +39,18 @@ public class HourlyTips extends ProjectBase {
         DataStream<TaxiFare> fares = env.addSource(fareSourceOrTest(new TaxiFareSource(input, maxEventDelay, servingSpeedFactor)));
 
         // compute tips per hour for each driver
+        // 计算对于每一个司机每一个小时的小费
         DataStream<Tuple3<Long, Long, Float>> hourlyTips = fares
                 .keyBy((TaxiFare fare) -> fare.driverId)
+                // 滚动窗口
                 .timeWindow(Time.hours(1))
                 .process(new AddTips());
 
         DataStream<Tuple3<Long, Long, Float>> hourlyMax = hourlyTips
+                // 所有的窗口
                 .timeWindowAll(Time.hours(1))
+                // 排序，使用小费排序
                 .maxBy(2);
-
-//		You should explore how this alternative behaves. In what ways is the same as,
-//		and different from, the solution above (using a timeWindowAll)?
-
-// 		DataStream<Tuple3<Long, Long, Float>> hourlyMax = hourlyTips
-// 			.keyBy(0)
-// 			.maxBy(2);
 
         printOrTest(hourlyMax);
 

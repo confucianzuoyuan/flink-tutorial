@@ -20,13 +20,10 @@ import org.apache.flink.util.Collector;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Java reference implementation for the "Long Ride Alerts" exercise of the Flink training
- * (http://training.ververica.com).
  *
- * The goal for this exercise is to emit START events for taxi rides that have not been matched
- * by an END event during the first 2 hours of the ride.
+ * 找出只有开始时间没有结束时间且行程超过2小时的rideId
  *
- * This version is setup for checkpointing and fault recovery.
+ * 这个版本用来进行checkpoint恢复
  *
  * Parameters:
  * -input path-to-input-file
@@ -45,6 +42,7 @@ public class CheckpointedLongRides extends ProjectBase {
 //        env.setParallelism(ProjectBase.parallelism);
         env.setParallelism(1);
         // set up checkpointing
+        // 设置checkpoints文件的位置
         env.setStateBackend(new FsStateBackend("file:///Users/yuanzuo/Desktop/checkpoints"));
         env.enableCheckpointing(1000);
         env.setRestartStrategy(RestartStrategies.fixedDelayRestart(60, Time.of(10, TimeUnit.SECONDS)));
@@ -61,11 +59,13 @@ public class CheckpointedLongRides extends ProjectBase {
         env.execute("Long Taxi Rides (checkpointed)");
     }
 
+    // KeyedProcessFunction(K, I, O)
     public static class MatchFunction extends KeyedProcessFunction<Long, TaxiRide, TaxiRide> {
         // keyed, managed state
         // holds an END event if the ride has ended, otherwise a START event
         private ValueState<TaxiRide> rideState;
 
+        // override一下open函数，开启生命周期
         @Override
         public void open(Configuration config) {
             ValueStateDescriptor<TaxiRide> startDescriptor =
@@ -73,12 +73,14 @@ public class CheckpointedLongRides extends ProjectBase {
             rideState = getRuntimeContext().getState(startDescriptor);
         }
 
+        // override processElement, Flink底层api
         @Override
         public void processElement(TaxiRide ride, Context context, Collector<TaxiRide> out) throws Exception {
             TimerService timerService = context.timerService();
 
             if (ride.isStart) {
                 // the matching END might have arrived first (out of order); don't overwrite it
+                // 数据有可能是乱序来的, 也就是说同一个rideId有可能end事件先到, 所以不能overwrite复写
                 if (rideState.value() == null) {
                     rideState.update(ride);
                 }
@@ -86,9 +88,12 @@ public class CheckpointedLongRides extends ProjectBase {
                 rideState.update(ride);
             }
 
+            // schedule the next timer 60 seconds from the current event time
+            // 将下一个定时器的时间安排在当前ride的两个小时以后, 也就是两个小时以后调用onTimer
             timerService.registerEventTimeTimer(ride.getEventTime() + 120 * 60 * 1000);
         }
 
+        // override定时器, 其实就是回调函数
         @Override
         public void onTimer(long timestamp, OnTimerContext context, Collector<TaxiRide> out) throws Exception {
             TaxiRide savedRide = rideState.value();
