@@ -56,8 +56,8 @@ Flink为CEP提供了专门的Flink CEP library，它包含如下组件：
 ```xml
 <dependency>
   <groupId>org.apache.flink</groupId>
-  <artifactId>flink-cep_2.10</artifactId>
-  <version>1.2.0</version>
+  <artifactId>flink-cep_${scala.binary.version}</artifactId>
+  <version>${flink.version}</version>
 </dependency>
 ```
 
