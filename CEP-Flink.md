@@ -70,8 +70,7 @@ Flink为CEP提供了专门的Flink CEP library，它包含如下组件：
 MonitoringEvent：
 
 ```java
-package flink.cep;
-
+package atguigu.entity;
 
 public abstract class MonitoringEvent {
     private String machineName;
@@ -119,8 +118,7 @@ public abstract class MonitoringEvent {
 TemperatureEvent：
 
 ```java
-package flink.cep;
-
+package atguigu.entity;
 
 public class TemperatureEvent extends MonitoringEvent{
 
@@ -175,14 +173,11 @@ public class TemperatureEvent extends MonitoringEvent{
 创建env，创建source：
 
 ```java
-package temp;
-
-
-import flink.cep.TemperatureEvent;
+import atguigu.entity.TemperatureEvent;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
-public class Test {
+public class CEPExample {
 
     public static void main(String[] args) {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -353,8 +348,7 @@ DataStream<Either<TimeoutEvent, ComplexEvent>> flatResult = patternStream.flatSe
 我们创建一个Alert类，表示在满足一定的pattern条件后，需要告警的内容：
 
 ```java
-package flink.cep;
-
+package atguigu.entity;
 
 public class Alert {
 
@@ -408,36 +402,36 @@ public class Alert {
 最后，我们定义一个Pattern：当Event的温度超过26度时，立刻产生一个Alert信息，最终实现如下：
 
 ```java
-import flink.cep.Alert;
-import flink.cep.TemperatureEvent;
-import org.apache.flink.api.common.functions.FilterFunction;
-import org.apache.flink.cep.CEP;
-import org.apache.flink.cep.PatternSelectFunction;
-import org.apache.flink.cep.pattern.Pattern;
+import atguigu.entity.TemperatureEvent;
+import atguigu.entity.Alert;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.cep.pattern.Pattern;
 import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.cep.pattern.conditions.SimpleCondition;
+import org.apache.flink.cep.CEP;
+import org.apache.flink.cep.PatternSelectFunction;
 
+import java.util.List;
 import java.util.Map;
 
-public class Test {
+public class CEPExample {
 
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.setParallelism(1);
 
-        // DataStream : source
-        DataStream<TemperatureEvent> inputEventStream = env.fromElements(new TemperatureEvent("xyz",22.0),
+        DataStream<TemperatureEvent> inputEventStream = env.fromElements(
+                new TemperatureEvent("xyz",22.0),
                 new TemperatureEvent("xyz",20.1), new TemperatureEvent("xyz",21.1),
                 new TemperatureEvent("xyz",22.2), new TemperatureEvent("xyz",22.1),
                 new TemperatureEvent("xyz",22.3), new TemperatureEvent("xyz",22.1),
                 new TemperatureEvent("xyz",22.4), new TemperatureEvent("xyz",22.7),
-                new TemperatureEvent("xyz",27.0), new TemperatureEvent("xyz",30.0));
+                new TemperatureEvent("xyz",27.0));
 
         // 定义Pattern，检查10秒钟内温度是否高于26度
         Pattern<TemperatureEvent,?> warningPattern = Pattern.<TemperatureEvent>begin("start")
                 .subtype(TemperatureEvent.class)
-                .where(new FilterFunction<TemperatureEvent>() {
+                .where(new SimpleCondition<TemperatureEvent>() {
                     private static final long serialVersionUID = 1L;
 
                     @Override
@@ -453,17 +447,16 @@ public class Test {
         //匹配pattern并select事件,符合条件的发生警告，即输出
         DataStream<Alert> patternStream = CEP.pattern(inputEventStream, warningPattern)
                 .select(new PatternSelectFunction<TemperatureEvent, Alert>() {
-                    private static final long serialVersionUID = 1L;
-
                     @Override
-                    public Alert select(Map<String, TemperatureEvent> event) throws Exception {
-                        return new Alert("Temperature Rise Detected: " + event.get("start").getTemperature() + " on machine name: " + event.get("start").getMachineName());
+                    public Alert select(Map<String, List<TemperatureEvent>> pattern) throws Exception {
+                        return new Alert("Temperature Rise Detected: " + pattern.get("start").get(0).getTemperature() + " on machine name: " + pattern.get("start").get(0).getMachineName());
                     }
                 });
 
         patternStream.print();
 
-        env.execute("CEP on Temperature Sensor");
+        env.execute();
+
     }
 }
 ```
