@@ -23,8 +23,6 @@ import javax.annotation.Nullable;
 import java.util.Locale;
 
 /**
- * Java reference implementation for the "Ongoing Rides" exercise of the Flink training
- * (http://training.ververica.com).
  *
  * The goal of this exercise is to report on all taxis whose current ride has been ongoing
  * for at least n minutes whenever the broadcast stream is queried (with the value of n).
