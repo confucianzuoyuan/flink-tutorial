@@ -34,6 +34,10 @@ import org.apache.http.HttpHost;
  *
  * The task of the exercise is to identify every five minutes popular areas where many taxi rides
  * arrived or departed in the last 15 minutes.
+ *
+ * 滑动窗口：窗口的大小：15分钟；滑窗的步长：5分钟
+ * 写入到es中
+ *
  * The results are written into an Elasticsearch index.
  *
  * Parameters:

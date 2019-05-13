@@ -10,10 +10,10 @@ public class ProjectBase {
     public static SourceFunction<TaxiFare> fares = null;
     public static SourceFunction<String> strings = null;
     public static SinkFunction out = null;
-    public static int parallelism = 4;
+    public static int parallelism = 1;
 
-    public final static String pathToRideData = "/Users/yuanzuo/nycTaxiRides.gz";
-    public final static String pathToFareData = "/Users/yuanzuo/nycTaxiFares.gz";
+    public final static String pathToRideData = "/Users/yuanzuo/Desktop/flink-tutorial/atguiguflink/src/main/resources/nycTaxiRides.gz";
+    public final static String pathToFareData = "/Users/yuanzuo/Desktop/flink-tutorial/atguiguflink/src/main/resources/nycTaxiFares.gz";
 
     public static SourceFunction<TaxiRide> rideSourceOrTest(SourceFunction<TaxiRide> source) {
         if (rides == null) {
