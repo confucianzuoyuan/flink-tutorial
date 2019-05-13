@@ -45,6 +45,10 @@ import org.apache.http.HttpHost;
  *
  * ES和Kibana的版本为6.5.1
  *
+ * kibana默认监听端口：5601
+ *
+ * 在命令行运行以下两条命令, 创建索引和mapping，告诉es数据的类型是什么
+ *
  * curl -XPUT "http://localhost:9200/nyc-idx"
  *
  * curl -XPUT -H'Content-Type: application/json' "http://localhost:9200/nyc-idx/_mapping/popular-locations" -d'
@@ -66,35 +70,50 @@ public class PopularPlacesToES {
         // read parameters
         ParameterTool params = ParameterTool.fromArgs(args);
 //        String input = params.getRequired("input");
+        // 需要手动修改pathToRideData的绝对路径
         final String input = params.get("input", ProjectBase.pathToRideData);
 
+        // 至少有20个行程从这个地点开始或者结束，才能算popular
         final int popThreshold = 20; // threshold for popular places
+        // 事件乱序的最大延迟为60秒
         final int maxEventDelay = 60; // events are out of order by max 60 seconds
+        // 时间尺度：10分钟 -> 1秒钟
         final int servingSpeedFactor = 600; // events of 10 minutes are served in 1 second
 
         // set up streaming execution environment
+        // 创建执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        // 设置执行环境的时间为事件时间
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         // start the data generator
+        // 将离线数据集转换为流数据
         DataStream<TaxiRide> rides = env.addSource(
                 new TaxiRideSource(input, maxEventDelay, servingSpeedFactor));
 
         // find popular places
+        // 使用flink自定义的数据结构Tuple5, ps: Tuple1 ~ Tuple25
         DataStream<Tuple5<Float, Float, Long, Boolean, Integer>> popularPlaces = rides
                 // remove all rides which are not within NYC
+                // 首先过滤出地点在纽约的出租车行程
                 .filter(new NYCFilter())
                 // match ride to grid cell and event type (start or end)
+                // 将每一个行程映射到一个单元格里面，方便统计
                 .map(new GridCellMatcher())
                 // partition by cell id and event type
+                // 使用(cell id, event type): (单元格的id，事件类型)
+                //  select * from table group by cellid, etype;
                 .keyBy(0, 1)
                 // build sliding window
+                // 设置滑动窗口
                 .timeWindow(Time.minutes(15), Time.minutes(5))
                 // count ride events in window
+                // 使用apply进行聚合
                 .apply(new RideCounter())
                 // filter by popularity threshold
                 .filter((Tuple4<Integer, Long, Boolean, Integer> count) -> (count.f3 >= popThreshold))
                 // map grid cell to coordinates
+                // 将单元格map成坐标
                 .map(new GridToCoordinates());
 
         popularPlaces.print();
@@ -114,7 +133,7 @@ public class PopularPlacesToES {
 
                         // construct JSON document to index
                         Map<String, String> json = new HashMap<>();
-                        json.put("time", record.f2.toString());         // timestamp
+                        json.put("time", record.f2.toString());         // timestamp, windowend time
                         json.put("location", record.f1+","+record.f0);  // lat,lon pair
                         json.put("isStart", record.f3.toString());      // isStart
                         json.put("cnt", record.f4.toString());          // count
@@ -139,6 +158,7 @@ public class PopularPlacesToES {
      * Maps taxi ride to grid cell and event type.
      * Start records use departure location, end record use arrival location.
      * 转成地理位置数据
+     * 实现map算子
      */
     public static class GridCellMatcher implements MapFunction<TaxiRide, Tuple2<Integer, Boolean>> {
 
@@ -175,10 +195,12 @@ public class PopularPlacesToES {
             long windowTime = window.getEnd();
 
             int cnt = 0;
+            // 单元格在窗口中出现的次数
             for(Tuple2<Integer, Boolean> c : gridCells) {
                 cnt += 1;
             }
 
+            // 输出
             out.collect(new Tuple4<>(cellId, windowTime, isStart, cnt));
         }
     }
@@ -186,6 +208,7 @@ public class PopularPlacesToES {
     /**
      * Maps the grid cell id back to longitude and latitude coordinates.
      * grid cell id -> 位置数据
+     * input type cellCount: Tuple4(cellId, windowTime, isStart, cnt)
      */
     public static class GridToCoordinates implements
             MapFunction<Tuple4<Integer, Long, Boolean, Integer>, Tuple5<Float, Float, Long, Boolean, Integer>> {
@@ -204,6 +227,7 @@ public class PopularPlacesToES {
     }
 
     // 过滤出开始位置和结束位置都在纽约的ride
+    // 实现FilterFunction接口
     public static class NYCFilter implements FilterFunction<TaxiRide> {
         @Override
         public boolean filter(TaxiRide taxiRide) throws Exception {
