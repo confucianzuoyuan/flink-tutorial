@@ -18,6 +18,8 @@ import org.apache.flink.util.Collector;
  *
  * The goal for this exercise is to enrich TaxiRides with fare information.
  *
+ * 流与流的join操作
+ *
  * Parameters:
  * -rides path-to-input-file
  * -fares path-to-input-file

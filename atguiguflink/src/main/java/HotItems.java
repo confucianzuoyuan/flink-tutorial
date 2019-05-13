@@ -103,9 +103,11 @@ public class HotItems {
         @Override
         public void open(Configuration parameters) throws Exception {
             super.open(parameters);
+            // 命名状态变量的名字和状态变量的类型
             ListStateDescriptor<ItemViewCount> itemsStateDesc = new ListStateDescriptor<>(
                     "itemState-state",
                     ItemViewCount.class);
+            // 从运行时上下文中获取状态并赋值
             itemState = getRuntimeContext().getListState(itemsStateDesc);
         }
 
@@ -115,6 +117,8 @@ public class HotItems {
          * 由于Watermark的进度是全局的，在processElement方法中，每当收到一条数据（ItemViewCount），我们就注册一个windowEnd+1的定时器（Flink框架会自动忽略同一时间的重复注册）。
          * windowEnd+1的定时器被触发时，意味着收到了windowEnd+1的Watermark，即收齐了该windowEnd下的所有商品窗口统计值。
          * 我们在onTimer()中处理将收集的所有商品及点击量进行排序，选出TopN，并将排名信息格式化成字符串后进行输出。
+         *
+         * 定义每一个事件来的时候，处理的逻辑
          */
         @Override
         public void processElement(
@@ -125,6 +129,7 @@ public class HotItems {
             // 每条数据都保存到状态中
             itemState.add(input);
             // 注册 windowEnd+1 的 EventTime Timer, 当触发时，说明收齐了属于windowEnd窗口的所有商品数据
+            // 也就是当程序看到windowend + 1的水位线watermark时，触发onTimer回调函数
             context.timerService().registerEventTimeTimer(input.windowEnd + 1);
         }
 
@@ -160,7 +165,7 @@ public class HotItems {
             result.append("====================================\n\n");
 
             // 控制输出频率，模拟实时滚动结果
-            Thread.sleep(1000);
+            Thread.sleep(5000);
 
             out.collect(result.toString());
         }

@@ -12,6 +12,7 @@ import java.util.Locale;
  * A TaxiRide is a taxi ride event. There are two types of events, a taxi ride start event and a
  * taxi ride end event. The isStart flag specifies the type of the event.
  *
+ * 滴滴的行程单
  * A TaxiRide consists of
  * - the rideId of the event which is identical for start and end record
  * - the type of the event (start or end)

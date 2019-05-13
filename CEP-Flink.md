@@ -201,7 +201,9 @@ public class CEPExample {
 DataStream<Event> input = ...
 
 Pattern<Event, ?> pattern = Pattern.begin("start").where(evt -> evt.getId() == 42)
+    // next表示"middle"事件紧跟着"start"事件发生
     .next("middle").subtype(SubEvent.class).where(subEvt -> subEvt.getVolume() >= 10.0)
+    // followedBy表示"end"事件不一定紧跟着"middle"事件发生
     .followedBy("end").where(evt -> evt.getName().equals("end"));
 
 PatternStream<Event> patternStream = CEP.pattern(input, pattern);
@@ -297,6 +299,7 @@ class MyPatternSelectFunction<IN, OUT> implements PatternSelectFunction<IN, OUT>
     @Override
     public OUT select(Map<String, IN> pattern) {
         IN startEvent = pattern.get("start");
+        IN middleEvent = pattern.get("middle");
         IN endEvent = pattern.get("end");
         return new OUT(startEvent, endEvent);
     }

@@ -1,10 +1,14 @@
 import org.apache.flink.api.common.functions.FlatMapFunction;
+// Tuple1 ~ Tuple25
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.util.Collector;
 
+/** 统计滚动窗口的词频
+ *  DataSet DataStream
+ * */
 public class SocketWindowWordCount {
 
     public static void main(String[] args) throws Exception {
@@ -25,7 +29,7 @@ public class SocketWindowWordCount {
                     public void flatMap(String value, Collector<Tuple2<String, Integer>> out) {
                         // 使用空白符进行切割，并且遍历每一个单词
                         for (String word : value.split("\\s")) {
-                            // 实例化一个Tuple2并收集
+                            // 实例化一个Tuple2并收集, 这一步实现了mr中的map
                             out.collect(Tuple2.of(word, 1));
                         }
                     }
@@ -33,8 +37,10 @@ public class SocketWindowWordCount {
                 // 使用Tuple2中的第0个元素为key进行聚合
                 .keyBy(0)
                 // tumbling window: 滚动窗口
+                // [9:00:00, 9:00:05), [9:00:05, 9:00:10)
                 .timeWindow(Time.seconds(5))
                 // 为每个key每个窗口指定了sum聚合函数，在我们的例子中是按照次数字段（即1号索引字段）相加。
+                // 实现了mr的reduce语义
                 .sum(1);
 
         // 将结果打印到控制台，注意这里使用的是单线程打印，而非多线程
