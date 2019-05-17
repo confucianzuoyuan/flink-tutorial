@@ -165,7 +165,7 @@ public class HotItems {
             result.append("====================================\n\n");
 
             // 控制输出频率，模拟实时滚动结果
-            Thread.sleep(5000);
+            Thread.sleep(1000);
 
             out.collect(result.toString());
         }

@@ -94,20 +94,15 @@ object ScalaHotItems {
       result.append("====================================\n")
       result.append("时间: ").append(new Timestamp(timestamp - 1)).append("\n")
       var i: Int = 0
-      while ( {
-        i < allItems.size && i < topSize
-      }) {
+      while (i < allItems.size && i < topSize) {
         var currentItem: (Long, Long, Long) = allItems.get(i)
         // No1:  商品ID=12224  浏览量=2413
         result.append("No").append(i).append(":").append("  商品ID=").append(currentItem._1).append("  浏览量=").append(currentItem._3).append("\n")
-
-        {
-          i += 1; i - 1
-        }
+        i += 1
       }
       result.append("====================================\n\n")
       // 控制输出频率，模拟实时滚动结果
-      Thread.sleep(5000)
+      Thread.sleep(1000)
       out.collect(result.toString)
     }
 
