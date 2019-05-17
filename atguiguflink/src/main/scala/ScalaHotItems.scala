@@ -21,10 +21,6 @@ import org.apache.flink.configuration.Configuration
 
 object ScalaHotItems {
 
-  case class UserBehavior(userId: Long, itemId: Long, categoryId: Long, behavior: String, timestamp: Long)
-
-  case class ItemViewCount(itemId: Long, windowEnd: Long, viewCount: Long)
-
   def main(args: Array[String]): Unit = {
     val properties = new Properties()
     properties.setProperty("bootstrap.servers", "localhost:9092")
@@ -44,7 +40,6 @@ object ScalaHotItems {
       .assignAscendingTimestamps(_._5 * 1000)
       .filter(_._4.equals("pv"))
       .keyBy(1)
-//      .print()
       .timeWindow(Time.minutes(60), Time.minutes(5))
       .aggregate(new CountAgg(), new WindowResultFunction())
       .keyBy(1)
@@ -130,7 +125,6 @@ object ScalaHotItems {
 
   class WindowResultFunction extends WindowFunction[Long, (Long, Long, Long), Tuple, TimeWindow] {
     override def apply(key: Tuple, window: TimeWindow, aggregateResult: Iterable[Long], collector: Collector[(Long, Long, Long)]) : Unit = {
-//      val itemId = key.f0
       val itemId: Long = key.asInstanceOf[Tuple1[Long]].f0
       val count = aggregateResult.iterator.next
       collector.collect((itemId, window.getEnd, count))
