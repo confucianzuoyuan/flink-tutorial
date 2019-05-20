@@ -27,11 +27,11 @@ object OrderTimeout {
       .where(_.`type`.equals("pay"))
       .within(Time.seconds(1))
 
-    val orderTiemoutOutput = OutputTag[OrderEvent]("orderTimeout")
+    val orderTimeoutOutput = OutputTag[OrderEvent]("orderTimeout")
 
     val patternStream = CEP.pattern(orderEventStream.keyBy("userId"), orderPayPattern)
 
-    val complexResult = patternStream.select(orderTiemoutOutput) {
+    val complexResult = patternStream.select(orderTimeoutOutput) {
       (pattern: Map[String, Iterable[OrderEvent]], timestamp: Long) => {
         val createOrder = pattern.get("begin")
         OrderEvent("timeout", createOrder.get.iterator.next().userId)
@@ -42,7 +42,7 @@ object OrderTimeout {
         OrderEvent("success", payOrder.get.iterator.next().userId)
       }
     }
-    val timeoutResult = complexResult.getSideOutput(orderTiemoutOutput)
+    val timeoutResult = complexResult.getSideOutput(orderTimeoutOutput)
 
     complexResult.print()
     timeoutResult.print()
