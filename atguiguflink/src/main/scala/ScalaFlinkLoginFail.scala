@@ -6,7 +6,7 @@ import org.apache.flink.streaming.api.windowing.time.Time
 
 import scala.collection.Map
 
-object FlinkLoginFail {
+object ScalaFlinkLoginFail {
 
   def main(args: Array[String]): Unit = {
 
