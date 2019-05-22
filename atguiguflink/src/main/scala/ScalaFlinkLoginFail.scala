@@ -6,6 +6,8 @@ import org.apache.flink.streaming.api.windowing.time.Time
 
 import scala.collection.Map
 
+case class LoginEvent(userId: String, ip: String, eventType: String, eventTime: String)
+
 object ScalaFlinkLoginFail {
 
   def main(args: Array[String]): Unit = {
@@ -13,26 +15,26 @@ object ScalaFlinkLoginFail {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
 
     val loginEventStream = env.fromCollection(List(
-      new LoginEvent("1", "192.168.0.1", "fail"),
-      new LoginEvent("1", "192.168.0.2", "fail"),
-      new LoginEvent("1", "192.168.0.3", "fail"),
-      new LoginEvent("2", "192.168.10.10", "success")
-    ))
+      LoginEvent("1", "192.168.0.1", "fail", "1558430842"),
+      LoginEvent("1", "192.168.0.2", "fail", "1558430843"),
+      LoginEvent("1", "192.168.0.3", "fail", "1558430844"),
+      LoginEvent("2", "192.168.10.10", "success", "1558430845")
+    )).assignAscendingTimestamps(_.eventTime.toLong)
 
     val loginFailPattern = Pattern.begin[LoginEvent]("begin")
-      .where(_.getType.equals("fail"))
+      .where(_.eventType.equals("fail"))
       .next("next")
-      .where(_.getType.equals("fail"))
+      .where(_.eventType.equals("fail"))
       .within(Time.seconds(1))
 
-    val patternStream = CEP.pattern(loginEventStream, loginFailPattern)
+    val patternStream = CEP.pattern(loginEventStream.keyBy(_.userId), loginFailPattern)
 
     val loginFailDataStream = patternStream
       .select((pattern: Map[String, Iterable[LoginEvent]]) => {
         val first = pattern.getOrElse("begin", null).iterator.next()
         val second = pattern.getOrElse("next", null).iterator.next()
 
-        new LoginWarning(second.getUserId, second.getIp, second.getType)
+        (second.userId, second.ip, second.eventType)
       })
 
     loginFailDataStream.print

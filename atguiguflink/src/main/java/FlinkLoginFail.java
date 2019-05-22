@@ -22,10 +22,10 @@ public class FlinkLoginFail {
         env.setParallelism(1);
         // 这里mock了事件流，这个事件流一般从Kafka过来
         DataStream<LoginEvent> loginEventStream = env.fromCollection(Arrays.asList(
-                new LoginEvent("1","192.168.0.1","fail"),
-                new LoginEvent("1","192.168.0.2","fail"),
-                new LoginEvent("1","192.168.0.3","fail"),
-                new LoginEvent("2","192.168.10.10","success")
+                new LoginEvent("1","192.168.0.1","fail", "1558430842"),
+                new LoginEvent("1","192.168.0.2","fail", "1558430843"),
+                new LoginEvent("1","192.168.0.3","fail", "1558430844"),
+                new LoginEvent("2","192.168.10.10","success", "1558430845")
         ));
 
         Pattern<LoginEvent, LoginEvent> loginFailPattern = Pattern.<LoginEvent>
