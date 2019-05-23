@@ -2,14 +2,15 @@ import org.apache.flink.cep.scala.CEP
 import org.apache.flink.cep.scala.pattern.Pattern
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
-import org.slf4j.LoggerFactory
 import org.apache.flink.streaming.api.TimeCharacteristic
 
 import scala.collection.Map
 
-object OrderTimeout {
+case class OrderEvent(orderId: String, eventType: String, eventTime: String)
 
-  val LOGGER = LoggerFactory.getLogger(classOf[App])
+case class OrderTimeout(orderId: String, eventType: String)
+
+object OrderTimeout {
 
   def main(args: Array[String]): Unit = {
 
@@ -24,24 +25,24 @@ object OrderTimeout {
     )).assignAscendingTimestamps(_.eventTime.toLong)
 
     val orderPayPattern = Pattern.begin[OrderEvent]("begin")
-      .where(_.`type`.equals("create"))
+      .where(_.eventType.equals("create"))
       .next("next")
-      .where(_.`type`.equals("pay"))
+      .where(_.eventType.equals("pay"))
       .within(Time.seconds(5))
 
-    val orderTimeoutOutput = OutputTag[(String, String)]("orderTimeout")
+    val orderTimeoutOutput = OutputTag[OrderTimeout]("orderTimeout")
 
-    val patternStream = CEP.pattern(orderEventStream.keyBy("userId"), orderPayPattern)
+    val patternStream = CEP.pattern(orderEventStream.keyBy("orderId"), orderPayPattern)
 
     val complexResult = patternStream.select(orderTimeoutOutput) {
       (pattern: Map[String, Iterable[OrderEvent]], timestamp: Long) => {
         val createOrder = pattern.get("begin")
-        ("timeout", createOrder.get.iterator.next().userId)
+        OrderTimeout(createOrder.get.iterator.next().orderId, "timeout")
       }
     } {
       pattern: Map[String, Iterable[OrderEvent]] => {
         val payOrder = pattern.get("next")
-        ("success", payOrder.get.iterator.next().userId)
+        OrderTimeout(payOrder.get.iterator.next().orderId, "success")
       }
     }
     val timeoutResult = complexResult.getSideOutput(orderTimeoutOutput)
@@ -55,4 +56,3 @@ object OrderTimeout {
 
 }
 
-case class OrderEvent(userId: String, `type`: String, eventTime: String)

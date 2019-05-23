@@ -1,6 +1,7 @@
 import atguigu.entity.{LoginEvent, LoginWarning}
 import org.apache.flink.cep.scala.CEP
 import org.apache.flink.cep.scala.pattern.Pattern
+import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
 
@@ -13,6 +14,8 @@ object ScalaFlinkLoginFail {
   def main(args: Array[String]): Unit = {
 
     val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+    env.setParallelism(1)
 
     val loginEventStream = env.fromCollection(List(
       LoginEvent("1", "192.168.0.1", "fail", "1558430842"),
@@ -25,7 +28,7 @@ object ScalaFlinkLoginFail {
       .where(_.eventType.equals("fail"))
       .next("next")
       .where(_.eventType.equals("fail"))
-      .within(Time.seconds(1))
+      .within(Time.seconds(10))
 
     val patternStream = CEP.pattern(loginEventStream.keyBy(_.userId), loginFailPattern)
 
