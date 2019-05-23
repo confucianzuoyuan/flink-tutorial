@@ -35,7 +35,7 @@ object ApacheLogAnalysis {
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
     val stream = env
-      .readTextFile("/Users/yuanzuo/apachetest1.log")
+      .readTextFile("/Users/yuanzuo/Desktop/flink-tutorial/atguiguflink/src/main/resources/apachetest1.log")
       .map(line => {
         val linearray = line.split(" ")
         val dtf = DateTimeFormat.forPattern("dd/MM/yyyy:HH:mm:ss")
