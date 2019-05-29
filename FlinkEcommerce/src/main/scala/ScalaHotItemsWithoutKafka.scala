@@ -34,7 +34,7 @@ object ScalaHotItemsWithoutKafka {
       .keyBy("itemId")
       .timeWindow(Time.minutes(60), Time.minutes(5))
       .aggregate(new CountAgg(), new WindowResultFunction())
-      .keyBy(1)
+      .keyBy("windowEnd")
       .process(new TopNHotItems(3))
       .print()
 

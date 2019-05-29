@@ -6,8 +6,6 @@ import org.apache.flink.api.common.state.{ListState, ListStateDescriptor}
 import org.apache.flink.util.Collector
 import org.apache.flink.streaming.api.TimeCharacteristic
 
-//case class LoginEvent(userId: String, ip: String, eventType: String, eventTime: String)
-
 object ScalaFlinkLoginFailWithoutCep {
 
   def main(args: Array[String]): Unit = {
@@ -36,24 +34,23 @@ object ScalaFlinkLoginFailWithoutCep {
     // keyed, managed state
     // holds an END event if the ride has ended, otherwise a START event
     lazy val loginState: ListState[LoginEvent] = getRuntimeContext.getListState(
-      new ListStateDescriptor[LoginEvent]("saved ride", classOf[LoginEvent]))
+      new ListStateDescriptor[LoginEvent]("saved login state", classOf[LoginEvent]))
 
-    override def processElement(ride: LoginEvent,
+    override def processElement(login: LoginEvent,
                                 context: KeyedProcessFunction[String, LoginEvent, LoginEvent]#Context,
                                 out: Collector[LoginEvent]): Unit = {
       val timerService = context.timerService
 
-      if (ride.eventType == "fail") {
-        loginState.add(ride)
+      if (login.eventType == "fail") {
+        loginState.add(login)
       }
 
-      timerService.registerEventTimeTimer(ride.eventTime.toLong + 10 * 1000)
+      timerService.registerEventTimeTimer(login.eventTime.toLong + 10 * 1000)
     }
 
     override def onTimer(timestamp: Long,
                          ctx: KeyedProcessFunction[String, LoginEvent, LoginEvent]#OnTimerContext,
                          out: Collector[LoginEvent]): Unit = {
-      val savedRide = loginState
 
       var allItems: util.List[LoginEvent] = new util.ArrayList[LoginEvent]
       import scala.collection.JavaConversions._
