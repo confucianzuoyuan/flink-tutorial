@@ -1,0 +1,166 @@
+== 第二章 Flink快速上手
+:imagesdir: images
+
+=== 1. 使用Maven搭建工程
+
+*IDE推荐Idea*
+
+==== 1.1 pom.xml文件
+
+.pom.xml
+[source,xml]  
+---- 
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.atguigu.flink</groupId>
+    <artifactId>flink</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-scala_2.11</artifactId>
+            <version>1.7.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-streaming-scala -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-streaming-scala_2.11</artifactId>
+            <version>1.7.0</version>
+        </dependency>
+    </dependencies>
+ 
+    <build>
+        <plugins>
+            <!-- 该插件用于将Scala代码编译成class文件 -->
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>3.4.6</version>
+                <executions>
+                    <execution>
+                        <!-- 声明绑定到maven的compile阶段 -->
+                        <goals>
+
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+----
+
+==== 1.2 添加scala文件夹或者将java文件夹rename为scala
+
+.StreamWcApp.scala
+[source, scala]
+----
+import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
+
+object StreamWcApp {
+
+  def main(args: Array[String]): Unit = {
+    //创建流处理环境
+    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+    //接收socket文本流
+    val textDstream: DataStream[String] = env.socketTextStream("localhost", 9000, "\n")
+
+    // flatMap和Map需要引用的隐式转换
+    import org.apache.flink.api.scala._
+    // 处理, 分组并且sum聚合
+    val dStream: DataStream[(String, Int)] = textDstream
+        // 使用空白符进行切割，并且遍历每一个单词
+        .flatMap(_.split("\\s"))
+        // 过滤出非空
+        .filter(_.nonEmpty)
+        // 这一步实现了mr中的map
+        .map((_, 1))
+        // 使用第0个元素为key进行聚合
+        .keyBy(0)
+        // tumbling window: 滚动窗口, [9:00:00, 9:00:05), [9:00:05, 9:00:10)
+        .timeWindow(Time.seconds(5))
+        // 实现了mr的reduce语义
+        .sum(1)
+
+    // 打印
+    dStream.print()
+    
+    env.execute()
+  }
+}
+----
+
+[source, shell]
+----
+nc -lk 9999
+----
+
+=== 2. Flink部署
+
+==== 1. 下载Hadoop Free版本的Flink
+
+:download-link: https://www.apache.org/dyn/closer.lua/flink/flink-1.7.2/flink-1.7.2-bin-scala_2.11.tgz[下载链接]
+
+{download-link}
+
+
+==== 2. 解压缩
+
+[source, shell]
+----
+$ tar xvfz flink-1.7.2-bin-scala_2.11.tgz
+----
+
+==== 3. 启动Flink集群
+
+[source, shell]
+----
+$ cd flink-1.7.2
+$ ./bin/start-cluster.sh
+----
+
+==== 4. 在浏览器中打开Flink的Web UI
+
+http://localhost:8081
+
+==== 5. 编译我们编写好的wordcount程序
+
+在Idea中使用maven package功能打包。
+
+==== 6. 提交打包好的程序
+
+$ ./bin/flink run -c xxxx.jar
+
+==== 7. 在Flink Web UI查看Dashboard中job的执行状态
+
+==== 8. 停止Flink集群
+
+$ ./bin/stop-cluster.sh
