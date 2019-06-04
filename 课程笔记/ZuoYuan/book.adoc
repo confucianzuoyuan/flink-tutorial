@@ -1,4 +1,7 @@
 = 尚硅谷Flink教程
+
+image::images/atguigu.jpeg[]
+
 Yuan Zuo <zuoyuan@atguigu.com>
 
 :toc:
