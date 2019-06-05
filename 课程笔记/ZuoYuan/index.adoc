@@ -1,10 +1,10 @@
 = Atguigu Flink Tutorial
+:icons: font
 :source-highlighter: pygments
-
-image::images/atguigu.jpeg[atguigu, 300, 200]
-
 :toc:
 :toclevels: 4
+
+image::images/atguigu.jpeg[atguigu, 300, 200]
 
 include::chap1.adoc[]
 

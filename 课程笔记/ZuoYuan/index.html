@@ -434,6 +434,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 #footer-text{color:rgba(0,0,0,.6);font-size:.9em}}
 @media amzn-kf8{#header,#content,#footnotes,#footer{padding:0}}
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
@@ -444,13 +445,35 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_第一章_flink简介">第一章 Flink简介</a>
 <ul class="sectlevel2">
 <li><a href="#_1_初识flink">1. 初识Flink</a></li>
-<li><a href="#_2_flink的重要特点">2. Flink的重要特点</a></li>
+<li><a href="#_2_flink的重要特点">2. Flink的重要特点</a>
+<ul class="sectlevel3">
+<li><a href="#_2_1_事件驱动型event_driven">2.1 事件驱动型(Event-Driven)</a></li>
+<li><a href="#_2_2_流与批的世界观">2.2 流与批的世界观</a></li>
+<li><a href="#_2_3_分层api">2.3 分层api</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#_第二章_flink快速上手">第二章 Flink快速上手</a>
 <ul class="sectlevel2">
-<li><a href="#_1_使用maven搭建工程">1. 使用Maven搭建工程</a></li>
-<li><a href="#_2_flink部署">2. Flink部署</a></li>
+<li><a href="#_1_使用maven搭建工程">1. 使用Maven搭建工程</a>
+<ul class="sectlevel3">
+<li><a href="#_1_1_pom_xml文件">1.1 pom.xml文件</a></li>
+<li><a href="#_1_2_添加scala文件夹或者将java文件夹rename为scala">1.2 添加scala文件夹或者将java文件夹rename为scala</a></li>
+</ul>
+</li>
+<li><a href="#_2_flink部署">2. Flink部署</a>
+<ul class="sectlevel3">
+<li><a href="#_1_下载hadoop_free版本的flink">1. 下载Hadoop Free版本的Flink</a></li>
+<li><a href="#_2_解压缩">2. 解压缩</a></li>
+<li><a href="#_3_启动flink集群">3. 启动Flink集群</a></li>
+<li><a href="#_4_在浏览器中打开flink的web_ui">4. 在浏览器中打开Flink的Web UI</a></li>
+<li><a href="#_5_编译我们编写好的wordcount程序">5. 编译我们编写好的wordcount程序</a></li>
+<li><a href="#_6_提交打包好的程序">6. 提交打包好的程序</a></li>
+<li><a href="#_7_在flink_web_ui查看dashboard中job的执行状态">7. 在Flink Web UI查看Dashboard中job的执行状态</a></li>
+<li><a href="#_8_停止flink集群">8. 停止Flink集群</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#_第三章_flink运行架构">第三章 Flink运行架构</a>
@@ -466,22 +489,52 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel2">
 <li><a href="#_4_1_environment">4.1 Environment</a></li>
 <li><a href="#_4_2_source">4.2 Source</a></li>
-<li><a href="#_4_3_transform">4.3 Transform</a></li>
-<li><a href="#_4_4_sink">4.4 Sink</a></li>
+<li><a href="#_4_3_transform">4.3 Transform</a>
+<ul class="sectlevel3">
+<li><a href="#_4_3_1_map">4.3.1 map</a></li>
+<li><a href="#_4_3_2_flatmap">4.3.2 flatMap</a></li>
+<li><a href="#_4_3_3_filter">4.3.3 Filter</a></li>
+<li><a href="#_4_3_4_keyby">4.3.4 KeyBy</a></li>
+<li><a href="#_4_3_5_reduce">4.3.5 Reduce</a></li>
+<li><a href="#_4_3_6_split_和_select">4.3.6 Split 和 Select</a></li>
+<li><a href="#_4_3_7_connect和comap">4.3.7 Connect和CoMap</a></li>
+<li><a href="#_4_3_8_union">4.3.8 Union</a></li>
+</ul>
+</li>
+<li><a href="#_4_4_sink">4.4 Sink</a>
+<ul class="sectlevel3">
+<li><a href="#_4_4_1_elasticsearch">4.4.1 Elasticsearch</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#_第五章_time与window">第五章 Time与Window</a>
 <ul class="sectlevel2">
 <li><a href="#_5_1_time">5.1 Time</a></li>
-<li><a href="#_5_2_window">5.2 Window</a></li>
+<li><a href="#_5_2_window">5.2 Window</a>
+<ul class="sectlevel3">
+<li><a href="#_5_2_1_window概述">5.2.1 Window概述</a></li>
+</ul>
+</li>
 <li><a href="#_5_3_window_api">5.3 Window API</a></li>
 </ul>
 </li>
 <li><a href="#_第六章_eventtime与window">第六章 EventTime与Window</a>
 <ul class="sectlevel2">
 <li><a href="#_6_1_eventtime的引入">6.1 EventTime的引入</a></li>
-<li><a href="#_6_2_watermark">6.2 Watermark</a></li>
-<li><a href="#_6_3_evnettimewindow_api">6.3 EvnetTimeWindow API</a></li>
+<li><a href="#_6_2_watermark">6.2 Watermark</a>
+<ul class="sectlevel3">
+<li><a href="#_6_2_1_基本概念">6.2.1 基本概念</a></li>
+<li><a href="#_6_2_2_watermark的引入">6.2.2 Watermark的引入</a></li>
+</ul>
+</li>
+<li><a href="#_6_3_evnettimewindow_api">6.3 EvnetTimeWindow API</a>
+<ul class="sectlevel3">
+<li><a href="#_6_3_1_滚动窗口tumblingeventtimewindows">6.3.1 滚动窗口（TumblingEventTimeWindows）</a></li>
+<li><a href="#_6_3_2_滑动窗口slidingeventtimewindows">6.3.2 滑动窗口（SlidingEventTimeWindows）</a></li>
+<li><a href="#_6_3_3_会话窗口eventtimesessionwindows">6.3.3 会话窗口（EventTimeSessionWindows）</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#_第七章_table_api_与sql">第七章 Table API 与SQL</a>
@@ -495,9 +548,42 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_第八章_dataflow模型">第八章 Dataflow模型</a>
 <ul class="sectlevel2">
 <li><a href="#_8_0_摘要">8.0 摘要</a></li>
-<li><a href="#_8_1_简介">8.1 简介</a></li>
-<li><a href="#_8_2_dataflow模型">8.2 DataFlow模型</a></li>
-<li><a href="#_8_3_实现和设计">8.3 实现和设计</a></li>
+<li><a href="#_8_1_简介">8.1 简介</a>
+<ul class="sectlevel3">
+<li><a href="#_8_1_1_无边界有边界与流处理批处理">8.1.1   无边界、有边界与流处理、批处理</a></li>
+<li><a href="#_8_1_2_窗口">8.1.2 窗口</a></li>
+<li><a href="#_8_1_3_时间域">8.1.3 时间域</a></li>
+</ul>
+</li>
+<li><a href="#_8_2_dataflow模型">8.2 DataFlow模型</a>
+<ul class="sectlevel3">
+<li><a href="#_8_2_1_核心编程模型">8.2.1 核心编程模型</a></li>
+<li><a href="#_8_2_2_窗口">8.2.2 窗口</a>
+<ul class="sectlevel4">
+<li><a href="#_8_2_2_1_窗口分配">8.2.2.1 窗口分配</a></li>
+<li><a href="#_8_2_2_2_窗口合并">8.2.2.2 窗口合并</a></li>
+<li><a href="#_8_2_2_3_api">8.2.2.3 API</a></li>
+</ul>
+</li>
+<li><a href="#_8_2_3_触发器和增量处理">8.2.3 触发器和增量处理</a></li>
+</ul>
+</li>
+<li><a href="#_8_3_实现和设计">8.3 实现和设计</a>
+<ul class="sectlevel3">
+<li><a href="#_8_3_1_实现">8.3.1 实现</a></li>
+<li><a href="#_8_3_2_设计原则">8.3.2 设计原则</a></li>
+<li><a href="#_8_3_3_业务场景">8.3.3 业务场景</a>
+<ul class="sectlevel4">
+<li><a href="#_8_3_3_1_大规模数据回写和lambda架构统一模型">8.3.3.1 大规模数据回写和Lambda架构；统一模型</a></li>
+<li><a href="#_8_3_3_2_非对齐窗口会话">8.3.3.2 非对齐窗口：会话</a></li>
+<li><a href="#_8_3_3_3_支付触发器累加和撤回">8.3.3.3 支付：触发器，累加和撤回</a></li>
+<li><a href="#_8_3_3_4_统计计算水位线触发器">8.3.3.4 统计计算：水位线触发器</a></li>
+<li><a href="#_8_3_3_5_推荐处理时间触发器">8.3.3.5 推荐：处理时间触发器</a></li>
+<li><a href="#_8_3_3_6_异常探测数据驱动和组合触发器">8.3.3.6 异常探测：数据驱动和组合触发器</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a href="#_8_4_总结">8.4 总结</a></li>
 </ul>
 </li>
@@ -632,7 +718,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <table>
 <tr>
 <td class="icon">
-<div class="title">Warning</div>
+<i class="fa icon-warning" title="Warning"></i>
 </td>
 <td class="content">
 目前Flink作为批处理还不是主流，不如Spark成熟，所以DataSet使用的并不是很多。Flink Table API和Flink SQL也并不完善，大多都由各大厂商自己定制。所以我们主要学习DataStream API的使用。实际上Flink作为最接近Google DataFlow模型的实现，是流批统一的观点，所以基本上使用DataStream就可以了，DataSet并不是很地道。
@@ -2476,7 +2562,7 @@ val startupLogTable: Table = tableEnv.fromDataStream(startupLogWithEtDstream,'mi
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-06-05 14:04:50 +0800
+Last updated 2019-06-05 15:40:40 +0800
 </div>
 </div>
 <style>
