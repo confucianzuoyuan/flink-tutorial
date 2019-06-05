@@ -3,8 +3,9 @@
 :source-highlighter: pygments
 :toc:
 :toclevels: 4
+:imagesdir: images
 
-image::images/atguigu.jpeg[atguigu, 300, 200]
+image::atguigu.jpg[atguigu, 300, 200]
 
 include::chap1.adoc[]
 

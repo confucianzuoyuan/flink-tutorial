@@ -1,5 +1,4 @@
 == 第四章 Flink 流处理Api
-:imagesdir: images
 
 environment -> source -> transform -> sink
 

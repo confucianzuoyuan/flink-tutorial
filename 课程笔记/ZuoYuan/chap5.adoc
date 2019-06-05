@@ -1,5 +1,4 @@
 == 第五章 Time与Window
-:imagesdir: images
 
 === 5.1 Time
 在Flink的流式处理中，会涉及到时间的不同概念，如下图所示：

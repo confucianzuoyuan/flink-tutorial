@@ -1,5 +1,4 @@
 == 第三章 Flink运行架构
-:imagesdir: images
 
 === 3.1 任务调度原理
 
@@ -43,7 +42,7 @@ Task Slot是静态的概念，是指TaskManager具有的并发执行能力，可
 
 也就是说，假设一共有3个TaskManager，每一个TaskManager中的分配3个Task Slot，也就是每个TaskManager可以接收3个task，一共9个Task Slot，如果我们设置parallelism.default=1，即运行程序默认的并行度为1，9个TaskSlot只用了1个，有8个空闲，因此，设置合适的并行度才能提高效率。
 
-image::slots_parallelism.svg[]
+image::slots_parallelism.png[]
 
 === 3.3 程序与数据流
 

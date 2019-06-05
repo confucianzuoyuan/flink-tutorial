@@ -1,5 +1,4 @@
 == 第二章 Flink快速上手
-:imagesdir: images
 
 === 1. 使用Maven搭建工程
 

@@ -1,5 +1,4 @@
 == 第六章 EventTime与Window
-:imagesdir: images
 
 === 6.1 EventTime的引入
 

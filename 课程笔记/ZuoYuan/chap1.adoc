@@ -1,5 +1,4 @@
 == 第一章 Flink简介
-:imagesdir: images
 
 === 1. 初识Flink
 
@@ -10,10 +9,10 @@ Flink起源于Stratosphere项目，Stratosphere是在2010~2014年由3所地处�
 [.float-group]
 --
 .apache logo
-image::ASF20thAnniversary.jpg[float="left",300,200]
+image::ASF20thAnniversary.jpg[apache,300,200,float="left"]
 
 .apache flink logo
-image::flink-header-logo.svg[float="left",300,200]
+image::flink-header-logo.svg[flink,300,200,float="left"]
 --
 
 Flink主页在其顶部展示了该项目的理念: "[red]#Apache Flink是为分布式、高性能、随时可用以及准确的流处理应用程序打造的开源流处理框架#"。
