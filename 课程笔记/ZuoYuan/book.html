@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.9">
-<title>尚硅谷Flink教程</title>
+<title>Atguigu Flink Tutorial</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -437,7 +437,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
-<h1>尚硅谷Flink教程</h1>
+<h1>Atguigu Flink Tutorial</h1>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
@@ -500,11 +500,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sectionbody">
 <div class="imageblock">
 <div class="content">
-<img src="images/atguigu.jpeg" alt="atguigu">
+<img src="images/atguigu.jpeg" alt="atguigu" width="300" height="200">
 </div>
-</div>
-<div class="paragraph">
-<p>Yuan Zuo &lt;<a href="mailto:zuoyuan@atguigu.com">zuoyuan@atguigu.com</a>&gt;</p>
 </div>
 </div>
 </div>
@@ -651,72 +648,72 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="listingblock">
 <div class="title">pom.xml</div>
 <div class="content">
-<pre class="highlight"><code class="language-xml" data-lang="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
-    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+<pre class="pygments highlight"><code data-lang="xml"><span></span><span class="tok-cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+<span class="tok-nt">&lt;project</span> <span class="tok-na">xmlns=</span><span class="tok-s">&quot;http://maven.apache.org/POM/4.0.0&quot;</span>
+         <span class="tok-na">xmlns:xsi=</span><span class="tok-s">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>
+         <span class="tok-na">xsi:schemaLocation=</span><span class="tok-s">&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;</span><span class="tok-nt">&gt;</span>
+    <span class="tok-nt">&lt;modelVersion&gt;</span>4.0.0<span class="tok-nt">&lt;/modelVersion&gt;</span>
 
-    &lt;groupId&gt;com.atguigu.flink&lt;/groupId&gt;
-    &lt;artifactId&gt;flink&lt;/artifactId&gt;
-    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    <span class="tok-nt">&lt;groupId&gt;</span>com.atguigu.flink<span class="tok-nt">&lt;/groupId&gt;</span>
+    <span class="tok-nt">&lt;artifactId&gt;</span>flink<span class="tok-nt">&lt;/artifactId&gt;</span>
+    <span class="tok-nt">&lt;version&gt;</span>1.0-SNAPSHOT<span class="tok-nt">&lt;/version&gt;</span>
 
-    &lt;dependencies&gt;
-        &lt;dependency&gt;
-            &lt;groupId&gt;org.apache.flink&lt;/groupId&gt;
-            &lt;artifactId&gt;flink-scala_2.11&lt;/artifactId&gt;
-            &lt;version&gt;1.7.0&lt;/version&gt;
-        &lt;/dependency&gt;
+    <span class="tok-nt">&lt;dependencies&gt;</span>
+        <span class="tok-nt">&lt;dependency&gt;</span>
+            <span class="tok-nt">&lt;groupId&gt;</span>org.apache.flink<span class="tok-nt">&lt;/groupId&gt;</span>
+            <span class="tok-nt">&lt;artifactId&gt;</span>flink-scala_2.11<span class="tok-nt">&lt;/artifactId&gt;</span>
+            <span class="tok-nt">&lt;version&gt;</span>1.7.0<span class="tok-nt">&lt;/version&gt;</span>
+        <span class="tok-nt">&lt;/dependency&gt;</span>
 
-        &lt;!-- https://mvnrepository.com/artifact/org.apache.flink/flink-streaming-scala --&gt;
-        &lt;dependency&gt;
-            &lt;groupId&gt;org.apache.flink&lt;/groupId&gt;
-            &lt;artifactId&gt;flink-streaming-scala_2.11&lt;/artifactId&gt;
-            &lt;version&gt;1.7.0&lt;/version&gt;
-        &lt;/dependency&gt;
-    &lt;/dependencies&gt;
+        <span class="tok-c">&lt;!-- https://mvnrepository.com/artifact/org.apache.flink/flink-streaming-scala --&gt;</span>
+        <span class="tok-nt">&lt;dependency&gt;</span>
+            <span class="tok-nt">&lt;groupId&gt;</span>org.apache.flink<span class="tok-nt">&lt;/groupId&gt;</span>
+            <span class="tok-nt">&lt;artifactId&gt;</span>flink-streaming-scala_2.11<span class="tok-nt">&lt;/artifactId&gt;</span>
+            <span class="tok-nt">&lt;version&gt;</span>1.7.0<span class="tok-nt">&lt;/version&gt;</span>
+        <span class="tok-nt">&lt;/dependency&gt;</span>
+    <span class="tok-nt">&lt;/dependencies&gt;</span>
 
-    &lt;build&gt;
-        &lt;plugins&gt;
-            &lt;!-- 该插件用于将Scala代码编译成class文件 --&gt;
-            &lt;plugin&gt;
-                &lt;groupId&gt;net.alchim31.maven&lt;/groupId&gt;
-                &lt;artifactId&gt;scala-maven-plugin&lt;/artifactId&gt;
-                &lt;version&gt;3.4.6&lt;/version&gt;
-                &lt;executions&gt;
-                    &lt;execution&gt;
-                        &lt;!-- 声明绑定到maven的compile阶段 --&gt;
-                        &lt;goals&gt;
+    <span class="tok-nt">&lt;build&gt;</span>
+        <span class="tok-nt">&lt;plugins&gt;</span>
+            <span class="tok-c">&lt;!-- 该插件用于将Scala代码编译成class文件 --&gt;</span>
+            <span class="tok-nt">&lt;plugin&gt;</span>
+                <span class="tok-nt">&lt;groupId&gt;</span>net.alchim31.maven<span class="tok-nt">&lt;/groupId&gt;</span>
+                <span class="tok-nt">&lt;artifactId&gt;</span>scala-maven-plugin<span class="tok-nt">&lt;/artifactId&gt;</span>
+                <span class="tok-nt">&lt;version&gt;</span>3.4.6<span class="tok-nt">&lt;/version&gt;</span>
+                <span class="tok-nt">&lt;executions&gt;</span>
+                    <span class="tok-nt">&lt;execution&gt;</span>
+                        <span class="tok-c">&lt;!-- 声明绑定到maven的compile阶段 --&gt;</span>
+                        <span class="tok-nt">&lt;goals&gt;</span>
 
-                            &lt;goal&gt;testCompile&lt;/goal&gt;
-                        &lt;/goals&gt;
-                    &lt;/execution&gt;
-                &lt;/executions&gt;
-            &lt;/plugin&gt;
+                            <span class="tok-nt">&lt;goal&gt;</span>testCompile<span class="tok-nt">&lt;/goal&gt;</span>
+                        <span class="tok-nt">&lt;/goals&gt;</span>
+                    <span class="tok-nt">&lt;/execution&gt;</span>
+                <span class="tok-nt">&lt;/executions&gt;</span>
+            <span class="tok-nt">&lt;/plugin&gt;</span>
 
-            &lt;plugin&gt;
-                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
-                &lt;artifactId&gt;maven-assembly-plugin&lt;/artifactId&gt;
-                &lt;version&gt;3.0.0&lt;/version&gt;
-                &lt;configuration&gt;
-                    &lt;descriptorRefs&gt;
-                        &lt;descriptorRef&gt;jar-with-dependencies&lt;/descriptorRef&gt;
-                    &lt;/descriptorRefs&gt;
-                &lt;/configuration&gt;
-                &lt;executions&gt;
-                    &lt;execution&gt;
-                        &lt;id&gt;make-assembly&lt;/id&gt;
-                        &lt;phase&gt;package&lt;/phase&gt;
-                        &lt;goals&gt;
-                            &lt;goal&gt;single&lt;/goal&gt;
-                        &lt;/goals&gt;
-                    &lt;/execution&gt;
-                &lt;/executions&gt;
-            &lt;/plugin&gt;
-        &lt;/plugins&gt;
-    &lt;/build&gt;
+            <span class="tok-nt">&lt;plugin&gt;</span>
+                <span class="tok-nt">&lt;groupId&gt;</span>org.apache.maven.plugins<span class="tok-nt">&lt;/groupId&gt;</span>
+                <span class="tok-nt">&lt;artifactId&gt;</span>maven-assembly-plugin<span class="tok-nt">&lt;/artifactId&gt;</span>
+                <span class="tok-nt">&lt;version&gt;</span>3.0.0<span class="tok-nt">&lt;/version&gt;</span>
+                <span class="tok-nt">&lt;configuration&gt;</span>
+                    <span class="tok-nt">&lt;descriptorRefs&gt;</span>
+                        <span class="tok-nt">&lt;descriptorRef&gt;</span>jar-with-dependencies<span class="tok-nt">&lt;/descriptorRef&gt;</span>
+                    <span class="tok-nt">&lt;/descriptorRefs&gt;</span>
+                <span class="tok-nt">&lt;/configuration&gt;</span>
+                <span class="tok-nt">&lt;executions&gt;</span>
+                    <span class="tok-nt">&lt;execution&gt;</span>
+                        <span class="tok-nt">&lt;id&gt;</span>make-assembly<span class="tok-nt">&lt;/id&gt;</span>
+                        <span class="tok-nt">&lt;phase&gt;</span>package<span class="tok-nt">&lt;/phase&gt;</span>
+                        <span class="tok-nt">&lt;goals&gt;</span>
+                            <span class="tok-nt">&lt;goal&gt;</span>single<span class="tok-nt">&lt;/goal&gt;</span>
+                        <span class="tok-nt">&lt;/goals&gt;</span>
+                    <span class="tok-nt">&lt;/execution&gt;</span>
+                <span class="tok-nt">&lt;/executions&gt;</span>
+            <span class="tok-nt">&lt;/plugin&gt;</span>
+        <span class="tok-nt">&lt;/plugins&gt;</span>
+    <span class="tok-nt">&lt;/build&gt;</span>
 
-&lt;/project&gt;</code></pre>
+<span class="tok-nt">&lt;/project&gt;</span></code></pre>
 </div>
 </div>
 </div>
@@ -725,44 +722,44 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="listingblock">
 <div class="title">StreamWcApp.scala</div>
 <div class="content">
-<pre class="highlight"><code class="language-scala" data-lang="scala">import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala.</span><span class="tok-o">{</span><span class="tok-nc">DataStream</span><span class="tok-o">,</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">}</span>
 
-object StreamWcApp {
+<span class="tok-k">object</span> <span class="tok-nc">StreamWcApp</span> <span class="tok-o">{</span>
 
-  def main(args: Array[String]): Unit = {
-    //创建流处理环境
-    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
-    //接收socket文本流
-    val textDstream: DataStream[String] = env.socketTextStream("localhost", 9000, "\n")
+  <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-c1">//创建流处理环境</span>
+    <span class="tok-k">val</span> <span class="tok-n">env</span><span class="tok-k">:</span> <span class="tok-kt">StreamExecutionEnvironment</span> <span class="tok-o">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
+    <span class="tok-c1">//接收socket文本流</span>
+    <span class="tok-k">val</span> <span class="tok-n">textDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">socketTextStream</span><span class="tok-o">(</span><span class="tok-s">&quot;localhost&quot;</span><span class="tok-o">,</span> <span class="tok-mi">9000</span><span class="tok-o">,</span> <span class="tok-s">&quot;\n&quot;</span><span class="tok-o">)</span>
 
-    // flatMap和Map需要引用的隐式转换
-    import org.apache.flink.api.scala._
-    // 处理, 分组并且sum聚合
-    val dStream: DataStream[(String, Int)] = textDstream
-        // 使用空白符进行切割，并且遍历每一个单词
-        .flatMap(_.split("\\s"))
-        // 过滤出非空
-        .filter(_.nonEmpty)
-        // 这一步实现了mr中的map
-        .map((_, 1))
-        // 使用第0个元素为key进行聚合
-        .keyBy(0)
-        // tumbling window: 滚动窗口, [9:00:00, 9:00:05), [9:00:05, 9:00:10)
-        .timeWindow(Time.seconds(5))
-        // 实现了mr的reduce语义
-        .sum(1)
+    <span class="tok-c1">// flatMap和Map需要引用的隐式转换</span>
+    <span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.scala._</span>
+    <span class="tok-c1">// 处理, 分组并且sum聚合</span>
+    <span class="tok-k">val</span> <span class="tok-n">dStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">textDstream</span>
+        <span class="tok-c1">// 使用空白符进行切割，并且遍历每一个单词</span>
+        <span class="tok-o">.</span><span class="tok-n">flatMap</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot;\\s&quot;</span><span class="tok-o">))</span>
+        <span class="tok-c1">// 过滤出非空</span>
+        <span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">nonEmpty</span><span class="tok-o">)</span>
+        <span class="tok-c1">// 这一步实现了mr中的map</span>
+        <span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">((</span><span class="tok-k">_</span><span class="tok-o">,</span> <span class="tok-mi">1</span><span class="tok-o">))</span>
+        <span class="tok-c1">// 使用第0个元素为key进行聚合</span>
+        <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+        <span class="tok-c1">// tumbling window: 滚动窗口, [9:00:00, 9:00:05), [9:00:05, 9:00:10)</span>
+        <span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">5</span><span class="tok-o">))</span>
+        <span class="tok-c1">// 实现了mr的reduce语义</span>
+        <span class="tok-o">.</span><span class="tok-n">sum</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
 
-    // 打印
-    dStream.print()
+    <span class="tok-c1">// 打印</span>
+    <span class="tok-n">dStream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">()</span>
 
-    env.execute()
-  }
-}</code></pre>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span><span class="tok-o">()</span>
+  <span class="tok-o">}</span>
+<span class="tok-o">}</span></code></pre>
 </div>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-shell" data-lang="shell">nc -lk 9999</code></pre>
+<pre class="pygments highlight"><code data-lang="shell"><span></span>nc -lk <span class="tok-m">9999</span></code></pre>
 </div>
 </div>
 </div>
@@ -779,7 +776,7 @@ object StreamWcApp {
 <h4 id="_2_解压缩">2. 解压缩</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-shell" data-lang="shell">$ tar xvfz flink-1.7.2-bin-scala_2.11.tgz</code></pre>
+<pre class="pygments highlight"><code data-lang="shell"><span></span>$ tar xvfz flink-1.7.2-bin-scala_2.11.tgz</code></pre>
 </div>
 </div>
 </div>
@@ -787,7 +784,7 @@ object StreamWcApp {
 <h4 id="_3_启动flink集群">3. 启动Flink集群</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-shell" data-lang="shell">$ cd flink-1.7.2
+<pre class="pygments highlight"><code data-lang="shell"><span></span>$ <span class="tok-nb">cd</span> flink-1.7.2
 $ ./bin/start-cluster.sh</code></pre>
 </div>
 </div>
@@ -965,7 +962,7 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-scala" data-lang="scala">val env: ExecutionEnvironment = ExecutionEnvironment.getExecutionEnvironment</code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">env</span><span class="tok-k">:</span> <span class="tok-kt">ExecutionEnvironment</span> <span class="tok-o">=</span> <span class="tok-nc">ExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -977,7 +974,7 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-scala" data-lang="scala">val env = StreamExecutionEnvironment.createLocalEnvironment(1)</code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">createLocalEnvironment</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -986,7 +983,7 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-scala" data-lang="scala">val env = ExecutionEnvironment.createRemoteEnvironment("node", 6123,"C://jar//flink//wordcount.jar")</code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">ExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">createRemoteEnvironment</span><span class="tok-o">(</span><span class="tok-s">&quot;node&quot;</span><span class="tok-o">,</span> <span class="tok-mi">6123</span><span class="tok-o">,</span><span class="tok-s">&quot;C://jar//flink//wordcount.jar&quot;</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
 </div>
@@ -997,18 +994,18 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-scala" data-lang="scala">object MyKafkaUtil {
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">object</span> <span class="tok-nc">MyKafkaUtil</span> <span class="tok-o">{</span>
 
-  val prop = new Properties()
+  <span class="tok-k">val</span> <span class="tok-n">prop</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">Properties</span><span class="tok-o">()</span>
 
-  prop.setProperty("bootstrap.servers","hadoop1:9092")
-  prop.setProperty("group.id","gmall")
+  <span class="tok-n">prop</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;bootstrap.servers&quot;</span><span class="tok-o">,</span><span class="tok-s">&quot;hadoop1:9092&quot;</span><span class="tok-o">)</span>
+  <span class="tok-n">prop</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;group.id&quot;</span><span class="tok-o">,</span><span class="tok-s">&quot;gmall&quot;</span><span class="tok-o">)</span>
 
-  def getConsumer(topic:String ):FlinkKafkaConsumer011[String]= {
-      val myKafkaConsumer:FlinkKafkaConsumer011[String] = new FlinkKafkaConsumer011[String](topic, new SimpleStringSchema(), prop)
-     myKafkaConsumer
-  }
-}</code></pre>
+  <span class="tok-k">def</span> <span class="tok-n">getConsumer</span><span class="tok-o">(</span><span class="tok-n">topic</span><span class="tok-k">:</span><span class="tok-kt">String</span> <span class="tok-o">)</span><span class="tok-k">:</span><span class="tok-kt">FlinkKafkaConsumer011</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span><span class="tok-k">=</span> <span class="tok-o">{</span>
+      <span class="tok-k">val</span> <span class="tok-n">myKafkaConsumer</span><span class="tok-k">:</span><span class="tok-kt">FlinkKafkaConsumer011</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">FlinkKafkaConsumer011</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">](</span><span class="tok-n">topic</span><span class="tok-o">,</span> <span class="tok-k">new</span> <span class="tok-nc">SimpleStringSchema</span><span class="tok-o">(),</span> <span class="tok-n">prop</span><span class="tok-o">)</span>
+     <span class="tok-n">myKafkaConsumer</span>
+  <span class="tok-o">}</span>
+<span class="tok-o">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1060,7 +1057,7 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 <h4 id="_4_3_1_map">4.3.1 map</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-scala" data-lang="scala">val streamMap = stream.map { x =&gt; x * 2 }</code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">streamMap</span> <span class="tok-k">=</span> <span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">map</span> <span class="tok-o">{</span> <span class="tok-n">x</span> <span class="tok-k">=&gt;</span> <span class="tok-n">x</span> <span class="tok-o">*</span> <span class="tok-mi">2</span> <span class="tok-o">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -1068,9 +1065,9 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 <h4 id="_4_3_2_flatmap">4.3.2 flatMap</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-scala" data-lang="scala">val streamFlatMap = stream.flatMap{
-  x =&gt; x.split(" ")
-}</code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">streamFlatMap</span> <span class="tok-k">=</span> <span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">flatMap</span><span class="tok-o">{</span>
+  <span class="tok-n">x</span> <span class="tok-k">=&gt;</span> <span class="tok-n">x</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot; &quot;</span><span class="tok-o">)</span>
+<span class="tok-o">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -1078,9 +1075,9 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 <h4 id="_4_3_3_filter">4.3.3 Filter</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-scala" data-lang="scala">val streamFilter = stream.filter{
-  x =&gt; x == 1
-}</code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">streamFilter</span> <span class="tok-k">=</span> <span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">{</span>
+  <span class="tok-n">x</span> <span class="tok-k">=&gt;</span> <span class="tok-n">x</span> <span class="tok-o">==</span> <span class="tok-mi">1</span>
+<span class="tok-o">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -1097,13 +1094,13 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-scala" data-lang="scala">//求各个渠道的累计个数
-val startUplogDstream: DataStream[StartUpLog] = dstream.map{ JSON.parseObject(_,classOf[StartUpLog])}
-val keyedStream: KeyedStream[(String, Int), Tuple] = startUplogDstream.map(startuplog=&gt;(startuplog.ch,1)).keyBy(0)
-//reduce //sum
-keyedStream.reduce{  (ch1,ch2)=&gt;
-  (ch1._1,ch1._2+ch2._2)
-} .print().setParallelism(1)</code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">//求各个渠道的累计个数</span>
+<span class="tok-k">val</span> <span class="tok-n">startUplogDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">StartUpLog</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">dstream</span><span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">{</span> <span class="tok-nc">JSON</span><span class="tok-o">.</span><span class="tok-n">parseObject</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">,</span><span class="tok-n">classOf</span><span class="tok-o">[</span><span class="tok-kt">StartUpLog</span><span class="tok-o">])}</span>
+<span class="tok-k">val</span> <span class="tok-n">keyedStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">startUplogDstream</span><span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">startuplog</span><span class="tok-o">=&gt;(</span><span class="tok-n">startuplog</span><span class="tok-o">.</span><span class="tok-n">ch</span><span class="tok-o">,</span><span class="tok-mi">1</span><span class="tok-o">)).</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+<span class="tok-c1">//reduce //sum</span>
+<span class="tok-n">keyedStream</span><span class="tok-o">.</span><span class="tok-n">reduce</span><span class="tok-o">{</span>  <span class="tok-o">(</span><span class="tok-n">ch1</span><span class="tok-o">,</span><span class="tok-n">ch2</span><span class="tok-o">)</span><span class="tok-k">=&gt;</span>
+  <span class="tok-o">(</span><span class="tok-n">ch1</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span><span class="tok-n">ch1</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">+</span><span class="tok-n">ch2</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">)</span>
+<span class="tok-o">}</span> <span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">().</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
 </div>
@@ -1124,20 +1121,20 @@ Select</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-scala" data-lang="scala">     // 将appstore与其他渠道拆分拆分出来  成为两个独立的流
-val splitStream: SplitStream[StartUpLog] = startUplogDstream.split { startUplog =&gt;
-  var flags:List[String] =  null
-  if ("appstore" == startUplog.ch) {
-    flags = List(startUplog.ch)
-  } else {
-    flags = List("other" )
-  }
-  flags
-}
-val appStoreStream: DataStream[StartUpLog] = splitStream.select("appstore")
-appStoreStream.print("apple:").setParallelism(1)
-val otherStream: DataStream[StartUpLog] = splitStream.select("other")
-otherStream.print("other:").setParallelism(1)</code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span>     <span class="tok-c1">// 将appstore与其他渠道拆分拆分出来  成为两个独立的流</span>
+<span class="tok-k">val</span> <span class="tok-n">splitStream</span><span class="tok-k">:</span> <span class="tok-kt">SplitStream</span><span class="tok-o">[</span><span class="tok-kt">StartUpLog</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">startUplogDstream</span><span class="tok-o">.</span><span class="tok-n">split</span> <span class="tok-o">{</span> <span class="tok-n">startUplog</span> <span class="tok-k">=&gt;</span>
+  <span class="tok-k">var</span> <span class="tok-n">flags</span><span class="tok-k">:</span><span class="tok-kt">List</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span>  <span class="tok-kc">null</span>
+  <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-s">&quot;appstore&quot;</span> <span class="tok-o">==</span> <span class="tok-n">startUplog</span><span class="tok-o">.</span><span class="tok-n">ch</span><span class="tok-o">)</span> <span class="tok-o">{</span>
+    <span class="tok-n">flags</span> <span class="tok-k">=</span> <span class="tok-nc">List</span><span class="tok-o">(</span><span class="tok-n">startUplog</span><span class="tok-o">.</span><span class="tok-n">ch</span><span class="tok-o">)</span>
+  <span class="tok-o">}</span> <span class="tok-k">else</span> <span class="tok-o">{</span>
+    <span class="tok-n">flags</span> <span class="tok-k">=</span> <span class="tok-nc">List</span><span class="tok-o">(</span><span class="tok-s">&quot;other&quot;</span> <span class="tok-o">)</span>
+  <span class="tok-o">}</span>
+  <span class="tok-n">flags</span>
+<span class="tok-o">}</span>
+<span class="tok-k">val</span> <span class="tok-n">appStoreStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">StartUpLog</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">splitStream</span><span class="tok-o">.</span><span class="tok-n">select</span><span class="tok-o">(</span><span class="tok-s">&quot;appstore&quot;</span><span class="tok-o">)</span>
+<span class="tok-n">appStoreStream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;apple:&quot;</span><span class="tok-o">).</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+<span class="tok-k">val</span> <span class="tok-n">otherStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">StartUpLog</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">splitStream</span><span class="tok-o">.</span><span class="tok-n">select</span><span class="tok-o">(</span><span class="tok-s">&quot;other&quot;</span><span class="tok-o">)</span>
+<span class="tok-n">otherStream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;other:&quot;</span><span class="tok-o">).</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
 </div>
@@ -1152,13 +1149,13 @@ CoMap,CoFlatMap</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-scala" data-lang="scala">//合并以后打印
-val connStream: ConnectedStreams[StartUpLog, StartUpLog] = appStoreStream.connect(otherStream)
-val allStream: DataStream[String] = connStream.map(
-  (log1: StartUpLog) =&gt; log1.ch,
-  (log2: StartUpLog) =&gt; log2.ch
-)
-allStream.print("connect::")</code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">//合并以后打印</span>
+<span class="tok-k">val</span> <span class="tok-n">connStream</span><span class="tok-k">:</span> <span class="tok-kt">ConnectedStreams</span><span class="tok-o">[</span><span class="tok-kt">StartUpLog</span>, <span class="tok-kt">StartUpLog</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">appStoreStream</span><span class="tok-o">.</span><span class="tok-n">connect</span><span class="tok-o">(</span><span class="tok-n">otherStream</span><span class="tok-o">)</span>
+<span class="tok-k">val</span> <span class="tok-n">allStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">connStream</span><span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span>
+  <span class="tok-o">(</span><span class="tok-n">log1</span><span class="tok-k">:</span> <span class="tok-kt">StartUpLog</span><span class="tok-o">)</span> <span class="tok-k">=&gt;</span> <span class="tok-n">log1</span><span class="tok-o">.</span><span class="tok-n">ch</span><span class="tok-o">,</span>
+  <span class="tok-o">(</span><span class="tok-n">log2</span><span class="tok-k">:</span> <span class="tok-kt">StartUpLog</span><span class="tok-o">)</span> <span class="tok-k">=&gt;</span> <span class="tok-n">log2</span><span class="tok-o">.</span><span class="tok-n">ch</span>
+<span class="tok-o">)</span>
+<span class="tok-n">allStream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;connect::&quot;</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
 </div>
@@ -1169,9 +1166,9 @@ allStream.print("connect::")</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-scala" data-lang="scala">//合并以后打印
-val unionStream: DataStream[StartUpLog] = appStoreStream.union(otherStream)
-unionStream.print("union:::")</code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">//合并以后打印</span>
+<span class="tok-k">val</span> <span class="tok-n">unionStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">StartUpLog</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">appStoreStream</span><span class="tok-o">.</span><span class="tok-n">union</span><span class="tok-o">(</span><span class="tok-n">otherStream</span><span class="tok-o">)</span>
+<span class="tok-n">unionStream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;union:::&quot;</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1293,9 +1290,9 @@ object MyEsUtil {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-scala" data-lang="scala">// 明细发送到es 中
-val esSink: ElasticsearchSink[String] = MyEsUtil.getElasticSearchSink("gmall0503_startup")
-dstream.addSink(esSink)</code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">// 明细发送到es 中</span>
+<span class="tok-k">val</span> <span class="tok-n">esSink</span><span class="tok-k">:</span> <span class="tok-kt">ElasticsearchSink</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-nc">MyEsUtil</span><span class="tok-o">.</span><span class="tok-n">getElasticSearchSink</span><span class="tok-o">(</span><span class="tok-s">&quot;gmall0503_startup&quot;</span><span class="tok-o">)</span>
+<span class="tok-n">dstream</span><span class="tok-o">.</span><span class="tok-n">addSink</span><span class="tok-o">(</span><span class="tok-n">esSink</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
 </div>
@@ -1841,8 +1838,79 @@ val startupLogTable: Table = tableEnv.fromDataStream(startupLogWithEtDstream,'mi
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-06-04 17:02:07 +0800
+Last updated 2019-06-05 10:02:53 +0800
 </div>
 </div>
+<style>
+pre.pygments .hll { background-color: #ffffcc }
+pre.pygments  { background: #f8f8f8; }
+pre.pygments .tok-c { color: #408080; font-style: italic } /* Comment */
+pre.pygments .tok-err { border: 1px solid #FF0000 } /* Error */
+pre.pygments .tok-k { color: #008000; font-weight: bold } /* Keyword */
+pre.pygments .tok-o { color: #666666 } /* Operator */
+pre.pygments .tok-ch { color: #408080; font-style: italic } /* Comment.Hashbang */
+pre.pygments .tok-cm { color: #408080; font-style: italic } /* Comment.Multiline */
+pre.pygments .tok-cp { color: #BC7A00 } /* Comment.Preproc */
+pre.pygments .tok-cpf { color: #408080; font-style: italic } /* Comment.PreprocFile */
+pre.pygments .tok-c1 { color: #408080; font-style: italic } /* Comment.Single */
+pre.pygments .tok-cs { color: #408080; font-style: italic } /* Comment.Special */
+pre.pygments .tok-gd { color: #A00000 } /* Generic.Deleted */
+pre.pygments .tok-ge { font-style: italic } /* Generic.Emph */
+pre.pygments .tok-gr { color: #FF0000 } /* Generic.Error */
+pre.pygments .tok-gh { color: #000080; font-weight: bold } /* Generic.Heading */
+pre.pygments .tok-gi { color: #00A000 } /* Generic.Inserted */
+pre.pygments .tok-go { color: #888888 } /* Generic.Output */
+pre.pygments .tok-gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+pre.pygments .tok-gs { font-weight: bold } /* Generic.Strong */
+pre.pygments .tok-gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+pre.pygments .tok-gt { color: #0044DD } /* Generic.Traceback */
+pre.pygments .tok-kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+pre.pygments .tok-kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+pre.pygments .tok-kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+pre.pygments .tok-kp { color: #008000 } /* Keyword.Pseudo */
+pre.pygments .tok-kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+pre.pygments .tok-kt { color: #B00040 } /* Keyword.Type */
+pre.pygments .tok-m { color: #666666 } /* Literal.Number */
+pre.pygments .tok-s { color: #BA2121 } /* Literal.String */
+pre.pygments .tok-na { color: #7D9029 } /* Name.Attribute */
+pre.pygments .tok-nb { color: #008000 } /* Name.Builtin */
+pre.pygments .tok-nc { color: #0000FF; font-weight: bold } /* Name.Class */
+pre.pygments .tok-no { color: #880000 } /* Name.Constant */
+pre.pygments .tok-nd { color: #AA22FF } /* Name.Decorator */
+pre.pygments .tok-ni { color: #999999; font-weight: bold } /* Name.Entity */
+pre.pygments .tok-ne { color: #D2413A; font-weight: bold } /* Name.Exception */
+pre.pygments .tok-nf { color: #0000FF } /* Name.Function */
+pre.pygments .tok-nl { color: #A0A000 } /* Name.Label */
+pre.pygments .tok-nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+pre.pygments .tok-nt { color: #008000; font-weight: bold } /* Name.Tag */
+pre.pygments .tok-nv { color: #19177C } /* Name.Variable */
+pre.pygments .tok-ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
+pre.pygments .tok-w { color: #bbbbbb } /* Text.Whitespace */
+pre.pygments .tok-mb { color: #666666 } /* Literal.Number.Bin */
+pre.pygments .tok-mf { color: #666666 } /* Literal.Number.Float */
+pre.pygments .tok-mh { color: #666666 } /* Literal.Number.Hex */
+pre.pygments .tok-mi { color: #666666 } /* Literal.Number.Integer */
+pre.pygments .tok-mo { color: #666666 } /* Literal.Number.Oct */
+pre.pygments .tok-sa { color: #BA2121 } /* Literal.String.Affix */
+pre.pygments .tok-sb { color: #BA2121 } /* Literal.String.Backtick */
+pre.pygments .tok-sc { color: #BA2121 } /* Literal.String.Char */
+pre.pygments .tok-dl { color: #BA2121 } /* Literal.String.Delimiter */
+pre.pygments .tok-sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+pre.pygments .tok-s2 { color: #BA2121 } /* Literal.String.Double */
+pre.pygments .tok-se { color: #BB6622; font-weight: bold } /* Literal.String.Escape */
+pre.pygments .tok-sh { color: #BA2121 } /* Literal.String.Heredoc */
+pre.pygments .tok-si { color: #BB6688; font-weight: bold } /* Literal.String.Interpol */
+pre.pygments .tok-sx { color: #008000 } /* Literal.String.Other */
+pre.pygments .tok-sr { color: #BB6688 } /* Literal.String.Regex */
+pre.pygments .tok-s1 { color: #BA2121 } /* Literal.String.Single */
+pre.pygments .tok-ss { color: #19177C } /* Literal.String.Symbol */
+pre.pygments .tok-bp { color: #008000 } /* Name.Builtin.Pseudo */
+pre.pygments .tok-fm { color: #0000FF } /* Name.Function.Magic */
+pre.pygments .tok-vc { color: #19177C } /* Name.Variable.Class */
+pre.pygments .tok-vg { color: #19177C } /* Name.Variable.Global */
+pre.pygments .tok-vi { color: #19177C } /* Name.Variable.Instance */
+pre.pygments .tok-vm { color: #19177C } /* Name.Variable.Magic */
+pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
+</style>
 </body>
 </html>

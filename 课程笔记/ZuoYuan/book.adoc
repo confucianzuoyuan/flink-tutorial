@@ -1,8 +1,7 @@
-= 尚硅谷Flink教程
+= Atguigu Flink Tutorial
+:source-highlighter: pygments
 
-image::images/atguigu.jpeg[]
-
-Yuan Zuo <zuoyuan@atguigu.com>
+image::images/atguigu.jpeg[atguigu, 300, 200]
 
 :toc:
 :toclevels: 4
