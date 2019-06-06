@@ -1,169 +1,106 @@
-== 第七章 状态编程
+== 第七章 有状态的计算 
 
-Table API是流处理和批处理通用的关系型API，Table API可以基于流输入或者批输入来运行而不需要进行任何修改。Table API是SQL语言的超集并专门为Apache Flink设计的，Table API是Scala 和Java语言集成式的API。与常规SQL语言中将查询指定为字符串不同，Table API查询是以Java或Scala中的语言嵌入样式来定义的，具有IDE支持如:自动完成和语法检测。
+流式计算分为无状态和有状态两种情况。无状态的计算观察每个独立事件，并根据最后一个事件输出结果。例如，流处理应用程序从传感器接收温度读数，并在温度超过90度时发出警告。有状态的计算则会基于多个事件输出结果。以下是一些例子。
 
-=== 7.1 需要引入的pom依赖
+* 所有类型的窗口。例如，计算过去一小时的平均温度，就是有状态的计算。
+* 所有用于复杂事件处理的状态机。例如，若在一分钟内收到两个相差20度以上的温度读数，则发出警告，这是有状态的计算。
+* 流与流之间的所有关联操作，以及流与静态表或动态表之间的关联操作，都是有状态的计算。
 
+图 5-1 展示了无状态流处理和有状态流处理的主要区别。无状态流处理分别接收每条记录(图中的黑条)，然后根据最新输入的记录生成输出记录(白条)。有状态流处理会维护状态(根据每条输入记录进行更新)，并基于最新输入的记录和当前的状态值生成输出记录(灰条)。
+
+image::statevsunstate.png[]
+
+无状态流处理与有状态流处理的区别。输入记录由黑条表示。无状态流处理每次只转换一条输入记录，并且仅根据最新的输入记录输出结果(白条)。有状态 流处理维护所有已处理记录的状态值，并根据每条新输入的记录更新状态，因此输出记录(灰条)反映的是综合考虑多个事件之后的结果。
+
+尽管无状态的计算很重要，但是流处理对有状态的计算更感兴趣。事实上，正确地实现有状态的计算比实现无状态的计算难得多。旧的流处理系统并不支持有状态的计算，而新一代的流处理系统则将状态及其正确性视为重中之重。
+
+=== 7.1 一致性
+
+当在分布式系统中引入状态时，自然也引入了一致性问题。一致性实际上是"正确性级别"的另一种说法，即在成功处理故障并恢复之后得到的结果，与没有发生任何故障时得到的结果相比，前者有多正确? 举例来说，假设要对最近一小时登录的用户计数。在系统经历故障之后，计数结果是多少? 在流处理中，一致性分为3个级别。
+
+* at-most-once: 这其实是没有正确性保障的委婉说法——故障发生之后，计数结果可能丢失。同样的还有udp。
+* at-least-once: 这表示计数结果可能大于正确值，但绝不会小于正确值。也就是说，计数程序在发生故障后可能多算，但是绝不会少算。
+* exactly-once: 这指的是系统保证在发生故障后得到的计数结果与正确值一致。
+
+曾经，at-least-once非常流行。第一代流处理器(如Storm和Samza)刚问世时只保证at-least-once，原因有二。
+
+(1) 保证exactly-once的系统实现起来更复杂。这在基础架构层(决定什么代表正确，以及exactly-once的范围是什么)和实现层都很有挑战性。
+(2) 流处理系统的早期用户愿意接受框架的局限性，并在应用层想办法弥补(例如使应用程序具有幂等性，或者用批量计算层再做一遍计算)。
+
+最先保证exactly-once的系统(Storm Trident和Spark Streaming)在性能和表现力这两个方面付出了很大的代价。为了保证exactly-once，这些系统无法单独地对每条记录运用应用逻辑，而是同时处理多条(一批)记录，保证对每一批的处理要么全部成功，要么全部失败。这就导致在得到结果前，必须等待一批记录处理结束。因此，用户经常不得不使用两个流处理框架(一个用来保证exactly-once，另一个用来对每个元素做低延迟处理)，结果使基础设施更加复杂。曾经，用户不得不在保证exactly-once与获得低延迟和效率之间权衡利弊。Flink避免了这种权衡。
+
+NOTE: Flink的一个重大价值在于，它既保证了exactly-once，也具有低延迟和高吞吐的处理能力。
+
+从根本上说，Flink通过使自身满足所有需求来避免权衡，它是业界的一次意义重大的技术飞跃。尽管这在外行看来很神奇，但是一旦了解，就会恍然大悟。
+
+=== 7.2 检查点: 保证exactly-once
+
+Flink如何保证exactly-once呢? 它使用一种被称为"检查点"的特性，在出现故障时将系统重置回正确状态。下面通过简单的类比来解释检查点的作用。
+
+假设你和两位朋友正在数项链上有多少颗珠子，如图5-2所示。你捏住珠子，边数边拨，每拨过一颗珠子就给总数加一。你的朋友也这样数他们手中的珠子。当你分神忘记数到哪里时，怎么办呢? 如果项链上有很多珠子，你显然不想从头再数一遍，尤其是当三人的速度不一样却又试图合作的时候，更是如此(比如想记录前一分钟三人一共数了多少颗珠子，回想一下一分钟滚动窗口)。
+
+image::balls.png[]
+
+于是，你想了一个更好的办法: 在项链上每隔一段就松松地系上一根有色皮筋，将珠子分隔开; 当珠子被拨动的时候，皮筋也可以被拨动; 然后，你安排一个助手，让他在你和朋友拨到皮筋时记录总数。用这种方法，当有人数错时，就不必从头开始数。相反，你向其他人发出错误警示，然后你们都从上一根皮筋处开始重数，助手则会告诉每个人重数时的起始数值，例如在粉色皮筋处的数值是多少。
+
+Flink检查点的作用就类似于皮筋标记。数珠子这个类比的关键点是: 对于指定的皮筋而言，珠子的相对位置是确定的; 这让皮筋成为重新计数的参考点。总状态(珠子的总数)在每颗珠子被拨动之后更新一次，助手则会保存与每根皮筋对应的检查点状态，如当遇到粉色皮筋时一共数了多少珠子，当遇到橙色皮筋时又是多少。当问题出现时，这种方法使得重新计数变得简单。
+
+Flink检查点的核心作用是确保状态正确，即使遇到程序中断，也要正确。记住这一基本点之后，我们用一个例子来看检查点是如何运行的。Flink为用户提供了用来定义状态的工具。例如，以下这个Scala程序按照输入记录的第一个字段(一个字符串)进行分组并维护第二个字段的计数状态。
+
+[source,scala]
 ----
-<dependency>
-    <groupId>org.apache.flink</groupId>
-    <artifactId>flink-table_2.11</artifactId>
-    <version>1.7.0</version>
-</dependency>
-----
-
-=== 7.2 构造表环境
-
-----
-def main(args: Array[String]): Unit = {
-  val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
-
-  val myKafkaConsumer: FlinkKafkaConsumer011[String] = MyKafkaUtil.getConsumer("GMALL_STARTUP")
-  val dstream: DataStream[String] = env.addSource(myKafkaConsumer)
-
-  val tableEnv: StreamTableEnvironment = TableEnvironment.getTableEnvironment(env)
-
-  val startupLogDstream: DataStream[StartupLog] = dstream.map{ jsonString =>JSON.parseObject(jsonString,classOf[StartupLog]) }
-
-  val startupLogTable: Table = tableEnv.fromDataStream(startupLogDstream)
-
-   val table: Table = startupLogTable.select("mid,ch").filter("ch ='appstore'")
-
-  val midchDataStream: DataStream[(String, String)] = table.toAppendStream[(String,String)]
-
-  midchDataStream.print()
-  env.execute()
-}
-----
-
-
-动态表
-
-如果流中的数据类型是case class可以直接根据case class的结构生成table
-tableEnv.fromDataStream(startupLogDstream)  
-或者根据字段顺序单独命名
-tableEnv.fromDataStream(startupLogDstream,’mid,’uid  .......)  
-
-最后的动态表可以转换为流进行输出
-table.toAppendStream[(String,String)]
-
-
-字段
- 用一个单引放到字段前面 来标识字段名, 如 ‘name , ‘mid ,’amount 等
-
-=== 7.3 通过一个例子 了解TableAPI 
-
-----
-//每10秒中渠道为appstore的个数
-def main(args: Array[String]): Unit = {
-  //sparkcontext
-  val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
-
-  //时间特性改为eventTime
-  env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-
-  val myKafkaConsumer: FlinkKafkaConsumer011[String] = MyKafkaUtil.getConsumer("GMALL_STARTUP")
-  val dstream: DataStream[String] = env.addSource(myKafkaConsumer)
-
-  val startupLogDstream: DataStream[StartupLog] = dstream.map{ jsonString =>JSON.parseObject(jsonString,classOf[StartupLog]) }
-  //告知watermark 和 eventTime如何提取
-  val startupLogWithEventTimeDStream: DataStream[StartupLog] = startupLogDstream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[StartupLog](Time.seconds(0L)) {
-    override def extractTimestamp(element: StartupLog): Long = {
-      element.ts
-    }
-  }).setParallelism(1)
-
-  //SparkSession
-  val tableEnv: StreamTableEnvironment = TableEnvironment.getTableEnvironment(env)
-
-  //把数据流转化成Table
-  val startupTable: Table = tableEnv.fromDataStream(startupLogWithEventTimeDStream , 'mid,'uid,'appid,'area,'os,'ch,'logType,'vs,'logDate,'logHour,'logHourMinute,'ts.rowtime)
-
-  //通过table api 进行操作
-  // 每10秒 统计一次各个渠道的个数 table api 解决
-  //1 groupby  2 要用 window   3 用eventtime来确定开窗时间
-  val resultTable: Table = startupTable.window(Tumble over 10000.millis on 'ts as 'tt).groupBy('ch,'tt ).select( 'ch, 'ch.count)
- 
- 
-
-  //把Table转化成数据流
-  //val appstoreDStream: DataStream[(String, String, Long)] = appstoreTable.toAppendStream[(String,String,Long)]
-  val resultDstream: DataStream[(Boolean, (String, Long))] = resultSQLTable.toRetractStream[(String,Long)]
-
-  resultDstream.filter(_._1).print()
-
-  env.execute()
-
-}
+val stream: DataStream[(String, Int)] = ...
+val counts: DataStream[(String, Int)] = stream
+  .keyBy(record => record._1)
+  .mapWithState((in: (String, Int), count: Option[Int]) =>
+    count match {
+      case Some(c) => ( (in._1, c + in._2), Some(c + in._2) )
+      case None => ( (in._1, in._2), Some(in._2) )
+})
 ----
 
-关于group by 
-如果使用 groupby table转换为流的时候只能用toRetractDstream 
-  val rDstream: DataStream[(Boolean, (String, Long))] = table.toRetractStream[(String,Long)]
+该程序有两个算子: keyBy算子用来将记录按照第一个元素(一个字符串)进行分组，根据该key将数据进行重新分区，然后将记录再发送给下一个算子: 有状态的map算子(mapWithState)。map算子在接收到每个元素后，将输入记录的第二个字段的数据加到现有总数中，再将更新过的元素发射出去。图5-3表示程序的初始状态: 输入流中的6条记录被检查点屏障(checkpoint barrier)隔开，所有的map算子状态均为0(计数还未开始)。 所有key为a的记录将被顶层的map算子处理，所有key为b的记录将被中间层的map算子处理，所有key为c的记录则将被底层的map算子处理。
 
-toRetractDstream 得到的第一个boolean型字段标识 true就是最新的数据，false表示过期老数据
- 
-  val rDstream: DataStream[(Boolean, (String, Long))] = table.toRetractStream[(String,Long)]
-  rDstream.filter(_._1).print()
+image::ckpt1.png[]
 
-如果使用的api包括时间窗口，那么时间的字段必须，包含在group by中。
-  val table: Table = startupLogTable.filter("ch ='appstore'").window(Tumble over 10000.millis on 'ts as 'tt).groupBy('ch ,'tt).select("ch,ch.count ")
+程序的初始状态。注意，a、b、c三组的初始计数状态都是0，即三个圆柱上的值。ckpt表示检查点屏障。每条记录在处理顺序上严格地遵守在检查点之前或之后的规定，例如["b",2]在检查点之前被处理，["a",2]则在检查点之后被处理
 
+当该程序处理输入流中的6条记录时，涉及的操作遍布3个并行实例(节点、CPU内核等)。那么，检查点该如何保证exactly-once呢?
 
-关于时间窗口
-用到时间窗口，必须提前声明时间字段，如果是processTime直接在创建动态表时进行追加就可以
+检查点屏障和普通记录类似。它们由算子处理，但并不参与计算，而是会触发与检查点相关的行为。当读取输入流的数据源(在本例中与keyBy算子内联)遇到检查点屏障时，它将其在输入流中的位置保存到持久化存储中。如果输入流来自消息传输系统(Kafka)，这个位置就是偏移量。Flink的存储机制是插件化的，持久化存储可以是分布式文件系统，如HDFS。图5-4展示了这个过程。
 
-val startupLogTable: Table = tableEnv.fromDataStream(startupLogWithEtDstream,'mid,'uid,'appid,'area,'os,'ch,'logType,'vs,'logDate,'logHour,'logHourMinute,'ts.rowtime)
+image::ckpt2.png[]
 
-如果是EventTime要在创建动态表时声明
-val startupLogTable: Table = tableEnv.fromDataStream(startupLogWithEtDstream,'mid,'uid,'appid,'area,'os,'ch,'logType,'vs,'logDate,'logHour,'logHourMinute,'ps.processtime)
+当Flink数据源(在本例中与keyBy算子内联)遇到检查点屏障时，它会将其在输入流中的位置保存到持久化存储中。这让 Flink可以根据该位置重启输入
 
+检查点屏障像普通记录一样在算子之间流动。当map算子处理完前3条记录并收到检查点屏障时，它们会将状态以异步的方式写入持久化存储，如图5-5所示。
 
-滚动窗口可以使用Tumble over 10000.millis on
-  val table: Table = startupLogTable.filter("ch ='appstore'").window(Tumble over 10000.millis on 'ts as 'tt).groupBy('ch ,'tt).select("ch,ch.count ")
+image::ckpt3.png[]
 
-=== 7.4 SQL如何编写
+位于检查点之前的所有记录(["b",2]、["b",3]和["c",1])被map算子处理之后的情况。此时，持久化存储已经备份了检查点屏障在输入流中的位置(备份操作发生在检查点屏障被输入算子处理的时候)。map算子接着开始处理检查点屏障，并触发将状态异步备份到稳定存储中这个动作
 
-----
-def main(args: Array[String]): Unit = {
-  //sparkcontext
-  val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+当map算子的状态备份和检查点屏障的位置备份被确认之后，该检查点操作就可以被标记为完成，如图5-6所示。我们在无须停止或者阻断计算的条件下，在一个逻辑时间点(对应检查点屏障在输入流中的位置)为计算状态拍了快照。通过确保备份的状态和位置指向同一个逻辑时间点，后文将解释如何基于备份恢复计算，从而保证exactly-once。值得注意的是，当没有出现故障时，Flink检查点的开销极小，检查点操作的速度由持久化存储的可用带宽决定。回顾数珠子的例子: 除了因为数错而需要用到皮筋之外，皮筋会被很快地拨过。
 
-  //时间特性改为eventTime
-  env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+image::ckpt4.png[]
 
-  val myKafkaConsumer: FlinkKafkaConsumer011[String] = MyKafkaUtil.getConsumer("GMALL_STARTUP")
-  val dstream: DataStream[String] = env.addSource(myKafkaConsumer)
+检查点操作完成，状态和位置均已备份到稳定存储中。输入流中的所有记录都已处理完成。值得注意的是，备份的状态值与实际的状态值是不同的。备份反映的是检查点的状态
 
-  val startupLogDstream: DataStream[StartupLog] = dstream.map{ jsonString =>JSON.parseObject(jsonString,classOf[StartupLog]) }
-  //告知watermark 和 eventTime如何提取
-  val startupLogWithEventTimeDStream: DataStream[StartupLog] = startupLogDstream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[StartupLog](Time.seconds(0L)) {
-    override def extractTimestamp(element: StartupLog): Long = {
-      element.ts
-    }
-  }).setParallelism(1)
+如果检查点操作失败，Flink会丢弃该检查点并继续正常执行，因为之后的某一个检查点可能会成功。虽然恢复时间可能更长，但是对于状态的保证依旧很有力。只有在一系列连续的检查点操作失败之后，Flink才会抛出错误，因为这通常预示着发生了严重且持久的错误。
 
-  //SparkSession
-  val tableEnv: StreamTableEnvironment = TableEnvironment.getTableEnvironment(env)
+现在来看看图5-7所示的情况: 检查点操作已经完成，但故障紧随其后。
 
-  //把数据流转化成Table
-  val startupTable: Table = tableEnv.fromDataStream(startupLogWithEventTimeDStream , 'mid,'uid,'appid,'area,'os,'ch,'logType,'vs,'logDate,'logHour,'logHourMinute,'ts.rowtime)
+image::ckpt5.png[]
 
-  //通过table api 进行操作
-  // 每10秒 统计一次各个渠道的个数 table api 解决
-  //1 groupby  2 要用 window   3 用eventtime来确定开窗时间
-  val resultTable: Table = startupTable.window(Tumble over 10000.millis on 'ts as 'tt).groupBy('ch,'tt ).select( 'ch, 'ch.count)
- // 通过sql 进行操作
+故障紧跟检查点，导致最底部的实例丢失
 
-  val resultSQLTable : Table = tableEnv.sqlQuery( "select ch ,count(ch)   from "+startupTable+"  group by ch   ,Tumble(ts,interval '10' SECOND )")
+在这种情况下，Flink会重新拓扑(可能会获取新的执行资源)，将输入流倒回到上一个检查点，然后恢复状态值并从该处开始继续计算。在本例中，["a",2]、["a",2]和["c",2]这几条记录将被重播。
 
-  //把Table转化成数据流
-  //val appstoreDStream: DataStream[(String, String, Long)] = appstoreTable.toAppendStream[(String,String,Long)]
-  val resultDstream: DataStream[(Boolean, (String, Long))] = resultSQLTable.toRetractStream[(String,Long)]
+图5-8展示了这一重新处理过程。从上一个检查点开始重新计算，可以保证在剩下的记录被处理之后，得到的map算子的状态值与没有发生故障时的状态值一致。值得注意的是，输出流会含有重复的数据。具体来说，["a",2]、["a",4]和["c",3]会出现两次。如果Flink将输出流写入特殊的输出系统(比如文件系统或者数据库)，那么就可以避免这个问题，本章稍后将 进一步讨论。
 
-  resultDstream.filter(_._1).print()
+image::ckpt6.png[]
 
-  env.execute()
+Flink将输入流倒回到上一个检查点屏障的位置，同时恢复map算子的状态值。然后，Flink从此处开始重新处理。这样做保证了在记录被处理之后，map算子的状态值与没有发生故障时的一致
 
-}
-----
+Flink检查点算法的正式名称是异步屏障快照(asynchronous barrier snapshotting)。该算法大致基于Chandy-Lamport分布式快照算法。
+
+NOTE: 检查点是Flink最有价值的创新之一，因为它使Flink可以保证exactly-once，并且不需要牺牲性能。
