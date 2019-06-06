@@ -1,6 +1,14 @@
 == 第四章 Flink 流处理Api
 
-environment -> source -> transform -> sink
+[graphviz, dot-example, svg]
+----
+digraph g {
+    rankdir=LR
+    environment -> source
+    source -> transform
+    transform -> sink
+}
+----
 
 === 4.1 Environment
 

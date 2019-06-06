@@ -5,6 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.9">
+<meta name="author" content="Yuan Zuo">
 <title>Atguigu Flink Tutorial</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
@@ -439,6 +440,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <body class="article toc2 toc-left">
 <div id="header">
 <h1>Atguigu Flink Tutorial</h1>
+<div class="details">
+<span id="author" class="author">Yuan Zuo</span><br>
+<span id="email" class="email"><a href="mailto:zuoyuan@atguigu.com">zuoyuan@atguigu.com</a></span><br>
+<span id="revnumber">version 1.0,</span>
+<span id="revdate">2019-06-01</span>
+</div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
@@ -514,14 +521,15 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_5_2_window">5.2 Window</a>
 <ul class="sectlevel3">
 <li><a href="#_5_2_1_window概述">5.2.1 Window概述</a></li>
+<li><a href="#_5_2_2_window类型">5.2.2 Window类型</a></li>
 </ul>
 </li>
 <li><a href="#_5_3_window_api">5.3 Window API</a></li>
 </ul>
 </li>
-<li><a href="#_第六章_eventtime与window">第六章 EventTime与Window</a>
+<li><a href="#_第六章_event_time与window">第六章 Event Time与Window</a>
 <ul class="sectlevel2">
-<li><a href="#_6_1_eventtime的引入">6.1 EventTime的引入</a></li>
+<li><a href="#_6_1_event_time的引入">6.1 Event Time的引入</a></li>
 <li><a href="#_6_2_watermark">6.2 Watermark</a>
 <ul class="sectlevel3">
 <li><a href="#_6_2_1_基本概念">6.2.1 基本概念</a></li>
@@ -530,14 +538,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_6_3_evnettimewindow_api">6.3 EvnetTimeWindow API</a>
 <ul class="sectlevel3">
-<li><a href="#_6_3_1_滚动窗口tumblingeventtimewindows">6.3.1 滚动窗口（TumblingEventTimeWindows）</a></li>
-<li><a href="#_6_3_2_滑动窗口slidingeventtimewindows">6.3.2 滑动窗口（SlidingEventTimeWindows）</a></li>
+<li><a href="#_6_3_1_滚动窗口tumblingeventtimewindows">6.3.1 滚动窗口(TumblingEventTimeWindows)</a></li>
+<li><a href="#_6_3_2_滑动窗口slidingeventtimewindows">6.3.2 滑动窗口(SlidingEventTimeWindows)</a></li>
 <li><a href="#_6_3_3_会话窗口eventtimesessionwindows">6.3.3 会话窗口（EventTimeSessionWindows）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#_第七章_table_api_与sql">第七章 Table API 与SQL</a>
+<li><a href="#_第七章_状态编程">第七章 状态编程</a>
 <ul class="sectlevel2">
 <li><a href="#_7_1_需要引入的pom依赖">7.1 需要引入的pom依赖</a></li>
 <li><a href="#_7_2_构造表环境">7.2 构造表环境</a></li>
@@ -736,7 +744,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sect2">
 <h3 id="_1_使用maven搭建工程">1. 使用Maven搭建工程</h3>
 <div class="paragraph">
-<p><strong>IDE推荐Idea</strong></p>
+<p><strong>IDE推荐使用Idea</strong></p>
 </div>
 <div class="sect3">
 <h4 id="_1_1_pom_xml文件">1.1 pom.xml文件</h4>
@@ -757,14 +765,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
         <span class="tok-nt">&lt;dependency&gt;</span>
             <span class="tok-nt">&lt;groupId&gt;</span>org.apache.flink<span class="tok-nt">&lt;/groupId&gt;</span>
             <span class="tok-nt">&lt;artifactId&gt;</span>flink-scala_2.11<span class="tok-nt">&lt;/artifactId&gt;</span>
-            <span class="tok-nt">&lt;version&gt;</span>1.7.0<span class="tok-nt">&lt;/version&gt;</span>
+            <span class="tok-nt">&lt;version&gt;</span>1.7.2<span class="tok-nt">&lt;/version&gt;</span>
         <span class="tok-nt">&lt;/dependency&gt;</span>
 
         <span class="tok-c">&lt;!-- https://mvnrepository.com/artifact/org.apache.flink/flink-streaming-scala --&gt;</span>
         <span class="tok-nt">&lt;dependency&gt;</span>
             <span class="tok-nt">&lt;groupId&gt;</span>org.apache.flink<span class="tok-nt">&lt;/groupId&gt;</span>
             <span class="tok-nt">&lt;artifactId&gt;</span>flink-streaming-scala_2.11<span class="tok-nt">&lt;/artifactId&gt;</span>
-            <span class="tok-nt">&lt;version&gt;</span>1.7.0<span class="tok-nt">&lt;/version&gt;</span>
+            <span class="tok-nt">&lt;version&gt;</span>1.7.2<span class="tok-nt">&lt;/version&gt;</span>
         <span class="tok-nt">&lt;/dependency&gt;</span>
     <span class="tok-nt">&lt;/dependencies&gt;</span>
 
@@ -779,7 +787,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
                     <span class="tok-nt">&lt;execution&gt;</span>
                         <span class="tok-c">&lt;!-- 声明绑定到maven的compile阶段 --&gt;</span>
                         <span class="tok-nt">&lt;goals&gt;</span>
-
                             <span class="tok-nt">&lt;goal&gt;</span>testCompile<span class="tok-nt">&lt;/goal&gt;</span>
                         <span class="tok-nt">&lt;/goals&gt;</span>
                     <span class="tok-nt">&lt;/execution&gt;</span>
@@ -815,40 +822,69 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sect3">
 <h4 id="_1_2_添加scala文件夹或者将java文件夹rename为scala">1.2 添加scala文件夹或者将java文件夹rename为scala</h4>
 <div class="listingblock">
-<div class="title">StreamWcApp.scala</div>
+<div class="title">SocketWindowWordCount.scala</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala.</span><span class="tok-o">{</span><span class="tok-nc">DataStream</span><span class="tok-o">,</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">}</span>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.java.utils.ParameterTool</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala._</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.windowing.time.Time</span>
 
-<span class="tok-k">object</span> <span class="tok-nc">StreamWcApp</span> <span class="tok-o">{</span>
+<span class="tok-cm">/**</span>
+<span class="tok-cm">  * Implements a streaming windowed version of the &quot;WordCount&quot; program.</span>
+<span class="tok-cm">  *</span>
+<span class="tok-cm">  * This program connects to a server socket and reads strings from the socket.</span>
+<span class="tok-cm">  * The easiest way to try this out is to open a text sever (at port 12345)</span>
+<span class="tok-cm">  * using the &#39;&#39;netcat&#39;&#39; tool via</span>
+<span class="tok-cm">  * {{{</span>
+<span class="tok-cm">  * nc -l 12345</span>
+<span class="tok-cm">  * }}}</span>
+<span class="tok-cm">  * and run this example with the hostname and the port as arguments..</span>
+<span class="tok-cm">  */</span>
+<span class="tok-k">object</span> <span class="tok-nc">SocketWindowWordCount</span> <span class="tok-o">{</span>
 
-  <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-    <span class="tok-c1">//创建流处理环境</span>
+  <span class="tok-cm">/** Main program method */</span>
+  <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span> <span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+
+    <span class="tok-c1">// the host and the port to connect to</span>
+    <span class="tok-k">var</span> <span class="tok-n">hostname</span><span class="tok-k">:</span> <span class="tok-kt">String</span> <span class="tok-o">=</span> <span class="tok-s">&quot;localhost&quot;</span>
+    <span class="tok-k">var</span> <span class="tok-n">port</span><span class="tok-k">:</span> <span class="tok-kt">Int</span> <span class="tok-o">=</span> <span class="tok-mi">0</span>
+
+    <span class="tok-k">try</span> <span class="tok-o">{</span>
+      <span class="tok-k">val</span> <span class="tok-n">params</span> <span class="tok-k">=</span> <span class="tok-nc">ParameterTool</span><span class="tok-o">.</span><span class="tok-n">fromArgs</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-o">)</span>
+      <span class="tok-n">hostname</span> <span class="tok-k">=</span> <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">params</span><span class="tok-o">.</span><span class="tok-n">has</span><span class="tok-o">(</span><span class="tok-s">&quot;hostname&quot;</span><span class="tok-o">))</span> <span class="tok-n">params</span><span class="tok-o">.</span><span class="tok-n">get</span><span class="tok-o">(</span><span class="tok-s">&quot;hostname&quot;</span><span class="tok-o">)</span> <span class="tok-k">else</span> <span class="tok-s">&quot;localhost&quot;</span>
+      <span class="tok-n">port</span> <span class="tok-k">=</span> <span class="tok-n">params</span><span class="tok-o">.</span><span class="tok-n">getInt</span><span class="tok-o">(</span><span class="tok-s">&quot;port&quot;</span><span class="tok-o">)</span>
+    <span class="tok-o">}</span> <span class="tok-k">catch</span> <span class="tok-o">{</span>
+      <span class="tok-k">case</span> <span class="tok-n">e</span><span class="tok-k">:</span> <span class="tok-kt">Exception</span> <span class="tok-o">=&gt;</span> <span class="tok-o">{</span>
+        <span class="tok-nc">System</span><span class="tok-o">.</span><span class="tok-n">err</span><span class="tok-o">.</span><span class="tok-n">println</span><span class="tok-o">(</span><span class="tok-s">&quot;No port specified. Please run &#39;SocketWindowWordCount &quot;</span> <span class="tok-o">+</span>
+          <span class="tok-s">&quot;--hostname &lt;hostname&gt; --port &lt;port&gt;&#39;, where hostname (localhost by default) and port &quot;</span> <span class="tok-o">+</span>
+          <span class="tok-s">&quot;is the address of the text server&quot;</span><span class="tok-o">)</span>
+        <span class="tok-nc">System</span><span class="tok-o">.</span><span class="tok-n">err</span><span class="tok-o">.</span><span class="tok-n">println</span><span class="tok-o">(</span><span class="tok-s">&quot;To start a simple text server, run &#39;netcat -l &lt;port&gt;&#39; &quot;</span> <span class="tok-o">+</span>
+          <span class="tok-s">&quot;and type the input text into the command line&quot;</span><span class="tok-o">)</span>
+        <span class="tok-k">return</span>
+      <span class="tok-o">}</span>
+    <span class="tok-o">}</span>
+
+    <span class="tok-c1">// get the execution environment</span>
     <span class="tok-k">val</span> <span class="tok-n">env</span><span class="tok-k">:</span> <span class="tok-kt">StreamExecutionEnvironment</span> <span class="tok-o">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
-    <span class="tok-c1">//接收socket文本流</span>
-    <span class="tok-k">val</span> <span class="tok-n">textDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">socketTextStream</span><span class="tok-o">(</span><span class="tok-s">&quot;localhost&quot;</span><span class="tok-o">,</span> <span class="tok-mi">9000</span><span class="tok-o">,</span> <span class="tok-s">&quot;\n&quot;</span><span class="tok-o">)</span>
 
-    <span class="tok-c1">// flatMap和Map需要引用的隐式转换</span>
-    <span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.scala._</span>
-    <span class="tok-c1">// 处理, 分组并且sum聚合</span>
-    <span class="tok-k">val</span> <span class="tok-n">dStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">textDstream</span>
-        <span class="tok-c1">// 使用空白符进行切割，并且遍历每一个单词</span>
-        <span class="tok-o">.</span><span class="tok-n">flatMap</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot;\\s&quot;</span><span class="tok-o">))</span>
-        <span class="tok-c1">// 过滤出非空</span>
-        <span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">nonEmpty</span><span class="tok-o">)</span>
-        <span class="tok-c1">// 这一步实现了mr中的map</span>
-        <span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">((</span><span class="tok-k">_</span><span class="tok-o">,</span> <span class="tok-mi">1</span><span class="tok-o">))</span>
-        <span class="tok-c1">// 使用第0个元素为key进行聚合</span>
-        <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
-        <span class="tok-c1">// tumbling window: 滚动窗口, [9:00:00, 9:00:05), [9:00:05, 9:00:10)</span>
-        <span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">5</span><span class="tok-o">))</span>
-        <span class="tok-c1">// 实现了mr的reduce语义</span>
-        <span class="tok-o">.</span><span class="tok-n">sum</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+    <span class="tok-c1">// get input data by connecting to the socket</span>
+    <span class="tok-k">val</span> <span class="tok-n">text</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">socketTextStream</span><span class="tok-o">(</span><span class="tok-n">hostname</span><span class="tok-o">,</span> <span class="tok-n">port</span><span class="tok-o">,</span> <span class="tok-sc">&#39;\n&#39;</span><span class="tok-o">)</span>
 
-    <span class="tok-c1">// 打印</span>
-    <span class="tok-n">dStream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">()</span>
+    <span class="tok-c1">// parse the data, group it, window it, and aggregate the counts</span>
+    <span class="tok-k">val</span> <span class="tok-n">windowCounts</span> <span class="tok-k">=</span> <span class="tok-n">text</span>
+      <span class="tok-o">.</span><span class="tok-n">flatMap</span> <span class="tok-o">{</span> <span class="tok-n">w</span> <span class="tok-k">=&gt;</span> <span class="tok-n">w</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot;\\s&quot;</span><span class="tok-o">)</span> <span class="tok-o">}</span>
+      <span class="tok-o">.</span><span class="tok-n">map</span> <span class="tok-o">{</span> <span class="tok-n">w</span> <span class="tok-k">=&gt;</span> <span class="tok-nc">WordWithCount</span><span class="tok-o">(</span><span class="tok-n">w</span><span class="tok-o">,</span> <span class="tok-mi">1</span><span class="tok-o">)</span> <span class="tok-o">}</span>
+      <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-s">&quot;word&quot;</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">5</span><span class="tok-o">))</span>
+      <span class="tok-o">.</span><span class="tok-n">sum</span><span class="tok-o">(</span><span class="tok-s">&quot;count&quot;</span><span class="tok-o">)</span>
 
-    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span><span class="tok-o">()</span>
+    <span class="tok-c1">// print the results with a single thread, rather than in parallel</span>
+    <span class="tok-n">windowCounts</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">().</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span><span class="tok-o">(</span><span class="tok-s">&quot;Socket Window WordCount&quot;</span><span class="tok-o">)</span>
   <span class="tok-o">}</span>
+
+  <span class="tok-cm">/** Data type for words with count */</span>
+  <span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">WordWithCount</span><span class="tok-o">(</span><span class="tok-n">word</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">count</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span>
 <span class="tok-o">}</span></code></pre>
 </div>
 </div>
@@ -1044,8 +1080,10 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 <div class="sect1">
 <h2 id="_第四章_flink_流处理api">第四章 Flink 流处理Api</h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>environment &#8594; source &#8594; transform &#8594; sink</p>
+<div class="imageblock">
+<div class="content">
+<img src="images/dot-example.svg" alt="dot example" width="578" height="58">
+</div>
 </div>
 <div class="sect2">
 <h3 id="_4_1_environment">4.1 Environment</h3>
@@ -1410,8 +1448,18 @@ object MyEsUtil {
 <div class="paragraph">
 <p><strong>Event Time</strong>：是事件创建的时间。它通常由事件中的时间戳描述，例如采集的日志数据中，每一条日志都会记录自己的生成时间，Flink通过时间戳分配器访问事件时间戳。
 <strong>Ingestion Time</strong>：是数据进入Flink的时间。
-<strong>Processing Time</strong>：是每一个执行基于时间操作的算子的本地系统时间，与机器相关，默认的时间属性就是Processing Time。
-例如，一条日志进入Flink的时间为2017-11-12 10:00:00.123，到达Window的系统时间为2017-11-12 10:00:01.234，日志的内容如下:</p>
+<strong>Processing Time</strong>：是每一个执行基于时间操作的算子的本地系统时间，与机器相关，默认的时间属性就是Processing Time。</p>
+</div>
+<div class="paragraph">
+<p><strong>著名的星球大战的例子</strong></p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/starwars.png" alt="starwars">
+</div>
+</div>
+<div class="paragraph">
+<p>例如，一条日志进入Flink的时间为`2017-11-12 10:00:00.123`，到达Window的系统时间为`2017-11-12 10:00:01.234`，日志的内容如下:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1419,7 +1467,7 @@ object MyEsUtil {
 </div>
 </div>
 <div class="paragraph">
-<p>对于业务来说，要统计1min内的故障日志个数，哪个时间是最有意义的？—— eventTime，因为我们要根据日志的生成时间进行统计。</p>
+<p>对于业务来说，要统计1min内的故障日志个数，哪个时间是最有意义的？—— Event Time，因为我们要根据日志的生成时间进行统计。</p>
 </div>
 </div>
 <div class="sect2">
@@ -1427,17 +1475,37 @@ object MyEsUtil {
 <div class="sect3">
 <h4 id="_5_2_1_window概述">5.2.1 Window概述</h4>
 <div class="paragraph">
-<p>streaming流式计算是一种被设计用于处理无限数据集的数据处理引擎，而无限数据集是指一种不断增长的本质上无限的数据集，而window是一种切割无限数据为有限块进行处理的手段。
-Window是无限数据流处理的核心，Window将一个无限的stream拆分成有限大小的”buckets”桶，我们可以在这些桶上做计算操作。
-==== 5.2.2 Window类型
-Window可以分成两类：
-CountWindow：按照指定的数据条数生成一个Window，与时间无关。
-TimeWindow：按照时间生成Window。
-对于TimeWindow，可以根据窗口实现原理的不同分成三类：滚动窗口（Tumbling Window）、滑动窗口（Sliding Window）和会话窗口（Session Window）。
-滚动窗口（Tumbling Windows）
-将数据依据固定的窗口长度对数据进行切片。
-特点：时间对齐，窗口长度固定，没有重叠。
-滚动窗口分配器将每个元素分配到一个指定窗口大小的窗口中，滚动窗口有一个固定的大小，并且不会出现重叠。例如：如果你指定了一个5分钟大小的滚动窗口，窗口的创建如下图所示：</p>
+<p>Streaming流式计算是一种被设计用于处理无限数据集的数据处理引擎，而无限数据集是指一种不断增长的本质上无限的数据集，而Window是一种切割无限数据为有限块进行处理的手段。</p>
+</div>
+<div class="paragraph">
+<p>Window是无限数据流处理的核心，Window将一个无限的Stream拆分成有限大小的”Buckets”桶，我们可以在这些桶上做计算操作。</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_5_2_2_window类型">5.2.2 Window类型</h4>
+<div class="paragraph">
+<p>Window可以分成两类：</p>
+</div>
+<div class="paragraph">
+<p><strong>CountWindow</strong>：按照指定的数据条数生成一个Window，与时间无关。</p>
+</div>
+<div class="paragraph">
+<p><strong>TimeWindow</strong>：按照时间生成Window。</p>
+</div>
+<div class="paragraph">
+<p>对于TimeWindow，可以根据窗口实现原理的不同分成三类：滚动窗口(Tumbling Window)、滑动窗口(Sliding Window)和会话窗口(Session Window)。</p>
+</div>
+<div class="paragraph">
+<p><strong>滚动窗口(Tumbling Windows)</strong></p>
+</div>
+<div class="paragraph">
+<p>将数据依据固定的窗口长度对数据进行切片。</p>
+</div>
+<div class="paragraph">
+<p>特点：时间对齐，窗口长度固定，没有重叠。</p>
+</div>
+<div class="paragraph">
+<p>滚动窗口分配器将每个元素分配到一个指定窗口大小的窗口中，滚动窗口有一个固定的大小，并且不会出现重叠。例如：如果你指定了一个5分钟大小的滚动窗口，窗口的创建如下图所示：</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -1445,12 +1513,22 @@ TimeWindow：按照时间生成Window。
 </div>
 </div>
 <div class="paragraph">
-<p>适用场景：适合做BI统计等（做每个时间段的聚合计算）。
-滑动窗口（Sliding Windows）
-滑动窗口是固定窗口的更广义的一种形式，滑动窗口由固定的窗口长度和滑动间隔组成。
-特点：时间对齐，窗口长度固定，有重叠。
-滑动窗口分配器将元素分配到固定长度的窗口中，与滚动窗口类似，窗口的大小由窗口大小参数来配置，另一个窗口滑动参数控制滑动窗口开始的频率。因此，滑动窗口如果滑动参数小于窗口大小的话，窗口是可以重叠的，在这种情况下元素会被分配到多个窗口中。
-例如，你有10分钟的窗口和5分钟的滑动，那么每个窗口中5分钟的窗口里包含着上个10分钟产生的数据，如下图所示：</p>
+<p>适用场景：适合做BI统计等(做每个时间段的聚合计算)。</p>
+</div>
+<div class="paragraph">
+<p><strong>滑动窗口(Sliding Windows)</strong></p>
+</div>
+<div class="paragraph">
+<p>滑动窗口是固定窗口的更广义的一种形式，滑动窗口由固定的窗口长度和滑动间隔组成。</p>
+</div>
+<div class="paragraph">
+<p>特点：时间对齐，窗口长度固定，有重叠。</p>
+</div>
+<div class="paragraph">
+<p>滑动窗口分配器将元素分配到固定长度的窗口中，与滚动窗口类似，窗口的大小由窗口大小参数来配置，另一个窗口滑动参数控制滑动窗口开始的频率。因此，滑动窗口如果滑动参数小于窗口大小的话，窗口是可以重叠的，在这种情况下元素会被分配到多个窗口中。</p>
+</div>
+<div class="paragraph">
+<p>例如，你有10分钟的窗口和5分钟的滑动，那么每个窗口中5分钟的窗口里包含着上个10分钟产生的数据，如下图所示：</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -1458,11 +1536,19 @@ TimeWindow：按照时间生成Window。
 </div>
 </div>
 <div class="paragraph">
-<p>适用场景：对最近一个时间段内的统计（求某接口最近5min的失败率来决定是否要报警）。
-会话窗口（Session Windows）
-由一系列事件组合一个指定时间长度的timeout间隙组成，类似于web应用的session，也就是一段时间没有接收到新数据就会生成新的窗口。
-特点：时间无对齐。
-session窗口分配器通过session活动来对元素进行分组，session窗口跟滚动窗口和滑动窗口相比，不会有重叠和固定的开始时间和结束时间的情况，相反，当它在一个固定的时间周期内不再收到元素，即非活动间隔产生，那个这个窗口就会关闭。一个session窗口通过一个session间隔来配置，这个session间隔定义了非活跃周期的长度，当这个非活跃周期产生，那么当前的session将关闭并且后续的元素将被分配到新的session窗口中去。</p>
+<p>适用场景：对最近一个时间段内的统计(求某接口最近5min的失败率来决定是否要报警)。</p>
+</div>
+<div class="paragraph">
+<p><strong>会话窗口(Session Windows)</strong></p>
+</div>
+<div class="paragraph">
+<p>由一系列事件组合一个指定时间长度的timeout间隙组成，类似于web应用的session，也就是一段时间没有接收到新数据就会生成新的窗口。</p>
+</div>
+<div class="paragraph">
+<p>特点：时间无对齐。</p>
+</div>
+<div class="paragraph">
+<p>session窗口分配器通过session活动来对元素进行分组，session窗口跟滚动窗口和滑动窗口相比，不会有重叠和固定的开始时间和结束时间的情况，相反，当它在一个固定的时间周期内不再收到元素，即非活动间隔产生，那个这个窗口就会关闭。一个session窗口通过一个session间隔来配置，这个session间隔定义了非活跃周期的长度，当这个非活跃周期产生，那么当前的session将关闭并且后续的元素将被分配到新的session窗口中去。</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -1474,55 +1560,88 @@ session窗口分配器通过session活动来对元素进行分组，session窗�
 <div class="sect2">
 <h3 id="_5_3_window_api">5.3 Window API</h3>
 <div class="paragraph">
-<p>TimeWindow
-TimeWindow是将指定时间范围内的所有数据组成一个window，一次对一个window里面的所有数据进行计算。
-滚动窗口
-Flink默认的时间窗口根据Processing Time 进行窗口的划分，将Flink获取到的数据根据进入Flink的时间划分到不同的窗口中。</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>val keyedStream: KeyedStream[(String, Int), Tuple] = startUplogDstream.map(startuplog=&gt;(startuplog.ch,1)).keyBy(0)
-//每10统计一次各个渠道的计数
-val windowedStream: WindowedStream[(String, Int), Tuple, TimeWindow] = keyedStream.timeWindow(Time.seconds(10))
-val sumDstream: DataStream[(String, Int)] = windowedStream.sum(1)</pre>
-</div>
+<p><strong>TimeWindow</strong></p>
 </div>
 <div class="paragraph">
-<p>时间间隔可以通过Time.milliseconds(x)，Time.seconds(x)，Time.minutes(x)等其中的一个来指定。
-滑动窗口（SlidingEventTimeWindows）
-滑动窗口和滚动窗口的函数名是完全一致的，只是在传参数时需要传入两个参数，一个是window_size，一个是sliding_size。
-下面代码中的sliding_size设置为了2s，也就是说，窗口每2s就计算一次，每一次计算的window范围是5s内的所有元素。</p>
+<p>TimeWindow是将指定时间范围内的所有数据组成一个Window，一次对一个Window里面的所有数据进行计算。</p>
+</div>
+<div class="paragraph">
+<p><strong>滚动窗口</strong></p>
+</div>
+<div class="paragraph">
+<p>Flink默认的时间窗口根据<strong>Processing Time</strong>进行窗口的划分，将Flink获取到的数据根据进入Flink的时间划分到不同的窗口中。</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>val keyedStream: KeyedStream[(String, Int), Tuple] = startUplogDstream.map(startuplog=&gt;(startuplog.ch,1)).keyBy(0)
-//每5秒统计一次最近10秒的各个渠道的计数
-val windowedStream: WindowedStream[(String, Int), Tuple, TimeWindow] = keyedStream.timeWindow(Time.seconds(10),Time.seconds(5))
-val sumDstream: DataStream[(String, Int)] = windowedStream.sum(1)</pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">keyedStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">startUplogDstream</span><span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">startuplog</span><span class="tok-o">=&gt;(</span><span class="tok-n">startuplog</span><span class="tok-o">.</span><span class="tok-n">ch</span><span class="tok-o">,</span><span class="tok-mi">1</span><span class="tok-o">)).</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+<span class="tok-c1">//每10s统计一次各个渠道的计数</span>
+<span class="tok-k">val</span> <span class="tok-n">windowedStream</span><span class="tok-k">:</span> <span class="tok-kt">WindowedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">keyedStream</span><span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">10</span><span class="tok-o">))</span>
+<span class="tok-k">val</span> <span class="tok-n">sumDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">windowedStream</span><span class="tok-o">.</span><span class="tok-n">sum</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>时间间隔可以通过Time.milliseconds(x)，Time.seconds(x)，Time.minutes(x)等其中的一个来指定。</p>
 </div>
 <div class="paragraph">
-<p>CountWindow
-CountWindow根据窗口中相同key元素的数量来触发执行，执行时只计算元素数量达到窗口大小的key对应的结果。
-注意：CountWindow的window_size指的是相同Key的元素的个数，不是输入的所有元素的总数。
-滚动窗口
-默认的CountWindow是一个滚动窗口，只需要指定窗口大小即可，当元素数量达到窗口大小时，就会触发窗口的执行。</p>
+<p><strong>滑动窗口(SlidingEventTimeWindows)</strong></p>
+</div>
+<div class="paragraph">
+<p>滑动窗口和滚动窗口的函数名是完全一致的，只是在传参数时需要传入两个参数，一个是window_size，一个是sliding_size。</p>
+</div>
+<div class="paragraph">
+<p>下面代码中的sliding_size设置为了2s，也就是说，窗口每2s就计算一次，每一次计算的window范围是5s内的所有元素。</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>val keyedStream: KeyedStream[(String, Int), Tuple] = startUplogDstream.map(startuplog=&gt;(startuplog.ch,1)).keyBy(0)
- //每当某一个key的个数达到10的时候，显示出来
- val windowedStream: WindowedStream[(String, Int), Tuple, GlobalWindow] = keyedStream.countWindow(10)
- val sumDstream: DataStream[(String, Int)] = windowedStream.sum(1)</pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">keyedStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">startUplogDstream</span><span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">startuplog</span><span class="tok-o">=&gt;(</span><span class="tok-n">startuplog</span><span class="tok-o">.</span><span class="tok-n">ch</span><span class="tok-o">,</span><span class="tok-mi">1</span><span class="tok-o">)).</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+<span class="tok-c1">//每5秒统计一次最近10秒的各个渠道的计数</span>
+<span class="tok-k">val</span> <span class="tok-n">windowedStream</span><span class="tok-k">:</span> <span class="tok-kt">WindowedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">keyedStream</span><span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">10</span><span class="tok-o">),</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">5</span><span class="tok-o">))</span>
+<span class="tok-k">val</span> <span class="tok-n">sumDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">windowedStream</span><span class="tok-o">.</span><span class="tok-n">sum</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>滑动窗口
-滑动窗口和滚动窗口的函数名是完全一致的，只是在传参数时需要传入两个参数，一个是window_size，一个是sliding_size。
-下面代码中的sliding_size设置为了2，也就是说，每收到两个相同key的数据就计算一次，每一次计算的window范围是5个元素。</p>
+<p>时间间隔可以通过Time.milliseconds(x)，Time.seconds(x)，Time.minutes(x)等其中的一个来指定。</p>
+</div>
+<div class="paragraph">
+<p><strong>CountWindow</strong></p>
+</div>
+<div class="paragraph">
+<p>CountWindow根据窗口中相同key元素的数量来触发执行，执行时只计算元素数量达到窗口大小的key对应的结果。</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+CountWindow的window_size指的是相同Key的元素的个数，不是输入的所有元素的总数。
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p><strong>滚动窗口</strong></p>
+</div>
+<div class="paragraph">
+<p>默认的CountWindow是一个滚动窗口，只需要指定窗口大小即可，当元素数量达到窗口大小时，就会触发窗口的执行。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">keyedStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">startUplogDstream</span><span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">startuplog</span><span class="tok-o">=&gt;(</span><span class="tok-n">startuplog</span><span class="tok-o">.</span><span class="tok-n">ch</span><span class="tok-o">,</span><span class="tok-mi">1</span><span class="tok-o">)).</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+<span class="tok-c1">//每当某一个key的个数达到10的时候，显示出来</span>
+<span class="tok-k">val</span> <span class="tok-n">windowedStream</span><span class="tok-k">:</span> <span class="tok-kt">WindowedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">GlobalWindow</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">keyedStream</span><span class="tok-o">.</span><span class="tok-n">countWindow</span><span class="tok-o">(</span><span class="tok-mi">10</span><span class="tok-o">)</span>
+<span class="tok-k">val</span> <span class="tok-n">sumDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">windowedStream</span><span class="tok-o">.</span><span class="tok-n">sum</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>滑动窗口</strong></p>
+</div>
+<div class="paragraph">
+<p>滑动窗口和滚动窗口的函数名是完全一致的，只是在传参数时需要传入两个参数，一个是window_size，一个是sliding_size。</p>
+</div>
+<div class="paragraph">
+<p>下面代码中的sliding_size设置为了2，也就是说，每收到两个相同key的数据就计算一次，每一次计算的window范围是5个元素。</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1536,20 +1655,20 @@ val sumDstream: DataStream[(String, Int)] = windowedStream.sum(1)</pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_第六章_eventtime与window">第六章 EventTime与Window</h2>
+<h2 id="_第六章_event_time与window">第六章 Event Time与Window</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_6_1_eventtime的引入">6.1 EventTime的引入</h3>
+<h3 id="_6_1_event_time的引入">6.1 Event Time的引入</h3>
 <div class="paragraph">
-<p>在Flink的流式处理中，绝大部分的业务都会使用eventTime，一般只在eventTime无法使用时，才会被迫使用ProcessingTime或者IngestionTime。
-如果要使用EventTime，那么需要引入EventTime的时间属性，引入方式如下所示：</p>
+<p>在Flink的流式处理中，绝大部分的业务都会使用Event Time，一般只在Event Time无法使用时，才会被迫使用Processing Time或者Ingestion Time。
+如果要使用Event Time，那么需要引入Event Time的时间属性，引入方式如下所示：</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>val env = StreamExecutionEnvironment.getExecutionEnvironment
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
 
-// 从调用时刻开始给env创建的每一个stream追加时间特征
-env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)</pre>
+<span class="tok-c1">// 从调用时刻开始给env创建的每一个stream追加时间特征</span>
+<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
 </div>
@@ -1571,31 +1690,62 @@ env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)</pre>
 </div>
 </div>
 <div class="paragraph">
-<p>那么此时出现一个问题，一旦出现乱序，如果只根据eventTime决定window的运行，我们不能明确数据是否全部到位，但又不能无限期的等下去，此时必须要有个机制来保证一个特定的时间后，必须触发window去进行计算了，这个特别的机制，就是Watermark。
-Watermark是一种衡量Event Time进展的机制，它是数据本身的一个隐藏属性，数据本身携带着对应的Watermark。
-Watermark是用于处理乱序事件的，而正确的处理乱序事件，通常用Watermark机制结合window来实现。
-数据流中的Watermark用于表示timestamp小于Watermark的数据，都已经到达了，因此，window的执行也是由Watermark触发的。
-Watermark可以理解成一个延迟触发机制，我们可以设置Watermark的延时时长t，每次系统会校验已经到达的数据中最大的maxEventTime，然后认定eventTime小于maxEventTime - t的所有数据都已经到达，如果有窗口的停止时间等于maxEventTime – t，那么这个窗口被触发执行。
-有序流的Watermarker如下图所示：（Watermark设置为0）
-乱序流的Watermarker如下图所示：（Watermark设置为2）
-当Flink接收到每一条数据时，都会产生一条Watermark，这条Watermark就等于当前所有到达数据中的maxEventTime - 延迟时长，也就是说，Watermark是由数据携带的，一旦数据携带的Watermark比当前未触发的窗口的停止时间要晚，那么就会触发相应窗口的执行。由于Watermark是由数据携带的，因此，如果运行过程中无法获取新的数据，那么没有被触发的窗口将永远都不被触发。
-上图中，我们设置的允许最大延迟到达时间为2s，所以时间戳为7s的事件对应的Watermark是5s，时间戳为12s的事件的Watermark是10s，如果我们的窗口1是1s<sub>5s，窗口2是6s</sub>10s，那么时间戳为7s的事件到达时的Watermarker恰好触发窗口1，时间戳为12s的事件到达时的Watermark恰好触发窗口2。</p>
+<p>那么此时出现一个问题，一旦出现乱序，如果只根据Event Time决定Window的运行，我们不能明确数据是否全部到位，但又不能无限期的等下去，此时必须要有个机制来保证一个特定的时间后，必须触发Window去进行计算了，这个特别的机制，就是Watermark。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Watermark是一种衡量Event Time进展的机制，它是数据本身的一个隐藏属性，数据本身携带着对应的Watermark。</p>
+</li>
+<li>
+<p>Watermark是用于处理乱序事件的，而正确的处理乱序事件，通常用Watermark机制结合Window来实现。</p>
+</li>
+<li>
+<p>数据流中的Watermark用于表示timestamp小于Watermark的数据，都已经到达了，因此，Window的执行也是由Watermark触发的。</p>
+</li>
+<li>
+<p>Watermark可以理解成一个延迟触发机制，我们可以设置Watermark的延时时长t，每次系统会校验已经到达的数据中最大的maxEventTime，然后认定Event Time小于maxEventTime - t的所有数据都已经到达，如果有窗口的停止时间等于maxEventTime – t，那么这个窗口被触发执行。</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>Watermark 就是触发前一窗口的“关窗时间”，一旦触发关门那么以当前时刻为准在窗口范围内的所有所有数据都会收入窗中。
-只要没有达到水位那么不管现实中的时间推进了多久都不会触发关窗。</p>
+<p>有序流的Watermarker如下图所示：(Watermark的延时时长设置为0)</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/inorderdata.png" alt="inorderdata">
+</div>
+</div>
+<div class="paragraph">
+<p>乱序流的Watermarker如下图所示：(Watermark的延时时长设置为2)</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/outorderdata.png" alt="outorderdata">
+</div>
+</div>
+<div class="paragraph">
+<p>当Flink接收到每一条数据时，都会产生一条Watermark，这条Watermark就等于当前所有到达数据中的`maxEventTime - 延迟时长`，也就是说，Watermark是由数据携带的，一旦数据携带的Watermark比当前未触发的窗口的停止时间要晚，那么就会触发相应窗口的执行。由于Watermark是由数据携带的，因此，如果运行过程中无法获取新的数据，那么没有被触发的窗口将永远都不被触发。</p>
+</div>
+<div class="paragraph">
+<p>上图中，我们设置的允许最大延迟到达时间为2s，所以时间戳为7s的事件对应的Watermark是5s，时间戳为12s的事件的Watermark是10s，如果我们的窗口1是1s～5s，窗口2是6s～10s，那么时间戳为7s的事件到达时的Watermarker恰好触发窗口1，时间戳为12s的事件到达时的Watermark恰好触发窗口2。</p>
+</div>
+<div class="paragraph">
+<p>Watermark就是触发前一窗口的"关窗时间"，一旦触发关门那么以当前时刻为准在窗口范围内的所有数据都会收入窗中。</p>
+</div>
+<div class="paragraph">
+<p>只要没有达到水位那么不管现实中的时间推进了多久都不会触发关窗。</p>
 </div>
 </div>
 <div class="sect3">
 <h4 id="_6_2_2_watermark的引入">6.2.2 Watermark的引入</h4>
 <div class="listingblock">
 <div class="content">
-<pre>val textWithEventTimeDstream: DataStream[(String, Long, Int)] = textWithTsDstream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[(String, Long, Int)](Time.milliseconds(1000)) {
-  override def extractTimestamp(element: (String, Long, Int)): Long = {
-
-   return  element._2
-  }
-})</pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">textWithEventTimeDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">textWithTsDstream</span><span class="tok-o">.</span><span class="tok-n">assignTimestampsAndWatermarks</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">BoundedOutOfOrdernessTimestampExtractor</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)](</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">milliseconds</span><span class="tok-o">(</span><span class="tok-mi">1000</span><span class="tok-o">))</span> <span class="tok-o">{</span>
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">extractTimestamp</span><span class="tok-o">(</span><span class="tok-n">element</span><span class="tok-k">:</span> <span class="tok-o">(</span><span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-nc">Int</span><span class="tok-o">))</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-k">return</span> <span class="tok-n">element</span><span class="tok-o">.</span><span class="tok-n">_2</span>
+  <span class="tok-o">}</span>
+<span class="tok-o">})</span></code></pre>
 </div>
 </div>
 </div>
@@ -1603,135 +1753,120 @@ Watermark可以理解成一个延迟触发机制，我们可以设置Watermark�
 <div class="sect2">
 <h3 id="_6_3_evnettimewindow_api">6.3 EvnetTimeWindow API</h3>
 <div class="sect3">
-<h4 id="_6_3_1_滚动窗口tumblingeventtimewindows">6.3.1 滚动窗口（TumblingEventTimeWindows）</h4>
+<h4 id="_6_3_1_滚动窗口tumblingeventtimewindows">6.3.1 滚动窗口(TumblingEventTimeWindows)</h4>
 <div class="listingblock">
 <div class="content">
-<pre>def main(args: Array[String]): Unit = {
-    //  环境
-    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-c1">// 环境</span>
+    <span class="tok-k">val</span> <span class="tok-n">env</span><span class="tok-k">:</span> <span class="tok-kt">StreamExecutionEnvironment</span> <span class="tok-o">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
 
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-    env.setParallelism(1)
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
 
-    val dstream: DataStream[String] = env.socketTextStream("hadoop1",7777)
+    <span class="tok-k">val</span> <span class="tok-n">dstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">socketTextStream</span><span class="tok-o">(</span><span class="tok-s">&quot;hadoop1&quot;</span><span class="tok-o">,</span><span class="tok-mi">7777</span><span class="tok-o">)</span>
 
+    <span class="tok-k">val</span> <span class="tok-n">textWithTsDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">dstream</span><span class="tok-o">.</span><span class="tok-n">map</span> <span class="tok-o">{</span> <span class="tok-n">text</span> <span class="tok-k">=&gt;</span>
+      <span class="tok-k">val</span> <span class="tok-n">arr</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">text</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot; &quot;</span><span class="tok-o">)</span>
+      <span class="tok-o">(</span><span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">),</span> <span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">).</span><span class="tok-n">toLong</span><span class="tok-o">,</span> <span class="tok-mi">1</span><span class="tok-o">)</span>
+    <span class="tok-o">}</span>
+    <span class="tok-k">val</span> <span class="tok-n">textWithEventTimeDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">textWithTsDstream</span><span class="tok-o">.</span><span class="tok-n">assignTimestampsAndWatermarks</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">BoundedOutOfOrdernessTimestampExtractor</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)](</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">milliseconds</span><span class="tok-o">(</span><span class="tok-mi">1000</span><span class="tok-o">))</span> <span class="tok-o">{</span>
+      <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">extractTimestamp</span><span class="tok-o">(</span><span class="tok-n">element</span><span class="tok-k">:</span> <span class="tok-o">(</span><span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-nc">Int</span><span class="tok-o">))</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+        <span class="tok-k">return</span>  <span class="tok-n">element</span><span class="tok-o">.</span><span class="tok-n">_2</span>
+      <span class="tok-o">}</span>
+    <span class="tok-o">})</span>
 
+    <span class="tok-k">val</span> <span class="tok-n">textKeyStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">textWithEventTimeDstream</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+    <span class="tok-n">textKeyStream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;textkey:&quot;</span><span class="tok-o">)</span>
 
-    val textWithTsDstream: DataStream[(String, Long, Int)] = dstream.map { text =&gt;
-      val arr: Array[String] = text.split(" ")
-      (arr(0), arr(1).toLong, 1)
-    }
-    val textWithEventTimeDstream: DataStream[(String, Long, Int)] = textWithTsDstream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[(String, Long, Int)](Time.milliseconds(1000)) {
-      override def extractTimestamp(element: (String, Long, Int)): Long = {
+    <span class="tok-k">val</span> <span class="tok-n">windowStream</span><span class="tok-k">:</span> <span class="tok-kt">WindowedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">textKeyStream</span><span class="tok-o">.</span><span class="tok-n">window</span><span class="tok-o">(</span><span class="tok-nc">TumblingEventTimeWindows</span><span class="tok-o">.</span><span class="tok-n">of</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">2</span><span class="tok-o">)))</span>
 
-       return  element._2
-      }
-    })
+    <span class="tok-k">val</span> <span class="tok-n">groupDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">mutable.HashSet</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">]]</span> <span class="tok-k">=</span> <span class="tok-n">windowStream</span><span class="tok-o">.</span><span class="tok-n">fold</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-n">mutable</span><span class="tok-o">.</span><span class="tok-nc">HashSet</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">]())</span> <span class="tok-o">{</span> <span class="tok-k">case</span> <span class="tok-o">(</span><span class="tok-n">set</span><span class="tok-o">,</span> <span class="tok-o">(</span><span class="tok-n">key</span><span class="tok-o">,</span> <span class="tok-n">ts</span><span class="tok-o">,</span> <span class="tok-n">count</span><span class="tok-o">))</span> <span class="tok-k">=&gt;</span>
+      <span class="tok-n">set</span> <span class="tok-o">+=</span> <span class="tok-n">ts</span>
+    <span class="tok-o">}</span>
 
-    val textKeyStream: KeyedStream[(String, Long, Int), Tuple] = textWithEventTimeDstream.keyBy(0)
-    textKeyStream.print("textkey:")
-
-    val windowStream: WindowedStream[(String, Long, Int), Tuple, TimeWindow] = textKeyStream.window(TumblingEventTimeWindows.of(Time.seconds(2)))
-
-    val groupDstream: DataStream[mutable.HashSet[Long]] = windowStream.fold(new mutable.HashSet[Long]()) { case (set, (key, ts, count)) =&gt;
-      set += ts
-    }
-
-    groupDstream.print("window::::").setParallelism(1)
-
-    env.execute()
-
-  }
-
-}</pre>
+    <span class="tok-n">groupDstream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;window::::&quot;</span><span class="tok-o">).</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span><span class="tok-o">()</span>
+  <span class="tok-o">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>结果是按照Event Time的时间窗口计算得出的，而无关系统的时间（包括输入的快慢）。</p>
+<p>结果是按照Event Time的时间窗口计算得出的，而无关系统的时间(包括输入的快慢)。</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_6_3_2_滑动窗口slidingeventtimewindows">6.3.2 滑动窗口（SlidingEventTimeWindows）</h4>
+<h4 id="_6_3_2_滑动窗口slidingeventtimewindows">6.3.2 滑动窗口(SlidingEventTimeWindows)</h4>
 <div class="listingblock">
 <div class="content">
-<pre>def main(args: Array[String]): Unit = {
-  //  环境
-  val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+  <span class="tok-c1">//  环境</span>
+  <span class="tok-k">val</span> <span class="tok-n">env</span><span class="tok-k">:</span> <span class="tok-kt">StreamExecutionEnvironment</span> <span class="tok-o">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
 
-  env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-  env.setParallelism(1)
+  <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
+  <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
 
-  val dstream: DataStream[String] = env.socketTextStream("hadoop1",7777)
+  <span class="tok-k">val</span> <span class="tok-n">dstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">socketTextStream</span><span class="tok-o">(</span><span class="tok-s">&quot;hadoop1&quot;</span><span class="tok-o">,</span><span class="tok-mi">7777</span><span class="tok-o">)</span>
 
+  <span class="tok-k">val</span> <span class="tok-n">textWithTsDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">dstream</span><span class="tok-o">.</span><span class="tok-n">map</span> <span class="tok-o">{</span> <span class="tok-n">text</span> <span class="tok-k">=&gt;</span>
+    <span class="tok-k">val</span> <span class="tok-n">arr</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">text</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot; &quot;</span><span class="tok-o">)</span>
+    <span class="tok-o">(</span><span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">),</span> <span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">).</span><span class="tok-n">toLong</span><span class="tok-o">,</span> <span class="tok-mi">1</span><span class="tok-o">)</span>
+  <span class="tok-o">}</span>
+  <span class="tok-k">val</span> <span class="tok-n">textWithEventTimeDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">textWithTsDstream</span><span class="tok-o">.</span><span class="tok-n">assignTimestampsAndWatermarks</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">BoundedOutOfOrdernessTimestampExtractor</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)](</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">milliseconds</span><span class="tok-o">(</span><span class="tok-mi">1000</span><span class="tok-o">))</span> <span class="tok-o">{</span>
+    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">extractTimestamp</span><span class="tok-o">(</span><span class="tok-n">element</span><span class="tok-k">:</span> <span class="tok-o">(</span><span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-nc">Int</span><span class="tok-o">))</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+      <span class="tok-k">return</span>  <span class="tok-n">element</span><span class="tok-o">.</span><span class="tok-n">_2</span>
+    <span class="tok-o">}</span>
+  <span class="tok-o">})</span>
 
+  <span class="tok-k">val</span> <span class="tok-n">textKeyStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">textWithEventTimeDstream</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+  <span class="tok-n">textKeyStream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;textkey:&quot;</span><span class="tok-o">)</span>
 
-  val textWithTsDstream: DataStream[(String, Long, Int)] = dstream.map { text =&gt;
-    val arr: Array[String] = text.split(" ")
-    (arr(0), arr(1).toLong, 1)
-  }
-  val textWithEventTimeDstream: DataStream[(String, Long, Int)] = textWithTsDstream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[(String, Long, Int)](Time.milliseconds(1000)) {
-    override def extractTimestamp(element: (String, Long, Int)): Long = {
+  <span class="tok-k">val</span> <span class="tok-n">windowStream</span><span class="tok-k">:</span> <span class="tok-kt">WindowedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">textKeyStream</span><span class="tok-o">.</span><span class="tok-n">window</span><span class="tok-o">(</span><span class="tok-nc">SlidingEventTimeWindows</span><span class="tok-o">.</span><span class="tok-n">of</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">2</span><span class="tok-o">),</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">milliseconds</span><span class="tok-o">(</span><span class="tok-mi">500</span><span class="tok-o">)))</span>
 
-     return  element._2
-    }
-  })
+  <span class="tok-k">val</span> <span class="tok-n">groupDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">mutable.HashSet</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">]]</span> <span class="tok-k">=</span> <span class="tok-n">windowStream</span><span class="tok-o">.</span><span class="tok-n">fold</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-n">mutable</span><span class="tok-o">.</span><span class="tok-nc">HashSet</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">]())</span> <span class="tok-o">{</span> <span class="tok-k">case</span> <span class="tok-o">(</span><span class="tok-n">set</span><span class="tok-o">,</span> <span class="tok-o">(</span><span class="tok-n">key</span><span class="tok-o">,</span> <span class="tok-n">ts</span><span class="tok-o">,</span> <span class="tok-n">count</span><span class="tok-o">))</span> <span class="tok-k">=&gt;</span>
+    <span class="tok-n">set</span> <span class="tok-o">+=</span> <span class="tok-n">ts</span>
+  <span class="tok-o">}</span>
 
-  val textKeyStream: KeyedStream[(String, Long, Int), Tuple] = textWithEventTimeDstream.keyBy(0)
-  textKeyStream.print("textkey:")
-
-  val windowStream: WindowedStream[(String, Long, Int), Tuple, TimeWindow] = textKeyStream.window(SlidingEventTimeWindows.of(Time.seconds(2),Time.milliseconds(500)))
-
-  val groupDstream: DataStream[mutable.HashSet[Long]] = windowStream.fold(new mutable.HashSet[Long]()) { case (set, (key, ts, count)) =&gt;
-    set += ts
-  }
-
-  groupDstream.print("window::::").setParallelism(1)
-
-  env.execute()
-
-}</pre>
+  <span class="tok-n">groupDstream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;window::::&quot;</span><span class="tok-o">).</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+  <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span><span class="tok-o">()</span>
+<span class="tok-o">}</span></code></pre>
 </div>
 </div>
 </div>
 <div class="sect3">
 <h4 id="_6_3_3_会话窗口eventtimesessionwindows">6.3.3 会话窗口（EventTimeSessionWindows）</h4>
 <div class="paragraph">
-<p>相邻两次数据的EventTime的时间差超过指定的时间间隔就会触发执行。如果加入Watermark， 会在符合窗口触发的情况下进行延迟。到达延迟水位再进行窗口触发。</p>
+<p>相邻两次数据的Event Time的时间差超过指定的时间间隔就会触发执行。如果加入Watermark，会在符合窗口触发的情况下进行延迟。到达延迟水位再进行窗口触发。</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>def main(args: Array[String]): Unit = {
-    //  环境
-    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-c1">//  环境</span>
+    <span class="tok-k">val</span> <span class="tok-n">env</span><span class="tok-k">:</span> <span class="tok-kt">StreamExecutionEnvironment</span> <span class="tok-o">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
 
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-    env.setParallelism(1)
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
 
-    val dstream: DataStream[String] = env.socketTextStream("hadoop1",7777)
+    <span class="tok-k">val</span> <span class="tok-n">dstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">socketTextStream</span><span class="tok-o">(</span><span class="tok-s">&quot;hadoop1&quot;</span><span class="tok-o">,</span><span class="tok-mi">7777</span><span class="tok-o">)</span>
 
-    val textWithTsDstream: DataStream[(String, Long, Int)] = dstream.map { text =&gt;
-      val arr: Array[String] = text.split(" ")
-      (arr(0), arr(1).toLong, 1)
-    }
-    val textWithEventTimeDstream: DataStream[(String, Long, Int)] = textWithTsDstream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[(String, Long, Int)](Time.milliseconds(1000)) {
-      override def extractTimestamp(element: (String, Long, Int)): Long = {
+    <span class="tok-k">val</span> <span class="tok-n">textWithTsDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">dstream</span><span class="tok-o">.</span><span class="tok-n">map</span> <span class="tok-o">{</span> <span class="tok-n">text</span> <span class="tok-k">=&gt;</span>
+      <span class="tok-k">val</span> <span class="tok-n">arr</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">text</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot; &quot;</span><span class="tok-o">)</span>
+      <span class="tok-o">(</span><span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">),</span> <span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">).</span><span class="tok-n">toLong</span><span class="tok-o">,</span> <span class="tok-mi">1</span><span class="tok-o">)</span>
+    <span class="tok-o">}</span>
+    <span class="tok-k">val</span> <span class="tok-n">textWithEventTimeDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">textWithTsDstream</span><span class="tok-o">.</span><span class="tok-n">assignTimestampsAndWatermarks</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">BoundedOutOfOrdernessTimestampExtractor</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)](</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">milliseconds</span><span class="tok-o">(</span><span class="tok-mi">1000</span><span class="tok-o">))</span> <span class="tok-o">{</span>
+      <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">extractTimestamp</span><span class="tok-o">(</span><span class="tok-n">element</span><span class="tok-k">:</span> <span class="tok-o">(</span><span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-nc">Int</span><span class="tok-o">))</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+        <span class="tok-k">return</span>  <span class="tok-n">element</span><span class="tok-o">.</span><span class="tok-n">_2</span>
+      <span class="tok-o">}</span>
+    <span class="tok-o">})</span>
 
-       return  element._2
-      }
-    })
+    <span class="tok-k">val</span> <span class="tok-n">textKeyStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">textWithEventTimeDstream</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+    <span class="tok-n">textKeyStream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;textkey:&quot;</span><span class="tok-o">)</span>
 
-    val textKeyStream: KeyedStream[(String, Long, Int), Tuple] = textWithEventTimeDstream.keyBy(0)
-    textKeyStream.print("textkey:")
+    <span class="tok-k">val</span> <span class="tok-n">windowStream</span><span class="tok-k">:</span> <span class="tok-kt">WindowedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">textKeyStream</span><span class="tok-o">.</span><span class="tok-n">window</span><span class="tok-o">(</span><span class="tok-nc">EventTimeSessionWindows</span><span class="tok-o">.</span><span class="tok-n">withGap</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">milliseconds</span><span class="tok-o">(</span><span class="tok-mi">500</span><span class="tok-o">))</span> <span class="tok-o">)</span>
 
-    val windowStream: WindowedStream[(String, Long, Int), Tuple, TimeWindow] = textKeyStream.window(EventTimeSessionWindows.withGap(Time.milliseconds(500)) )
-
-    windowStream.reduce((text1,text2)=&gt;
-      (  text1._1,0L,text1._3+text2._3)
-    )  .map(_._3).print("windows:::").setParallelism(1)
-
-    env.execute()
-
-  }</pre>
+    <span class="tok-n">windowStream</span><span class="tok-o">.</span><span class="tok-n">reduce</span><span class="tok-o">((</span><span class="tok-n">text1</span><span class="tok-o">,</span><span class="tok-n">text2</span><span class="tok-o">)</span><span class="tok-k">=&gt;</span>
+      <span class="tok-o">(</span><span class="tok-n">text1</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-mi">0L</span><span class="tok-o">,</span> <span class="tok-n">text1</span><span class="tok-o">.</span><span class="tok-n">_3</span> <span class="tok-o">+</span> <span class="tok-n">text2</span><span class="tok-o">.</span><span class="tok-n">_3</span><span class="tok-o">)</span>
+    <span class="tok-o">).</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">_3</span><span class="tok-o">).</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;windows:::&quot;</span><span class="tok-o">).</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span><span class="tok-o">()</span>
+  <span class="tok-o">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -1739,7 +1874,7 @@ Watermark可以理解成一个延迟触发机制，我们可以设置Watermark�
 </div>
 </div>
 <div class="sect1">
-<h2 id="_第七章_table_api_与sql">第七章 Table API 与SQL</h2>
+<h2 id="_第七章_状态编程">第七章 状态编程</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Table API是流处理和批处理通用的关系型API，Table API可以基于流输入或者批输入来运行而不需要进行任何修改。Table API是SQL语言的超集并专门为Apache Flink设计的，Table API是Scala 和Java语言集成式的API。与常规SQL语言中将查询指定为字符串不同，Table API查询是以Java或Scala中的语言嵌入样式来定义的，具有IDE支持如:自动完成和语法检测。</p>
@@ -2562,7 +2697,8 @@ val startupLogTable: Table = tableEnv.fromDataStream(startupLogWithEtDstream,'mi
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-06-05 21:57:59 +0800
+Version 1.0<br>
+Last updated 2019-06-06 15:38:13 +0800
 </div>
 </div>
 <style>
