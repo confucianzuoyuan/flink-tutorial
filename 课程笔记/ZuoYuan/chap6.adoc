@@ -1,10 +1,11 @@
-== 第六章 EventTime与Window
+== 第六章 Event Time与Window
 
-=== 6.1 EventTime的引入
+=== 6.1 Event Time的引入
 
-在Flink的流式处理中，绝大部分的业务都会使用eventTime，一般只在eventTime无法使用时，才会被迫使用ProcessingTime或者IngestionTime。
-如果要使用EventTime，那么需要引入EventTime的时间属性，引入方式如下所示：
+在Flink的流式处理中，绝大部分的业务都会使用Event Time，一般只在Event Time无法使用时，才会被迫使用Processing Time或者Ingestion Time。
+如果要使用Event Time，那么需要引入Event Time的时间属性，引入方式如下所示：
 
+[source,scala]
 ----
 val env = StreamExecutionEnvironment.getExecutionEnvironment
  
@@ -22,36 +23,48 @@ image::stream_watermark_in_order.svg[]
 
 image::stream_watermark_out_of_order.svg[]
 
-那么此时出现一个问题，一旦出现乱序，如果只根据eventTime决定window的运行，我们不能明确数据是否全部到位，但又不能无限期的等下去，此时必须要有个机制来保证一个特定的时间后，必须触发window去进行计算了，这个特别的机制，就是Watermark。
-Watermark是一种衡量Event Time进展的机制，它是数据本身的一个隐藏属性，数据本身携带着对应的Watermark。
-Watermark是用于处理乱序事件的，而正确的处理乱序事件，通常用Watermark机制结合window来实现。
-数据流中的Watermark用于表示timestamp小于Watermark的数据，都已经到达了，因此，window的执行也是由Watermark触发的。
-Watermark可以理解成一个延迟触发机制，我们可以设置Watermark的延时时长t，每次系统会校验已经到达的数据中最大的maxEventTime，然后认定eventTime小于maxEventTime - t的所有数据都已经到达，如果有窗口的停止时间等于maxEventTime – t，那么这个窗口被触发执行。
-有序流的Watermarker如下图所示：（Watermark设置为0）
-乱序流的Watermarker如下图所示：（Watermark设置为2）
-当Flink接收到每一条数据时，都会产生一条Watermark，这条Watermark就等于当前所有到达数据中的maxEventTime - 延迟时长，也就是说，Watermark是由数据携带的，一旦数据携带的Watermark比当前未触发的窗口的停止时间要晚，那么就会触发相应窗口的执行。由于Watermark是由数据携带的，因此，如果运行过程中无法获取新的数据，那么没有被触发的窗口将永远都不被触发。
-上图中，我们设置的允许最大延迟到达时间为2s，所以时间戳为7s的事件对应的Watermark是5s，时间戳为12s的事件的Watermark是10s，如果我们的窗口1是1s~5s，窗口2是6s~10s，那么时间戳为7s的事件到达时的Watermarker恰好触发窗口1，时间戳为12s的事件到达时的Watermark恰好触发窗口2。
+那么此时出现一个问题，一旦出现乱序，如果只根据Event Time决定Window的运行，我们不能明确数据是否全部到位，但又不能无限期的等下去，此时必须要有个机制来保证一个特定的时间后，必须触发Window去进行计算了，这个特别的机制，就是Watermark。
+
+* Watermark是一种衡量Event Time进展的机制，它是数据本身的一个隐藏属性，数据本身携带着对应的Watermark。
+* Watermark是用于处理乱序事件的，而正确的处理乱序事件，通常用Watermark机制结合Window来实现。
+* 数据流中的Watermark用于表示timestamp小于Watermark的数据，都已经到达了，因此，Window的执行也是由Watermark触发的。
+* Watermark可以理解成一个延迟触发机制，我们可以设置Watermark的延时时长t，每次系统会校验已经到达的数据中最大的maxEventTime，然后认定Event Time小于maxEventTime - t的所有数据都已经到达，如果有窗口的停止时间等于maxEventTime – t，那么这个窗口被触发执行。
+
+有序流的Watermarker如下图所示：(Watermark的延时时长设置为0)
+
+image::inorderdata.png[]
+
+乱序流的Watermarker如下图所示：(Watermark的延时时长设置为2)
+
+image::outorderdata.png[]
+
+当Flink接收到每一条数据时，都会产生一条Watermark，这条Watermark就等于当前所有到达数据中的`maxEventTime - 延迟时长`，也就是说，Watermark是由数据携带的，一旦数据携带的Watermark比当前未触发的窗口的停止时间要晚，那么就会触发相应窗口的执行。由于Watermark是由数据携带的，因此，如果运行过程中无法获取新的数据，那么没有被触发的窗口将永远都不被触发。
+
+上图中，我们设置的允许最大延迟到达时间为2s，所以时间戳为7s的事件对应的Watermark是5s，时间戳为12s的事件的Watermark是10s，如果我们的窗口1是1s～5s，窗口2是6s～10s，那么时间戳为7s的事件到达时的Watermarker恰好触发窗口1，时间戳为12s的事件到达时的Watermark恰好触发窗口2。
  
-Watermark 就是触发前一窗口的“关窗时间”，一旦触发关门那么以当前时刻为准在窗口范围内的所有所有数据都会收入窗中。
+Watermark就是触发前一窗口的"关窗时间"，一旦触发关门那么以当前时刻为准在窗口范围内的所有数据都会收入窗中。
+
 只要没有达到水位那么不管现实中的时间推进了多久都不会触发关窗。
 
 ==== 6.2.2 Watermark的引入
 
+[source,scala]
 ----
 val textWithEventTimeDstream: DataStream[(String, Long, Int)] = textWithTsDstream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[(String, Long, Int)](Time.milliseconds(1000)) {
   override def extractTimestamp(element: (String, Long, Int)): Long = {
-
-   return  element._2
+    return element._2
   }
 })
 ----
 
 === 6.3 EvnetTimeWindow API
-==== 6.3.1 滚动窗口（TumblingEventTimeWindows） 
 
+==== 6.3.1 滚动窗口(TumblingEventTimeWindows) 
+
+[source,scala]
 ----
 def main(args: Array[String]): Unit = {
-    //  环境
+    // 环境
     val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
 
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
@@ -59,16 +72,13 @@ def main(args: Array[String]): Unit = {
 
     val dstream: DataStream[String] = env.socketTextStream("hadoop1",7777)
 
-
-
     val textWithTsDstream: DataStream[(String, Long, Int)] = dstream.map { text =>
       val arr: Array[String] = text.split(" ")
       (arr(0), arr(1).toLong, 1)
     }
     val textWithEventTimeDstream: DataStream[(String, Long, Int)] = textWithTsDstream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[(String, Long, Int)](Time.milliseconds(1000)) {
       override def extractTimestamp(element: (String, Long, Int)): Long = {
-
-       return  element._2
+        return  element._2
       }
     })
 
@@ -82,18 +92,15 @@ def main(args: Array[String]): Unit = {
     }
 
     groupDstream.print("window::::").setParallelism(1)
-
     env.execute()
-
   }
-
-}
 ----
 
-结果是按照Event Time的时间窗口计算得出的，而无关系统的时间（包括输入的快慢）。
+结果是按照Event Time的时间窗口计算得出的，而无关系统的时间(包括输入的快慢)。
 
-==== 6.3.2 滑动窗口（SlidingEventTimeWindows）
+==== 6.3.2 滑动窗口(SlidingEventTimeWindows)
 
+[source,scala]
 ----
 def main(args: Array[String]): Unit = {
   //  环境
@@ -104,16 +111,13 @@ def main(args: Array[String]): Unit = {
 
   val dstream: DataStream[String] = env.socketTextStream("hadoop1",7777)
 
-
-
   val textWithTsDstream: DataStream[(String, Long, Int)] = dstream.map { text =>
     val arr: Array[String] = text.split(" ")
     (arr(0), arr(1).toLong, 1)
   }
   val textWithEventTimeDstream: DataStream[(String, Long, Int)] = textWithTsDstream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[(String, Long, Int)](Time.milliseconds(1000)) {
     override def extractTimestamp(element: (String, Long, Int)): Long = {
-
-     return  element._2
+      return  element._2
     }
   })
 
@@ -127,16 +131,15 @@ def main(args: Array[String]): Unit = {
   }
 
   groupDstream.print("window::::").setParallelism(1)
-
   env.execute()
-
 }
 ----
 
 ==== 6.3.3 会话窗口（EventTimeSessionWindows）
 
-相邻两次数据的EventTime的时间差超过指定的时间间隔就会触发执行。如果加入Watermark， 会在符合窗口触发的情况下进行延迟。到达延迟水位再进行窗口触发。
+相邻两次数据的Event Time的时间差超过指定的时间间隔就会触发执行。如果加入Watermark，会在符合窗口触发的情况下进行延迟。到达延迟水位再进行窗口触发。
 
+[source,scala]
 ----
 def main(args: Array[String]): Unit = {
     //  环境
@@ -153,8 +156,7 @@ def main(args: Array[String]): Unit = {
     }
     val textWithEventTimeDstream: DataStream[(String, Long, Int)] = textWithTsDstream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[(String, Long, Int)](Time.milliseconds(1000)) {
       override def extractTimestamp(element: (String, Long, Int)): Long = {
-
-       return  element._2
+        return  element._2
       }
     })
 
@@ -164,10 +166,8 @@ def main(args: Array[String]): Unit = {
     val windowStream: WindowedStream[(String, Long, Int), Tuple, TimeWindow] = textKeyStream.window(EventTimeSessionWindows.withGap(Time.milliseconds(500)) )
 
     windowStream.reduce((text1,text2)=>
-      (  text1._1,0L,text1._3+text2._3)
-    )  .map(_._3).print("windows:::").setParallelism(1)
-
+      (text1._1, 0L, text1._3 + text2._3)
+    ).map(_._3).print("windows:::").setParallelism(1)
     env.execute()
-
   }
 ----

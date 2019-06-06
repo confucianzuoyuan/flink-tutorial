@@ -1,4 +1,6 @@
 = Atguigu Flink Tutorial
+Yuan Zuo <zuoyuan@atguigu.com>
+v1.0, 2019-06-01
 :icons: font
 :source-highlighter: pygments
 :toc:
