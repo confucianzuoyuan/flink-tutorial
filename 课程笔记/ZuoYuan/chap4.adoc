@@ -158,6 +158,23 @@ inputStream
   .reduce((x, y) => x._1, x._2 ::: y._2)
 ----
 
+=== 4.5 Multistream Transformations
+
+==== 4.5.1 Union
+
+==== 4.5.2 Connect, Comap and Coflatmap
+
+==== 4.5.3 Split and Select
+
+=== 4.6 Distribution Transformations
+
+* Random
+* Round-Robin
+* Rescale
+* Broadcast
+* Global
+* Custom
+
 ==== 4.3.6 Split 和 Select
 
 Split
