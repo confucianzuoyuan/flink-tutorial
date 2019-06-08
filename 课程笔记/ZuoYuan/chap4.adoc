@@ -1,4 +1,4 @@
-== 第四章 Flink 流处理Api
+== 第四章 Flink DataStream API
 
 [graphviz, dot-example, svg]
 ----
@@ -12,97 +12,75 @@ digraph g {
 
 === 4.1 Environment
 
-getExecutionEnvironment
+*getExecutionEnvironment*
 
 创建一个执行环境，表示当前执行程序的上下文。如果程序是独立调用的，则此方法返回本地执行环境；如果从命令行客户端调用程序以提交到集群，则此方法返回此集群的执行环境，也就是说，getExecutionEnvironment会根据查询运行的方式决定返回什么样的运行环境，是最常用的一种创建执行环境的方式。
 
 [source,scala]
 ----
+// 获取执行环境
 val env: ExecutionEnvironment = ExecutionEnvironment.getExecutionEnvironment
-----
-
-如果没有设置并行度，会以flink-conf.yaml中的配置为准，默认是1
-
-createLocalEnvironment
-返回本地执行环境，需要在调用时指定默认的并行度。
-
-[source,scala]
-----
-val env = StreamExecutionEnvironment.createLocalEnvironment(1)
-----
-
-createRemoteEnvironment
-返回集群执行环境，将Jar提交到远程服务器。需要在调用时指定JobManager的IP和端口号，并指定要在集群中运行的Jar包。
-
-[source,scala]
-----
-val env = ExecutionEnvironment.createRemoteEnvironment("node", 6123,"C://jar//flink//wordcount.jar")
+// 设置流的时间为Event Time
+env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+// 设置并行度为1，如果不设置，那么默认为当前机器的cpu的数量
+env.setParallelism(1)
 ----
 
 === 4.2 Source
 
-创建Kafka工具类
+以Kafka消息队列的数据为数据来源
 
 [source,scala]
 ----
-object MyKafkaUtil {
+object ScalaHotItems {
 
-  val prop = new Properties()
+  def main(args: Array[String]): Unit = {
+    val properties = new Properties()
+    properties.setProperty("bootstrap.servers", "localhost:9092")
+    properties.setProperty("group.id", "consumer-group")
+    properties.setProperty("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
+    properties.setProperty("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
+    properties.setProperty("auto.offset.reset", "latest")
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+    env.setParallelism(1)
+    val stream = env
+      // source为来自Kafka的数据，这里我们实例化一个消费者，topic为hotitems
+      .addSource(new FlinkKafkaConsumer[String]("hotitems", new SimpleStringSchema(), properties))
+      .print()
 
-  prop.setProperty("bootstrap.servers","hadoop1:9092")
-  prop.setProperty("group.id","gmall")
-
-  def getConsumer(topic:String ):FlinkKafkaConsumer011[String]= {
-      val myKafkaConsumer:FlinkKafkaConsumer011[String] = new FlinkKafkaConsumer011[String](topic, new SimpleStringSchema(), prop)
-     myKafkaConsumer
+    // 执行DAG
+    env.execute("Hot Items Job")
   }
 }
 ----
-
-增加业务主类StartupApp
-
-[souce,scala]
-----
-object StartupApp {
-    def main(args: Array[String]): Unit = {
-        val environment: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
-
-        val kafkaConsumer  =MyKafkaUtil.getConsumer("GMALL_STARTUP")
-
-        val dstream: DataStream[String] = environment.addSource(kafkaConsumer)
-
-        dstream.print()
-
-        environment.execute()
-    }
-}
-----
-
-Flink+Kafka是如何实现exactly-once语义的
-
-Flink通过checkpoint来保存数据是否处理完成的状态
-    
-由JobManager协调各个TaskManager进行checkpoint存储，checkpoint保存在 StateBackend中，默认StateBackend是内存级的，也可以改为文件级的进行持久化保存。
-
-执行过程实际上是一个两段式提交，每个算子执行完成，会进行“预提交”，直到执行完sink操作，会发起“确认提交”，如果执行失败，预提交会放弃掉。
-如果宕机需要通过StateBackend进行恢复，只能恢复所有确认提交的操作。
 
 https://flink.apache.org/features/2018/03/01/end-to-end-exactly-once-apache-flink.html
 
 文档
 
-=== 4.3 Transform
+=== 4.3 Basic Transformations
 
-转换算子
+基本转换算子
 
 ==== 4.3.1 map
+
+image::map.png[]
 
 [source,scala]
 ----
 val streamMap = stream.map { x => x * 2 }
 ----
 
-==== 4.3.2 flatMap   
+==== 4.3.2 flatMap
+
+image::flatmap.png[]
+
+白框不变，黑框复制，灰框过滤
+
+flatmap类似map，但可以生成0个或者1个或者多个数据
+
+flatmap可以实现map和filter
 
 [source,scala]
 ----
@@ -113,6 +91,8 @@ val streamFlatMap = stream.flatMap{
 
 ==== 4.3.3 Filter
 
+image::filter.png[]
+
 [source,scala]
 ----
 val streamFilter = stream.filter{
@@ -120,23 +100,62 @@ val streamFilter = stream.filter{
 }
 ----
 
-==== 4.3.4 KeyBy
+=== 4.4 KeyedStream Transformations
 
-DataStream → KeyedStream：输入必须是Tuple类型，逻辑地将一个流拆分成不相交的分区，每个分区包含具有相同key的元素，在内部以hash的形式实现的。
+==== 4.4.1 keyBy
 
-==== 4.3.5 Reduce
+分流算子 DataStream -> KeyedStream
+
+image::keyby.png[]
+
+黑色去一条流，剩下的去另一条流
+
+[source,scala]
+----
+// 以数据的id为key分流
+stream.keyBy(r => r.id)
+// 以case class的word字段为key分流
+stream.keyBy("word")
+// 以Tuple的第0个元素为key分流
+stream.keyBy(0)
+----
+
+==== 4.4.2 Rolling Aggregations
+
+针对KeyedStream的每一条流做聚合
+
+* sum()
+* min()
+* max()
+* minBy()
+* maxBy()
+
+[source,scala]
+----
+val inputStream: DataStream[(Int, Int, Int)] = 
+env.fromElements(
+  (1, 2, 2), (2, 3, 1), (2, 2, 4), (1, 5, 3))
+
+val resultStream: DataStream[(Int, Int, Int)] = inputStream
+  .keyBy(0)
+  .sum(1)
+----
+
+==== 4.4.3 Reduce
 
 KeyedStream → DataStream：一个分组数据流的聚合操作，合并当前的元素和上次聚合的结果，产生一个新的值，返回的流中包含每一次聚合的结果，而不是只返回最后一次聚合的最终结果。
 
 [source,scala]
 ----
-//求各个渠道的累计个数
-val startUplogDstream: DataStream[StartUpLog] = dstream.map{ JSON.parseObject(_,classOf[StartUpLog])}
-val keyedStream: KeyedStream[(String, Int), Tuple] = startUplogDstream.map(startuplog=>(startuplog.ch,1)).keyBy(0)
-//reduce //sum
-keyedStream.reduce{  (ch1,ch2)=>
-  (ch1._1,ch1._2+ch2._2)
-} .print().setParallelism(1)
+val inputStream: DataStream[(String, List[String])] =
+env.fromElements(
+  ("en", List("tea")), ("fr", List("vin")), ("en", List("cake"))
+)
+
+val resultStream: DataStream[(String, List[String])] =
+inputStream
+  .keyBy(0)
+  .reduce((x, y) => x._1, x._2 ::: y._2)
 ----
 
 ==== 4.3.6 Split 和 Select
