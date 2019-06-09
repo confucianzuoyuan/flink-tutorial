@@ -364,6 +364,98 @@ val input: DataStream[(Int, Int)] = ...
 val keyedStream = input.keyBy(value => math.max(value._1, value._2))
 ----
 
+=== 4.8 实现UDF函数，更细粒度的控制流
+
+==== 4.8.1 Function Classes
+
+Flink暴露了所有udf函数的接口(实现方式为接口或者抽象类)。例如MapFunction, FilterFunction, ProcessFunction等等。
+
+例子实现了FilterFunction接口
+
+[source,scala]
+----
+class FilterFilter extends FilterFunction[String] {
+  override def filter(value: String): Boolean = {
+    value.contains("flink")
+  }
+}
+
+val flinkTweets = tweets.filter(new FlinkFilter)
+----
+
+还可以将函数实现成匿名类
+
+[source,scala]
+----
+val flinkTweets = tweets.filter(
+  new RichFilterFunction[String] {
+    override def filter(value: String): Boolean = {
+      value.contains("flink")
+    }
+  }
+)
+----
+
+我们filter的字符串"flink"还可以当作参数传进去。
+
+[source,scala]
+----
+val tweets: DataStream[String] = ...
+val flinkTweets = tweets.filter(new KeywordFilter("flink"))
+
+class KeywordFilter(keyWord: String) extends FilterFunction[String] {
+  override def filter(value: String): Boolean = {
+    value.contains(keyWord)
+  }
+}
+----
+
+==== 4.8.2 Lambda Functions
+
+[source,scala]
+----
+val tweets: DataStream[String] = ...
+val flinkTweets = tweets.filter(_.contains("flink"))
+----
+
+==== 4.8.3 Rich Functions
+
+* RichMapFunction
+* RichFlatMapFunction
+* RichFilterFunction
+* ...
+
+所有Flink提供的Function都有Rich版本，提供了更丰富的功能。
+
+Rich Function有一个生命周期的概念
+
+* open()方法是rich function的初始化方法，当一个算子例如map或者filter被调用之前open()会被调用。
+* close()方法是生命周期中的最后一个调用的方法，做一些清理工作。
+* getRuntimeContext()方法提供了函数的RuntimeContext的一些信息，例如函数执行的并行度，任务的名字，以及state状态
+
+[source,scala]
+----
+class MyFlatMap extends RichFlatMapFunction[Int, (Int, Int)] {
+  var subTaskIndex = 0
+
+  override def open(configuration: Configuration): Unit = {
+    subTaskIndex = getRuntimeContext.getIndexOfThisSubtask
+    // 做一些初始化工作
+    // 例如建立一个和HDFS的连接
+  }
+
+  override def flatMap(in: Int, out: Collector[(Int, Int)]): Unit = {
+    if (in % 2 == subTaskIndex) {
+      out.collect((subTaskIndex, in))
+    }
+  }
+
+  override def close(): Unit = {
+    // 清理工作，断开和HDFS的连接。
+  }
+}
+----
+
 === 4.4 Sink
    Flink没有类似于spark中foreach方法，让用户进行迭代的操作。虽有对外的输出操作都要利用Sink完成。最后通过类似如下方式完成整个任务最终输出操作。
 
