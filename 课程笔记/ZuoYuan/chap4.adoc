@@ -143,7 +143,7 @@ val resultStream: DataStream[(Int, Int, Int)] = inputStream
 
 ==== 4.4.3 Reduce
 
-KeyedStream → DataStream：一个分组数据流的聚合操作，合并当前的元素和上次聚合的结果，产生一个新的值，返回的流中包含每一次聚合的结果，而不是只返回最后一次聚合的最终结果。
+KeyedStream -> DataStream：一个分组数据流的聚合操作，合并当前的元素和上次聚合的结果，产生一个新的值，返回的流中包含每一次聚合的结果，而不是只返回最后一次聚合的最终结果。
 
 [source,scala]
 ----
@@ -162,80 +162,207 @@ inputStream
 
 ==== 4.5.1 Union
 
+image::union.png[]
+
+将事件类型相同的多条DataStream合并到一起，在进入到合流时，使用FIFO先进先出的原则。Union算子不会对事件的顺序做处理。
+
+[source,scala]
+----
+val parisStream: DataStream[SensorReading] = ...
+val tokyoStream: DataStream[SensorReading] = ...
+val rioStream: DataStream[SensorReading] = ...
+val allCities: DataStream[SensorRreading] = parisStream
+  .union(tokyoStream, rioStream)
+----
+
 ==== 4.5.2 Connect, Comap and Coflatmap
+
+联合两条流的事件是非常常见的流处理需求。例如监控一片森林然后发出高危的火警警报。报警的Application接收两条流，一条是温度传感器传回来的数据，一条是烟雾传感器传回来的数据。当两条流都超过各自的阈值时，报警。
+
+DataStream.connect()方法就实现了这个功能。DataStream -> ConnectedStreams。
+
+[source,scala]
+----
+// first stream
+val first: DataStream[Int] = ...
+// second stream
+val second: DataStream[String] = ...
+
+// connect streams
+val connected: ConnectedStreams[Int, String] =
+first.connect(second)
+----
+
+ConnectedStream提供了map和flatMap方法。
+
+* map: 需要CoMapFunction作为参数
+* flatMap: 需要CoFlatMapFunction作为参数
+
+CoMapFunction和CoFlatMapFunction都需要两条输入流的类型，还需要输出流的类型，还需要定义两个方法，一个方法对应一条流。map1()和flatMap1()处理第一条流，map2()和flatMap2()处理第二条流。
+
+----
+// IN1: 第一条流的事件类型
+// IN2: 第二条流的事件类型
+// OUT: 输出流的事件类型
+CoMapFunction[IN1, IN2, OUT]
+    > map1(IN1): OUT
+    > map2(IN2): OUT
+
+CoFlatMapFunction[IN1, IN2, OUT]
+    > flatMap1(IN1, Collector[OUT]): Unit
+    > flatMap2(IN2, Collector[OUT]): Unit
+----
+
+两条流直接connect，其实是没有意义的。因为我们相当于将两条流随机的合并成了一条流，结果没什么价值。为了获得确定性的结果，connect必须和keyBy或者broadcast一起使用。
+
+*keyBy*
+
+以两条流的事件的第一个元素为key，做连接join
+
+[source,scala]
+----
+val one: DataStream[(Int, Long)] = ...
+val two: DataStream[(Int, String)] = ...
+
+// keyBy two connected streams
+val keyedConnect1: ConnectedStreams[(Int, Long), (Int, String)] =
+one
+  .connect(two)
+  .keyBy(0, 0) // key both input streams on first attribute
+
+// alternative: connect two keyed streams
+val keyedConnect2: ConnectedStreams[(Int, Long), (Int, String)] =
+one.keyBy(0).connect(two.keyBy(0))
+----
+
+以上程序其实相当于实现了SQL中的JOIN语义。
 
 ==== 4.5.3 Split and Select
 
-=== 4.6 Distribution Transformations
+Split是Union的反函数。
 
-* Random
-* Round-Robin
-* Rescale
-* Broadcast
-* Global
-* Custom
+image::split.png[]
 
-==== 4.3.6 Split 和 Select
-
-Split
-
-DataStream → SplitStream：根据某些特征把一个DataStream拆分成两个或者多个DataStream。
-Select
-
-SplitStream→DataStream：从一个SplitStream中获取一个或者多个DataStream。
-
-需求：把appstore和其他的渠道的数据单独拆分出来，做成两个流
+DataStream -> SplitStream
 
 [source,scala]
 ----
-     // 将appstore与其他渠道拆分拆分出来  成为两个独立的流
-val splitStream: SplitStream[StartUpLog] = startUplogDstream.split { startUplog =>
-  var flags:List[String] =  null
-  if ("appstore" == startUplog.ch) {
-    flags = List(startUplog.ch)
-  } else {
-    flags = List("other" )
-  }
-  flags
-}
-val appStoreStream: DataStream[StartUpLog] = splitStream.select("appstore")
-appStoreStream.print("apple:").setParallelism(1)
-val otherStream: DataStream[StartUpLog] = splitStream.select("other")
-otherStream.print("other:").setParallelism(1)
-----
+val inputStream: DataStream[(Int, String)] = ...
 
-==== 4.3.7 Connect和CoMap
+val splitted: SplitStream[(Int, String)] = inputStream
+  .split(t => if (t._1 > 1000) Seq("large") else Seq("small"))
 
-DataStream,DataStream → ConnectedStreams：连接两个保持他们类型的数据流，两个数据流被Connect之后，只是被放在了一个同一个流中，内部依然保持各自的数据和形式不发生任何变化，两个流相互独立。
-CoMap,CoFlatMap
-
-ConnectedStreams → DataStream：作用于ConnectedStreams上，功能与map和flatMap一样，对ConnectedStreams中的每一个Stream分别进行map和flatMap处理。
-
-[source,scala]
-----
-//合并以后打印
-val connStream: ConnectedStreams[StartUpLog, StartUpLog] = appStoreStream.connect(otherStream)
-val allStream: DataStream[String] = connStream.map(
-  (log1: StartUpLog) => log1.ch,
-  (log2: StartUpLog) => log2.ch
-)
-allStream.print("connect::")
-----
-
-==== 4.3.8 Union
-
-DataStream → DataStream：对两个或者两个以上的DataStream进行union操作，产生一个包含所有DataStream元素的新DataStream。注意:如果你将一个DataStream跟它自己做union操作，在新的DataStream中，你将看到每一个元素都出现两次。
-
-[source,scala]
-----
-//合并以后打印
-val unionStream: DataStream[StartUpLog] = appStoreStream.union(otherStream)
-unionStream.print("union:::")
+val large: DataStream[(Int, String)] = splitted.select("large")
+val small: DataStream[(Int, String)] = splitted.select("small")
+val all: DataStream[(Int, String)] = splitted.select("small", "large")
 ----
 
 Connect与 Union 区别：
-1 、 Union之前两个流的类型必须是一样，Connect可以不一样，在之后的coMap中再去调整成为一样的。
-2 Connect只能操作两个流，Union可以操作多个
+1 Union之前两个流的类型必须是一样，Connect可以不一样，在之后的CoMapFunction中再去调整成为一样的。
+2 Connect只能操作两个流，Union可以操作多个。
+
+=== 4.6 支持的数据类型
+
+*Primitives*
+
+[source,scala]
+----
+val numbers: DataStream[Long] = env.fromElements(1L, 2L, 3L, 4L)
+numbers.map( n => n + 1 )
+----
+
+*Tuples*
+
+[source,scala]
+----
+val persons: DataStream[(String, Integer)] =
+env.fromElements(
+  ("Adam", 17),
+  ("Sarah", 23)
+)
+
+persons.filter(p => p._2 > 18)
+----
+
+*Scala case classes*
+
+[source,scala]
+----
+case class Person(name: String, age: Int)
+
+val persons: DataStream[Person] = env.fromElements(
+  Person("Adam", 17),
+  Person("Sarah", 23)
+)
+
+persons.filter(p => p.age > 18)
+----
+
+*others*
+
+* Hadoop Writable types
+* Java's POJOs, ArrayList, HashMap, Enum
+* ...
+
+=== 4.7 keyBy相关用法
+
+[source,scala]
+----
+val input: DataStream[(Int, String, Long)] = ...
+val keyed = input.keyBy(1)
+val keyed2 = input.keyBy(1, 2)
+----
+
+[source,scala]
+----
+case class SensorReading(
+  id: String,
+  timestamp: Long,
+  temperature: Double
+)
+
+val sensorStream: DataStream[SensorReading] = ...
+val keyedSensors = sensorStream.keyBy("id")
+----
+
+[source,scala]
+----
+val input: DataStream[(Int, String, Long)] = ...
+val keyed1 = input.keyBy("2") // key by 3rd field
+val keyed2 = input.keyBy("_1") // key by 1st field
+----
+
+[source,scala]
+----
+case class Address (
+  address: String,
+  zip: String,
+  country: String
+)
+
+case class Person (
+  name: String,
+  birthday: (Int, Int, Int), // year, month, day
+  address: Address
+)
+
+val persons: DataStream[Person] = ...
+persons.keyBy("address.zip") // key by nested POJO field
+persons.keyBy("birthday._1") // key by field of nested tuple
+persons.keyBy("birthday._") // key by all fields of nested tuple
+----
+
+[source,scala]
+----
+val sensorData: DataStream[SensorReading] = ...
+val byId: KeyedStream[SensorReading, String] = sensorData.keyBy(r => r.id)
+----
+
+[source,scala]
+----
+val input: DataStream[(Int, Int)] = ...
+val keyedStream = input.keyBy(value => math.max(value._1, value._2))
+----
 
 === 4.4 Sink
    Flink没有类似于spark中foreach方法，让用户进行迭代的操作。虽有对外的输出操作都要利用Sink完成。最后通过类似如下方式完成整个任务最终输出操作。
