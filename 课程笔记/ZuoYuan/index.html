@@ -451,26 +451,26 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel1">
 <li><a href="#_第一章_flink简介">第一章 Flink简介</a>
 <ul class="sectlevel2">
-<li><a href="#_1_初识flink">1. 初识Flink</a></li>
-<li><a href="#_2_为什么选择flink">2. 为什么选择Flink</a>
+<li><a href="#_1_1_初识flink">1.1 初识Flink</a></li>
+<li><a href="#_1_2_为什么选择flink">1.2 为什么选择Flink</a>
 <ul class="sectlevel3">
-<li><a href="#_2_1_流处理欠佳的后果">2.1 流处理欠佳的后果</a>
+<li><a href="#_1_2_1_流处理欠佳的后果">1.2.1 流处理欠佳的后果</a>
 <ul class="sectlevel4">
-<li><a href="#_2_1_1_零售业和市场营销">2.1.1 零售业和市场营销</a></li>
-<li><a href="#_2_1_2_物联网">2.1.2 物联网</a></li>
-<li><a href="#_2_1_3_电信业">2.1.3 电信业</a></li>
-<li><a href="#_2_1_4_银行和金融业">2.1.4 银行和金融业</a></li>
+<li><a href="#_1_2_1_1_零售业和市场营销">1.2.1.1 零售业和市场营销</a></li>
+<li><a href="#_1_2_1_2_物联网">1.2.1.2 物联网</a></li>
+<li><a href="#_1_2_1_3_电信业">1.2.1.3 电信业</a></li>
+<li><a href="#_1_2_1_4_银行和金融业">1.2.1.4 银行和金融业</a></li>
 </ul>
 </li>
-<li><a href="#_2_2_连续事件处理的目标">2.2 连续事件处理的目标</a></li>
-<li><a href="#_2_3_流处理技术的演变">2.3 流处理技术的演变</a></li>
+<li><a href="#_1_2_2_连续事件处理的目标">1.2.2 连续事件处理的目标</a></li>
+<li><a href="#_1_2_3_流处理技术的演变">1.2.3 流处理技术的演变</a></li>
 </ul>
 </li>
-<li><a href="#_3_flink的重要特点">3. Flink的重要特点</a>
+<li><a href="#_1_3_flink的重要特点">1.3 Flink的重要特点</a>
 <ul class="sectlevel3">
-<li><a href="#_3_1_事件驱动型event_driven">3.1 事件驱动型(Event-Driven)</a></li>
-<li><a href="#_3_2_流与批的世界观">3.2 流与批的世界观</a></li>
-<li><a href="#_3_3_分层api">3.3 分层api</a></li>
+<li><a href="#_1_3_1_事件驱动型event_driven">1.3.1 事件驱动型(Event-Driven)</a></li>
+<li><a href="#_1_3_2_流与批的世界观">1.3.2 流与批的世界观</a></li>
+<li><a href="#_1_3_3_分层api">1.3.3 分层api</a></li>
 </ul>
 </li>
 </ul>
@@ -637,7 +637,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="_第一章_flink简介">第一章 Flink简介</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_1_初识flink">1. 初识Flink</h3>
+<h3 id="_1_1_初识flink">1.1 初识Flink</h3>
 <div class="paragraph">
 <p>Flink起源于Stratosphere项目，Stratosphere是在2010～2014年由3所地处柏林的大学和欧洲的一些其他的大学共同进行的研究项目，2014年4月Stratosphere的代码被复制并捐赠给了Apache软件基金会，参加这个孵化项目的初始成员是Stratosphere系统的核心开发人员，2014年12月，Flink一跃成为Apache软件基金会的顶级项目。</p>
 </div>
@@ -663,7 +663,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect2">
-<h3 id="_2_为什么选择flink">2. 为什么选择Flink</h3>
+<h3 id="_1_2_为什么选择flink">1.2 为什么选择Flink</h3>
 <div class="paragraph">
 <p>许多系统都会产生连续的事件流，如行驶中的汽车发射出GPS信号，金融交易，移动通信基站与繁忙的智能手机进行信号交换，网络流量，机器日志，工业传感器和可穿戴设备的测量结果，等等。如果能够高效地分析大规模流数据，我们对上述系统的理解将会更清楚、更快速。简而言之，流数据更真实地反映了我们的生活方式。</p>
 </div>
@@ -677,12 +677,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>而Flink为大容量数据提供流处理，并用同一种技术实现批处理。</p>
 </div>
 <div class="sect3">
-<h4 id="_2_1_流处理欠佳的后果">2.1 流处理欠佳的后果</h4>
+<h4 id="_1_2_1_流处理欠佳的后果">1.2.1 流处理欠佳的后果</h4>
 <div class="paragraph">
 <p>谁需要和流数据打交道呢? 首先映入脑海的是从事传感器测量和金融交易的工作人员。对于他们来说，流处理非常有用。但是流数据来源非常广泛，两个常见的例子是: 网站获得的能够反映用户行为的点击流数据，以及私有数据中心的机器日志。事实上，流数据来源无处不在，但是从连续事件中获得数据并不意味着可以在批量计算中使用这些数据。如今，处理大规模流数据的新技术正在改变这一状况。</p>
 </div>
 <div class="sect4">
-<h5 id="_2_1_1_零售业和市场营销">2.1.1 零售业和市场营销</h5>
+<h5 id="_1_2_1_1_零售业和市场营销">1.2.1.1 零售业和市场营销</h5>
 <div class="paragraph">
 <p>在现代零售业中，网站点击量就代表了销量。网站获得的点击数据可能是大量、连续、不均匀的。用以往的技术很难处理好如此规模的数据。仅是构建批量系统处理这些数据流就很有挑战性: 结果很可能是需要一个庞大且复杂的系统。并且，传统的做法还会带来数据丢失、延迟、错误的聚合结果等问题。这样的结果怎能对商业领域有所帮助呢?</p>
 </div>
@@ -700,7 +700,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect4">
-<h5 id="_2_1_2_物联网">2.1.2 物联网</h5>
+<h5 id="_1_2_1_2_物联网">1.2.1.2 物联网</h5>
 <div class="paragraph">
 <p>物联网是流数据被普遍应用的领域。在物联网中，低延迟的数据传输和处理，以及准确的数据分析通常很关键。各类仪器中的传感器频繁地获得测量数据，并将它们以流的形式传输至数据中心。在数据中心内，实时或者接近实时的应用程序将更新显示板，运行机器学习模型，发布警告，并就许多不同的服务项目提供反馈。</p>
 </div>
@@ -718,13 +718,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect4">
-<h5 id="_2_1_3_电信业">2.1.3 电信业</h5>
+<h5 id="_1_2_1_3_电信业">1.2.1.3 电信业</h5>
 <div class="paragraph">
 <p>电信业是一个特殊的例子，它广泛地应用了基于各种目的而产生的跨地域的事件流数据。如果电信公司不能很好地处理流数据，就不能在某个移动通信基站出现流量高峰前预先将流量分配给其他的基站，也不能在断电时快速做出反应。通过处理流数据来进行异常检测，如检测通话中断或者设备故障，对于电信业来说至关重要。</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_2_1_4_银行和金融业">2.1.4 银行和金融业</h5>
+<h5 id="_1_2_1_4_银行和金融业">1.2.1.4 银行和金融业</h5>
 <div class="paragraph">
 <p>因为流处理做得不好而给银行以及金融业带来的潜在问题是极其显著的。从事零售业务的银行不希望客户交易被延迟或者因为错误统计而造成账户余额出错。曾有一个说法叫作"银行家工作时间"，指的就是银行需要在下午早早关门进行结算，这样才能保证第二天营业之前算出准确的账。这种批量作业的营业模式早已消失。如今，交易和报表都必须快速且准确地生成; 有些新兴的银行甚至提供实时的推送通知，以及随时随地访问手机银行的服务。在全球化经济中，能够提供24小时服务变得越来越重要。</p>
 </div>
@@ -734,7 +734,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect3">
-<h4 id="_2_2_连续事件处理的目标">2.2 连续事件处理的目标</h4>
+<h4 id="_1_2_2_连续事件处理的目标">1.2.2 连续事件处理的目标</h4>
 <div class="paragraph">
 <p>能够以非常低的延迟处理数据，这并不是流处理的唯一优势。人们希望流处理不仅做到低延迟和高吞吐，还可以处理中断。优秀的流处理技术应该能使系统在崩溃之后重新启动，并且产出准确的结果; 换句话说，优秀的流处理技术可以容错，而且能保证exactly-once。</p>
 </div>
@@ -743,7 +743,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect3">
-<h4 id="_2_3_流处理技术的演变">2.3 流处理技术的演变</h4>
+<h4 id="_1_2_3_流处理技术的演变">1.2.3 流处理技术的演变</h4>
 <div class="paragraph">
 <p>分开处理连续的实时数据和有限批次的数据，可以使系统构建工作变得更加简单，但是这种做法将管理两套系统的复杂性留给了系统用户: 应用程序的开发团队和DevOps团队需要自己使用并管理这两套系统。</p>
 </div>
@@ -892,9 +892,9 @@ Lambda架构的问题是改变代码后需要重新在两个复杂的分布式�
 </div>
 </div>
 <div class="sect2">
-<h3 id="_3_flink的重要特点">3. Flink的重要特点</h3>
+<h3 id="_1_3_flink的重要特点">1.3 Flink的重要特点</h3>
 <div class="sect3">
-<h4 id="_3_1_事件驱动型event_driven">3.1 事件驱动型(Event-Driven)</h4>
+<h4 id="_1_3_1_事件驱动型event_driven">1.3.1 事件驱动型(Event-Driven)</h4>
 <div class="paragraph">
 <p>事件驱动型应用是一类具有状态的应用，它从一个或多个事件流提取数据，并根据到来的事件触发计算、状态更新或其他外部动作。比较典型的就是以Kafka为代表的消息队列几乎都是事件驱动型应用。</p>
 </div>
@@ -916,7 +916,7 @@ Lambda架构的问题是改变代码后需要重新在两个复杂的分布式�
 </div>
 </div>
 <div class="sect3">
-<h4 id="_3_2_流与批的世界观">3.2 流与批的世界观</h4>
+<h4 id="_1_3_2_流与批的世界观">1.3.2 流与批的世界观</h4>
 <div class="paragraph">
 <p><strong>批处理</strong>的特点是有界、持久、大量，非常适合需要访问全套记录才能完成的计算工作，一般用于离线统计。</p>
 </div>
@@ -945,7 +945,7 @@ Lambda架构的问题是改变代码后需要重新在两个复杂的分布式�
 </div>
 </div>
 <div class="sect3">
-<h4 id="_3_3_分层api">3.3 分层api</h4>
+<h4 id="_1_3_3_分层api">1.3.3 分层api</h4>
 <div class="imageblock">
 <div class="content">
 <img src="images/api-stack.png" alt="api stack">
@@ -973,7 +973,7 @@ Lambda架构的问题是改变代码后需要重新在两个复杂的分布式�
 <i class="fa icon-warning" title="Warning"></i>
 </td>
 <td class="content">
-目前Flink作为批处理还不是主流，不如Spark成熟，所以DataSet使用的并不是很多。Flink Table API和Flink SQL也并不完善，大多都由各大厂商自己定制。所以我们主要学习DataStream API的使用。实际上Flink作为最接近Google DataFlow模型的实现，是流批统一的观点，所以基本上使用DataStream就可以了，DataSet并不是很地道。
+目前Flink作为批处理还不是主流，不如Spark成熟，所以DataSet使用的并不是很多。Flink Table API和Flink SQL也并不完善，大多都由各大厂商自己定制。所以我们主要学习DataStream API的使用。实际上Flink作为最接近Google DataFlow模型的实现，是流批统一的观点，所以基本上使用DataStream就可以了。
 </td>
 </tr>
 </table>
@@ -1366,6 +1366,98 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 <div class="paragraph">
 <p>文档</p>
+</div>
+<div class="paragraph">
+<p>我们也可以自定义Source，这里举一个例子。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">import</span> <span class="tok-nn">java.util.Calendar</span>
+
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.functions.source.SourceFunction.SourceContext</span>
+
+<span class="tok-k">import</span> <span class="tok-nn">scala.util.Random</span>
+
+<span class="tok-cm">/**</span>
+<span class="tok-cm">  * Flink SourceFunction to generate SensorReadings with random temperature values.</span>
+<span class="tok-cm">  *</span>
+<span class="tok-cm">  * Each parallel instance of the source simulates 10 sensors which emit one sensor</span>
+<span class="tok-cm">  * reading every 100 ms.</span>
+<span class="tok-cm">  *</span>
+<span class="tok-cm">  * Note: This is a simple data-generating source function that does not checkpoint its state.</span>
+<span class="tok-cm">  * In case of a failure, the source does not replay any data.</span>
+<span class="tok-cm">  */</span>
+
+<span class="tok-c1">// 传感器id，时间戳，温度</span>
+<span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">SensorReading</span><span class="tok-o">(</span><span class="tok-n">id</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">timestamp</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">temperature</span><span class="tok-k">:</span> <span class="tok-kt">Double</span><span class="tok-o">)</span>
+
+<span class="tok-c1">// 需要extends RichParallelSourceFunction, 泛型为SensorReading</span>
+<span class="tok-k">class</span> <span class="tok-nc">SensorSource</span> <span class="tok-k">extends</span> <span class="tok-nc">RichParallelSourceFunction</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+
+  <span class="tok-c1">// flag indicating whether source is still running.</span>
+  <span class="tok-c1">// flag: 表示数据源是否还在正常运行</span>
+  <span class="tok-k">var</span> <span class="tok-n">running</span><span class="tok-k">:</span> <span class="tok-kt">Boolean</span> <span class="tok-o">=</span> <span class="tok-kc">true</span>
+
+  <span class="tok-cm">/** run() continuously emits SensorReadings by emitting them through the SourceContext. */</span>
+  <span class="tok-c1">// run()函数连续的发送SensorReading数据，使用SourceContext</span>
+  <span class="tok-c1">// 需要override</span>
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">run</span><span class="tok-o">(</span><span class="tok-n">srcCtx</span><span class="tok-k">:</span> <span class="tok-kt">SourceContext</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+
+    <span class="tok-c1">// initialize random number generator</span>
+    <span class="tok-c1">// 初始化随机数发生器</span>
+    <span class="tok-k">val</span> <span class="tok-n">rand</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">Random</span><span class="tok-o">()</span>
+    <span class="tok-c1">// look up index of this parallel task</span>
+    <span class="tok-c1">// 查找当前运行时上下文的任务的索引</span>
+    <span class="tok-k">val</span> <span class="tok-n">taskIdx</span> <span class="tok-k">=</span> <span class="tok-k">this</span><span class="tok-o">.</span><span class="tok-n">getRuntimeContext</span><span class="tok-o">.</span><span class="tok-n">getIndexOfThisSubtask</span>
+
+    <span class="tok-c1">// initialize sensor ids and temperatures</span>
+    <span class="tok-c1">// 初始化10个(温度传感器的id, 温度值)元组</span>
+    <span class="tok-k">var</span> <span class="tok-n">curFTemp</span> <span class="tok-k">=</span> <span class="tok-o">(</span><span class="tok-mi">1</span> <span class="tok-n">to</span> <span class="tok-mi">10</span><span class="tok-o">).</span><span class="tok-n">map</span> <span class="tok-o">{</span>
+      <span class="tok-c1">// nextGaussian产生高斯随机数</span>
+      <span class="tok-n">i</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span><span class="tok-s">&quot;sensor_&quot;</span> <span class="tok-o">+</span> <span class="tok-o">(</span><span class="tok-n">taskIdx</span> <span class="tok-o">*</span> <span class="tok-mi">10</span> <span class="tok-o">+</span> <span class="tok-n">i</span><span class="tok-o">),</span> <span class="tok-mi">65</span> <span class="tok-o">+</span> <span class="tok-o">(</span><span class="tok-n">rand</span><span class="tok-o">.</span><span class="tok-n">nextGaussian</span><span class="tok-o">()</span> <span class="tok-o">*</span> <span class="tok-mi">20</span><span class="tok-o">))</span>
+    <span class="tok-o">}</span>
+
+    <span class="tok-c1">// emit data until being canceled</span>
+    <span class="tok-c1">// 无限循环，产生数据流</span>
+    <span class="tok-k">while</span> <span class="tok-o">(</span><span class="tok-n">running</span><span class="tok-o">)</span> <span class="tok-o">{</span>
+
+      <span class="tok-c1">// update temperature</span>
+      <span class="tok-c1">// 更新温度</span>
+      <span class="tok-n">curFTemp</span> <span class="tok-k">=</span> <span class="tok-n">curFTemp</span><span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span> <span class="tok-n">t</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span><span class="tok-n">t</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-n">t</span><span class="tok-o">.</span><span class="tok-n">_2</span> <span class="tok-o">+</span> <span class="tok-o">(</span><span class="tok-n">rand</span><span class="tok-o">.</span><span class="tok-n">nextGaussian</span><span class="tok-o">()</span> <span class="tok-o">*</span> <span class="tok-mf">0.5</span><span class="tok-o">))</span> <span class="tok-o">)</span>
+      <span class="tok-c1">// get current time</span>
+      <span class="tok-c1">// 获取当前时间戳</span>
+      <span class="tok-k">val</span> <span class="tok-n">curTime</span> <span class="tok-k">=</span> <span class="tok-nc">Calendar</span><span class="tok-o">.</span><span class="tok-n">getInstance</span><span class="tok-o">.</span><span class="tok-n">getTimeInMillis</span>
+
+      <span class="tok-c1">// emit new SensorReading</span>
+      <span class="tok-c1">// 发射新的传感器数据, 注意这里srcCtx.collect</span>
+      <span class="tok-n">curFTemp</span><span class="tok-o">.</span><span class="tok-n">foreach</span><span class="tok-o">(</span> <span class="tok-n">t</span> <span class="tok-k">=&gt;</span> <span class="tok-n">srcCtx</span><span class="tok-o">.</span><span class="tok-n">collect</span><span class="tok-o">(</span><span class="tok-nc">SensorReading</span><span class="tok-o">(</span><span class="tok-n">t</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-n">curTime</span><span class="tok-o">,</span> <span class="tok-n">t</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">)))</span>
+
+      <span class="tok-c1">// wait for 100 ms</span>
+      <span class="tok-nc">Thread</span><span class="tok-o">.</span><span class="tok-n">sleep</span><span class="tok-o">(</span><span class="tok-mi">100</span><span class="tok-o">)</span>
+    <span class="tok-o">}</span>
+
+  <span class="tok-o">}</span>
+
+  <span class="tok-cm">/** Cancels this SourceFunction. */</span>
+  <span class="tok-c1">// override cancel函数</span>
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">cancel</span><span class="tok-o">()</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-n">running</span> <span class="tok-k">=</span> <span class="tok-kc">false</span>
+  <span class="tok-o">}</span>
+
+<span class="tok-o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>使用方法</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">// ingest sensor stream</span>
+<span class="tok-k">val</span> <span class="tok-n">sensorData</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">env</span>
+  <span class="tok-c1">// SensorSource generates random temperature readings</span>
+  <span class="tok-o">.</span><span class="tok-n">addSource</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">SensorSource</span><span class="tok-o">)</span></code></pre>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -2338,26 +2430,35 @@ val sumDstream: DataStream[(String, Int)] = windowedStream.sum(1)</pre>
 
     <span class="tok-k">val</span> <span class="tok-n">dstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">socketTextStream</span><span class="tok-o">(</span><span class="tok-s">&quot;localhost&quot;</span><span class="tok-o">,</span> <span class="tok-mi">9999</span><span class="tok-o">)</span>
 
-    <span class="tok-k">val</span> <span class="tok-n">textWithTsDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">dstream</span><span class="tok-o">.</span><span class="tok-n">map</span> <span class="tok-o">{</span> <span class="tok-n">text</span> <span class="tok-k">=&gt;</span>
-      <span class="tok-k">val</span> <span class="tok-n">arr</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">text</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot; &quot;</span><span class="tok-o">)</span>
-      <span class="tok-o">(</span><span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">),</span> <span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">).</span><span class="tok-n">toLong</span><span class="tok-o">,</span> <span class="tok-mi">1</span><span class="tok-o">)</span>
-    <span class="tok-o">}</span>
-    <span class="tok-k">val</span> <span class="tok-n">textWithEventTimeDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">textWithTsDstream</span><span class="tok-o">.</span><span class="tok-n">assignTimestampsAndWatermarks</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">BoundedOutOfOrdernessTimestampExtractor</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)](</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">milliseconds</span><span class="tok-o">(</span><span class="tok-mi">1000</span><span class="tok-o">))</span> <span class="tok-o">{</span>
-      <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">extractTimestamp</span><span class="tok-o">(</span><span class="tok-n">element</span><span class="tok-k">:</span> <span class="tok-o">(</span><span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-nc">Int</span><span class="tok-o">))</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-        <span class="tok-k">return</span>  <span class="tok-n">element</span><span class="tok-o">.</span><span class="tok-n">_2</span>
+    <span class="tok-k">val</span> <span class="tok-n">textWithTsDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">dstream</span>
+      <span class="tok-o">.</span><span class="tok-n">map</span> <span class="tok-o">{</span> <span class="tok-n">text</span> <span class="tok-k">=&gt;</span>
+        <span class="tok-k">val</span> <span class="tok-n">arr</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">text</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot; &quot;</span><span class="tok-o">)</span>
+        <span class="tok-o">(</span><span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">),</span> <span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">).</span><span class="tok-n">toLong</span><span class="tok-o">,</span> <span class="tok-mi">1</span><span class="tok-o">)</span>
       <span class="tok-o">}</span>
-    <span class="tok-o">})</span>
 
-    <span class="tok-k">val</span> <span class="tok-n">textKeyStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">textWithEventTimeDstream</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+    <span class="tok-k">val</span> <span class="tok-n">textWithEventTimeDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">textWithTsDstream</span>
+      <span class="tok-o">.</span><span class="tok-n">assignTimestampsAndWatermarks</span><span class="tok-o">(</span>
+        <span class="tok-k">new</span> <span class="tok-nc">BoundedOutOfOrdernessTimestampExtractor</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)](</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">milliseconds</span><span class="tok-o">(</span><span class="tok-mi">1000</span><span class="tok-o">))</span> <span class="tok-o">{</span>
+          <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">extractTimestamp</span><span class="tok-o">(</span><span class="tok-n">element</span><span class="tok-k">:</span> <span class="tok-o">(</span><span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-nc">Int</span><span class="tok-o">))</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+            <span class="tok-k">return</span> <span class="tok-n">element</span><span class="tok-o">.</span><span class="tok-n">_2</span>
+          <span class="tok-o">}</span>
+        <span class="tok-o">})</span>
+
+    <span class="tok-k">val</span> <span class="tok-n">textKeyStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">textWithEventTimeDstream</span>
+      <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+
     <span class="tok-n">textKeyStream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;textkey:&quot;</span><span class="tok-o">)</span>
 
-    <span class="tok-k">val</span> <span class="tok-n">windowStream</span><span class="tok-k">:</span> <span class="tok-kt">WindowedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">textKeyStream</span><span class="tok-o">.</span><span class="tok-n">window</span><span class="tok-o">(</span><span class="tok-nc">TumblingEventTimeWindows</span><span class="tok-o">.</span><span class="tok-n">of</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">2</span><span class="tok-o">)))</span>
+    <span class="tok-k">val</span> <span class="tok-n">windowStream</span><span class="tok-k">:</span> <span class="tok-kt">WindowedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">textKeyStream</span>
+      <span class="tok-o">.</span><span class="tok-n">window</span><span class="tok-o">(</span><span class="tok-nc">TumblingEventTimeWindows</span><span class="tok-o">.</span><span class="tok-n">of</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">2</span><span class="tok-o">)))</span>
 
-    <span class="tok-k">val</span> <span class="tok-n">groupDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">mutable.HashSet</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">]]</span> <span class="tok-k">=</span> <span class="tok-n">windowStream</span><span class="tok-o">.</span><span class="tok-n">fold</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-n">mutable</span><span class="tok-o">.</span><span class="tok-nc">HashSet</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">]())</span> <span class="tok-o">{</span> <span class="tok-k">case</span> <span class="tok-o">(</span><span class="tok-n">set</span><span class="tok-o">,</span> <span class="tok-o">(</span><span class="tok-n">key</span><span class="tok-o">,</span> <span class="tok-n">ts</span><span class="tok-o">,</span> <span class="tok-n">count</span><span class="tok-o">))</span> <span class="tok-k">=&gt;</span>
-      <span class="tok-n">set</span> <span class="tok-o">+=</span> <span class="tok-n">ts</span>
-    <span class="tok-o">}</span>
+    <span class="tok-k">val</span> <span class="tok-n">groupDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">mutable.HashSet</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">]]</span> <span class="tok-k">=</span> <span class="tok-n">windowStream</span>
+      <span class="tok-o">.</span><span class="tok-n">fold</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-n">mutable</span><span class="tok-o">.</span><span class="tok-nc">HashSet</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">]())</span> <span class="tok-o">{</span> <span class="tok-k">case</span> <span class="tok-o">(</span><span class="tok-n">set</span><span class="tok-o">,</span> <span class="tok-o">(</span><span class="tok-n">key</span><span class="tok-o">,</span> <span class="tok-n">ts</span><span class="tok-o">,</span> <span class="tok-n">count</span><span class="tok-o">))</span> <span class="tok-k">=&gt;</span>
+        <span class="tok-n">set</span> <span class="tok-o">+=</span> <span class="tok-n">ts</span>
+      <span class="tok-o">}</span>
 
     <span class="tok-n">groupDstream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;window::::&quot;</span><span class="tok-o">).</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+
     <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span><span class="tok-o">()</span>
   <span class="tok-o">}</span></code></pre>
 </div>
@@ -2379,26 +2480,35 @@ val sumDstream: DataStream[(String, Int)] = windowedStream.sum(1)</pre>
 
   <span class="tok-k">val</span> <span class="tok-n">dstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">socketTextStream</span><span class="tok-o">(</span><span class="tok-s">&quot;localhost&quot;</span><span class="tok-o">,</span> <span class="tok-mi">9999</span><span class="tok-o">)</span>
 
-  <span class="tok-k">val</span> <span class="tok-n">textWithTsDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">dstream</span><span class="tok-o">.</span><span class="tok-n">map</span> <span class="tok-o">{</span> <span class="tok-n">text</span> <span class="tok-k">=&gt;</span>
-    <span class="tok-k">val</span> <span class="tok-n">arr</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">text</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot; &quot;</span><span class="tok-o">)</span>
-    <span class="tok-o">(</span><span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">),</span> <span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">).</span><span class="tok-n">toLong</span><span class="tok-o">,</span> <span class="tok-mi">1</span><span class="tok-o">)</span>
-  <span class="tok-o">}</span>
-  <span class="tok-k">val</span> <span class="tok-n">textWithEventTimeDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">textWithTsDstream</span><span class="tok-o">.</span><span class="tok-n">assignTimestampsAndWatermarks</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">BoundedOutOfOrdernessTimestampExtractor</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)](</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">milliseconds</span><span class="tok-o">(</span><span class="tok-mi">1000</span><span class="tok-o">))</span> <span class="tok-o">{</span>
-    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">extractTimestamp</span><span class="tok-o">(</span><span class="tok-n">element</span><span class="tok-k">:</span> <span class="tok-o">(</span><span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-nc">Int</span><span class="tok-o">))</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-      <span class="tok-k">return</span>  <span class="tok-n">element</span><span class="tok-o">.</span><span class="tok-n">_2</span>
+  <span class="tok-k">val</span> <span class="tok-n">textWithTsDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">dstream</span>
+    <span class="tok-o">.</span><span class="tok-n">map</span> <span class="tok-o">{</span> <span class="tok-n">text</span> <span class="tok-k">=&gt;</span>
+      <span class="tok-k">val</span> <span class="tok-n">arr</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">text</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot; &quot;</span><span class="tok-o">)</span>
+      <span class="tok-o">(</span><span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">),</span> <span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">).</span><span class="tok-n">toLong</span><span class="tok-o">,</span> <span class="tok-mi">1</span><span class="tok-o">)</span>
     <span class="tok-o">}</span>
-  <span class="tok-o">})</span>
 
-  <span class="tok-k">val</span> <span class="tok-n">textKeyStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">textWithEventTimeDstream</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+  <span class="tok-k">val</span> <span class="tok-n">textWithEventTimeDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">textWithTsDstream</span>
+    <span class="tok-o">.</span><span class="tok-n">assignTimestampsAndWatermarks</span><span class="tok-o">(</span>
+      <span class="tok-k">new</span> <span class="tok-nc">BoundedOutOfOrdernessTimestampExtractor</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)](</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">milliseconds</span><span class="tok-o">(</span><span class="tok-mi">1000</span><span class="tok-o">))</span> <span class="tok-o">{</span>
+        <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">extractTimestamp</span><span class="tok-o">(</span><span class="tok-n">element</span><span class="tok-k">:</span> <span class="tok-o">(</span><span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-nc">Int</span><span class="tok-o">))</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+          <span class="tok-k">return</span> <span class="tok-n">element</span><span class="tok-o">.</span><span class="tok-n">_2</span>
+        <span class="tok-o">}</span>
+      <span class="tok-o">})</span>
+
+  <span class="tok-k">val</span> <span class="tok-n">textKeyStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">textWithEventTimeDstream</span>
+    <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+
   <span class="tok-n">textKeyStream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;textkey:&quot;</span><span class="tok-o">)</span>
 
-  <span class="tok-k">val</span> <span class="tok-n">windowStream</span><span class="tok-k">:</span> <span class="tok-kt">WindowedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">textKeyStream</span><span class="tok-o">.</span><span class="tok-n">window</span><span class="tok-o">(</span><span class="tok-nc">SlidingEventTimeWindows</span><span class="tok-o">.</span><span class="tok-n">of</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">2</span><span class="tok-o">),</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">milliseconds</span><span class="tok-o">(</span><span class="tok-mi">500</span><span class="tok-o">)))</span>
+  <span class="tok-k">val</span> <span class="tok-n">windowStream</span><span class="tok-k">:</span> <span class="tok-kt">WindowedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">textKeyStream</span>
+    <span class="tok-o">.</span><span class="tok-n">window</span><span class="tok-o">(</span><span class="tok-nc">SlidingEventTimeWindows</span><span class="tok-o">.</span><span class="tok-n">of</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">2</span><span class="tok-o">),</span> <span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">milliseconds</span><span class="tok-o">(</span><span class="tok-mi">500</span><span class="tok-o">)))</span>
 
-  <span class="tok-k">val</span> <span class="tok-n">groupDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">mutable.HashSet</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">]]</span> <span class="tok-k">=</span> <span class="tok-n">windowStream</span><span class="tok-o">.</span><span class="tok-n">fold</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-n">mutable</span><span class="tok-o">.</span><span class="tok-nc">HashSet</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">]())</span> <span class="tok-o">{</span> <span class="tok-k">case</span> <span class="tok-o">(</span><span class="tok-n">set</span><span class="tok-o">,</span> <span class="tok-o">(</span><span class="tok-n">key</span><span class="tok-o">,</span> <span class="tok-n">ts</span><span class="tok-o">,</span> <span class="tok-n">count</span><span class="tok-o">))</span> <span class="tok-k">=&gt;</span>
-    <span class="tok-n">set</span> <span class="tok-o">+=</span> <span class="tok-n">ts</span>
-  <span class="tok-o">}</span>
+  <span class="tok-k">val</span> <span class="tok-n">groupDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">mutable.HashSet</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">]]</span> <span class="tok-k">=</span> <span class="tok-n">windowStream</span>
+    <span class="tok-o">.</span><span class="tok-n">fold</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-n">mutable</span><span class="tok-o">.</span><span class="tok-nc">HashSet</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">]())</span> <span class="tok-o">{</span> <span class="tok-k">case</span> <span class="tok-o">(</span><span class="tok-n">set</span><span class="tok-o">,</span> <span class="tok-o">(</span><span class="tok-n">key</span><span class="tok-o">,</span> <span class="tok-n">ts</span><span class="tok-o">,</span> <span class="tok-n">count</span><span class="tok-o">))</span> <span class="tok-k">=&gt;</span>
+      <span class="tok-n">set</span> <span class="tok-o">+=</span> <span class="tok-n">ts</span>
+    <span class="tok-o">}</span>
 
   <span class="tok-n">groupDstream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;window::::&quot;</span><span class="tok-o">).</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+
   <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span><span class="tok-o">()</span>
 <span class="tok-o">}</span></code></pre>
 </div>
@@ -2420,24 +2530,36 @@ val sumDstream: DataStream[(String, Int)] = windowedStream.sum(1)</pre>
 
     <span class="tok-k">val</span> <span class="tok-n">dstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">socketTextStream</span><span class="tok-o">(</span><span class="tok-s">&quot;localhost&quot;</span><span class="tok-o">,</span> <span class="tok-mi">9999</span><span class="tok-o">)</span>
 
-    <span class="tok-k">val</span> <span class="tok-n">textWithTsDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">dstream</span><span class="tok-o">.</span><span class="tok-n">map</span> <span class="tok-o">{</span> <span class="tok-n">text</span> <span class="tok-k">=&gt;</span>
-      <span class="tok-k">val</span> <span class="tok-n">arr</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">text</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot; &quot;</span><span class="tok-o">)</span>
-      <span class="tok-o">(</span><span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">),</span> <span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">).</span><span class="tok-n">toLong</span><span class="tok-o">,</span> <span class="tok-mi">1</span><span class="tok-o">)</span>
-    <span class="tok-o">}</span>
-    <span class="tok-k">val</span> <span class="tok-n">textWithEventTimeDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">textWithTsDstream</span><span class="tok-o">.</span><span class="tok-n">assignTimestampsAndWatermarks</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">BoundedOutOfOrdernessTimestampExtractor</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)](</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">milliseconds</span><span class="tok-o">(</span><span class="tok-mi">1000</span><span class="tok-o">))</span> <span class="tok-o">{</span>
-      <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">extractTimestamp</span><span class="tok-o">(</span><span class="tok-n">element</span><span class="tok-k">:</span> <span class="tok-o">(</span><span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-nc">Int</span><span class="tok-o">))</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-        <span class="tok-k">return</span>  <span class="tok-n">element</span><span class="tok-o">.</span><span class="tok-n">_2</span>
+    <span class="tok-k">val</span> <span class="tok-n">textWithTsDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">dstream</span>
+      <span class="tok-o">.</span><span class="tok-n">map</span> <span class="tok-o">{</span> <span class="tok-n">text</span> <span class="tok-k">=&gt;</span>
+        <span class="tok-k">val</span> <span class="tok-n">arr</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">text</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot; &quot;</span><span class="tok-o">)</span>
+        <span class="tok-o">(</span><span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">),</span> <span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">).</span><span class="tok-n">toLong</span><span class="tok-o">,</span> <span class="tok-mi">1</span><span class="tok-o">)</span>
       <span class="tok-o">}</span>
-    <span class="tok-o">})</span>
 
-    <span class="tok-k">val</span> <span class="tok-n">textKeyStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">textWithEventTimeDstream</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+    <span class="tok-k">val</span> <span class="tok-n">textWithEventTimeDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">textWithTsDstream</span>
+      <span class="tok-o">.</span><span class="tok-n">assignTimestampsAndWatermarks</span><span class="tok-o">(</span>
+        <span class="tok-k">new</span> <span class="tok-nc">BoundedOutOfOrdernessTimestampExtractor</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)](</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">milliseconds</span><span class="tok-o">(</span><span class="tok-mi">1000</span><span class="tok-o">))</span> <span class="tok-o">{</span>
+          <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">extractTimestamp</span><span class="tok-o">(</span><span class="tok-n">element</span><span class="tok-k">:</span> <span class="tok-o">(</span><span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-nc">Int</span><span class="tok-o">))</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+            <span class="tok-k">return</span> <span class="tok-n">element</span><span class="tok-o">.</span><span class="tok-n">_2</span>
+          <span class="tok-o">}</span>
+        <span class="tok-o">})</span>
+
+    <span class="tok-k">val</span> <span class="tok-n">textKeyStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">textWithEventTimeDstream</span>
+      <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+
     <span class="tok-n">textKeyStream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;textkey:&quot;</span><span class="tok-o">)</span>
 
-    <span class="tok-k">val</span> <span class="tok-n">windowStream</span><span class="tok-k">:</span> <span class="tok-kt">WindowedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">textKeyStream</span><span class="tok-o">.</span><span class="tok-n">window</span><span class="tok-o">(</span><span class="tok-nc">EventTimeSessionWindows</span><span class="tok-o">.</span><span class="tok-n">withGap</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">milliseconds</span><span class="tok-o">(</span><span class="tok-mi">500</span><span class="tok-o">))</span> <span class="tok-o">)</span>
+    <span class="tok-k">val</span> <span class="tok-n">windowStream</span><span class="tok-k">:</span> <span class="tok-kt">WindowedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">textKeyStream</span>
+      <span class="tok-o">.</span><span class="tok-n">window</span><span class="tok-o">(</span><span class="tok-nc">EventTimeSessionWindows</span><span class="tok-o">.</span><span class="tok-n">withGap</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">milliseconds</span><span class="tok-o">(</span><span class="tok-mi">500</span><span class="tok-o">)))</span>
 
-    <span class="tok-n">windowStream</span><span class="tok-o">.</span><span class="tok-n">reduce</span><span class="tok-o">((</span><span class="tok-n">text1</span><span class="tok-o">,</span><span class="tok-n">text2</span><span class="tok-o">)</span><span class="tok-k">=&gt;</span>
-      <span class="tok-o">(</span><span class="tok-n">text1</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-mi">0L</span><span class="tok-o">,</span> <span class="tok-n">text1</span><span class="tok-o">.</span><span class="tok-n">_3</span> <span class="tok-o">+</span> <span class="tok-n">text2</span><span class="tok-o">.</span><span class="tok-n">_3</span><span class="tok-o">)</span>
-    <span class="tok-o">).</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">_3</span><span class="tok-o">).</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;windows:::&quot;</span><span class="tok-o">).</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+    <span class="tok-n">windowStream</span>
+      <span class="tok-o">.</span><span class="tok-n">reduce</span><span class="tok-o">((</span><span class="tok-n">text1</span><span class="tok-o">,</span><span class="tok-n">text2</span><span class="tok-o">)</span> <span class="tok-k">=&gt;</span>
+        <span class="tok-o">(</span><span class="tok-n">text1</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-mi">0L</span><span class="tok-o">,</span> <span class="tok-n">text1</span><span class="tok-o">.</span><span class="tok-n">_3</span> <span class="tok-o">+</span> <span class="tok-n">text2</span><span class="tok-o">.</span><span class="tok-n">_3</span><span class="tok-o">)</span>
+      <span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">_3</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;windows:::&quot;</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+
     <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span><span class="tok-o">()</span>
   <span class="tok-o">}</span></code></pre>
 </div>

@@ -72,26 +72,35 @@ def main(args: Array[String]): Unit = {
 
     val dstream: DataStream[String] = env.socketTextStream("localhost", 9999)
 
-    val textWithTsDstream: DataStream[(String, Long, Int)] = dstream.map { text =>
-      val arr: Array[String] = text.split(" ")
-      (arr(0), arr(1).toLong, 1)
-    }
-    val textWithEventTimeDstream: DataStream[(String, Long, Int)] = textWithTsDstream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[(String, Long, Int)](Time.milliseconds(1000)) {
-      override def extractTimestamp(element: (String, Long, Int)): Long = {
-        return  element._2
+    val textWithTsDstream: DataStream[(String, Long, Int)] = dstream
+      .map { text =>
+        val arr: Array[String] = text.split(" ")
+        (arr(0), arr(1).toLong, 1)
       }
-    })
 
-    val textKeyStream: KeyedStream[(String, Long, Int), Tuple] = textWithEventTimeDstream.keyBy(0)
+    val textWithEventTimeDstream: DataStream[(String, Long, Int)] = textWithTsDstream
+      .assignTimestampsAndWatermarks(
+        new BoundedOutOfOrdernessTimestampExtractor[(String, Long, Int)](Time.milliseconds(1000)) {
+          override def extractTimestamp(element: (String, Long, Int)): Long = {
+            return element._2
+          }
+        })
+
+    val textKeyStream: KeyedStream[(String, Long, Int), Tuple] = textWithEventTimeDstream
+      .keyBy(0)
+
     textKeyStream.print("textkey:")
 
-    val windowStream: WindowedStream[(String, Long, Int), Tuple, TimeWindow] = textKeyStream.window(TumblingEventTimeWindows.of(Time.seconds(2)))
+    val windowStream: WindowedStream[(String, Long, Int), Tuple, TimeWindow] = textKeyStream
+      .window(TumblingEventTimeWindows.of(Time.seconds(2)))
 
-    val groupDstream: DataStream[mutable.HashSet[Long]] = windowStream.fold(new mutable.HashSet[Long]()) { case (set, (key, ts, count)) =>
-      set += ts
-    }
+    val groupDstream: DataStream[mutable.HashSet[Long]] = windowStream
+      .fold(new mutable.HashSet[Long]()) { case (set, (key, ts, count)) =>
+        set += ts
+      }
 
     groupDstream.print("window::::").setParallelism(1)
+
     env.execute()
   }
 ----
@@ -111,26 +120,35 @@ def main(args: Array[String]): Unit = {
 
   val dstream: DataStream[String] = env.socketTextStream("localhost", 9999)
 
-  val textWithTsDstream: DataStream[(String, Long, Int)] = dstream.map { text =>
-    val arr: Array[String] = text.split(" ")
-    (arr(0), arr(1).toLong, 1)
-  }
-  val textWithEventTimeDstream: DataStream[(String, Long, Int)] = textWithTsDstream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[(String, Long, Int)](Time.milliseconds(1000)) {
-    override def extractTimestamp(element: (String, Long, Int)): Long = {
-      return  element._2
+  val textWithTsDstream: DataStream[(String, Long, Int)] = dstream
+    .map { text =>
+      val arr: Array[String] = text.split(" ")
+      (arr(0), arr(1).toLong, 1)
     }
-  })
 
-  val textKeyStream: KeyedStream[(String, Long, Int), Tuple] = textWithEventTimeDstream.keyBy(0)
+  val textWithEventTimeDstream: DataStream[(String, Long, Int)] = textWithTsDstream
+    .assignTimestampsAndWatermarks(
+      new BoundedOutOfOrdernessTimestampExtractor[(String, Long, Int)](Time.milliseconds(1000)) {
+        override def extractTimestamp(element: (String, Long, Int)): Long = {
+          return element._2
+        }
+      })
+
+  val textKeyStream: KeyedStream[(String, Long, Int), Tuple] = textWithEventTimeDstream
+    .keyBy(0)
+  
   textKeyStream.print("textkey:")
 
-  val windowStream: WindowedStream[(String, Long, Int), Tuple, TimeWindow] = textKeyStream.window(SlidingEventTimeWindows.of(Time.seconds(2),Time.milliseconds(500)))
+  val windowStream: WindowedStream[(String, Long, Int), Tuple, TimeWindow] = textKeyStream
+    .window(SlidingEventTimeWindows.of(Time.seconds(2), Time.milliseconds(500)))
 
-  val groupDstream: DataStream[mutable.HashSet[Long]] = windowStream.fold(new mutable.HashSet[Long]()) { case (set, (key, ts, count)) =>
-    set += ts
-  }
+  val groupDstream: DataStream[mutable.HashSet[Long]] = windowStream
+    .fold(new mutable.HashSet[Long]()) { case (set, (key, ts, count)) =>
+      set += ts
+    }
 
   groupDstream.print("window::::").setParallelism(1)
+
   env.execute()
 }
 ----
@@ -150,24 +168,36 @@ def main(args: Array[String]): Unit = {
 
     val dstream: DataStream[String] = env.socketTextStream("localhost", 9999)
 
-    val textWithTsDstream: DataStream[(String, Long, Int)] = dstream.map { text =>
-      val arr: Array[String] = text.split(" ")
-      (arr(0), arr(1).toLong, 1)
-    }
-    val textWithEventTimeDstream: DataStream[(String, Long, Int)] = textWithTsDstream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[(String, Long, Int)](Time.milliseconds(1000)) {
-      override def extractTimestamp(element: (String, Long, Int)): Long = {
-        return  element._2
+    val textWithTsDstream: DataStream[(String, Long, Int)] = dstream
+      .map { text =>
+        val arr: Array[String] = text.split(" ")
+        (arr(0), arr(1).toLong, 1)
       }
-    })
 
-    val textKeyStream: KeyedStream[(String, Long, Int), Tuple] = textWithEventTimeDstream.keyBy(0)
+    val textWithEventTimeDstream: DataStream[(String, Long, Int)] = textWithTsDstream
+      .assignTimestampsAndWatermarks(
+        new BoundedOutOfOrdernessTimestampExtractor[(String, Long, Int)](Time.milliseconds(1000)) {
+          override def extractTimestamp(element: (String, Long, Int)): Long = {
+            return element._2
+          }
+        })
+
+    val textKeyStream: KeyedStream[(String, Long, Int), Tuple] = textWithEventTimeDstream
+      .keyBy(0)
+
     textKeyStream.print("textkey:")
 
-    val windowStream: WindowedStream[(String, Long, Int), Tuple, TimeWindow] = textKeyStream.window(EventTimeSessionWindows.withGap(Time.milliseconds(500)) )
+    val windowStream: WindowedStream[(String, Long, Int), Tuple, TimeWindow] = textKeyStream
+      .window(EventTimeSessionWindows.withGap(Time.milliseconds(500)))
 
-    windowStream.reduce((text1,text2)=>
-      (text1._1, 0L, text1._3 + text2._3)
-    ).map(_._3).print("windows:::").setParallelism(1)
+    windowStream
+      .reduce((text1,text2) =>
+        (text1._1, 0L, text1._3 + text2._3)
+      )
+      .map(_._3)
+      .print("windows:::")
+      .setParallelism(1)
+
     env.execute()
   }
 ----
