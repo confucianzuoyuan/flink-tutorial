@@ -87,9 +87,12 @@ Flink默认的时间窗口根据**Processing Time**进行窗口的划分，将Fl
 
 [source,scala]
 ----
-val keyedStream: KeyedStream[(String, Int), Tuple] = startUplogDstream.map(startuplog=>(startuplog.ch,1)).keyBy(0)
+val keyedStream: KeyedStream[(String, Int), Tuple] = startUplogDstream
+    .map(startuplog => (startuplog.ch, 1))
+    .keyBy(0)
 //每10s统计一次各个渠道的计数
-val windowedStream: WindowedStream[(String, Int), Tuple, TimeWindow] = keyedStream.timeWindow(Time.seconds(10))
+val windowedStream: WindowedStream[(String, Int), Tuple, TimeWindow] = keyedStream
+    .timeWindow(Time.seconds(10))
 val sumDstream: DataStream[(String, Int)] = windowedStream.sum(1)
 ----
 

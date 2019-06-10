@@ -20,6 +20,23 @@ image::quickstart6.png[]
 
 image::quickstart7.png[]
 
+[source,shell]
+----
+$ tree quickstart/
+quickstart/
+├── pom.xml
+└── src
+    └── main
+        ├── resources
+        │   └── log4j.properties
+        └── scala
+            └── org
+                └── myorg
+                    └── quickstart
+                        ├── BatchJob.scala
+                        └── StreamingJob.scala
+----
+
 .StreamingJob.scala
 [source, scala]
 ----
