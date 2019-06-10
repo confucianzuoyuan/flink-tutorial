@@ -2131,6 +2131,25 @@ object MyEsUtil {
 <div class="paragraph">
 <p>对于业务来说，要统计1min内的故障日志个数，哪个时间是最有意义的？—— Event Time，因为我们要根据日志的生成时间进行统计。</p>
 </div>
+<div class="paragraph">
+<p>设置时间：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">object</span> <span class="tok-nc">AverageSensorReadings</span> <span class="tok-o">{</span>
+    <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span> <span class="tok-o">{</span>
+        <span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
+
+        <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
+
+        <span class="tok-k">val</span> <span class="tok-n">sensorData</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">addSource</span><span class="tok-o">(...)</span>
+    <span class="tok-o">}</span>
+<span class="tok-o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>如果想设置为Processing Time，将TimeCharacteristic.EventTime替换为TimeCharacteristic.ProcessingTime即可</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_5_2_window">5.2 Window</h3>
@@ -2235,69 +2254,17 @@ object MyEsUtil {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">keyedStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">startUplogDstream</span>
-    <span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">startuplog</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span><span class="tok-n">startuplog</span><span class="tok-o">.</span><span class="tok-n">ch</span><span class="tok-o">,</span> <span class="tok-mi">1</span><span class="tok-o">))</span>
-    <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
-<span class="tok-c1">//每10s统计一次各个渠道的计数</span>
-<span class="tok-k">val</span> <span class="tok-n">windowedStream</span><span class="tok-k">:</span> <span class="tok-kt">WindowedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">keyedStream</span>
-    <span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">10</span><span class="tok-o">))</span>
-<span class="tok-k">val</span> <span class="tok-n">sumDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">windowedStream</span><span class="tok-o">.</span><span class="tok-n">sum</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span></code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">// 每个传感器每个滚动窗口(15s)的最小温度值</span>
+<span class="tok-k">val</span> <span class="tok-n">minTempPerWindow</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Double</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">sensorData</span>
+  <span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">r</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span><span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">id</span><span class="tok-o">,</span> <span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">temperature</span><span class="tok-o">))</span>
+  <span class="tok-c1">// 按照传感器id分流</span>
+  <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">)</span>
+  <span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">15</span><span class="tok-o">))</span>
+  <span class="tok-o">.</span><span class="tok-n">reduce</span><span class="tok-o">((</span><span class="tok-n">r1</span><span class="tok-o">,</span> <span class="tok-n">r2</span><span class="tok-o">)</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span><span class="tok-n">r1</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-n">r1</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">.</span><span class="tok-n">min</span><span class="tok-o">(</span><span class="tok-n">r2</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">))</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>时间间隔可以通过Time.milliseconds(x)，Time.seconds(x)，Time.minutes(x)等其中的一个来指定。</p>
-</div>
-<div class="paragraph">
-<p><strong>滑动窗口(SlidingEventTimeWindows)</strong></p>
-</div>
-<div class="paragraph">
-<p>滑动窗口和滚动窗口的函数名是完全一致的，只是在传参数时需要传入两个参数，一个是window_size，一个是sliding_size。</p>
-</div>
-<div class="paragraph">
-<p>下面代码中的sliding_size设置为了2s，也就是说，窗口每2s就计算一次，每一次计算的window范围是5s内的所有元素。</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">keyedStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">startUplogDstream</span><span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">startuplog</span><span class="tok-o">=&gt;(</span><span class="tok-n">startuplog</span><span class="tok-o">.</span><span class="tok-n">ch</span><span class="tok-o">,</span><span class="tok-mi">1</span><span class="tok-o">)).</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
-<span class="tok-c1">//每5秒统计一次最近10秒的各个渠道的计数</span>
-<span class="tok-k">val</span> <span class="tok-n">windowedStream</span><span class="tok-k">:</span> <span class="tok-kt">WindowedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">keyedStream</span><span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">10</span><span class="tok-o">),</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">5</span><span class="tok-o">))</span>
-<span class="tok-k">val</span> <span class="tok-n">sumDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">windowedStream</span><span class="tok-o">.</span><span class="tok-n">sum</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>时间间隔可以通过Time.milliseconds(x)，Time.seconds(x)，Time.minutes(x)等其中的一个来指定。</p>
-</div>
-<div class="paragraph">
-<p><strong>CountWindow</strong></p>
-</div>
-<div class="paragraph">
-<p>CountWindow根据窗口中相同key元素的数量来触发执行，执行时只计算元素数量达到窗口大小的key对应的结果。</p>
-</div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-CountWindow的window_size指的是相同Key的元素的个数，不是输入的所有元素的总数。
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p><strong>滚动窗口</strong></p>
-</div>
-<div class="paragraph">
-<p>默认的CountWindow是一个滚动窗口，只需要指定窗口大小即可，当元素数量达到窗口大小时，就会触发窗口的执行。</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">keyedStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">startUplogDstream</span><span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">startuplog</span><span class="tok-o">=&gt;(</span><span class="tok-n">startuplog</span><span class="tok-o">.</span><span class="tok-n">ch</span><span class="tok-o">,</span><span class="tok-mi">1</span><span class="tok-o">)).</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
-<span class="tok-c1">//每当某一个key的个数达到10的时候，显示出来</span>
-<span class="tok-k">val</span> <span class="tok-n">windowedStream</span><span class="tok-k">:</span> <span class="tok-kt">WindowedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">GlobalWindow</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">keyedStream</span><span class="tok-o">.</span><span class="tok-n">countWindow</span><span class="tok-o">(</span><span class="tok-mi">10</span><span class="tok-o">)</span>
-<span class="tok-k">val</span> <span class="tok-n">sumDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">windowedStream</span><span class="tok-o">.</span><span class="tok-n">sum</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span></code></pre>
-</div>
 </div>
 <div class="paragraph">
 <p><strong>滑动窗口</strong></p>
@@ -2306,15 +2273,20 @@ CountWindow的window_size指的是相同Key的元素的个数，不是输入的�
 <p>滑动窗口和滚动窗口的函数名是完全一致的，只是在传参数时需要传入两个参数，一个是window_size，一个是sliding_size。</p>
 </div>
 <div class="paragraph">
-<p>下面代码中的sliding_size设置为了2，也就是说，每收到两个相同key的数据就计算一次，每一次计算的window范围是5个元素。</p>
+<p>下面代码中的sliding_size设置为了5s，也就是说，窗口每5s就计算一次，每一次计算的window范围是15s内的所有元素。</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>val keyedStream: KeyedStream[(String, Int), Tuple] = startUplogDstream.map(startuplog=&gt;(startuplog.ch,1)).keyBy(0)
-//每当某一个key的个数达到2的时候,触发计算，计算最近该key最近10个元素的内容
-val windowedStream: WindowedStream[(String, Int), Tuple, GlobalWindow] = keyedStream.countWindow(10,2)
-val sumDstream: DataStream[(String, Int)] = windowedStream.sum(1)</pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">minTempPerWindow</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Double</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">sensorData</span>
+  <span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">r</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span><span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">id</span><span class="tok-o">,</span> <span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">temperature</span><span class="tok-o">))</span>
+  <span class="tok-c1">// 按照传感器id分流</span>
+  <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">)</span>
+  <span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">15</span><span class="tok-o">),</span> <span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">5</span><span class="tok-o">))</span>
+  <span class="tok-o">.</span><span class="tok-n">reduce</span><span class="tok-o">((</span><span class="tok-n">r1</span><span class="tok-o">,</span> <span class="tok-n">r2</span><span class="tok-o">)</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span><span class="tok-n">r1</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-n">r1</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">.</span><span class="tok-n">min</span><span class="tok-o">(</span><span class="tok-n">r2</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">))</span></code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>时间间隔可以通过Time.milliseconds(x)，Time.seconds(x)，Time.minutes(x)等其中的一个来指定。</p>
 </div>
 </div>
 </div>
@@ -2404,14 +2376,144 @@ val sumDstream: DataStream[(String, Int)] = windowedStream.sum(1)</pre>
 </div>
 <div class="sect3">
 <h4 id="_6_2_2_watermark的引入">6.2.2 Watermark的引入</h4>
+<div class="paragraph">
+<p>Event Time的使用一定要<strong>指定数据源中的时间戳</strong>。否则程序无法知道事件的事件时间是什么(数据源里的数据没有时间戳的话，就只能使用Processing Time了)。</p>
+</div>
+<div class="paragraph">
+<p>Flink暴露了<code>TimestampAssigner</code>接口供我们实现，使我们可以自定义如何从事件数据中抽取时间戳。</p>
+</div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">textWithEventTimeDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">textWithTsDstream</span><span class="tok-o">.</span><span class="tok-n">assignTimestampsAndWatermarks</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">BoundedOutOfOrdernessTimestampExtractor</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Int</span><span class="tok-o">)](</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">milliseconds</span><span class="tok-o">(</span><span class="tok-mi">1000</span><span class="tok-o">))</span> <span class="tok-o">{</span>
-  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">extractTimestamp</span><span class="tok-o">(</span><span class="tok-n">element</span><span class="tok-k">:</span> <span class="tok-o">(</span><span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-nc">Int</span><span class="tok-o">))</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-    <span class="tok-k">return</span> <span class="tok-n">element</span><span class="tok-o">.</span><span class="tok-n">_2</span>
-  <span class="tok-o">}</span>
-<span class="tok-o">})</span></code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
+
+<span class="tok-c1">// 从调用时刻开始给env创建的每一个stream追加时间特征</span>
+<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
+
+<span class="tok-k">val</span> <span class="tok-n">readings</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">env</span>
+  <span class="tok-o">.</span><span class="tok-n">addSource</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">SensorSource</span><span class="tok-o">)</span>
+  <span class="tok-o">.</span><span class="tok-n">assignTimestampsAndWatermarks</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">MyAssigner</span><span class="tok-o">())</span></code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>MyAssigner有两种类型</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>AssignerWithPeriodicWatermarks</p>
+</li>
+<li>
+<p>AssignerWithPunctuatedWatermarks</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>以上两个接口都继承自TimestampAssigner。</p>
+</div>
+<div class="paragraph">
+<p><strong>Assigner with periodic watermarks</strong></p>
+</div>
+<div class="paragraph">
+<p>周期性的生成水印：系统会周期性的将水印插入到流中(水印也是一种特殊的事件！)。默认周期是200毫秒。可以使用ExecutionConfig.setAutoWatermarkInterval()方法进行设置。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
+<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
+<span class="tok-c1">// 每隔5秒产生一个水印</span>
+<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">getConfig</span><span class="tok-o">.</span><span class="tok-n">setAutoWatermarkInterval</span><span class="tok-o">(</span><span class="tok-mi">5000</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>产生水印的逻辑：每隔5秒钟，Flink会调用AssignerWithPeriodicWatermarks的getCurrentWatermark()方法。如果方法返回一个时间戳大于之前水印的时间戳，新的水印会被插入到流中。这个检查保证了水印是单调递增的。如果方法返回的时间戳小于等于之前水印的时间戳，则不会产生新的水印。</p>
+</div>
+<div class="paragraph">
+<p>例子，自定义一个周期性的时间戳抽取</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">class</span> <span class="tok-nc">PeriodicAssigner</span> <span class="tok-k">extends</span> <span class="tok-nc">AssignerWithPeriodicWatermarks</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+  <span class="tok-k">val</span> <span class="tok-n">bound</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-mi">60</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span> <span class="tok-c1">// 延时为1分钟</span>
+  <span class="tok-k">val</span> <span class="tok-n">maxTs</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-nc">Long</span><span class="tok-o">.</span><span class="tok-nc">MinValue</span> <span class="tok-c1">// 观察到的最大时间戳</span>
+
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">getCurrentWatermark</span><span class="tok-k">:</span> <span class="tok-kt">Watermark</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-k">new</span> <span class="tok-nc">Watermark</span><span class="tok-o">(</span><span class="tok-n">maxTs</span> <span class="tok-o">-</span> <span class="tok-n">bound</span><span class="tok-o">)</span>
+  <span class="tok-o">}</span>
+
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">extractTimestamp</span><span class="tok-o">(</span><span class="tok-n">r</span><span class="tok-k">:</span> <span class="tok-kt">SensorReading</span><span class="tok-o">,</span> <span class="tok-n">previousTS</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span> <span class="tok-k">=</span> <span class="tok-o">{</span>
+    <span class="tok-n">maxTs</span> <span class="tok-k">=</span> <span class="tok-n">maxTs</span><span class="tok-o">.</span><span class="tok-n">max</span><span class="tok-o">(</span><span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">timestamp</span><span class="tok-o">)</span>
+    <span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">timestamp</span>
+  <span class="tok-o">}</span>
+<span class="tok-o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>相当于实现了<code>BoundedOutOfOrdernessTimestampExtractor[SensorReading](Time.milliseconds(1000))</code></p>
+</div>
+<div class="paragraph">
+<p>如果我们事先得知数据流的时间戳是单调递增的，也就是说没有乱序。我们可以使用<code>assignAscendingTimestamps</code>，方法会直接使用数据的时间戳生成水印。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">stream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">withTimestampsAndWatermarks</span> <span class="tok-k">=</span> <span class="tok-n">stream</span>
+  <span class="tok-o">.</span><span class="tok-n">assignAscendingTimestamps</span><span class="tok-o">(</span><span class="tok-n">e</span> <span class="tok-k">=&gt;</span> <span class="tok-n">e</span><span class="tok-o">.</span><span class="tok-n">timestamp</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>E(1), W(1), E(2), W(2), ...</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>如果我们能大致估算出数据流中的事件的最大延迟时间，可以使用如下代码</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">stream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">withTimestampsAndWatermarks</span> <span class="tok-k">=</span> <span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">assignTimestampsAndWatermarks</span><span class="tok-o">(</span>
+  <span class="tok-k">new</span> <span class="tok-nc">BoundedOutOfOrdernessTimestampExtractor</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">](</span>
+    <span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">10</span><span class="tok-o">))(</span><span class="tok-n">e</span> <span class="tok-k">=&gt;</span> <span class="tok-n">e</span><span class="tok-o">.</span><span class="tok-n">timestamp</span><span class="tok-o">))</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>E(10), W(0), E(8), E(7), E(11), W(1), ...</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Assigner with punctuated watermarks</strong></p>
+</div>
+<div class="paragraph">
+<p>直接上代码，只给sensor_1的传感器的数据流插入水印</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">class</span> <span class="tok-nc">PunctuatedAssigner</span> <span class="tok-k">extends</span> <span class="tok-nc">AssignerWithPunctuatedWatermarks</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+  <span class="tok-k">val</span> <span class="tok-n">bound</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-mi">60</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span>
+
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">checkAndGetNextWatermark</span><span class="tok-o">(</span><span class="tok-n">r</span><span class="tok-k">:</span> <span class="tok-kt">SensorReading</span><span class="tok-o">,</span> <span class="tok-n">extractedTS</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Watermark</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">id</span> <span class="tok-o">==</span> <span class="tok-s">&quot;sensor_1&quot;</span><span class="tok-o">)</span> <span class="tok-o">{</span>
+      <span class="tok-k">new</span> <span class="tok-nc">Watermark</span><span class="tok-o">(</span><span class="tok-n">extractedTS</span> <span class="tok-o">-</span> <span class="tok-n">bound</span><span class="tok-o">)</span>
+    <span class="tok-o">}</span> <span class="tok-k">else</span> <span class="tok-o">{</span>
+      <span class="tok-kc">null</span>
+    <span class="tok-o">}</span>
+  <span class="tok-o">}</span>
+
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">extractTimestamp</span><span class="tok-o">(</span><span class="tok-n">r</span><span class="tok-k">:</span> <span class="tok-kt">SensorReading</span><span class="tok-o">,</span> <span class="tok-n">previousTS</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">timestamp</span>
+  <span class="tok-o">}</span>
+<span class="tok-o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>在Flink中，水印由应用程序开发人员生成，这通常需要对相应的领域有一定的了解。完美的水印永远不会错：时间戳小于水印标记时间的事件不会再出现。在特殊情况下(例如非乱序事件流)，最近一次事件的时间戳就可能是完美的水印。启发式水印则相反，它只估计时间，因此有可能出错，即迟到的事件(其时间戳小于水印标记时间)晚于水印出现。针对启发式水印，Flink提供了处理迟到元素的机制。</p>
+</div>
+<div class="paragraph">
+<p>设定水印通常需要用到领域知识。举例来说，如果知道事件的迟到时间不会超过5秒，就可以将水印标记时间设为收到的最大时间戳减去5秒。另一种做法是，采用一个Flink作业监控事件流，学习事件的迟到规律，并以此构建水印生成模型。</p>
+</div>
+<div class="paragraph">
+<p>如果水印迟到得太久，收到结果的速度可能就会很慢，解决办法是在水印到达之前输出近似结果(Flink可以实现)。如果水印到达得太早，则可能收到错误结果，不过Flink处理迟到数据的机制可以解决这个问题。上述问题看起来很复杂，但是恰恰符合现实世界的规律——大部分真实的事件流都是乱序的，并且通常无法了解它们的乱序程度(因为理论上不能预见未来)。水印是唯一让我们直面乱序事件流并保证正确性的机制; 否则只能选择忽视事实，假装错误的结果是正确的。</p>
 </div>
 </div>
 </div>
