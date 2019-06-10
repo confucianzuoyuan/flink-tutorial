@@ -21,6 +21,23 @@ image::starwars.png[]
 
 对于业务来说，要统计1min内的故障日志个数，哪个时间是最有意义的？—— Event Time，因为我们要根据日志的生成时间进行统计。
 
+设置时间：
+
+[source,scala]
+----
+object AverageSensorReadings {
+    def main(args: Array[String]) {
+        val env = StreamExecutionEnvironment.getExecutionEnvironment
+
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+
+        val sensorData: DataStream[SensorReading] = env.addSource(...)
+    }
+}
+----
+
+如果想设置为Processing Time，将TimeCharacteristic.EventTime替换为TimeCharacteristic.ProcessingTime即可
+
 === 5.2 Window
 
 ==== 5.2.1 Window概述
@@ -87,60 +104,31 @@ Flink默认的时间窗口根据**Processing Time**进行窗口的划分，将Fl
 
 [source,scala]
 ----
-val keyedStream: KeyedStream[(String, Int), Tuple] = startUplogDstream
-    .map(startuplog => (startuplog.ch, 1))
-    .keyBy(0)
-//每10s统计一次各个渠道的计数
-val windowedStream: WindowedStream[(String, Int), Tuple, TimeWindow] = keyedStream
-    .timeWindow(Time.seconds(10))
-val sumDstream: DataStream[(String, Int)] = windowedStream.sum(1)
+// 每个传感器每个滚动窗口(15s)的最小温度值
+val minTempPerWindow: DataStream[(String, Double)] = sensorData
+  .map(r => (r.id, r.temperature))
+  // 按照传感器id分流
+  .keyBy(_._1)
+  .timeWindow(Time.seconds(15))
+  .reduce((r1, r2) => (r1._1, r1._2.min(r2._2))
 ----
 
 时间间隔可以通过Time.milliseconds(x)，Time.seconds(x)，Time.minutes(x)等其中的一个来指定。
-
-*滑动窗口(SlidingEventTimeWindows)*
-
-滑动窗口和滚动窗口的函数名是完全一致的，只是在传参数时需要传入两个参数，一个是window_size，一个是sliding_size。
-
-下面代码中的sliding_size设置为了2s，也就是说，窗口每2s就计算一次，每一次计算的window范围是5s内的所有元素。
-
-[source,scala]
-----
-val keyedStream: KeyedStream[(String, Int), Tuple] = startUplogDstream.map(startuplog=>(startuplog.ch,1)).keyBy(0)
-//每5秒统计一次最近10秒的各个渠道的计数
-val windowedStream: WindowedStream[(String, Int), Tuple, TimeWindow] = keyedStream.timeWindow(Time.seconds(10),Time.seconds(5))
-val sumDstream: DataStream[(String, Int)] = windowedStream.sum(1)
-----
-
-时间间隔可以通过Time.milliseconds(x)，Time.seconds(x)，Time.minutes(x)等其中的一个来指定。
-
-*CountWindow*
-
-CountWindow根据窗口中相同key元素的数量来触发执行，执行时只计算元素数量达到窗口大小的key对应的结果。
-
-WARNING: CountWindow的window_size指的是相同Key的元素的个数，不是输入的所有元素的总数。
-
-*滚动窗口*
-
-默认的CountWindow是一个滚动窗口，只需要指定窗口大小即可，当元素数量达到窗口大小时，就会触发窗口的执行。
-
-[source,scala]
-----
-val keyedStream: KeyedStream[(String, Int), Tuple] = startUplogDstream.map(startuplog=>(startuplog.ch,1)).keyBy(0)
-//每当某一个key的个数达到10的时候，显示出来
-val windowedStream: WindowedStream[(String, Int), Tuple, GlobalWindow] = keyedStream.countWindow(10)
-val sumDstream: DataStream[(String, Int)] = windowedStream.sum(1)
-----
 
 *滑动窗口*
 
 滑动窗口和滚动窗口的函数名是完全一致的，只是在传参数时需要传入两个参数，一个是window_size，一个是sliding_size。
 
-下面代码中的sliding_size设置为了2，也就是说，每收到两个相同key的数据就计算一次，每一次计算的window范围是5个元素。
+下面代码中的sliding_size设置为了5s，也就是说，窗口每5s就计算一次，每一次计算的window范围是15s内的所有元素。
 
+[source,scala]
 ----
-val keyedStream: KeyedStream[(String, Int), Tuple] = startUplogDstream.map(startuplog=>(startuplog.ch,1)).keyBy(0)
-//每当某一个key的个数达到2的时候,触发计算，计算最近该key最近10个元素的内容
-val windowedStream: WindowedStream[(String, Int), Tuple, GlobalWindow] = keyedStream.countWindow(10,2)
-val sumDstream: DataStream[(String, Int)] = windowedStream.sum(1)
+val minTempPerWindow: DataStream[(String, Double)] = sensorData
+  .map(r => (r.id, r.temperature))
+  // 按照传感器id分流
+  .keyBy(_._1)
+  .timeWindow(Time.seconds(15), Time.seconds(5))
+  .reduce((r1, r2) => (r1._1, r1._2.min(r2._2))
 ----
+
+时间间隔可以通过Time.milliseconds(x)，Time.seconds(x)，Time.minutes(x)等其中的一个来指定。

@@ -48,14 +48,120 @@ Watermark就是触发前一窗口的"关窗时间"，一旦触发关门那么以
 
 ==== 6.2.2 Watermark的引入
 
+Event Time的使用一定要**指定数据源中的时间戳**。否则程序无法知道事件的事件时间是什么(数据源里的数据没有时间戳的话，就只能使用Processing Time了)。
+
+Flink暴露了``TimestampAssigner``接口供我们实现，使我们可以自定义如何从事件数据中抽取时间戳。
+
 [source,scala]
 ----
-val textWithEventTimeDstream: DataStream[(String, Long, Int)] = textWithTsDstream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[(String, Long, Int)](Time.milliseconds(1000)) {
-  override def extractTimestamp(element: (String, Long, Int)): Long = {
-    return element._2
-  }
-})
+val env = StreamExecutionEnvironment.getExecutionEnvironment
+ 
+// 从调用时刻开始给env创建的每一个stream追加时间特征
+env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+
+val readings: DataStream[SensorReading] = env
+  .addSource(new SensorSource)
+  .assignTimestampsAndWatermarks(new MyAssigner())
 ----
+
+MyAssigner有两种类型
+
+* AssignerWithPeriodicWatermarks
+* AssignerWithPunctuatedWatermarks
+
+以上两个接口都继承自TimestampAssigner。
+
+*Assigner with periodic watermarks*
+
+周期性的生成水印：系统会周期性的将水印插入到流中(水印也是一种特殊的事件！)。默认周期是200毫秒。可以使用ExecutionConfig.setAutoWatermarkInterval()方法进行设置。
+
+[source,scala]
+----
+val env = StreamExecutionEnvironment.getExecutionEnvironment
+env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+// 每隔5秒产生一个水印
+env.getConfig.setAutoWatermarkInterval(5000)
+----
+
+产生水印的逻辑：每隔5秒钟，Flink会调用AssignerWithPeriodicWatermarks的getCurrentWatermark()方法。如果方法返回一个时间戳大于之前水印的时间戳，新的水印会被插入到流中。这个检查保证了水印是单调递增的。如果方法返回的时间戳小于等于之前水印的时间戳，则不会产生新的水印。
+
+例子，自定义一个周期性的时间戳抽取
+
+[source,scala]
+----
+class PeriodicAssigner extends AssignerWithPeriodicWatermarks[SensorReading] {
+  val bound: Long = 60 * 1000 // 延时为1分钟
+  val maxTs: Long = Long.MinValue // 观察到的最大时间戳
+
+  override def getCurrentWatermark: Watermark = {
+    new Watermark(maxTs - bound)
+  }
+
+  override def extractTimestamp(r: SensorReading, previousTS: Long) = {
+    maxTs = maxTs.max(r.timestamp)
+    r.timestamp
+  }
+}
+----
+
+相当于实现了``BoundedOutOfOrdernessTimestampExtractor[SensorReading](Time.milliseconds(1000))``
+
+如果我们事先得知数据流的时间戳是单调递增的，也就是说没有乱序。我们可以使用``assignAscendingTimestamps``，方法会直接使用数据的时间戳生成水印。
+
+[source,scala]
+----
+val stream: DataStream[SensorReading] = ...
+val withTimestampsAndWatermarks = stream
+  .assignAscendingTimestamps(e => e.timestamp)
+----
+
+----
+E(1), W(1), E(2), W(2), ...
+----
+
+如果我们能大致估算出数据流中的事件的最大延迟时间，可以使用如下代码
+
+[source,scala]
+----
+val stream: DataStream[SensorReading] = ...
+val withTimestampsAndWatermarks = stream.assignTimestampsAndWatermarks(
+  new BoundedOutOfOrdernessTimestampExtractor[SensorReading](
+    Time.seconds(10))(e => e.timestamp))
+----
+
+----
+E(10), W(0), E(8), E(7), E(11), W(1), ...
+----
+
+*Assigner with punctuated watermarks*
+
+直接上代码，只给sensor_1的传感器的数据流插入水印
+
+[source,scala]
+----
+class PunctuatedAssigner extends AssignerWithPunctuatedWatermarks[SensorReading] {
+  val bound: Long = 60 * 1000
+
+  override def checkAndGetNextWatermark(r: SensorReading, extractedTS: Long): Watermark = {
+    if (r.id == "sensor_1") {
+      new Watermark(extractedTS - bound)
+    } else {
+      null
+    }
+  }
+
+  override def extractTimestamp(r: SensorReading, previousTS: Long): Long = {
+    r.timestamp
+  }
+}
+----
+
+在Flink中，水印由应用程序开发人员生成，这通常需要对相应的领域有一定的了解。完美的水印永远不会错：时间戳小于水印标记时间的事件不会再出现。在特殊情况下(例如非乱序事件流)，最近一次事件的时间戳就可能是完美的水印。启发式水印则相反，它只估计时间，因此有可能出错，即迟到的事件(其时间戳小于水印标记时间)晚于水印出现。针对启发式水印，Flink提供了处理迟到元素的机制。
+
+设定水印通常需要用到领域知识。举例来说，如果知道事件的迟到时间不会超过5秒，就可以将水印标记时间设为收到的最大时间戳减去5秒。另一种做法是，采用一个Flink作业监控事件流，学习事件的迟到规律，并以此构建水印生成模型。
+
+如果水印迟到得太久，收到结果的速度可能就会很慢，解决办法是在水印到达之前输出近似结果(Flink可以实现)。如果水印到达得太早，则可能收到错误结果，不过Flink处理迟到数据的机制可以解决这个问题。上述问题看起来很复杂，但是恰恰符合现实世界的规律——大部分真实的事件流都是乱序的，并且通常无法了解它们的乱序程度(因为理论上不能预见未来)。水印是唯一让我们直面乱序事件流并保证正确性的机制; 否则只能选择忽视事实，假装错误的结果是正确的。
+
 
 === 6.3 EvnetTimeWindow API
 
