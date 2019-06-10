@@ -452,33 +452,42 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_第一章_flink简介">第一章 Flink简介</a>
 <ul class="sectlevel2">
 <li><a href="#_1_初识flink">1. 初识Flink</a></li>
-<li><a href="#_2_flink的重要特点">2. Flink的重要特点</a>
+<li><a href="#_2_为什么选择flink">2. 为什么选择Flink</a>
 <ul class="sectlevel3">
-<li><a href="#_2_1_事件驱动型event_driven">2.1 事件驱动型(Event-Driven)</a></li>
-<li><a href="#_2_2_流与批的世界观">2.2 流与批的世界观</a></li>
-<li><a href="#_2_3_分层api">2.3 分层api</a></li>
+<li><a href="#_2_1_流处理欠佳的后果">2.1 流处理欠佳的后果</a>
+<ul class="sectlevel4">
+<li><a href="#_2_1_1_零售业和市场营销">2.1.1 零售业和市场营销</a></li>
+<li><a href="#_2_1_2_物联网">2.1.2 物联网</a></li>
+<li><a href="#_2_1_3_电信业">2.1.3 电信业</a></li>
+<li><a href="#_2_1_4_银行和金融业">2.1.4 银行和金融业</a></li>
+</ul>
+</li>
+<li><a href="#_2_2_连续事件处理的目标">2.2 连续事件处理的目标</a></li>
+<li><a href="#_2_3_流处理技术的演变">2.3 流处理技术的演变</a></li>
+</ul>
+</li>
+<li><a href="#_3_flink的重要特点">3. Flink的重要特点</a>
+<ul class="sectlevel3">
+<li><a href="#_3_1_事件驱动型event_driven">3.1 事件驱动型(Event-Driven)</a></li>
+<li><a href="#_3_2_流与批的世界观">3.2 流与批的世界观</a></li>
+<li><a href="#_3_3_分层api">3.3 分层api</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li><a href="#_第二章_flink快速上手">第二章 Flink快速上手</a>
 <ul class="sectlevel2">
-<li><a href="#_1_使用maven搭建工程">1. 使用Maven搭建工程</a>
+<li><a href="#_2_1_使用maven搭建工程">2.1 使用Maven搭建工程</a></li>
+<li><a href="#_2_2_flink部署">2.2 Flink部署</a>
 <ul class="sectlevel3">
-<li><a href="#_1_1_pom_xml文件">1.1 pom.xml文件</a></li>
-<li><a href="#_1_2_添加scala文件夹或者将java文件夹rename为scala">1.2 添加scala文件夹或者将java文件夹rename为scala</a></li>
-</ul>
-</li>
-<li><a href="#_2_flink部署">2. Flink部署</a>
-<ul class="sectlevel3">
-<li><a href="#_1_下载hadoop_free版本的flink">1. 下载Hadoop Free版本的Flink</a></li>
-<li><a href="#_2_解压缩">2. 解压缩</a></li>
-<li><a href="#_3_启动flink集群">3. 启动Flink集群</a></li>
-<li><a href="#_4_在浏览器中打开flink的web_ui">4. 在浏览器中打开Flink的Web UI</a></li>
-<li><a href="#_5_编译我们编写好的wordcount程序">5. 编译我们编写好的wordcount程序</a></li>
-<li><a href="#_6_提交打包好的程序">6. 提交打包好的程序</a></li>
-<li><a href="#_7_在flink_web_ui查看dashboard中job的执行状态">7. 在Flink Web UI查看Dashboard中job的执行状态</a></li>
-<li><a href="#_8_停止flink集群">8. 停止Flink集群</a></li>
+<li><a href="#_2_2_1_下载hadoop_free版本的flink">2.2.1 下载Hadoop Free版本的Flink</a></li>
+<li><a href="#_2_2_2_解压缩">2.2.2 解压缩</a></li>
+<li><a href="#_2_2_3_启动flink集群">2.2.3 启动Flink集群</a></li>
+<li><a href="#_2_2_4_在浏览器中打开flink的web_ui">2.2.4 在浏览器中打开Flink的Web UI</a></li>
+<li><a href="#_2_2_5_打包编写好的streamingjob程序">2.2.5 打包编写好的StreamingJob程序</a></li>
+<li><a href="#_2_2_6_提交打包好的程序">2.2.6 提交打包好的程序</a></li>
+<li><a href="#_2_2_7_在flink_web_ui查看dashboard中job的执行状态">2.2.7 在Flink Web UI查看Dashboard中job的执行状态</a></li>
+<li><a href="#_2_2_8_停止flink集群">2.2.8 停止Flink集群</a></li>
 </ul>
 </li>
 </ul>
@@ -492,20 +501,38 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_3_5_task与operator_chains">3.5 task与operator chains</a></li>
 </ul>
 </li>
-<li><a href="#_第四章_flink_流处理api">第四章 Flink 流处理Api</a>
+<li><a href="#_第四章_flink_datastream_api">第四章 Flink DataStream API</a>
 <ul class="sectlevel2">
 <li><a href="#_4_1_environment">4.1 Environment</a></li>
 <li><a href="#_4_2_source">4.2 Source</a></li>
-<li><a href="#_4_3_transform">4.3 Transform</a>
+<li><a href="#_4_3_basic_transformations">4.3 Basic Transformations</a>
 <ul class="sectlevel3">
 <li><a href="#_4_3_1_map">4.3.1 map</a></li>
 <li><a href="#_4_3_2_flatmap">4.3.2 flatMap</a></li>
 <li><a href="#_4_3_3_filter">4.3.3 Filter</a></li>
-<li><a href="#_4_3_4_keyby">4.3.4 KeyBy</a></li>
-<li><a href="#_4_3_5_reduce">4.3.5 Reduce</a></li>
-<li><a href="#_4_3_6_split_和_select">4.3.6 Split 和 Select</a></li>
-<li><a href="#_4_3_7_connect和comap">4.3.7 Connect和CoMap</a></li>
-<li><a href="#_4_3_8_union">4.3.8 Union</a></li>
+</ul>
+</li>
+<li><a href="#_4_4_keyedstream_transformations">4.4 KeyedStream Transformations</a>
+<ul class="sectlevel3">
+<li><a href="#_4_4_1_keyby">4.4.1 keyBy</a></li>
+<li><a href="#_4_4_2_rolling_aggregations">4.4.2 Rolling Aggregations</a></li>
+<li><a href="#_4_4_3_reduce">4.4.3 Reduce</a></li>
+</ul>
+</li>
+<li><a href="#_4_5_multistream_transformations">4.5 Multistream Transformations</a>
+<ul class="sectlevel3">
+<li><a href="#_4_5_1_union">4.5.1 Union</a></li>
+<li><a href="#_4_5_2_connect_comap_and_coflatmap">4.5.2 Connect, Comap and Coflatmap</a></li>
+<li><a href="#_4_5_3_split_and_select">4.5.3 Split and Select</a></li>
+</ul>
+</li>
+<li><a href="#_4_6_支持的数据类型">4.6 支持的数据类型</a></li>
+<li><a href="#_4_7_keyby相关用法">4.7 keyBy相关用法</a></li>
+<li><a href="#_4_8_实现udf函数更细粒度的控制流">4.8 实现UDF函数，更细粒度的控制流</a>
+<ul class="sectlevel3">
+<li><a href="#_4_8_1_function_classes">4.8.1 Function Classes</a></li>
+<li><a href="#_4_8_2_lambda_functions">4.8.2 Lambda Functions</a></li>
+<li><a href="#_4_8_3_rich_functions">4.8.3 Rich Functions</a></li>
 </ul>
 </li>
 <li><a href="#_4_4_sink">4.4 Sink</a>
@@ -545,12 +572,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
-<li><a href="#_第七章_状态编程">第七章 状态编程</a>
+<li><a href="#_第七章_有状态的计算">第七章 有状态的计算</a>
 <ul class="sectlevel2">
-<li><a href="#_7_1_需要引入的pom依赖">7.1 需要引入的pom依赖</a></li>
-<li><a href="#_7_2_构造表环境">7.2 构造表环境</a></li>
-<li><a href="#_7_3_通过一个例子_了解tableapi">7.3 通过一个例子 了解TableAPI</a></li>
-<li><a href="#_7_4_sql如何编写">7.4 SQL如何编写</a></li>
+<li><a href="#_7_1_一致性">7.1 一致性</a></li>
+<li><a href="#_7_2_检查点_保证exactly_once">7.2 检查点: 保证exactly-once</a></li>
 </ul>
 </li>
 <li><a href="#_第八章_dataflow模型">第八章 Dataflow模型</a>
@@ -614,26 +639,16 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sect2">
 <h3 id="_1_初识flink">1. 初识Flink</h3>
 <div class="paragraph">
-<p>Flink起源于Stratosphere项目，Stratosphere是在2010~2014年由3所地处柏林的大学和欧洲的一些其他的大学共同进行的研究项目，2014年4月Stratosphere的代码被复制并捐赠给了Apache软件基金会，参加这个孵化项目的初始成员是Stratosphere系统的核心开发人员，2014年12月，Flink一跃成为Apache软件基金会的顶级项目。</p>
+<p>Flink起源于Stratosphere项目，Stratosphere是在2010～2014年由3所地处柏林的大学和欧洲的一些其他的大学共同进行的研究项目，2014年4月Stratosphere的代码被复制并捐赠给了Apache软件基金会，参加这个孵化项目的初始成员是Stratosphere系统的核心开发人员，2014年12月，Flink一跃成为Apache软件基金会的顶级项目。</p>
 </div>
 <div class="paragraph">
 <p>在德语中，Flink一词表示快速和灵巧，项目采用一只松鼠的彩色图案作为logo，这不仅是因为松鼠具有快速和灵巧的特点，还因为柏林的松鼠有一种迷人的红棕色，而Flink的松鼠logo拥有可爱的尾巴，尾巴的颜色与Apache软件基金会的logo颜色相呼应，也就是说，这是一只Apache风格的松鼠。</p>
-</div>
-<div class="openblock float-group">
-<div class="content">
-<div class="imageblock left">
-<div class="content">
-<img src="images/ASF20thAnniversary.jpg" alt="apache" width="300" height="200">
-</div>
-<div class="title">Figure 1. apache logo</div>
 </div>
 <div class="imageblock left">
 <div class="content">
 <img src="images/flink-header-logo.svg" alt="flink" width="300" height="200">
 </div>
-<div class="title">Figure 2. apache flink logo</div>
-</div>
-</div>
+<div class="title">Figure 1. apache flink logo</div>
 </div>
 <div class="paragraph">
 <p>Flink主页在其顶部展示了该项目的理念: "<span class="red">Apache Flink是为分布式、高性能、随时可用以及准确的流处理应用程序打造的开源流处理框架</span>"。</p>
@@ -648,9 +663,238 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect2">
-<h3 id="_2_flink的重要特点">2. Flink的重要特点</h3>
+<h3 id="_2_为什么选择flink">2. 为什么选择Flink</h3>
+<div class="paragraph">
+<p>许多系统都会产生连续的事件流，如行驶中的汽车发射出GPS信号，金融交易，移动通信基站与繁忙的智能手机进行信号交换，网络流量，机器日志，工业传感器和可穿戴设备的测量结果，等等。如果能够高效地分析大规模流数据，我们对上述系统的理解将会更清楚、更快速。简而言之，流数据更真实地反映了我们的生活方式。</p>
+</div>
+<div class="paragraph">
+<p>实际上，企业常见的数据架构仍旧假设数据是有头有尾的有限集。这个假设存在的大部分原因在于，与有限集匹配的数据存储及处理系统建起来比较简单。但是，这样做无疑给那些天然的流式场景人为地加了限制。</p>
+</div>
+<div class="paragraph">
+<p>我们渴望按照流的方式处理数据，但要做好很困难; 随着大规模数据在各行各业中出现，难度越来越大。这是一个属于物理学范畴的难题: 在大型分布式系统中，数据一致性和对事件发生顺序的理解必然都是有限的。</p>
+</div>
+<div class="paragraph">
+<p>而Flink为大容量数据提供流处理，并用同一种技术实现批处理。</p>
+</div>
 <div class="sect3">
-<h4 id="_2_1_事件驱动型event_driven">2.1 事件驱动型(Event-Driven)</h4>
+<h4 id="_2_1_流处理欠佳的后果">2.1 流处理欠佳的后果</h4>
+<div class="paragraph">
+<p>谁需要和流数据打交道呢? 首先映入脑海的是从事传感器测量和金融交易的工作人员。对于他们来说，流处理非常有用。但是流数据来源非常广泛，两个常见的例子是: 网站获得的能够反映用户行为的点击流数据，以及私有数据中心的机器日志。事实上，流数据来源无处不在，但是从连续事件中获得数据并不意味着可以在批量计算中使用这些数据。如今，处理大规模流数据的新技术正在改变这一状况。</p>
+</div>
+<div class="sect4">
+<h5 id="_2_1_1_零售业和市场营销">2.1.1 零售业和市场营销</h5>
+<div class="paragraph">
+<p>在现代零售业中，网站点击量就代表了销量。网站获得的点击数据可能是大量、连续、不均匀的。用以往的技术很难处理好如此规模的数据。仅是构建批量系统处理这些数据流就很有挑战性: 结果很可能是需要一个庞大且复杂的系统。并且，传统的做法还会带来数据丢失、延迟、错误的聚合结果等问题。这样的结果怎能对商业领域有所帮助呢?</p>
+</div>
+<div class="paragraph">
+<p>假设你正在向首席执行官汇报上一季度的销售数据，你肯定不想事后因为使用了不准确的数据而不得不向首席执行官更正汇报结果。如果不能良好地处理点击数据，你很可能对网站点击量进行不准确的计算，这将导致广告投放报价和业绩数字不准确。</p>
+</div>
+<div class="paragraph">
+<p>航空旅客服务业面临同样的挑战: 航空公司需要快速、准确地处理从各种渠道获得的大量数据。例如，当为一名旅客办理登机手续时，需要对该旅客的机票预订数据进行核对，还需要核对行李处理信息、航班状态信息和账单信息。如果没有强大的技术来支持流处理，这种规模的数据是很难不出错的。近几年，美国四大航空公司中有三家都出现了大面积的服务中断，这几次故障都可以归咎于大规模实时数据处理失败。</p>
+</div>
+<div class="paragraph">
+<p>当然，很多相关问题(如怎样避免重复预订酒店或演唱会门票)，一般都能够通过有效的数据库操作来解决，但是这种操作相当费钱，也费精力。尤其当数据量增加时，成本会飙升，并且在某些情况下，数据库的反应速度会变得特别慢。由于缺乏灵活性，开发速度受到影响，项目在庞大又复杂或者不断发生变化的系统中进展缓慢。想要在大型系统中处理流数据，并且在保持一致性的同时有效地控制成本，难度非常大。</p>
+</div>
+<div class="paragraph">
+<p>幸运的是，现代的流处理器经常可以用新的方式解决这些问题，这使得实时处理大规模数据的成本更低。流处理还激发了新的尝试，比如构建一个系统，该系统能够基于顾客当下购买的商品实时给出相关的建议，看看他们是否还需要买一些别的商品。这不代表流处理器替代了数据库(远远不能替代)，而是说在数据库处理不好时，流处理器提供了更好的解决方案。这样做也使数据库得以解脱，不用再参与对当前业务状态的实时分析。</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_2_1_2_物联网">2.1.2 物联网</h5>
+<div class="paragraph">
+<p>物联网是流数据被普遍应用的领域。在物联网中，低延迟的数据传输和处理，以及准确的数据分析通常很关键。各类仪器中的传感器频繁地获得测量数据，并将它们以流的形式传输至数据中心。在数据中心内，实时或者接近实时的应用程序将更新显示板，运行机器学习模型，发布警告，并就许多不同的服务项目提供反馈。</p>
+</div>
+<div class="paragraph">
+<p>交通运输业也体现了流处理的重要性。举例来说，先进的列车系统依靠的是传感器测量数据，这些数据从轨道传至列车，再从列车传至沿途的传感器; 与此同时，报告也被发送回控制中心。测量数据包括列车的速度和位置，以及轨道周边的状况。如果流数据没有被正确处理，调整意见和警告就不能相应产生，从而也就不能通过对危险状况做出反应来避免事故发生。</p>
+</div>
+<div class="paragraph">
+<p>另一个例子是"智能"汽车，或称联网汽车，它们通过移动网络将数据传输回制造商。在有些国家(北欧国家、法国和英国，美国则刚开始)，联网汽车甚至可以将信息传给保险公司; 如果是赛车，信息还可以通过射频链路传送至维修站进行分析。此外，一些智能手机应用程序还支持数百万司机共享实时路况信息。</p>
+</div>
+<div class="paragraph">
+<p>物联网对公用事业也有影响。相关公司已经开始安装智能计量表，以替换每个月需要人工读数的旧表。智能计量表可以定期将用电量反馈给公司(例如每15分钟一次)。有些公司正在尝试每30秒就进行一次测量。使用智能计量表的这一转变带来了大量的流数据，同时也获得了大量的潜在收益。其中一个好处就是通过机器学习模型来检测设备故障或者窃电等使用异常。如果不能对流数据进行高吞吐、低延迟和准确的处理，这些新的目标都无法实现。</p>
+</div>
+<div class="paragraph">
+<p>如果流处理做得不好，其他物联网项目也会遭殃。大型设备，比如风力涡轮机、生产设备和钻井泵，都依赖对传感器测量数据的分析来获得故障警告。如果不能及时地处理好这些设备的流数据，将可能付出高昂的代价，甚至导致灾难性后果。</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_2_1_3_电信业">2.1.3 电信业</h5>
+<div class="paragraph">
+<p>电信业是一个特殊的例子，它广泛地应用了基于各种目的而产生的跨地域的事件流数据。如果电信公司不能很好地处理流数据，就不能在某个移动通信基站出现流量高峰前预先将流量分配给其他的基站，也不能在断电时快速做出反应。通过处理流数据来进行异常检测，如检测通话中断或者设备故障，对于电信业来说至关重要。</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_2_1_4_银行和金融业">2.1.4 银行和金融业</h5>
+<div class="paragraph">
+<p>因为流处理做得不好而给银行以及金融业带来的潜在问题是极其显著的。从事零售业务的银行不希望客户交易被延迟或者因为错误统计而造成账户余额出错。曾有一个说法叫作"银行家工作时间"，指的就是银行需要在下午早早关门进行结算，这样才能保证第二天营业之前算出准确的账。这种批量作业的营业模式早已消失。如今，交易和报表都必须快速且准确地生成; 有些新兴的银行甚至提供实时的推送通知，以及随时随地访问手机银行的服务。在全球化经济中，能够提供24小时服务变得越来越重要。</p>
+</div>
+<div class="paragraph">
+<p>那么，如果缺少能够灵敏地实时检测出用户行为异常的应用程序，会对金融机构带来什么后果呢? 信用卡欺诈检测需要及时的监控和反馈。对异常登录的检测能发现钓鱼式攻击，从而避免巨大的损失。</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_2_2_连续事件处理的目标">2.2 连续事件处理的目标</h4>
+<div class="paragraph">
+<p>能够以非常低的延迟处理数据，这并不是流处理的唯一优势。人们希望流处理不仅做到低延迟和高吞吐，还可以处理中断。优秀的流处理技术应该能使系统在崩溃之后重新启动，并且产出准确的结果; 换句话说，优秀的流处理技术可以容错，而且能保证exactly-once。</p>
+</div>
+<div class="paragraph">
+<p>与此同时，获得这种程度的容错性所采用的技术还需要在没有数据错误的情况下不产生太大的开销。这种技术需要能够基于事件发生的时间(而不是随意地设置处理间隔)来保证按照正确的顺序跟踪事件。对于开发人员而言，不论是写代码还是修正错误，系统都要容易操作和维护。同样重要的是，系统生成的结果需要与事件实际发生的顺序一致，比如能够处理乱序事件流(一个很不幸但无法避免的事实)，以及能够准确地替换流数据(在审计或者调试时很有用)。</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_2_3_流处理技术的演变">2.3 流处理技术的演变</h4>
+<div class="paragraph">
+<p>分开处理连续的实时数据和有限批次的数据，可以使系统构建工作变得更加简单，但是这种做法将管理两套系统的复杂性留给了系统用户: 应用程序的开发团队和DevOps团队需要自己使用并管理这两套系统。</p>
+</div>
+<div class="paragraph">
+<p>为了处理这种情况，有些用户开发出了自己的流处理系统。在开源世界里，Apache Storm项目(以下简称Storm)是流处理先锋。Storm提供了低延迟的流处理，但是它为实时性付出了一些代价: 很难实现高吞吐，并且其正确性没能达到通常所需的水平。换句话说，它并不能保证exactly-once; 即便是它能够保证的正确性级别，其开销也相当大。</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+若要依靠多个流事件来计算结果，必须将数据从一个事件保留到下一个事件。这些保存下来的数据叫作计算的状态。准确处理状态对于计算结果的一致性至关重要。在故障或中断之后能够继续准确地更新状态是容错的关键。
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>在低延迟和高吞吐的流处理系统中维持良好的容错性是非常困难的，但是为了得到有保障的准确状态，人们想出了一种替代方法: 将连续事件中的流数据分割成一系列微小的批量作业。如果分割得足够小(即所谓的微批处理作业)，计算就几乎可以实现真正的流处理。因为存在延迟，所以不可能做到完全实时，但是每个简单的应用程序都可以实现仅有几秒甚至几亚秒的延迟。这就是在Spark批处理引擎上运行的Apache Spark Streaming所使用的方法。</p>
+</div>
+<div class="paragraph">
+<p>更重要的是，使用微批处理方法，可以实现exactly-once语义，从而保障状态的一致性。如果一个微批处理作业失败了，它可以重新运行。这比连续的流处理方法更容易。Storm Trident是对Storm的延伸，它的底层流处理引擎就是基于微批处理方法来进行计算的，从而实现了exactly-once语义，但是在延迟性方面付出了很大的代价。</p>
+</div>
+<div class="paragraph">
+<p>然而，通过间歇性的批处理作业来模拟流处理，会导致开发和运维相互交错。完成间歇性的批处理作业所需的时间和数据到达的时间紧密耦合，任何延迟都可能导致不一致(或者说错误)的结果。这种技术的潜在问题是，时间由系统中生成小批量作业的那一部分全权控制。Spark Streaming等一些流处理框架在一定程度上弱化了这一弊端，但还是不能完全避免。另外，使用这种方法的计算有着糟糕的用户体验，尤其是那些对延迟比较敏感的作业，而且人们需要在写业务代码时花费大量精力来提升性能。</p>
+</div>
+<div class="paragraph">
+<p>为了实现理想的功能，人们继续改进已有的处理器(比如Storm Trident的开发初衷就是试图克服Storm的局限性)。当已有的处理器不能满足需求时，产生的各种后果则必须由应用程序开发人员面对和解决。以微批处理方法为例，人们往往期望根据实际情况分割事件数据，而处理器只能根据批量作业时间(恢复间隔)的倍数进行分割。当灵活性和表现力都缺乏的时候，开发速度变慢，运维成本变高。</p>
+</div>
+<div class="paragraph">
+<p>于是，Flink出现了。这一数据处理器可以避免上述弊端，并且拥有所需的诸多功能，还能按照连续事件高效地处理数据。Flink 的一些功能如下图所示。</p>
+</div>
+<div class="paragraph">
+<p>与Storm和Spark Streaming类似，其他流处理技术同样可以提供一些有用的功能，但是没有一个像Flink那样功能如此齐全。举例来说，Apache Samza(以下简称Samza)是早期的一个开源流处理器，它不仅没能实现exactly-once语义，而且只能提供底层的API; 同样，Apache Apex提供了与Flink相同的一些功能，但不全面(比如只提供底层的API，不支持事件时间，也不支持批量计算)。这些项目没有一个能和Flink在开源社区的规模上相提并论。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/flinkvsother.png" alt="flinkvsother">
+</div>
+</div>
+<div class="paragraph">
+<p>Flink的一个优势是，它拥有诸多重要的流式计算功能。其他项目为了实现这些功能，都不得不付出代价。比如，Storm实现了低延迟，但是做不到高吞吐，也不能在故障发生时准确地处理计算状态; Spark Streaming通过采用微批处理方法实现了高吞吐和容错性，但是牺牲了低延迟和实时处理能力，也不能使窗口与自然时间相匹配，并且表现力欠佳。</p>
+</div>
+<div class="paragraph">
+<p><strong>Spark Streaming</strong> vs <strong>Flink</strong></p>
+</div>
+<div class="paragraph">
+<p>1.两者最重要的区别(流和微批)</p>
+</div>
+<div class="paragraph">
+<p>(1). Micro Batching 模式(spark)</p>
+</div>
+<div class="paragraph">
+<p>Micro-Batching计算模式认为"流是批的特例"，流计算就是将连续不断的批进行持续计算，如果批足够小那么就有足够小的延时，在一定程度上满足了99%的实时计算场景。那么那1%为啥做不到呢? 这就是架构的魅力，在Micro-Batching模式的架构实现上就有一个自然流数据流入系统进行攒批的过程，这在一定程度上就增加了延时。具体如下示意图：</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/sparkstreamingvsflink1.png" alt="sparkstreamingvsflink1">
+</div>
+</div>
+<div class="paragraph">
+<p>从上面可以看到是把输入的数据, 分成微小的批次, 然后一个批次一个批次的处理, 然后也是一片批次的输出. 很显然Micro-Batching模式有其天生的低延时瓶颈，但任何事物的存在都有两面性，在大数据计算的发展历史上，最初Hadoop上的MapReduce就是优秀的批模式计算框架，Micro-Batching在设计和实现上可以借鉴很多成熟实践。</p>
+</div>
+<div class="paragraph">
+<p>(2). Native Streaming 模式(flink)</p>
+</div>
+<div class="paragraph">
+<p>Native Streaming计算模式认为批是流的特例"，这个认知更贴切流的概念，比如一些监控类的消息流，数据库操作的binlog，实时的支付交易信息等等自然流数据都是一条，一条的流入。Native Streaming计算模式每条数据的到来都进行计算，这种计算模式显得更自然，并且延时性能达到更低。具体如下示意图：</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/sparkstreamingvsflink2.png" alt="sparkstreamingvsflink2">
+</div>
+</div>
+<div class="paragraph">
+<p>从上图可以看到输入的数据过来一条处理一条,然后输出,几乎不存在延迟,很明显Native Streaming模式占据了流计算领域 "低延时" 的核心竞争力，当然Native Streaming模式的实现框架是一个历史先河，第一个实现Native Streaming模式的流计算框架是第一个吃螃蟹的人，需要面临更多的挑战，后续章节我们会慢慢介绍。当然Native Streaming模式的框架实现上面很容易实现Micro-Batching和Batching模式的计算，Apache Flink就是Native Streaming计算模式的流批统一的计算引擎。</p>
+</div>
+<div class="paragraph">
+<p>2.数据模型</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/shujumoxing1.jpeg" alt="shujumoxing1">
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Spark的数据模型</strong></p>
+</div>
+<div class="paragraph">
+<p>Spark最早采用RDD模型，达到比MapReduce计算快100倍的显著优势，对Hadoop生态大幅升级换代。RDD弹性数据集是分割为固定大小的批数据，RDD提供了丰富的底层API对数据集做操作。为持续降低使用门槛，Spark社区开始开发高阶API：DataFrame/DataSet，Spark SQL作为统一的API，掩盖了底层，同时针对性地做SQL逻辑优化和物理优化，非堆存储优化也大幅提升了性能。</p>
+</div>
+<div class="paragraph">
+<p>Spark Streaming里的DStream和RDD模型类似，把一个实时进来的无限数据分割为一个个小批数据集合DStream，定时器定时通知处理系统去处理这些微批数据。劣势非常明显，API少、难胜任复杂的流计算业务，调大吞吐量而不触发背压是个体力活。不支持乱序处理，或者说很难处理乱序的问题。Spark Streaming仅适合简单的流处理，这里稍微解释一下，因为Spark的创始人在当时认为延迟不是那么的重要，他认为现实生活中没有那么多低延迟的应用场景，所以就没太注重延迟的问题，但是随着生活多样化场景的不断增加，对实时性的要求越来越高，所以Spark也注意到了这个问题，开始在延迟方面发力，进而推出了Structured Streaming，相信很快Spark Streaming就会被Structured Streaming替代掉。</p>
+</div>
+<div class="paragraph">
+<p>Spark Structured Streaming提供了微批和流式两个处理引擎。微批的API虽不如Flink丰富，窗口、消息时间、trigger、watermarker、流表join、流流join这些常用的能力都具备了。时延仍然保持最小100毫秒。当前处在试验阶段的流式引擎，提供了1毫秒的时延，但不能保证exactly-once语义，支持at-least-once语义。同时，微批作业打了快照，作业改为流式模式重启作业是不兼容的。这一点不如Flink做的完美。当然了现在还在优化阶段.</p>
+</div>
+<div class="paragraph">
+<p>综上，Spark Streaming和Structured Streaming是用批计算的思路做流计算。其实，用流计算的思路开发批计算才是最合理的。对Spark来讲，大换血不大可能，只有局部优化。其实，Spark里core、streaming、structured streaming、graphx四个模块，是四种实现思路，通过上层SQL统一显得不纯粹和谐。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/shujumoxing2.png" alt="shujumoxing2">
+</div>
+</div>
+<div class="paragraph">
+<p>Flink的基本数据模型是数据流，及事件(Event)的序列。数据流作为数据的基本模型可能没有表或者数据块直观熟悉，但是可以证明是完全等效的。流可以是无边界的无限流，即一般意义上的流处理。也可以是有边界的有限流，这样就是批处理。</p>
+</div>
+<div class="paragraph">
+<p>Flink采用Dataflow模型，和Lambda模式不同。Dataflow是纯粹的节点组成的一个图，图中的节点可以执行批计算，也可以是流计算，也可以是机器学习算法，流数据在节点之间流动，被节点上的处理函数实时apply处理，节点之间是用netty连接起来，两个netty之间keepalive，网络buffer是自然反压的关键。经过逻辑优化和物理优化，Dataflow的逻辑关系和运行时的物理拓扑相差不大。这是纯粹的流式设计，时延和吞吐理论上是最优的。</p>
+</div>
+<div class="paragraph">
+<p>3.运行时架构</p>
+</div>
+<div class="paragraph">
+<p>Spark运行时架构</p>
+</div>
+<div class="paragraph">
+<p>批计算是把DAG划分为不同stage，DAG节点之间有血缘关系，在运行期间一个stage的task任务列表执行完毕，销毁再去执行下一个stage；Spark Streaming则是对持续流入的数据划分一个批次，定时去执行批次的数据运算。Structured Streaming将无限输入流保存在状态存储中，对流数据做微批或实时的计算，跟Dataflow模型比较像。</p>
+</div>
+<div class="paragraph">
+<p>Flink运行时架构</p>
+</div>
+<div class="paragraph">
+<p>Flink有统一的runtime，在此之上可以是Batch API、Stream API、ML、Graph、CEP等，DAG中的节点上执行上述模块的功能函数，DAG会一步步转化成ExecutionGraph，即物理可执行的图，最终交给调度系统。节点中的逻辑在资源池中的task上被apply执行，task和Spark中的task类似，都对应线程池中的一个线程。</p>
+</div>
+<div class="paragraph">
+<p>在DAG的执行上，Spark和Flink有一个比较显著的区别。在Flink的流执行模式中，一个事件在一个节点处理完后的输出就可以发到下一个节点立即处理。这样执行引擎并不会引入额外的延迟。与之相应的，所有节点是需要同时运行的。而Spark的micro batch和一般的batch执行一样，处理完上游的stage得到输出之后才开始下游的stage。</p>
+</div>
+<div class="paragraph">
+<p>在流计算的运行时架构方面，Flink明显更为统一且优雅一些。</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Lambda架构的问题是改变代码后需要重新在两个复杂的分布式系统中再次处理输出结果是非常痛苦的，而且我不认为这个问题能够解决。相当于同一套数据集的处理逻辑，使用Spark Core需要写一遍，使用Spark Streaming需要再写一遍，无法复用，这是致命缺陷。
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_3_flink的重要特点">3. Flink的重要特点</h3>
+<div class="sect3">
+<h4 id="_3_1_事件驱动型event_driven">3.1 事件驱动型(Event-Driven)</h4>
 <div class="paragraph">
 <p>事件驱动型应用是一类具有状态的应用，它从一个或多个事件流提取数据，并根据到来的事件触发计算、状态更新或其他外部动作。比较典型的就是以Kafka为代表的消息队列几乎都是事件驱动型应用。</p>
 </div>
@@ -672,7 +916,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect3">
-<h4 id="_2_2_流与批的世界观">2.2 流与批的世界观</h4>
+<h4 id="_3_2_流与批的世界观">3.2 流与批的世界观</h4>
 <div class="paragraph">
 <p><strong>批处理</strong>的特点是有界、持久、大量，非常适合需要访问全套记录才能完成的计算工作，一般用于离线统计。</p>
 </div>
@@ -701,7 +945,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect3">
-<h4 id="_2_3_分层api">2.3 分层api</h4>
+<h4 id="_3_3_分层api">3.3 分层api</h4>
 <div class="imageblock">
 <div class="content">
 <img src="images/api-stack.png" alt="api stack">
@@ -742,87 +986,67 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="_第二章_flink快速上手">第二章 Flink快速上手</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_1_使用maven搭建工程">1. 使用Maven搭建工程</h3>
+<h3 id="_2_1_使用maven搭建工程">2.1 使用Maven搭建工程</h3>
 <div class="paragraph">
 <p><strong>IDE推荐使用Idea</strong></p>
 </div>
-<div class="sect3">
-<h4 id="_1_1_pom_xml文件">1.1 pom.xml文件</h4>
-<div class="listingblock">
-<div class="title">pom.xml</div>
+<div class="paragraph">
+<p>我们使用Flink官方提供的flink-quickstart-scala原型来创建我们的工程，因为Flink官方提供的pom.xml经过了精心配置，可以打包出很小的Jar包。</p>
+</div>
+<div class="imageblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="xml"><span></span><span class="tok-cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
-<span class="tok-nt">&lt;project</span> <span class="tok-na">xmlns=</span><span class="tok-s">&quot;http://maven.apache.org/POM/4.0.0&quot;</span>
-         <span class="tok-na">xmlns:xsi=</span><span class="tok-s">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>
-         <span class="tok-na">xsi:schemaLocation=</span><span class="tok-s">&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;</span><span class="tok-nt">&gt;</span>
-    <span class="tok-nt">&lt;modelVersion&gt;</span>4.0.0<span class="tok-nt">&lt;/modelVersion&gt;</span>
-
-    <span class="tok-nt">&lt;groupId&gt;</span>com.atguigu.flink<span class="tok-nt">&lt;/groupId&gt;</span>
-    <span class="tok-nt">&lt;artifactId&gt;</span>flink<span class="tok-nt">&lt;/artifactId&gt;</span>
-    <span class="tok-nt">&lt;version&gt;</span>1.0-SNAPSHOT<span class="tok-nt">&lt;/version&gt;</span>
-
-    <span class="tok-nt">&lt;dependencies&gt;</span>
-        <span class="tok-nt">&lt;dependency&gt;</span>
-            <span class="tok-nt">&lt;groupId&gt;</span>org.apache.flink<span class="tok-nt">&lt;/groupId&gt;</span>
-            <span class="tok-nt">&lt;artifactId&gt;</span>flink-scala_2.11<span class="tok-nt">&lt;/artifactId&gt;</span>
-            <span class="tok-nt">&lt;version&gt;</span>1.7.2<span class="tok-nt">&lt;/version&gt;</span>
-        <span class="tok-nt">&lt;/dependency&gt;</span>
-
-        <span class="tok-c">&lt;!-- https://mvnrepository.com/artifact/org.apache.flink/flink-streaming-scala --&gt;</span>
-        <span class="tok-nt">&lt;dependency&gt;</span>
-            <span class="tok-nt">&lt;groupId&gt;</span>org.apache.flink<span class="tok-nt">&lt;/groupId&gt;</span>
-            <span class="tok-nt">&lt;artifactId&gt;</span>flink-streaming-scala_2.11<span class="tok-nt">&lt;/artifactId&gt;</span>
-            <span class="tok-nt">&lt;version&gt;</span>1.7.2<span class="tok-nt">&lt;/version&gt;</span>
-        <span class="tok-nt">&lt;/dependency&gt;</span>
-    <span class="tok-nt">&lt;/dependencies&gt;</span>
-
-    <span class="tok-nt">&lt;build&gt;</span>
-        <span class="tok-nt">&lt;plugins&gt;</span>
-            <span class="tok-c">&lt;!-- 该插件用于将Scala代码编译成class文件 --&gt;</span>
-            <span class="tok-nt">&lt;plugin&gt;</span>
-                <span class="tok-nt">&lt;groupId&gt;</span>net.alchim31.maven<span class="tok-nt">&lt;/groupId&gt;</span>
-                <span class="tok-nt">&lt;artifactId&gt;</span>scala-maven-plugin<span class="tok-nt">&lt;/artifactId&gt;</span>
-                <span class="tok-nt">&lt;version&gt;</span>3.4.6<span class="tok-nt">&lt;/version&gt;</span>
-                <span class="tok-nt">&lt;executions&gt;</span>
-                    <span class="tok-nt">&lt;execution&gt;</span>
-                        <span class="tok-c">&lt;!-- 声明绑定到maven的compile阶段 --&gt;</span>
-                        <span class="tok-nt">&lt;goals&gt;</span>
-                            <span class="tok-nt">&lt;goal&gt;</span>testCompile<span class="tok-nt">&lt;/goal&gt;</span>
-                        <span class="tok-nt">&lt;/goals&gt;</span>
-                    <span class="tok-nt">&lt;/execution&gt;</span>
-                <span class="tok-nt">&lt;/executions&gt;</span>
-            <span class="tok-nt">&lt;/plugin&gt;</span>
-
-            <span class="tok-nt">&lt;plugin&gt;</span>
-                <span class="tok-nt">&lt;groupId&gt;</span>org.apache.maven.plugins<span class="tok-nt">&lt;/groupId&gt;</span>
-                <span class="tok-nt">&lt;artifactId&gt;</span>maven-assembly-plugin<span class="tok-nt">&lt;/artifactId&gt;</span>
-                <span class="tok-nt">&lt;version&gt;</span>3.0.0<span class="tok-nt">&lt;/version&gt;</span>
-                <span class="tok-nt">&lt;configuration&gt;</span>
-                    <span class="tok-nt">&lt;descriptorRefs&gt;</span>
-                        <span class="tok-nt">&lt;descriptorRef&gt;</span>jar-with-dependencies<span class="tok-nt">&lt;/descriptorRef&gt;</span>
-                    <span class="tok-nt">&lt;/descriptorRefs&gt;</span>
-                <span class="tok-nt">&lt;/configuration&gt;</span>
-                <span class="tok-nt">&lt;executions&gt;</span>
-                    <span class="tok-nt">&lt;execution&gt;</span>
-                        <span class="tok-nt">&lt;id&gt;</span>make-assembly<span class="tok-nt">&lt;/id&gt;</span>
-                        <span class="tok-nt">&lt;phase&gt;</span>package<span class="tok-nt">&lt;/phase&gt;</span>
-                        <span class="tok-nt">&lt;goals&gt;</span>
-                            <span class="tok-nt">&lt;goal&gt;</span>single<span class="tok-nt">&lt;/goal&gt;</span>
-                        <span class="tok-nt">&lt;/goals&gt;</span>
-                    <span class="tok-nt">&lt;/execution&gt;</span>
-                <span class="tok-nt">&lt;/executions&gt;</span>
-            <span class="tok-nt">&lt;/plugin&gt;</span>
-        <span class="tok-nt">&lt;/plugins&gt;</span>
-    <span class="tok-nt">&lt;/build&gt;</span>
-
-<span class="tok-nt">&lt;/project&gt;</span></code></pre>
+<img src="images/quickstart1.png" alt="quickstart1">
 </div>
 </div>
+<div class="imageblock">
+<div class="content">
+<img src="images/quickstart2.png" alt="quickstart2">
 </div>
-<div class="sect3">
-<h4 id="_1_2_添加scala文件夹或者将java文件夹rename为scala">1.2 添加scala文件夹或者将java文件夹rename为scala</h4>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/quickstart3.png" alt="quickstart3">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/quickstart4.png" alt="quickstart4">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/quickstart5.png" alt="quickstart5">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/quickstart6.png" alt="quickstart6">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/quickstart7.png" alt="quickstart7">
+</div>
+</div>
 <div class="listingblock">
-<div class="title">SocketWindowWordCount.scala</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="shell"><span></span>$ tree quickstart/
+quickstart/
+├── pom.xml
+└── src
+    └── main
+        ├── resources
+        │   └── log4j.properties
+        └── scala
+            └── org
+                └── myorg
+                    └── quickstart
+                        ├── BatchJob.scala
+                        └── StreamingJob.scala</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">StreamingJob.scala</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.java.utils.ParameterTool</span>
 <span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala._</span>
@@ -839,7 +1063,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <span class="tok-cm">  * }}}</span>
 <span class="tok-cm">  * and run this example with the hostname and the port as arguments..</span>
 <span class="tok-cm">  */</span>
-<span class="tok-k">object</span> <span class="tok-nc">SocketWindowWordCount</span> <span class="tok-o">{</span>
+<span class="tok-k">object</span> <span class="tok-nc">StreamingJob</span> <span class="tok-o">{</span>
 
   <span class="tok-cm">/** Main program method */</span>
   <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span> <span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
@@ -894,17 +1118,16 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 </div>
-</div>
 <div class="sect2">
-<h3 id="_2_flink部署">2. Flink部署</h3>
+<h3 id="_2_2_flink部署">2.2 Flink部署</h3>
 <div class="sect3">
-<h4 id="_1_下载hadoop_free版本的flink">1. 下载Hadoop Free版本的Flink</h4>
+<h4 id="_2_2_1_下载hadoop_free版本的flink">2.2.1 下载Hadoop Free版本的Flink</h4>
 <div class="paragraph">
 <p><a href="https://www.apache.org/dyn/closer.lua/flink/flink-1.7.2/flink-1.7.2-bin-scala_2.11.tgz">下载链接</a></p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_2_解压缩">2. 解压缩</h4>
+<h4 id="_2_2_2_解压缩">2.2.2 解压缩</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="shell"><span></span>$ tar xvfz flink-1.7.2-bin-scala_2.11.tgz</code></pre>
@@ -912,7 +1135,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect3">
-<h4 id="_3_启动flink集群">3. 启动Flink集群</h4>
+<h4 id="_2_2_3_启动flink集群">2.2.3 启动Flink集群</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="shell"><span></span>$ <span class="tok-nb">cd</span> flink-1.7.2
@@ -921,31 +1144,35 @@ $ ./bin/start-cluster.sh</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_4_在浏览器中打开flink的web_ui">4. 在浏览器中打开Flink的Web UI</h4>
+<h4 id="_2_2_4_在浏览器中打开flink的web_ui">2.2.4 在浏览器中打开Flink的Web UI</h4>
 <div class="paragraph">
 <p><a href="http://localhost:8081" class="bare">http://localhost:8081</a></p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_5_编译我们编写好的wordcount程序">5. 编译我们编写好的wordcount程序</h4>
+<h4 id="_2_2_5_打包编写好的streamingjob程序">2.2.5 打包编写好的StreamingJob程序</h4>
 <div class="paragraph">
 <p>在Idea中使用maven package功能打包。</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_6_提交打包好的程序">6. 提交打包好的程序</h4>
-<div class="paragraph">
-<p>$ ./bin/flink run -c xxxx.jar</p>
+<h4 id="_2_2_6_提交打包好的程序">2.2.6 提交打包好的程序</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="shell"><span></span>$ ./bin/flink run xxxx.jar</code></pre>
+</div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_7_在flink_web_ui查看dashboard中job的执行状态">7. 在Flink Web UI查看Dashboard中job的执行状态</h4>
+<h4 id="_2_2_7_在flink_web_ui查看dashboard中job的执行状态">2.2.7 在Flink Web UI查看Dashboard中job的执行状态</h4>
 
 </div>
 <div class="sect3">
-<h4 id="_8_停止flink集群">8. 停止Flink集群</h4>
-<div class="paragraph">
-<p>$ ./bin/stop-cluster.sh</p>
+<h4 id="_2_2_8_停止flink集群">2.2.8 停止Flink集群</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="shell"><span></span>$ ./bin/stop-cluster.sh</code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -1078,7 +1305,7 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 </div>
 <div class="sect1">
-<h2 id="_第四章_flink_流处理api">第四章 Flink 流处理Api</h2>
+<h2 id="_第四章_flink_datastream_api">第四章 Flink DataStream API</h2>
 <div class="sectionbody">
 <div class="imageblock">
 <div class="content">
@@ -1088,91 +1315,51 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 <div class="sect2">
 <h3 id="_4_1_environment">4.1 Environment</h3>
 <div class="paragraph">
-<p>getExecutionEnvironment</p>
+<p><strong>getExecutionEnvironment</strong></p>
 </div>
 <div class="paragraph">
 <p>创建一个执行环境，表示当前执行程序的上下文。如果程序是独立调用的，则此方法返回本地执行环境；如果从命令行客户端调用程序以提交到集群，则此方法返回此集群的执行环境，也就是说，getExecutionEnvironment会根据查询运行的方式决定返回什么样的运行环境，是最常用的一种创建执行环境的方式。</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">env</span><span class="tok-k">:</span> <span class="tok-kt">ExecutionEnvironment</span> <span class="tok-o">=</span> <span class="tok-nc">ExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>如果没有设置并行度，会以flink-conf.yaml中的配置为准，默认是1</p>
-</div>
-<div class="paragraph">
-<p>createLocalEnvironment
-返回本地执行环境，需要在调用时指定默认的并行度。</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">createLocalEnvironment</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>createRemoteEnvironment
-返回集群执行环境，将Jar提交到远程服务器。需要在调用时指定JobManager的IP和端口号，并指定要在集群中运行的Jar包。</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">ExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">createRemoteEnvironment</span><span class="tok-o">(</span><span class="tok-s">&quot;node&quot;</span><span class="tok-o">,</span> <span class="tok-mi">6123</span><span class="tok-o">,</span><span class="tok-s">&quot;C://jar//flink//wordcount.jar&quot;</span><span class="tok-o">)</span></code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">// 获取执行环境</span>
+<span class="tok-k">val</span> <span class="tok-n">env</span><span class="tok-k">:</span> <span class="tok-kt">ExecutionEnvironment</span> <span class="tok-o">=</span> <span class="tok-nc">ExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
+<span class="tok-c1">// 设置流的时间为Event Time</span>
+<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
+<span class="tok-c1">// 设置并行度为1，如果不设置，那么默认为当前机器的cpu的数量</span>
+<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_4_2_source">4.2 Source</h3>
 <div class="paragraph">
-<p>创建Kafka工具类</p>
+<p>以Kafka消息队列的数据为数据来源</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">object</span> <span class="tok-nc">MyKafkaUtil</span> <span class="tok-o">{</span>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">object</span> <span class="tok-nc">ScalaHotItems</span> <span class="tok-o">{</span>
 
-  <span class="tok-k">val</span> <span class="tok-n">prop</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">Properties</span><span class="tok-o">()</span>
+  <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-k">val</span> <span class="tok-n">properties</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">Properties</span><span class="tok-o">()</span>
+    <span class="tok-n">properties</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;bootstrap.servers&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;localhost:9092&quot;</span><span class="tok-o">)</span>
+    <span class="tok-n">properties</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;group.id&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;consumer-group&quot;</span><span class="tok-o">)</span>
+    <span class="tok-n">properties</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;key.deserializer&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;org.apache.kafka.common.serialization.StringDeserializer&quot;</span><span class="tok-o">)</span>
+    <span class="tok-n">properties</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;value.deserializer&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;org.apache.kafka.common.serialization.StringDeserializer&quot;</span><span class="tok-o">)</span>
+    <span class="tok-n">properties</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;auto.offset.reset&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;latest&quot;</span><span class="tok-o">)</span>
+    <span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+    <span class="tok-k">val</span> <span class="tok-n">stream</span> <span class="tok-k">=</span> <span class="tok-n">env</span>
+      <span class="tok-c1">// source为来自Kafka的数据，这里我们实例化一个消费者，topic为hotitems</span>
+      <span class="tok-o">.</span><span class="tok-n">addSource</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">FlinkKafkaConsumer</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">](</span><span class="tok-s">&quot;hotitems&quot;</span><span class="tok-o">,</span> <span class="tok-k">new</span> <span class="tok-nc">SimpleStringSchema</span><span class="tok-o">(),</span> <span class="tok-n">properties</span><span class="tok-o">))</span>
+      <span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">()</span>
 
-  <span class="tok-n">prop</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;bootstrap.servers&quot;</span><span class="tok-o">,</span><span class="tok-s">&quot;hadoop1:9092&quot;</span><span class="tok-o">)</span>
-  <span class="tok-n">prop</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;group.id&quot;</span><span class="tok-o">,</span><span class="tok-s">&quot;gmall&quot;</span><span class="tok-o">)</span>
-
-  <span class="tok-k">def</span> <span class="tok-n">getConsumer</span><span class="tok-o">(</span><span class="tok-n">topic</span><span class="tok-k">:</span><span class="tok-kt">String</span> <span class="tok-o">)</span><span class="tok-k">:</span><span class="tok-kt">FlinkKafkaConsumer011</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span><span class="tok-k">=</span> <span class="tok-o">{</span>
-      <span class="tok-k">val</span> <span class="tok-n">myKafkaConsumer</span><span class="tok-k">:</span><span class="tok-kt">FlinkKafkaConsumer011</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">FlinkKafkaConsumer011</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">](</span><span class="tok-n">topic</span><span class="tok-o">,</span> <span class="tok-k">new</span> <span class="tok-nc">SimpleStringSchema</span><span class="tok-o">(),</span> <span class="tok-n">prop</span><span class="tok-o">)</span>
-     <span class="tok-n">myKafkaConsumer</span>
+    <span class="tok-c1">// 执行DAG</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span><span class="tok-o">(</span><span class="tok-s">&quot;Hot Items Job&quot;</span><span class="tok-o">)</span>
   <span class="tok-o">}</span>
 <span class="tok-o">}</span></code></pre>
 </div>
-</div>
-<div class="paragraph">
-<p>增加业务主类StartupApp</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>object StartupApp {
-    def main(args: Array[String]): Unit = {
-        val environment: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
-
-        val kafkaConsumer  =MyKafkaUtil.getConsumer("GMALL_STARTUP")
-
-        val dstream: DataStream[String] = environment.addSource(kafkaConsumer)
-
-        dstream.print()
-
-        environment.execute()
-    }
-}</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Flink+Kafka是如何实现exactly-once语义的</p>
-</div>
-<div class="paragraph">
-<p>Flink通过checkpoint来保存数据是否处理完成的状态</p>
-</div>
-<div class="paragraph">
-<p>由JobManager协调各个TaskManager进行checkpoint存储，checkpoint保存在 StateBackend中，默认StateBackend是内存级的，也可以改为文件级的进行持久化保存。</p>
-</div>
-<div class="paragraph">
-<p>执行过程实际上是一个两段式提交，每个算子执行完成，会进行“预提交”，直到执行完sink操作，会发起“确认提交”，如果执行失败，预提交会放弃掉。
-如果宕机需要通过StateBackend进行恢复，只能恢复所有确认提交的操作。</p>
 </div>
 <div class="paragraph">
 <p><a href="https://flink.apache.org/features/2018/03/01/end-to-end-exactly-once-apache-flink.html" class="bare">https://flink.apache.org/features/2018/03/01/end-to-end-exactly-once-apache-flink.html</a></p>
@@ -1182,12 +1369,17 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 </div>
 <div class="sect2">
-<h3 id="_4_3_transform">4.3 Transform</h3>
+<h3 id="_4_3_basic_transformations">4.3 Basic Transformations</h3>
 <div class="paragraph">
-<p>转换算子</p>
+<p>基本转换算子</p>
 </div>
 <div class="sect3">
 <h4 id="_4_3_1_map">4.3.1 map</h4>
+<div class="imageblock">
+<div class="content">
+<img src="images/map.png" alt="map">
+</div>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">streamMap</span> <span class="tok-k">=</span> <span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">map</span> <span class="tok-o">{</span> <span class="tok-n">x</span> <span class="tok-k">=&gt;</span> <span class="tok-n">x</span> <span class="tok-o">*</span> <span class="tok-mi">2</span> <span class="tok-o">}</span></code></pre>
@@ -1196,6 +1388,20 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 <div class="sect3">
 <h4 id="_4_3_2_flatmap">4.3.2 flatMap</h4>
+<div class="imageblock">
+<div class="content">
+<img src="images/flatmap.png" alt="flatmap">
+</div>
+</div>
+<div class="paragraph">
+<p>白框不变，黑框复制，灰框过滤</p>
+</div>
+<div class="paragraph">
+<p>flatmap类似map，但可以生成0个或者1个或者多个数据</p>
+</div>
+<div class="paragraph">
+<p>flatmap可以实现map和filter</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">streamFlatMap</span> <span class="tok-k">=</span> <span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">flatMap</span><span class="tok-o">{</span>
@@ -1206,6 +1412,11 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 <div class="sect3">
 <h4 id="_4_3_3_filter">4.3.3 Filter</h4>
+<div class="imageblock">
+<div class="content">
+<img src="images/filter.png" alt="filter">
+</div>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">streamFilter</span> <span class="tok-k">=</span> <span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">{</span>
@@ -1214,100 +1425,459 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_4_4_keyedstream_transformations">4.4 KeyedStream Transformations</h3>
 <div class="sect3">
-<h4 id="_4_3_4_keyby">4.3.4 KeyBy</h4>
+<h4 id="_4_4_1_keyby">4.4.1 keyBy</h4>
 <div class="paragraph">
-<p>DataStream → KeyedStream：输入必须是Tuple类型，逻辑地将一个流拆分成不相交的分区，每个分区包含具有相同key的元素，在内部以hash的形式实现的。</p>
+<p>分流算子 DataStream &#8594; KeyedStream</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/keyby.png" alt="keyby">
 </div>
 </div>
-<div class="sect3">
-<h4 id="_4_3_5_reduce">4.3.5 Reduce</h4>
 <div class="paragraph">
-<p>KeyedStream → DataStream：一个分组数据流的聚合操作，合并当前的元素和上次聚合的结果，产生一个新的值，返回的流中包含每一次聚合的结果，而不是只返回最后一次聚合的最终结果。</p>
+<p>黑色去一条流，剩下的去另一条流</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">//求各个渠道的累计个数</span>
-<span class="tok-k">val</span> <span class="tok-n">startUplogDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">StartUpLog</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">dstream</span><span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">{</span> <span class="tok-nc">JSON</span><span class="tok-o">.</span><span class="tok-n">parseObject</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">,</span><span class="tok-n">classOf</span><span class="tok-o">[</span><span class="tok-kt">StartUpLog</span><span class="tok-o">])}</span>
-<span class="tok-k">val</span> <span class="tok-n">keyedStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">startUplogDstream</span><span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">startuplog</span><span class="tok-o">=&gt;(</span><span class="tok-n">startuplog</span><span class="tok-o">.</span><span class="tok-n">ch</span><span class="tok-o">,</span><span class="tok-mi">1</span><span class="tok-o">)).</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
-<span class="tok-c1">//reduce //sum</span>
-<span class="tok-n">keyedStream</span><span class="tok-o">.</span><span class="tok-n">reduce</span><span class="tok-o">{</span>  <span class="tok-o">(</span><span class="tok-n">ch1</span><span class="tok-o">,</span><span class="tok-n">ch2</span><span class="tok-o">)</span><span class="tok-k">=&gt;</span>
-  <span class="tok-o">(</span><span class="tok-n">ch1</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span><span class="tok-n">ch1</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">+</span><span class="tok-n">ch2</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">)</span>
-<span class="tok-o">}</span> <span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">().</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span></code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">// 以数据的id为key分流</span>
+<span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-n">r</span> <span class="tok-k">=&gt;</span> <span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">id</span><span class="tok-o">)</span>
+<span class="tok-c1">// 以case class的word字段为key分流</span>
+<span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-s">&quot;word&quot;</span><span class="tok-o">)</span>
+<span class="tok-c1">// 以Tuple的第0个元素为key分流</span>
+<span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_4_3_6_split_和_select">4.3.6 Split 和 Select</h4>
+<h4 id="_4_4_2_rolling_aggregations">4.4.2 Rolling Aggregations</h4>
 <div class="paragraph">
-<p>Split</p>
+<p>针对KeyedStream的每一条流做聚合</p>
 </div>
-<div class="paragraph">
-<p>DataStream → SplitStream：根据某些特征把一个DataStream拆分成两个或者多个DataStream。
-Select</p>
-</div>
-<div class="paragraph">
-<p>SplitStream→DataStream：从一个SplitStream中获取一个或者多个DataStream。</p>
-</div>
-<div class="paragraph">
-<p>需求：把appstore和其他的渠道的数据单独拆分出来，做成两个流</p>
+<div class="ulist">
+<ul>
+<li>
+<p>sum()</p>
+</li>
+<li>
+<p>min()</p>
+</li>
+<li>
+<p>max()</p>
+</li>
+<li>
+<p>minBy()</p>
+</li>
+<li>
+<p>maxBy()</p>
+</li>
+</ul>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span>     <span class="tok-c1">// 将appstore与其他渠道拆分拆分出来  成为两个独立的流</span>
-<span class="tok-k">val</span> <span class="tok-n">splitStream</span><span class="tok-k">:</span> <span class="tok-kt">SplitStream</span><span class="tok-o">[</span><span class="tok-kt">StartUpLog</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">startUplogDstream</span><span class="tok-o">.</span><span class="tok-n">split</span> <span class="tok-o">{</span> <span class="tok-n">startUplog</span> <span class="tok-k">=&gt;</span>
-  <span class="tok-k">var</span> <span class="tok-n">flags</span><span class="tok-k">:</span><span class="tok-kt">List</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span>  <span class="tok-kc">null</span>
-  <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-s">&quot;appstore&quot;</span> <span class="tok-o">==</span> <span class="tok-n">startUplog</span><span class="tok-o">.</span><span class="tok-n">ch</span><span class="tok-o">)</span> <span class="tok-o">{</span>
-    <span class="tok-n">flags</span> <span class="tok-k">=</span> <span class="tok-nc">List</span><span class="tok-o">(</span><span class="tok-n">startUplog</span><span class="tok-o">.</span><span class="tok-n">ch</span><span class="tok-o">)</span>
-  <span class="tok-o">}</span> <span class="tok-k">else</span> <span class="tok-o">{</span>
-    <span class="tok-n">flags</span> <span class="tok-k">=</span> <span class="tok-nc">List</span><span class="tok-o">(</span><span class="tok-s">&quot;other&quot;</span> <span class="tok-o">)</span>
-  <span class="tok-o">}</span>
-  <span class="tok-n">flags</span>
-<span class="tok-o">}</span>
-<span class="tok-k">val</span> <span class="tok-n">appStoreStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">StartUpLog</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">splitStream</span><span class="tok-o">.</span><span class="tok-n">select</span><span class="tok-o">(</span><span class="tok-s">&quot;appstore&quot;</span><span class="tok-o">)</span>
-<span class="tok-n">appStoreStream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;apple:&quot;</span><span class="tok-o">).</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
-<span class="tok-k">val</span> <span class="tok-n">otherStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">StartUpLog</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">splitStream</span><span class="tok-o">.</span><span class="tok-n">select</span><span class="tok-o">(</span><span class="tok-s">&quot;other&quot;</span><span class="tok-o">)</span>
-<span class="tok-n">otherStream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;other:&quot;</span><span class="tok-o">).</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span></code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">inputStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Int</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span>
+<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">fromElements</span><span class="tok-o">(</span>
+  <span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">,</span> <span class="tok-mi">2</span><span class="tok-o">,</span> <span class="tok-mi">2</span><span class="tok-o">),</span> <span class="tok-o">(</span><span class="tok-mi">2</span><span class="tok-o">,</span> <span class="tok-mi">3</span><span class="tok-o">,</span> <span class="tok-mi">1</span><span class="tok-o">),</span> <span class="tok-o">(</span><span class="tok-mi">2</span><span class="tok-o">,</span> <span class="tok-mi">2</span><span class="tok-o">,</span> <span class="tok-mi">4</span><span class="tok-o">),</span> <span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">,</span> <span class="tok-mi">5</span><span class="tok-o">,</span> <span class="tok-mi">3</span><span class="tok-o">))</span>
+
+<span class="tok-k">val</span> <span class="tok-n">resultStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Int</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">inputStream</span>
+  <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+  <span class="tok-o">.</span><span class="tok-n">sum</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_4_3_7_connect和comap">4.3.7 Connect和CoMap</h4>
+<h4 id="_4_4_3_reduce">4.4.3 Reduce</h4>
 <div class="paragraph">
-<p>DataStream,DataStream → ConnectedStreams：连接两个保持他们类型的数据流，两个数据流被Connect之后，只是被放在了一个同一个流中，内部依然保持各自的数据和形式不发生任何变化，两个流相互独立。
-CoMap,CoFlatMap</p>
-</div>
-<div class="paragraph">
-<p>ConnectedStreams → DataStream：作用于ConnectedStreams上，功能与map和flatMap一样，对ConnectedStreams中的每一个Stream分别进行map和flatMap处理。</p>
+<p>KeyedStream &#8594; DataStream：一个分组数据流的聚合操作，合并当前的元素和上次聚合的结果，产生一个新的值，返回的流中包含每一次聚合的结果，而不是只返回最后一次聚合的最终结果。</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">//合并以后打印</span>
-<span class="tok-k">val</span> <span class="tok-n">connStream</span><span class="tok-k">:</span> <span class="tok-kt">ConnectedStreams</span><span class="tok-o">[</span><span class="tok-kt">StartUpLog</span>, <span class="tok-kt">StartUpLog</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">appStoreStream</span><span class="tok-o">.</span><span class="tok-n">connect</span><span class="tok-o">(</span><span class="tok-n">otherStream</span><span class="tok-o">)</span>
-<span class="tok-k">val</span> <span class="tok-n">allStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">connStream</span><span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span>
-  <span class="tok-o">(</span><span class="tok-n">log1</span><span class="tok-k">:</span> <span class="tok-kt">StartUpLog</span><span class="tok-o">)</span> <span class="tok-k">=&gt;</span> <span class="tok-n">log1</span><span class="tok-o">.</span><span class="tok-n">ch</span><span class="tok-o">,</span>
-  <span class="tok-o">(</span><span class="tok-n">log2</span><span class="tok-k">:</span> <span class="tok-kt">StartUpLog</span><span class="tok-o">)</span> <span class="tok-k">=&gt;</span> <span class="tok-n">log2</span><span class="tok-o">.</span><span class="tok-n">ch</span>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">inputStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">List</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])]</span> <span class="tok-k">=</span>
+<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">fromElements</span><span class="tok-o">(</span>
+  <span class="tok-o">(</span><span class="tok-s">&quot;en&quot;</span><span class="tok-o">,</span> <span class="tok-nc">List</span><span class="tok-o">(</span><span class="tok-s">&quot;tea&quot;</span><span class="tok-o">)),</span> <span class="tok-o">(</span><span class="tok-s">&quot;fr&quot;</span><span class="tok-o">,</span> <span class="tok-nc">List</span><span class="tok-o">(</span><span class="tok-s">&quot;vin&quot;</span><span class="tok-o">)),</span> <span class="tok-o">(</span><span class="tok-s">&quot;en&quot;</span><span class="tok-o">,</span> <span class="tok-nc">List</span><span class="tok-o">(</span><span class="tok-s">&quot;cake&quot;</span><span class="tok-o">))</span>
 <span class="tok-o">)</span>
-<span class="tok-n">allStream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;connect::&quot;</span><span class="tok-o">)</span></code></pre>
+
+<span class="tok-k">val</span> <span class="tok-n">resultStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">List</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])]</span> <span class="tok-k">=</span>
+<span class="tok-n">inputStream</span>
+  <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+  <span class="tok-o">.</span><span class="tok-n">reduce</span><span class="tok-o">((</span><span class="tok-n">x</span><span class="tok-o">,</span> <span class="tok-n">y</span><span class="tok-o">)</span> <span class="tok-k">=&gt;</span> <span class="tok-n">x</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-n">x</span><span class="tok-o">.</span><span class="tok-n">_2</span> <span class="tok-o">:::</span> <span class="tok-n">y</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_4_5_multistream_transformations">4.5 Multistream Transformations</h3>
+<div class="sect3">
+<h4 id="_4_5_1_union">4.5.1 Union</h4>
+<div class="imageblock">
+<div class="content">
+<img src="images/union.png" alt="union">
+</div>
+</div>
+<div class="paragraph">
+<p>将事件类型相同的多条DataStream合并到一起，在进入到合流时，使用FIFO先进先出的原则。Union算子不会对事件的顺序做处理。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">parisStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">tokyoStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">rioStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">allCities</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorRreading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">parisStream</span>
+  <span class="tok-o">.</span><span class="tok-n">union</span><span class="tok-o">(</span><span class="tok-n">tokyoStream</span><span class="tok-o">,</span> <span class="tok-n">rioStream</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_4_3_8_union">4.3.8 Union</h4>
+<h4 id="_4_5_2_connect_comap_and_coflatmap">4.5.2 Connect, Comap and Coflatmap</h4>
 <div class="paragraph">
-<p>DataStream → DataStream：对两个或者两个以上的DataStream进行union操作，产生一个包含所有DataStream元素的新DataStream。注意:如果你将一个DataStream跟它自己做union操作，在新的DataStream中，你将看到每一个元素都出现两次。</p>
+<p>联合两条流的事件是非常常见的流处理需求。例如监控一片森林然后发出高危的火警警报。报警的Application接收两条流，一条是温度传感器传回来的数据，一条是烟雾传感器传回来的数据。当两条流都超过各自的阈值时，报警。</p>
+</div>
+<div class="paragraph">
+<p>DataStream.connect()方法就实现了这个功能。DataStream &#8594; ConnectedStreams。</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">//合并以后打印</span>
-<span class="tok-k">val</span> <span class="tok-n">unionStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">StartUpLog</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">appStoreStream</span><span class="tok-o">.</span><span class="tok-n">union</span><span class="tok-o">(</span><span class="tok-n">otherStream</span><span class="tok-o">)</span>
-<span class="tok-n">unionStream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">(</span><span class="tok-s">&quot;union:::&quot;</span><span class="tok-o">)</span></code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">// first stream</span>
+<span class="tok-k">val</span> <span class="tok-n">first</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">Int</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-c1">// second stream</span>
+<span class="tok-k">val</span> <span class="tok-n">second</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+
+<span class="tok-c1">// connect streams</span>
+<span class="tok-k">val</span> <span class="tok-n">connected</span><span class="tok-k">:</span> <span class="tok-kt">ConnectedStreams</span><span class="tok-o">[</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span>
+<span class="tok-n">first</span><span class="tok-o">.</span><span class="tok-n">connect</span><span class="tok-o">(</span><span class="tok-n">second</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>ConnectedStream提供了map和flatMap方法。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>map: 需要CoMapFunction作为参数</p>
+</li>
+<li>
+<p>flatMap: 需要CoFlatMapFunction作为参数</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>CoMapFunction和CoFlatMapFunction都需要两条输入流的类型，还需要输出流的类型，还需要定义两个方法，一个方法对应一条流。map1()和flatMap1()处理第一条流，map2()和flatMap2()处理第二条流。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>// IN1: 第一条流的事件类型
+// IN2: 第二条流的事件类型
+// OUT: 输出流的事件类型
+CoMapFunction[IN1, IN2, OUT]
+    &gt; map1(IN1): OUT
+    &gt; map2(IN2): OUT
+
+CoFlatMapFunction[IN1, IN2, OUT]
+    &gt; flatMap1(IN1, Collector[OUT]): Unit
+    &gt; flatMap2(IN2, Collector[OUT]): Unit</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>两条流直接connect，其实是没有意义的。因为我们相当于将两条流随机的合并成了一条流，结果没什么价值。为了获得确定性的结果，connect必须和keyBy或者broadcast一起使用。</p>
+</div>
+<div class="paragraph">
+<p><strong>keyBy</strong></p>
+</div>
+<div class="paragraph">
+<p>以两条流的事件的第一个元素为key，做连接join</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">one</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Long</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">two</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+
+<span class="tok-c1">// keyBy two connected streams</span>
+<span class="tok-k">val</span> <span class="tok-n">keyedConnect1</span><span class="tok-k">:</span> <span class="tok-kt">ConnectedStreams</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Long</span><span class="tok-o">)</span>, <span class="tok-o">(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span><span class="tok-o">)]</span> <span class="tok-k">=</span>
+<span class="tok-n">one</span>
+  <span class="tok-o">.</span><span class="tok-n">connect</span><span class="tok-o">(</span><span class="tok-n">two</span><span class="tok-o">)</span>
+  <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">,</span> <span class="tok-mi">0</span><span class="tok-o">)</span> <span class="tok-c1">// key both input streams on first attribute</span>
+
+<span class="tok-c1">// alternative: connect two keyed streams</span>
+<span class="tok-k">val</span> <span class="tok-n">keyedConnect2</span><span class="tok-k">:</span> <span class="tok-kt">ConnectedStreams</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Long</span><span class="tok-o">)</span>, <span class="tok-o">(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span><span class="tok-o">)]</span> <span class="tok-k">=</span>
+<span class="tok-n">one</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">).</span><span class="tok-n">connect</span><span class="tok-o">(</span><span class="tok-n">two</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">))</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>以上程序其实相当于实现了SQL中的JOIN语义。</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_4_5_3_split_and_select">4.5.3 Split and Select</h4>
+<div class="paragraph">
+<p>Split是Union的反函数。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/split.png" alt="split">
+</div>
+</div>
+<div class="paragraph">
+<p>DataStream &#8594; SplitStream</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">inputStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+
+<span class="tok-k">val</span> <span class="tok-n">splitted</span><span class="tok-k">:</span> <span class="tok-kt">SplitStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">inputStream</span>
+  <span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-n">t</span> <span class="tok-k">=&gt;</span> <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">t</span><span class="tok-o">.</span><span class="tok-n">_1</span> <span class="tok-o">&gt;</span> <span class="tok-mi">1000</span><span class="tok-o">)</span> <span class="tok-nc">Seq</span><span class="tok-o">(</span><span class="tok-s">&quot;large&quot;</span><span class="tok-o">)</span> <span class="tok-k">else</span> <span class="tok-nc">Seq</span><span class="tok-o">(</span><span class="tok-s">&quot;small&quot;</span><span class="tok-o">))</span>
+
+<span class="tok-k">val</span> <span class="tok-n">large</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">splitted</span><span class="tok-o">.</span><span class="tok-n">select</span><span class="tok-o">(</span><span class="tok-s">&quot;large&quot;</span><span class="tok-o">)</span>
+<span class="tok-k">val</span> <span class="tok-n">small</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">splitted</span><span class="tok-o">.</span><span class="tok-n">select</span><span class="tok-o">(</span><span class="tok-s">&quot;small&quot;</span><span class="tok-o">)</span>
+<span class="tok-k">val</span> <span class="tok-n">all</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">splitted</span><span class="tok-o">.</span><span class="tok-n">select</span><span class="tok-o">(</span><span class="tok-s">&quot;small&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;large&quot;</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>Connect与 Union 区别：
-1 、 Union之前两个流的类型必须是一样，Connect可以不一样，在之后的coMap中再去调整成为一样的。
-2 Connect只能操作两个流，Union可以操作多个</p>
+1 Union之前两个流的类型必须是一样，Connect可以不一样，在之后的CoMapFunction中再去调整成为一样的。
+2 Connect只能操作两个流，Union可以操作多个。</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_4_6_支持的数据类型">4.6 支持的数据类型</h3>
+<div class="paragraph">
+<p><strong>Primitives</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">numbers</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">fromElements</span><span class="tok-o">(</span><span class="tok-mi">1L</span><span class="tok-o">,</span> <span class="tok-mi">2L</span><span class="tok-o">,</span> <span class="tok-mi">3L</span><span class="tok-o">,</span> <span class="tok-mi">4L</span><span class="tok-o">)</span>
+<span class="tok-n">numbers</span><span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span> <span class="tok-n">n</span> <span class="tok-k">=&gt;</span> <span class="tok-n">n</span> <span class="tok-o">+</span> <span class="tok-mi">1</span> <span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Tuples</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">persons</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Integer</span><span class="tok-o">)]</span> <span class="tok-k">=</span>
+<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">fromElements</span><span class="tok-o">(</span>
+  <span class="tok-o">(</span><span class="tok-s">&quot;Adam&quot;</span><span class="tok-o">,</span> <span class="tok-mi">17</span><span class="tok-o">),</span>
+  <span class="tok-o">(</span><span class="tok-s">&quot;Sarah&quot;</span><span class="tok-o">,</span> <span class="tok-mi">23</span><span class="tok-o">)</span>
+<span class="tok-o">)</span>
+
+<span class="tok-n">persons</span><span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">(</span><span class="tok-n">p</span> <span class="tok-k">=&gt;</span> <span class="tok-n">p</span><span class="tok-o">.</span><span class="tok-n">_2</span> <span class="tok-o">&gt;</span> <span class="tok-mi">18</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Scala case classes</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">Person</span><span class="tok-o">(</span><span class="tok-n">name</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">age</span><span class="tok-k">:</span> <span class="tok-kt">Int</span><span class="tok-o">)</span>
+
+<span class="tok-k">val</span> <span class="tok-n">persons</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">Person</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">fromElements</span><span class="tok-o">(</span>
+  <span class="tok-nc">Person</span><span class="tok-o">(</span><span class="tok-s">&quot;Adam&quot;</span><span class="tok-o">,</span> <span class="tok-mi">17</span><span class="tok-o">),</span>
+  <span class="tok-nc">Person</span><span class="tok-o">(</span><span class="tok-s">&quot;Sarah&quot;</span><span class="tok-o">,</span> <span class="tok-mi">23</span><span class="tok-o">)</span>
+<span class="tok-o">)</span>
+
+<span class="tok-n">persons</span><span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">(</span><span class="tok-n">p</span> <span class="tok-k">=&gt;</span> <span class="tok-n">p</span><span class="tok-o">.</span><span class="tok-n">age</span> <span class="tok-o">&gt;</span> <span class="tok-mi">18</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>others</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Hadoop Writable types</p>
+</li>
+<li>
+<p>Java&#8217;s POJOs, ArrayList, HashMap, Enum</p>
+</li>
+<li>
+<p>&#8230;&#8203;</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_4_7_keyby相关用法">4.7 keyBy相关用法</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">input</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span>, <span class="tok-kt">Long</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">keyed</span> <span class="tok-k">=</span> <span class="tok-n">input</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+<span class="tok-k">val</span> <span class="tok-n">keyed2</span> <span class="tok-k">=</span> <span class="tok-n">input</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">,</span> <span class="tok-mi">2</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">SensorReading</span><span class="tok-o">(</span>
+  <span class="tok-n">id</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span>
+  <span class="tok-n">timestamp</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span>
+  <span class="tok-n">temperature</span><span class="tok-k">:</span> <span class="tok-kt">Double</span>
+<span class="tok-o">)</span>
+
+<span class="tok-k">val</span> <span class="tok-n">sensorStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">keyedSensors</span> <span class="tok-k">=</span> <span class="tok-n">sensorStream</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-s">&quot;id&quot;</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">input</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span>, <span class="tok-kt">Long</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">keyed1</span> <span class="tok-k">=</span> <span class="tok-n">input</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-s">&quot;2&quot;</span><span class="tok-o">)</span> <span class="tok-c1">// key by 3rd field</span>
+<span class="tok-k">val</span> <span class="tok-n">keyed2</span> <span class="tok-k">=</span> <span class="tok-n">input</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-s">&quot;_1&quot;</span><span class="tok-o">)</span> <span class="tok-c1">// key by 1st field</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">Address</span> <span class="tok-o">(</span>
+  <span class="tok-n">address</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span>
+  <span class="tok-n">zip</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span>
+  <span class="tok-n">country</span><span class="tok-k">:</span> <span class="tok-kt">String</span>
+<span class="tok-o">)</span>
+
+<span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">Person</span> <span class="tok-o">(</span>
+  <span class="tok-n">name</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span>
+  <span class="tok-n">birthday</span><span class="tok-k">:</span> <span class="tok-o">(</span><span class="tok-kt">Int</span><span class="tok-o">,</span> <span class="tok-kt">Int</span><span class="tok-o">,</span> <span class="tok-nc">Int</span><span class="tok-o">),</span> <span class="tok-c1">// year, month, day</span>
+  <span class="tok-n">address</span><span class="tok-k">:</span> <span class="tok-kt">Address</span>
+<span class="tok-o">)</span>
+
+<span class="tok-k">val</span> <span class="tok-n">persons</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">Person</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-n">persons</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-s">&quot;address.zip&quot;</span><span class="tok-o">)</span> <span class="tok-c1">// key by nested POJO field</span>
+<span class="tok-n">persons</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-s">&quot;birthday._1&quot;</span><span class="tok-o">)</span> <span class="tok-c1">// key by field of nested tuple</span>
+<span class="tok-n">persons</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-s">&quot;birthday._&quot;</span><span class="tok-o">)</span> <span class="tok-c1">// key by all fields of nested tuple</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">sensorData</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">byId</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span>, <span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">sensorData</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-n">r</span> <span class="tok-k">=&gt;</span> <span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">id</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">input</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">keyedStream</span> <span class="tok-k">=</span> <span class="tok-n">input</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-n">value</span> <span class="tok-k">=&gt;</span> <span class="tok-n">math</span><span class="tok-o">.</span><span class="tok-n">max</span><span class="tok-o">(</span><span class="tok-n">value</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-n">value</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">))</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_4_8_实现udf函数更细粒度的控制流">4.8 实现UDF函数，更细粒度的控制流</h3>
+<div class="sect3">
+<h4 id="_4_8_1_function_classes">4.8.1 Function Classes</h4>
+<div class="paragraph">
+<p>Flink暴露了所有udf函数的接口(实现方式为接口或者抽象类)。例如MapFunction, FilterFunction, ProcessFunction等等。</p>
+</div>
+<div class="paragraph">
+<p>例子实现了FilterFunction接口</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">class</span> <span class="tok-nc">FilterFilter</span> <span class="tok-k">extends</span> <span class="tok-nc">FilterFunction</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">filter</span><span class="tok-o">(</span><span class="tok-n">value</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Boolean</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-n">value</span><span class="tok-o">.</span><span class="tok-n">contains</span><span class="tok-o">(</span><span class="tok-s">&quot;flink&quot;</span><span class="tok-o">)</span>
+  <span class="tok-o">}</span>
+<span class="tok-o">}</span>
+
+<span class="tok-k">val</span> <span class="tok-n">flinkTweets</span> <span class="tok-k">=</span> <span class="tok-n">tweets</span><span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">FlinkFilter</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>还可以将函数实现成匿名类</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">flinkTweets</span> <span class="tok-k">=</span> <span class="tok-n">tweets</span><span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">(</span>
+  <span class="tok-k">new</span> <span class="tok-nc">RichFilterFunction</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">filter</span><span class="tok-o">(</span><span class="tok-n">value</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Boolean</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+      <span class="tok-n">value</span><span class="tok-o">.</span><span class="tok-n">contains</span><span class="tok-o">(</span><span class="tok-s">&quot;flink&quot;</span><span class="tok-o">)</span>
+    <span class="tok-o">}</span>
+  <span class="tok-o">}</span>
+<span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>我们filter的字符串"flink"还可以当作参数传进去。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">tweets</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">flinkTweets</span> <span class="tok-k">=</span> <span class="tok-n">tweets</span><span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">KeywordFilter</span><span class="tok-o">(</span><span class="tok-s">&quot;flink&quot;</span><span class="tok-o">))</span>
+
+<span class="tok-k">class</span> <span class="tok-nc">KeywordFilter</span><span class="tok-o">(</span><span class="tok-n">keyWord</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">)</span> <span class="tok-k">extends</span> <span class="tok-nc">FilterFunction</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">filter</span><span class="tok-o">(</span><span class="tok-n">value</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Boolean</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-n">value</span><span class="tok-o">.</span><span class="tok-n">contains</span><span class="tok-o">(</span><span class="tok-n">keyWord</span><span class="tok-o">)</span>
+  <span class="tok-o">}</span>
+<span class="tok-o">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_4_8_2_lambda_functions">4.8.2 Lambda Functions</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">tweets</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">flinkTweets</span> <span class="tok-k">=</span> <span class="tok-n">tweets</span><span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">contains</span><span class="tok-o">(</span><span class="tok-s">&quot;flink&quot;</span><span class="tok-o">))</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_4_8_3_rich_functions">4.8.3 Rich Functions</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>RichMapFunction</p>
+</li>
+<li>
+<p>RichFlatMapFunction</p>
+</li>
+<li>
+<p>RichFilterFunction</p>
+</li>
+<li>
+<p>&#8230;&#8203;</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>所有Flink提供的Function都有Rich版本，提供了更丰富的功能。</p>
+</div>
+<div class="paragraph">
+<p>Rich Function有一个生命周期的概念</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>open()方法是rich function的初始化方法，当一个算子例如map或者filter被调用之前open()会被调用。</p>
+</li>
+<li>
+<p>close()方法是生命周期中的最后一个调用的方法，做一些清理工作。</p>
+</li>
+<li>
+<p>getRuntimeContext()方法提供了函数的RuntimeContext的一些信息，例如函数执行的并行度，任务的名字，以及state状态</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">class</span> <span class="tok-nc">MyFlatMap</span> <span class="tok-k">extends</span> <span class="tok-nc">RichFlatMapFunction</span><span class="tok-o">[</span><span class="tok-kt">Int</span>, <span class="tok-o">(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-o">{</span>
+  <span class="tok-k">var</span> <span class="tok-n">subTaskIndex</span> <span class="tok-k">=</span> <span class="tok-mi">0</span>
+
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">open</span><span class="tok-o">(</span><span class="tok-n">configuration</span><span class="tok-k">:</span> <span class="tok-kt">Configuration</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-n">subTaskIndex</span> <span class="tok-k">=</span> <span class="tok-n">getRuntimeContext</span><span class="tok-o">.</span><span class="tok-n">getIndexOfThisSubtask</span>
+    <span class="tok-c1">// 做一些初始化工作</span>
+    <span class="tok-c1">// 例如建立一个和HDFS的连接</span>
+  <span class="tok-o">}</span>
+
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">flatMap</span><span class="tok-o">(</span><span class="tok-n">in</span><span class="tok-k">:</span> <span class="tok-kt">Int</span><span class="tok-o">,</span> <span class="tok-n">out</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Int</span><span class="tok-o">)])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">in</span> <span class="tok-o">%</span> <span class="tok-mi">2</span> <span class="tok-o">==</span> <span class="tok-n">subTaskIndex</span><span class="tok-o">)</span> <span class="tok-o">{</span>
+      <span class="tok-n">out</span><span class="tok-o">.</span><span class="tok-n">collect</span><span class="tok-o">((</span><span class="tok-n">subTaskIndex</span><span class="tok-o">,</span> <span class="tok-n">in</span><span class="tok-o">))</span>
+    <span class="tok-o">}</span>
+  <span class="tok-o">}</span>
+
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">close</span><span class="tok-o">()</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-c1">// 清理工作，断开和HDFS的连接。</span>
+  <span class="tok-o">}</span>
+<span class="tok-o">}</span></code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -1573,9 +2143,12 @@ object MyEsUtil {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">keyedStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">startUplogDstream</span><span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">startuplog</span><span class="tok-o">=&gt;(</span><span class="tok-n">startuplog</span><span class="tok-o">.</span><span class="tok-n">ch</span><span class="tok-o">,</span><span class="tok-mi">1</span><span class="tok-o">)).</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">keyedStream</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">startUplogDstream</span>
+    <span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">startuplog</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span><span class="tok-n">startuplog</span><span class="tok-o">.</span><span class="tok-n">ch</span><span class="tok-o">,</span> <span class="tok-mi">1</span><span class="tok-o">))</span>
+    <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
 <span class="tok-c1">//每10s统计一次各个渠道的计数</span>
-<span class="tok-k">val</span> <span class="tok-n">windowedStream</span><span class="tok-k">:</span> <span class="tok-kt">WindowedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">keyedStream</span><span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">10</span><span class="tok-o">))</span>
+<span class="tok-k">val</span> <span class="tok-n">windowedStream</span><span class="tok-k">:</span> <span class="tok-kt">WindowedStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">keyedStream</span>
+    <span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">10</span><span class="tok-o">))</span>
 <span class="tok-k">val</span> <span class="tok-n">sumDstream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">windowedStream</span><span class="tok-o">.</span><span class="tok-n">sum</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
@@ -1874,193 +2447,205 @@ val sumDstream: DataStream[(String, Int)] = windowedStream.sum(1)</pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_第七章_状态编程">第七章 状态编程</h2>
+<h2 id="_第七章_有状态的计算">第七章 有状态的计算</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Table API是流处理和批处理通用的关系型API，Table API可以基于流输入或者批输入来运行而不需要进行任何修改。Table API是SQL语言的超集并专门为Apache Flink设计的，Table API是Scala 和Java语言集成式的API。与常规SQL语言中将查询指定为字符串不同，Table API查询是以Java或Scala中的语言嵌入样式来定义的，具有IDE支持如:自动完成和语法检测。</p>
+<p>流式计算分为无状态和有状态两种情况。无状态的计算观察每个独立事件，并根据最后一个事件输出结果。例如，流处理应用程序从传感器接收温度读数，并在温度超过90度时发出警告。有状态的计算则会基于多个事件输出结果。以下是一些例子。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>所有类型的窗口。例如，计算过去一小时的平均温度，就是有状态的计算。</p>
+</li>
+<li>
+<p>所有用于复杂事件处理的状态机。例如，若在一分钟内收到两个相差20度以上的温度读数，则发出警告，这是有状态的计算。</p>
+</li>
+<li>
+<p>流与流之间的所有关联操作，以及流与静态表或动态表之间的关联操作，都是有状态的计算。</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>下图展示了无状态流处理和有状态流处理的主要区别。无状态流处理分别接收每条记录(图中的黑条)，然后根据最新输入的记录生成输出记录(白条)。有状态流处理会维护状态(根据每条输入记录进行更新)，并基于最新输入的记录和当前的状态值生成输出记录(灰条)。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/statevsunstate.png" alt="statevsunstate">
+</div>
+</div>
+<div class="paragraph">
+<p>无状态流处理与有状态流处理的区别。输入记录由黑条表示。无状态流处理每次只转换一条输入记录，并且仅根据最新的输入记录输出结果(白条)。有状态 流处理维护所有已处理记录的状态值，并根据每条新输入的记录更新状态，因此输出记录(灰条)反映的是综合考虑多个事件之后的结果。</p>
+</div>
+<div class="paragraph">
+<p>尽管无状态的计算很重要，但是流处理对有状态的计算更感兴趣。事实上，正确地实现有状态的计算比实现无状态的计算难得多。旧的流处理系统并不支持有状态的计算，而新一代的流处理系统则将状态及其正确性视为重中之重。</p>
 </div>
 <div class="sect2">
-<h3 id="_7_1_需要引入的pom依赖">7.1 需要引入的pom依赖</h3>
-<div class="listingblock">
-<div class="content">
-<pre>&lt;dependency&gt;
-    &lt;groupId&gt;org.apache.flink&lt;/groupId&gt;
-    &lt;artifactId&gt;flink-table_2.11&lt;/artifactId&gt;
-    &lt;version&gt;1.7.0&lt;/version&gt;
-&lt;/dependency&gt;</pre>
+<h3 id="_7_1_一致性">7.1 一致性</h3>
+<div class="paragraph">
+<p>当在分布式系统中引入状态时，自然也引入了一致性问题。一致性实际上是"正确性级别"的另一种说法，即在成功处理故障并恢复之后得到的结果，与没有发生任何故障时得到的结果相比，前者有多正确? 举例来说，假设要对最近一小时登录的用户计数。在系统经历故障之后，计数结果是多少? 在流处理中，一致性分为3个级别。</p>
 </div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_7_2_构造表环境">7.2 构造表环境</h3>
-<div class="listingblock">
-<div class="content">
-<pre>def main(args: Array[String]): Unit = {
-  val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
-
-  val myKafkaConsumer: FlinkKafkaConsumer011[String] = MyKafkaUtil.getConsumer("GMALL_STARTUP")
-  val dstream: DataStream[String] = env.addSource(myKafkaConsumer)
-
-  val tableEnv: StreamTableEnvironment = TableEnvironment.getTableEnvironment(env)
-
-  val startupLogDstream: DataStream[StartupLog] = dstream.map{ jsonString =&gt;JSON.parseObject(jsonString,classOf[StartupLog]) }
-
-  val startupLogTable: Table = tableEnv.fromDataStream(startupLogDstream)
-
-   val table: Table = startupLogTable.select("mid,ch").filter("ch ='appstore'")
-
-  val midchDataStream: DataStream[(String, String)] = table.toAppendStream[(String,String)]
-
-  midchDataStream.print()
-  env.execute()
-}</pre>
-</div>
+<div class="ulist">
+<ul>
+<li>
+<p>at-most-once: 这其实是没有正确性保障的委婉说法——故障发生之后，计数结果可能丢失。同样的还有udp。</p>
+</li>
+<li>
+<p>at-least-once: 这表示计数结果可能大于正确值，但绝不会小于正确值。也就是说，计数程序在发生故障后可能多算，但是绝不会少算。</p>
+</li>
+<li>
+<p>exactly-once: 这指的是系统保证在发生故障后得到的计数结果与正确值一致。</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>动态表</p>
+<p>曾经，at-least-once非常流行。第一代流处理器(如Storm和Samza)刚问世时只保证at-least-once，原因有二。</p>
 </div>
 <div class="paragraph">
-<p>如果流中的数据类型是case class可以直接根据case class的结构生成table
-tableEnv.fromDataStream(startupLogDstream)
-或者根据字段顺序单独命名
-tableEnv.fromDataStream(startupLogDstream,’mid,’uid  &#8230;&#8203;&#8230;&#8203;.)</p>
+<p>(1) 保证exactly-once的系统实现起来更复杂。这在基础架构层(决定什么代表正确，以及exactly-once的范围是什么)和实现层都很有挑战性。
+(2) 流处理系统的早期用户愿意接受框架的局限性，并在应用层想办法弥补(例如使应用程序具有幂等性，或者用批量计算层再做一遍计算)。</p>
 </div>
 <div class="paragraph">
-<p>最后的动态表可以转换为流进行输出
-table.toAppendStream[(String,String)]</p>
+<p>最先保证exactly-once的系统(Storm Trident和Spark Streaming)在性能和表现力这两个方面付出了很大的代价。为了保证exactly-once，这些系统无法单独地对每条记录运用应用逻辑，而是同时处理多条(一批)记录，保证对每一批的处理要么全部成功，要么全部失败。这就导致在得到结果前，必须等待一批记录处理结束。因此，用户经常不得不使用两个流处理框架(一个用来保证exactly-once，另一个用来对每个元素做低延迟处理)，结果使基础设施更加复杂。曾经，用户不得不在保证exactly-once与获得低延迟和效率之间权衡利弊。Flink避免了这种权衡。</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Flink的一个重大价值在于，它既保证了exactly-once，也具有低延迟和高吞吐的处理能力。
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
-<p>字段
- 用一个单引放到字段前面 来标识字段名, 如 ‘name , ‘mid ,’amount 等</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_7_3_通过一个例子_了解tableapi">7.3 通过一个例子 了解TableAPI</h3>
-<div class="listingblock">
-<div class="content">
-<pre>//每10秒中渠道为appstore的个数
-def main(args: Array[String]): Unit = {
-  //sparkcontext
-  val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
-
-  //时间特性改为eventTime
-  env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-
-  val myKafkaConsumer: FlinkKafkaConsumer011[String] = MyKafkaUtil.getConsumer("GMALL_STARTUP")
-  val dstream: DataStream[String] = env.addSource(myKafkaConsumer)
-
-  val startupLogDstream: DataStream[StartupLog] = dstream.map{ jsonString =&gt;JSON.parseObject(jsonString,classOf[StartupLog]) }
-  //告知watermark 和 eventTime如何提取
-  val startupLogWithEventTimeDStream: DataStream[StartupLog] = startupLogDstream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[StartupLog](Time.seconds(0L)) {
-    override def extractTimestamp(element: StartupLog): Long = {
-      element.ts
-    }
-  }).setParallelism(1)
-
-  //SparkSession
-  val tableEnv: StreamTableEnvironment = TableEnvironment.getTableEnvironment(env)
-
-  //把数据流转化成Table
-  val startupTable: Table = tableEnv.fromDataStream(startupLogWithEventTimeDStream , 'mid,'uid,'appid,'area,'os,'ch,'logType,'vs,'logDate,'logHour,'logHourMinute,'ts.rowtime)
-
-  //通过table api 进行操作
-  // 每10秒 统计一次各个渠道的个数 table api 解决
-  //1 groupby  2 要用 window   3 用eventtime来确定开窗时间
-  val resultTable: Table = startupTable.window(Tumble over 10000.millis on 'ts as 'tt).groupBy('ch,'tt ).select( 'ch, 'ch.count)
-
-
-
-  //把Table转化成数据流
-  //val appstoreDStream: DataStream[(String, String, Long)] = appstoreTable.toAppendStream[(String,String,Long)]
-  val resultDstream: DataStream[(Boolean, (String, Long))] = resultSQLTable.toRetractStream[(String,Long)]
-
-  resultDstream.filter(_._1).print()
-
-  env.execute()
-
-}</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>关于group by
-如果使用 groupby table转换为流的时候只能用toRetractDstream
-  val rDstream: DataStream[(Boolean, (String, Long))] = table.toRetractStream[(String,Long)]</p>
-</div>
-<div class="paragraph">
-<p>toRetractDstream 得到的第一个boolean型字段标识 true就是最新的数据，false表示过期老数据</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>val rDstream: DataStream[(Boolean, (String, Long))] = table.toRetractStream[(String,Long)]
-rDstream.filter(_._1).print()</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>如果使用的api包括时间窗口，那么时间的字段必须，包含在group by中。
-  val table: Table = startupLogTable.filter("ch ='appstore'").window(Tumble over 10000.millis on 'ts as 'tt).groupBy('ch ,'tt).select("ch,ch.count ")</p>
-</div>
-<div class="paragraph">
-<p>关于时间窗口
-用到时间窗口，必须提前声明时间字段，如果是processTime直接在创建动态表时进行追加就可以</p>
-</div>
-<div class="paragraph">
-<p>val startupLogTable: Table = tableEnv.fromDataStream(startupLogWithEtDstream,'mid,'uid,'appid,'area,'os,'ch,'logType,'vs,'logDate,'logHour,'logHourMinute,'ts.rowtime)</p>
-</div>
-<div class="paragraph">
-<p>如果是EventTime要在创建动态表时声明
-val startupLogTable: Table = tableEnv.fromDataStream(startupLogWithEtDstream,'mid,'uid,'appid,'area,'os,'ch,'logType,'vs,'logDate,'logHour,'logHourMinute,'ps.processtime)</p>
-</div>
-<div class="paragraph">
-<p>滚动窗口可以使用Tumble over 10000.millis on
-  val table: Table = startupLogTable.filter("ch ='appstore'").window(Tumble over 10000.millis on 'ts as 'tt).groupBy('ch ,'tt).select("ch,ch.count ")</p>
+<p>从根本上说，Flink通过使自身满足所有需求来避免权衡，它是业界的一次意义重大的技术飞跃。尽管这在外行看来很神奇，但是一旦了解，就会恍然大悟。</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_7_4_sql如何编写">7.4 SQL如何编写</h3>
+<h3 id="_7_2_检查点_保证exactly_once">7.2 检查点: 保证exactly-once</h3>
+<div class="paragraph">
+<p>Flink如何保证exactly-once呢? 它使用一种被称为"检查点"的特性，在出现故障时将系统重置回正确状态。下面通过简单的类比来解释检查点的作用。</p>
+</div>
+<div class="paragraph">
+<p>假设你和两位朋友正在数项链上有多少颗珠子，如下图所示。你捏住珠子，边数边拨，每拨过一颗珠子就给总数加一。你的朋友也这样数他们手中的珠子。当你分神忘记数到哪里时，怎么办呢? 如果项链上有很多珠子，你显然不想从头再数一遍，尤其是当三人的速度不一样却又试图合作的时候，更是如此(比如想记录前一分钟三人一共数了多少颗珠子，回想一下一分钟滚动窗口)。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/balls.png" alt="balls">
+</div>
+</div>
+<div class="paragraph">
+<p>于是，你想了一个更好的办法: 在项链上每隔一段就松松地系上一根有色皮筋，将珠子分隔开; 当珠子被拨动的时候，皮筋也可以被拨动; 然后，你安排一个助手，让他在你和朋友拨到皮筋时记录总数。用这种方法，当有人数错时，就不必从头开始数。相反，你向其他人发出错误警示，然后你们都从上一根皮筋处开始重数，助手则会告诉每个人重数时的起始数值，例如在粉色皮筋处的数值是多少。</p>
+</div>
+<div class="paragraph">
+<p>Flink检查点的作用就类似于皮筋标记。数珠子这个类比的关键点是: 对于指定的皮筋而言，珠子的相对位置是确定的; 这让皮筋成为重新计数的参考点。总状态(珠子的总数)在每颗珠子被拨动之后更新一次，助手则会保存与每根皮筋对应的检查点状态，如当遇到粉色皮筋时一共数了多少珠子，当遇到橙色皮筋时又是多少。当问题出现时，这种方法使得重新计数变得简单。</p>
+</div>
+<div class="paragraph">
+<p>Flink检查点的核心作用是确保状态正确，即使遇到程序中断，也要正确。记住这一基本点之后，我们用一个例子来看检查点是如何运行的。Flink为用户提供了用来定义状态的工具。例如，以下这个Scala程序按照输入记录的第一个字段(一个字符串)进行分组并维护第二个字段的计数状态。</p>
+</div>
 <div class="listingblock">
 <div class="content">
-<pre>def main(args: Array[String]): Unit = {
-  //sparkcontext
-  val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
-
-  //时间特性改为eventTime
-  env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-
-  val myKafkaConsumer: FlinkKafkaConsumer011[String] = MyKafkaUtil.getConsumer("GMALL_STARTUP")
-  val dstream: DataStream[String] = env.addSource(myKafkaConsumer)
-
-  val startupLogDstream: DataStream[StartupLog] = dstream.map{ jsonString =&gt;JSON.parseObject(jsonString,classOf[StartupLog]) }
-  //告知watermark 和 eventTime如何提取
-  val startupLogWithEventTimeDStream: DataStream[StartupLog] = startupLogDstream.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[StartupLog](Time.seconds(0L)) {
-    override def extractTimestamp(element: StartupLog): Long = {
-      element.ts
-    }
-  }).setParallelism(1)
-
-  //SparkSession
-  val tableEnv: StreamTableEnvironment = TableEnvironment.getTableEnvironment(env)
-
-  //把数据流转化成Table
-  val startupTable: Table = tableEnv.fromDataStream(startupLogWithEventTimeDStream , 'mid,'uid,'appid,'area,'os,'ch,'logType,'vs,'logDate,'logHour,'logHourMinute,'ts.rowtime)
-
-  //通过table api 进行操作
-  // 每10秒 统计一次各个渠道的个数 table api 解决
-  //1 groupby  2 要用 window   3 用eventtime来确定开窗时间
-  val resultTable: Table = startupTable.window(Tumble over 10000.millis on 'ts as 'tt).groupBy('ch,'tt ).select( 'ch, 'ch.count)
- // 通过sql 进行操作
-
-  val resultSQLTable : Table = tableEnv.sqlQuery( "select ch ,count(ch)   from "+startupTable+"  group by ch   ,Tumble(ts,interval '10' SECOND )")
-
-  //把Table转化成数据流
-  //val appstoreDStream: DataStream[(String, String, Long)] = appstoreTable.toAppendStream[(String,String,Long)]
-  val resultDstream: DataStream[(Boolean, (String, Long))] = resultSQLTable.toRetractStream[(String,Long)]
-
-  resultDstream.filter(_._1).print()
-
-  env.execute()
-
-}</pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">stream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">counts</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">stream</span>
+  <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-n">record</span> <span class="tok-k">=&gt;</span> <span class="tok-n">record</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">)</span>
+  <span class="tok-o">.</span><span class="tok-n">mapWithState</span><span class="tok-o">((</span><span class="tok-n">in</span><span class="tok-k">:</span> <span class="tok-o">(</span><span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-kt">Int</span><span class="tok-o">),</span> <span class="tok-n">count</span><span class="tok-k">:</span> <span class="tok-kt">Option</span><span class="tok-o">[</span><span class="tok-kt">Int</span><span class="tok-o">])</span> <span class="tok-k">=&gt;</span>
+    <span class="tok-n">count</span> <span class="tok-k">match</span> <span class="tok-o">{</span>
+      <span class="tok-k">case</span> <span class="tok-nc">Some</span><span class="tok-o">(</span><span class="tok-n">c</span><span class="tok-o">)</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span> <span class="tok-o">(</span><span class="tok-n">in</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-n">c</span> <span class="tok-o">+</span> <span class="tok-n">in</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">),</span> <span class="tok-nc">Some</span><span class="tok-o">(</span><span class="tok-n">c</span> <span class="tok-o">+</span> <span class="tok-n">in</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">)</span> <span class="tok-o">)</span>
+      <span class="tok-k">case</span> <span class="tok-nc">None</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span> <span class="tok-o">(</span><span class="tok-n">in</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-n">in</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">),</span> <span class="tok-nc">Some</span><span class="tok-o">(</span><span class="tok-n">in</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">)</span> <span class="tok-o">)</span>
+<span class="tok-o">})</span></code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>该程序有两个算子: keyBy算子用来将记录按照第一个元素(一个字符串)进行分组，根据该key将数据进行重新分区，然后将记录再发送给下一个算子: 有状态的map算子(mapWithState)。map算子在接收到每个元素后，将输入记录的第二个字段的数据加到现有总数中，再将更新过的元素发射出去。下图表示程序的初始状态: 输入流中的6条记录被检查点屏障(checkpoint barrier)隔开，所有的map算子状态均为0(计数还未开始)。所有key为a的记录将被顶层的map算子处理，所有key为b的记录将被中间层的map算子处理，所有key为c的记录则将被底层的map算子处理。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/ckpt1.png" alt="ckpt1">
+</div>
+</div>
+<div class="paragraph">
+<p>程序的初始状态。注意，a、b、c三组的初始计数状态都是0，即三个圆柱上的值。ckpt表示检查点屏障。每条记录在处理顺序上严格地遵守在检查点之前或之后的规定，例如["b",2]在检查点之前被处理，["a",2]则在检查点之后被处理</p>
+</div>
+<div class="paragraph">
+<p>当该程序处理输入流中的6条记录时，涉及的操作遍布3个并行实例(节点、CPU内核等)。那么，检查点该如何保证exactly-once呢?</p>
+</div>
+<div class="paragraph">
+<p>检查点屏障和普通记录类似。它们由算子处理，但并不参与计算，而是会触发与检查点相关的行为。当读取输入流的数据源(在本例中与keyBy算子内联)遇到检查点屏障时，它将其在输入流中的位置保存到持久化存储中。如果输入流来自消息传输系统(Kafka)，这个位置就是偏移量。Flink的存储机制是插件化的，持久化存储可以是分布式文件系统，如HDFS。下图展示了这个过程。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/ckpt2.png" alt="ckpt2">
+</div>
+</div>
+<div class="paragraph">
+<p>当Flink数据源(在本例中与keyBy算子内联)遇到检查点屏障时，它会将其在输入流中的位置保存到持久化存储中。这让 Flink可以根据该位置重启输入</p>
+</div>
+<div class="paragraph">
+<p>检查点屏障像普通记录一样在算子之间流动。当map算子处理完前3条记录并收到检查点屏障时，它们会将状态以异步的方式写入持久化存储，如下图所示。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/ckpt3.png" alt="ckpt3">
+</div>
+</div>
+<div class="paragraph">
+<p>位于检查点之前的所有记录(["b",2]、["b",3]和["c",1])被map算子处理之后的情况。此时，持久化存储已经备份了检查点屏障在输入流中的位置(备份操作发生在检查点屏障被输入算子处理的时候)。map算子接着开始处理检查点屏障，并触发将状态异步备份到稳定存储中这个动作</p>
+</div>
+<div class="paragraph">
+<p>当map算子的状态备份和检查点屏障的位置备份被确认之后，该检查点操作就可以被标记为完成，如下图所示。我们在无须停止或者阻断计算的条件下，在一个逻辑时间点(对应检查点屏障在输入流中的位置)为计算状态拍了快照。通过确保备份的状态和位置指向同一个逻辑时间点，后文将解释如何基于备份恢复计算，从而保证exactly-once。值得注意的是，当没有出现故障时，Flink检查点的开销极小，检查点操作的速度由持久化存储的可用带宽决定。回顾数珠子的例子: 除了因为数错而需要用到皮筋之外，皮筋会被很快地拨过。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/ckpt4.png" alt="ckpt4">
+</div>
+</div>
+<div class="paragraph">
+<p>检查点操作完成，状态和位置均已备份到稳定存储中。输入流中的所有记录都已处理完成。值得注意的是，备份的状态值与实际的状态值是不同的。备份反映的是检查点的状态</p>
+</div>
+<div class="paragraph">
+<p>如果检查点操作失败，Flink会丢弃该检查点并继续正常执行，因为之后的某一个检查点可能会成功。虽然恢复时间可能更长，但是对于状态的保证依旧很有力。只有在一系列连续的检查点操作失败之后，Flink才会抛出错误，因为这通常预示着发生了严重且持久的错误。</p>
+</div>
+<div class="paragraph">
+<p>现在来看看下图所示的情况: 检查点操作已经完成，但故障紧随其后。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/ckpt5.png" alt="ckpt5">
+</div>
+</div>
+<div class="paragraph">
+<p>故障紧跟检查点，导致最底部的实例丢失</p>
+</div>
+<div class="paragraph">
+<p>在这种情况下，Flink会重新拓扑(可能会获取新的执行资源)，将输入流倒回到上一个检查点，然后恢复状态值并从该处开始继续计算。在本例中，["a",2]、["a",2]和["c",2]这几条记录将被重播。</p>
+</div>
+<div class="paragraph">
+<p>下图展示了这一重新处理过程。从上一个检查点开始重新计算，可以保证在剩下的记录被处理之后，得到的map算子的状态值与没有发生故障时的状态值一致。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/ckpt6.png" alt="ckpt6">
+</div>
+</div>
+<div class="paragraph">
+<p>Flink将输入流倒回到上一个检查点屏障的位置，同时恢复map算子的状态值。然后，Flink从此处开始重新处理。这样做保证了在记录被处理之后，map算子的状态值与没有发生故障时的一致</p>
+</div>
+<div class="paragraph">
+<p>Flink检查点算法的正式名称是异步屏障快照(asynchronous barrier snapshotting)。该算法大致基于Chandy-Lamport分布式快照算法。</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+检查点是Flink最有价值的创新之一，因为它使Flink可以保证exactly-once，并且不需要牺牲性能。
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
