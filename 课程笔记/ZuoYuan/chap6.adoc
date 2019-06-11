@@ -1,6 +1,8 @@
 == 第六章 Event Time与Window
 
-=== 6.1 Event Time的引入
+=== Configure Time Characteristic
+
+==== Event Time的引入
 
 在Flink的流式处理中，绝大部分的业务都会使用Event Time，一般只在Event Time无法使用时，才会被迫使用Processing Time或者Ingestion Time。
 如果要使用Event Time，那么需要引入Event Time的时间属性，引入方式如下所示：
@@ -13,9 +15,9 @@ val env = StreamExecutionEnvironment.getExecutionEnvironment
 env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 ----
 
-=== 6.2 Watermark
+==== Watermark
 
-==== 6.2.1 基本概念
+===== 基本概念
 
 我们知道，流处理从事件产生，到流经source，再到operator，中间是有一个过程和时间的，虽然大部分情况下，流到operator的数据都是按照事件产生的时间顺序来的，但是也不排除由于网络、分布式等原因，导致乱序的产生，所谓乱序，就是指Flink接收到的事件的先后顺序不是严格按照事件的Event Time顺序排列的。
 
@@ -46,7 +48,7 @@ Watermark就是触发前一窗口的"关窗时间"，一旦触发关门那么以
 
 只要没有达到水位那么不管现实中的时间推进了多久都不会触发关窗。
 
-==== 6.2.2 Watermark的引入
+==== Watermark的引入
 
 Event Time的使用一定要**指定数据源中的时间戳**。否则程序无法知道事件的事件时间是什么(数据源里的数据没有时间戳的话，就只能使用Processing Time了)。
 
@@ -162,7 +164,7 @@ class PunctuatedAssigner extends AssignerWithPunctuatedWatermarks[SensorReading]
 
 如果水印迟到得太久，收到结果的速度可能就会很慢，解决办法是在水印到达之前输出近似结果(Flink可以实现)。如果水印到达得太早，则可能收到错误结果，不过Flink处理迟到数据的机制可以解决这个问题。上述问题看起来很复杂，但是恰恰符合现实世界的规律——大部分真实的事件流都是乱序的，并且通常无法了解它们的乱序程度(因为理论上不能预见未来)。水印是唯一让我们直面乱序事件流并保证正确性的机制; 否则只能选择忽视事实，假装错误的结果是正确的。
 
-*Process Function(Low-Level API)*
+=== Process Function(Low-Level API)
 
 我们之前学习的**转换算子**是无法访问事件的时间戳信息和水印信息的。而这在一些应用场景下，极为重要。例如MapFunction这样的map转换算子就无法访问时间戳或者当前事件的事件时间。
 
@@ -186,7 +188,7 @@ KeyedProcessFunction用来操作KeyedStream。KeyedProcessFunction会处理流�
 * processElement(v: IN, ctx: Context, out: Collector[OUT]), 流中的每一个元素都会调用这个方法，调用结果将会放在Collector数据类型中输出。**Context**可以访问元素的时间戳，元素的key，以及**TimerService**时间服务。**Context**还可以将结果输出到别的流(side outputs)。
 * onTimer(timestamp: Long, ctx: OnTimerContext, out: Collector[OUT])是一个回调函数。当之前注册的定时器触发时调用。参数timestamp为定时器所设定的触发的时间戳。Collector为输出结果的集合。OnTimerContext和processElement的Context参数一样，提供了上下文的一些信息，例如firing trigger的时间信息(事件时间或者处理时间)。
 
-*TimerService and Timers*
+==== TimerService and Timers
 
 Context和OnTimerContext所持有的TimerService对象拥有以下方法:
 
@@ -261,148 +263,120 @@ class TempIncreaseAlertFunction extends KeyedProcessFunction[String, SensorReadi
 }
 ----
 
+==== Emitting to Side Outputs
 
-=== 6.3 EvnetTimeWindow API
+大部分的DataStream API的算子的输出是单一输出，也就是某种数据类型的流。除了split算子，可以将一条流分成多条流，这些流的数据类型也都相同。process function的side outputs功能可以产生多条流，并且这些流的数据类型可以不一样。一个side output可以定义为OutputTag[X]对象，X是输出流的数据类型。process function可以通过Context对象发射一个事件到一个或者多个side outputs。
 
-==== 6.3.1 滚动窗口(TumblingEventTimeWindows) 
+例子
 
 [source,scala]
 ----
-def main(args: Array[String]): Unit = {
-    // 环境
-    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+val monitoredReadings: DataStream[SensorReading] = readings
+  .process(new FreezingMonitor)
 
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-    env.setParallelism(1)
+monitoredReadings
+  .getSideOutput(new OutputTag[String]("freezing-alarms"))
+  .print()
 
-    val dstream: DataStream[String] = env.socketTextStream("localhost", 9999)
+readings.print()
+----
 
-    val textWithTsDstream: DataStream[(String, Long, Int)] = dstream
-      .map { text =>
-        val arr: Array[String] = text.split(" ")
-        (arr(0), arr(1).toLong, 1)
-      }
+接下来我们实现FreezingMonitor函数，用来监控传感器温度值，将温度值低于32F的温度输出到side output。
 
-    val textWithEventTimeDstream: DataStream[(String, Long, Int)] = textWithTsDstream
-      .assignTimestampsAndWatermarks(
-        new BoundedOutOfOrdernessTimestampExtractor[(String, Long, Int)](Time.milliseconds(1000)) {
-          override def extractTimestamp(element: (String, Long, Int)): Long = {
-            return element._2
-          }
-        })
+[source,scala]
+----
+class FreezingMonitor extends ProcessingFunction[SensorReading, SensorReading] {
+  // define a side output tag
+  lazy val freezingAlarmOutput: OutputTag[String] =
+    new OutputTag[String]("freezing-alarms")
 
-    val textKeyStream: KeyedStream[(String, Long, Int), Tuple] = textWithEventTimeDstream
-      .keyBy(0)
-
-    textKeyStream.print("textkey:")
-
-    val windowStream: WindowedStream[(String, Long, Int), Tuple, TimeWindow] = textKeyStream
-      .window(TumblingEventTimeWindows.of(Time.seconds(2)))
-
-    val groupDstream: DataStream[mutable.HashSet[Long]] = windowStream
-      .fold(new mutable.HashSet[Long]()) { case (set, (key, ts, count)) =>
-        set += ts
-      }
-
-    groupDstream.print("window::::").setParallelism(1)
-
-    env.execute()
+  override def processElement(r: SensorReading,
+                              ctx: ProcessFunction[SensorReading, SensorReading]#Context,
+                              out: Collector[SensorReading]): Unit = {
+    // emit freezing alarm if temperature is below 32F
+    if (r.temperature < 32.0) {
+      ctx.output(freezingAlarmOutput, s"Freezing Alarm for ${r.id}")
+    }
+    // forward all readings to the regular output
+    out.collect(r)
   }
-----
-
-结果是按照Event Time的时间窗口计算得出的，而无关系统的时间(包括输入的快慢)。
-
-==== 6.3.2 滑动窗口(SlidingEventTimeWindows)
-
-[source,scala]
-----
-def main(args: Array[String]): Unit = {
-  //  环境
-  val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
-
-  env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-  env.setParallelism(1)
-
-  val dstream: DataStream[String] = env.socketTextStream("localhost", 9999)
-
-  val textWithTsDstream: DataStream[(String, Long, Int)] = dstream
-    .map { text =>
-      val arr: Array[String] = text.split(" ")
-      (arr(0), arr(1).toLong, 1)
-    }
-
-  val textWithEventTimeDstream: DataStream[(String, Long, Int)] = textWithTsDstream
-    .assignTimestampsAndWatermarks(
-      new BoundedOutOfOrdernessTimestampExtractor[(String, Long, Int)](Time.milliseconds(1000)) {
-        override def extractTimestamp(element: (String, Long, Int)): Long = {
-          return element._2
-        }
-      })
-
-  val textKeyStream: KeyedStream[(String, Long, Int), Tuple] = textWithEventTimeDstream
-    .keyBy(0)
-  
-  textKeyStream.print("textkey:")
-
-  val windowStream: WindowedStream[(String, Long, Int), Tuple, TimeWindow] = textKeyStream
-    .window(SlidingEventTimeWindows.of(Time.seconds(2), Time.milliseconds(500)))
-
-  val groupDstream: DataStream[mutable.HashSet[Long]] = windowStream
-    .fold(new mutable.HashSet[Long]()) { case (set, (key, ts, count)) =>
-      set += ts
-    }
-
-  groupDstream.print("window::::").setParallelism(1)
-
-  env.execute()
 }
 ----
 
-==== 6.3.3 会话窗口（EventTimeSessionWindows）
+==== CoProcessFunction
 
-相邻两次数据的Event Time的时间差超过指定的时间间隔就会触发执行。如果加入Watermark，会在符合窗口触发的情况下进行延迟。到达延迟水位再进行窗口触发。
+对于两条输入流，DataStream API提供了CoProcessFunction这样的low-level操作。CoProcessFunction提供了操作每一个输入流的方法: processElement1()和processElement2()。类似于ProcessFunction，这两种方法都通过Context对象来调用。这个Context对象可以访问事件数据，定时器时间戳，TimerService，以及side outputs。CoProcessFunction也提供了onTimer()回调函数。下面的例子展示了如何使用CoProcessFunction来合并两条流。
 
 [source,scala]
 ----
-def main(args: Array[String]): Unit = {
-    //  环境
-    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+// ingest sensor stream
+val readings: DataStream[SensorReading] = ...
 
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-    env.setParallelism(1)
+// filter switches enable forwarding of readings
+val filterSwitches: DataStream[(String, Long)] = env
+  .fromCollection(Seq(
+    ("sensor_2", 10 * 1000L),
+    ("sensor_7", 60 * 1000L)
+  ))
 
-    val dstream: DataStream[String] = env.socketTextStream("localhost", 9999)
-
-    val textWithTsDstream: DataStream[(String, Long, Int)] = dstream
-      .map { text =>
-        val arr: Array[String] = text.split(" ")
-        (arr(0), arr(1).toLong, 1)
-      }
-
-    val textWithEventTimeDstream: DataStream[(String, Long, Int)] = textWithTsDstream
-      .assignTimestampsAndWatermarks(
-        new BoundedOutOfOrdernessTimestampExtractor[(String, Long, Int)](Time.milliseconds(1000)) {
-          override def extractTimestamp(element: (String, Long, Int)): Long = {
-            return element._2
-          }
-        })
-
-    val textKeyStream: KeyedStream[(String, Long, Int), Tuple] = textWithEventTimeDstream
-      .keyBy(0)
-
-    textKeyStream.print("textkey:")
-
-    val windowStream: WindowedStream[(String, Long, Int), Tuple, TimeWindow] = textKeyStream
-      .window(EventTimeSessionWindows.withGap(Time.milliseconds(500)))
-
-    windowStream
-      .reduce((text1,text2) =>
-        (text1._1, 0L, text1._3 + text2._3)
-      )
-      .map(_._3)
-      .print("windows:::")
-      .setParallelism(1)
-
-    env.execute()
-  }
+val forwardedReadings = readings
+  // connect readings and switches
+  .connect(filterSwitches)
+  // key by sensor ids
+  .keyBy(_.id, _._1)
+  // apply filtering CoProcessFunction
+  .process(new ReadingFilter)
 ----
+
+[source,scala]
+----
+class ReadingFilter extends CoProcessFunction[SensorReading, (String, Long), SensorReading] {
+  // switch to enable forwarding
+  // 传送数据的开关
+  lazy val forwardingEnabled: ValueState[Boolean] = getRuntimeContext.getState(
+    new ValueStateDescriptor[Boolean]("filterSwitch", Types.of[Boolean]))
+
+  // hold timestamp of currently active disable timer
+  lazy val disableTimer: ValueState[Long] = getRuntimeContext.getState(new ValueStateDescriptor[Long]("timer", Types.of[Long]))
+
+  override def processElement1(reading: SensorReading,
+                               ctx: CoProcessFunction[SensorReading, (String, Long), SensorReading]#Context,
+                               out: Collector[SensorReading]): Unit = {
+    // check if we may forward the reading
+    // 决定我们是否要将数据继续传下去
+    if (forwardingEnabled.value()) {
+      out.collect(reading)
+    }
+  }
+
+  override def processElement2(switch: (String, Long),
+                               ctx: CoProcessFunction[SensorReading, (String, Long), SensorReading]#Context,
+                               out: Collector[SensorReading]): Unit = {
+    // enable reading forwarding
+    // 允许继续传输数据
+    forwardingEnabled.update(true)
+    // set disable forward timer
+    val timerTimestamp = ctx.timerService().currentProcessingTime() + switch._2
+    val curTimerTimestamp = disableTimer.value()
+
+    if (timerTimestamp > curTimerTimestamp) {
+      // remove current timer and register new timer
+      ctx.timerService().deleteEventTimeTimer(curTimerTimestamp)
+      ctx.timerService().registerProcessingTimeTimer(timerTimestamp)
+      disableTimer.update(timerTimestamp)
+    }
+  }
+
+  override def onTimer(ts: Long,
+                       ctx: CoProcessFunction[SensorReading, (String, Long), SensorReading]#OnTimerContext,
+                       out: Collector[SensorReading]): Unit = {
+     // remove all state; forward switch will be false by default
+     forwardingEnabled.clear()
+     disableTimer.clear()
+  }
+}
+----
+
+=== Window Operators
+
+
