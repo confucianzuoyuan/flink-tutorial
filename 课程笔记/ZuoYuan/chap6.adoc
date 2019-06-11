@@ -379,4 +379,92 @@ class ReadingFilter extends CoProcessFunction[SensorReading, (String, Long), Sen
 
 === Window Operators
 
+==== define window operators
+
+window算子可以在keyed stream或者nokeyed stream上面使用。
+
+创建一个window算子，需要指定两个部分：
+
+1. **window assigner**定义了流的元素如何分配到window中。window assigner将会产生一条**WindowedStream**(或者**AllWindowedStream**，如果是nonkeyed DataStream的话)
+2. **window function**用来处理WindowedStream(AllWindowedStream)中的元素。
+
+例子：
+
+[source,scala]
+----
+stream
+  .keyBy(...)
+  .window(...)  // 指定window assigner
+  .reduce/aggregate/process(...) // 指定window function
+
+stream
+  .windowAll(...) // 指定window assigner
+  .reduce/aggregate/process(...) // 指定window function
+----
+
+==== 内置的window assigner
+
+===== tumbling windows
+
+[source,scala]
+----
+val sensorData: DataStream[SensorReading] = ...
+
+val avgTemp = sensorData
+  .keyBy(_.id)
+  // group readings in 1s event-time windows
+  .window(TumblingEventTimeWindows.of(Time.seconds(1)))
+  .process(new TemperatureAverager)
+
+val avgTemp = sensorData
+  .keyBy(_.id)
+  // group readings in 1s processing-time windows
+  .window(TumblingProcessingTimeWindows.of(Time.seconds(1)))
+  .process(new TemperatureAverager)
+
+// 其实就是之前的
+val avgTemp = sensorData
+  .keyBy(_.id)
+  .timeWindow(Time.seconds(1))
+  .process(new TemperatureAverager)
+----
+
+如果滚动窗口的时间长度为1小时，那么默认设定的窗口为：[00:00, 01:00), [01:00, 02:00), ...
+
+===== sliding window
+
+[source,scala]
+----
+val slidingAvgTemp = sensorData
+  .keyBy(_.id)
+  .window(SlidingEventTimeWindows.of(Time.hours(1), Time.minutes(15)))
+  .process(new TemperatureAverager)
+
+val slidingAvgTemp = sensorData
+  .keyBy(_.id)
+  .window(SlidingProcessingTimeWindows.of(Time.hours(1), Time.minutes(15)))
+  .process(new TemperatureAverager)
+
+val slidingAvgTemp = sensorData
+  .keyBy(_.id)
+  .timeWindow(Time.hours(1), Time.minutes(15))
+  .process(new TemperatureAverager)
+----
+
+===== session windows
+
+[source,scala]
+----
+val sessionWindows = sensorData
+  .keyBy(_.id)
+  .window(EventTimeSessionWindows.withGap(Time.minutes(15)))
+  .process(...)
+
+val sessionWindows = sensorData
+  .keyBy(_.id)
+  .window(ProcessingTimeSessionWindows.withGap(Time.minutes(15)))
+  .process(...)
+----
+
+==== Applying Functions on Windows
 
