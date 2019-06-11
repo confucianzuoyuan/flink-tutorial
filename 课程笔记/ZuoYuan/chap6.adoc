@@ -162,6 +162,105 @@ class PunctuatedAssigner extends AssignerWithPunctuatedWatermarks[SensorReading]
 
 如果水印迟到得太久，收到结果的速度可能就会很慢，解决办法是在水印到达之前输出近似结果(Flink可以实现)。如果水印到达得太早，则可能收到错误结果，不过Flink处理迟到数据的机制可以解决这个问题。上述问题看起来很复杂，但是恰恰符合现实世界的规律——大部分真实的事件流都是乱序的，并且通常无法了解它们的乱序程度(因为理论上不能预见未来)。水印是唯一让我们直面乱序事件流并保证正确性的机制; 否则只能选择忽视事实，假装错误的结果是正确的。
 
+*Process Function(Low-Level API)*
+
+我们之前学习的**转换算子**是无法访问事件的时间戳信息和水印信息的。而这在一些应用场景下，极为重要。例如MapFunction这样的map转换算子就无法访问时间戳或者当前事件的事件时间。
+
+基于此，DataStream API提供了一系列的Low-Level转换算子。可以**访问时间戳、水印以及注册定时事件**。还可以输出**特定的一些事件**，例如超时事件等。Process Function用来构建事件驱动的应用以及实现自定义的业务逻辑(使用之前的window函数和转换算子无法实现)。例如，Flink-SQL就是使用Process Function实现的。
+
+Flink提供了8个Process Function：
+
+* ProcessFunction
+* KeyedProcessFunction
+* CoProcessFunction
+* ProcessJoinFunction
+* BroadcastProcessFunction
+* KeyedBroadcastProcessFunction
+* ProcessWindowFunction
+* ProcessAllWindowFunction
+
+重点介绍KeyedProcessFunction
+
+KeyedProcessFunction用来操作KeyedStream。KeyedProcessFunction会处理流的每一个元素，输出为0个、1个或者多个元素。所有的Process Function都继承自RichFunction接口，所以都有open()、close()和getRuntimeContext()等方法。而KeyedProcessFunction[KEY, IN, OUT]还额外提供了两个方法:
+
+* processElement(v: IN, ctx: Context, out: Collector[OUT]), 流中的每一个元素都会调用这个方法，调用结果将会放在Collector数据类型中输出。**Context**可以访问元素的时间戳，元素的key，以及**TimerService**时间服务。**Context**还可以将结果输出到别的流(side outputs)。
+* onTimer(timestamp: Long, ctx: OnTimerContext, out: Collector[OUT])是一个回调函数。当之前注册的定时器触发时调用。参数timestamp为定时器所设定的触发的时间戳。Collector为输出结果的集合。OnTimerContext和processElement的Context参数一样，提供了上下文的一些信息，例如firing trigger的时间信息(事件时间或者处理时间)。
+
+*TimerService and Timers*
+
+Context和OnTimerContext所持有的TimerService对象拥有以下方法:
+
+* currentProcessingTime(): Long 返回当前处理时间
+* currentWatermark(): Long 返回当前水印的时间戳
+* registerProcessingTimeTimer(timestamp: Long): Unit 会注册当前key的processing time的timer。当processing time到达定时时间时，触发timer。
+* registerEventTimeTimer(timestamp: Long): Unit 会注册当前key的event time timer。当水印大于等于定时器注册的时间时，触发定时器执行回调函数。
+* deleteProcessingTimeTimer(timestamp: Long): Unit 删除之前注册处理时间定时器。如果没有这个时间戳的定时器，则不执行。
+* deleteEventTimeTimer(timestamp: Long): Unit 删除之前注册的事件时间定时器，如果没有此时间戳的定时器，则不执行。
+
+当定时器timer触发时，执行回调函数onTimer()。
+
+WARNING: 定时器timer只能在keyed streams上面使用。
+
+举个例子说明KeyedProcessFunction如何操作KeyedStream。
+
+需求：监控温度传感器的温度值，如果温度值在一秒钟之内(processing time)连续上升，报警。
+
+[source,scala]
+----
+val warnings = readings
+  // key by sensor id
+  .keyBy(_.id)
+  // apply ProcessFunction to monitor temperatures
+  .process(new TempIncreaseAlertFunction)
+----
+
+看一下TempIncreaseAlertFunction如何实现
+
+[source,scala]
+----
+class TempIncreaseAlertFunction extends KeyedProcessFunction[String, SensorReading, String] {
+  // 保存上一个传感器温度值
+  lazy val lastTemp: ValueState[Double] = getRuntimeContext.getState(
+    new ValueStateDescriptor[Double]("lastTemp", Types.of[Double])
+  )
+
+  // 保存注册的定时器的时间戳
+  lazy val currentTimer: ValueState[Long] = getRuntimeContext.getState(
+    new ValueStateDescriptor[Long]("timer", Types.of[Long])
+  )
+
+  override def processElement(r: SensorReading,
+                              ctx: KeyedProcessFunction[String, SensorReading, String]#Context,
+                              out: Collector[String]): Unit = {
+    // get previous temperature
+    val prevTemp = lastTemp.value()
+    // update last temperature
+    lastTemp.update(r.temperature)
+
+    val curTimerTimestamp = currentTimer.value()
+    if (prevTemp == 0.0 || r.temperature < prevTemp) {
+      // temperature decreased; delete current timer
+      ctx.timerService().deleteProcessingTimeTimer(curTimerTimestamp)
+      currentTimer.clear()
+    } else if (r.temperature > prevTemp && curTimerTimestamp == 0) {
+      // temperature increased and we have not set a timer yet
+      // set processing time timer for now + 1 second
+      val timerTs = ctx.timerService().currentProcessingTime() + 1000
+      ctx.timerService().registerProcessingTimeTimer(timerTs)
+      // remember current timer
+      currentTimer.update(timerTs)
+    }
+  }
+
+  override def onTimer(ts: Long,
+                       ctx: KeyedProcessFunction[String, SensorReading, String]#OnTimerContext,
+                       out: Collector[String]): Unit = {
+    out.collect("传感器id为: " + ctx.getCurrentKey + "的传感器温度值已经连续1s上升了。")
+    currentTimer.clear()
+  }
+}
+----
+
 
 === 6.3 EvnetTimeWindow API
 
