@@ -10,7 +10,7 @@ digraph g {
 }
 ----
 
-=== 4.1 Environment
+=== Environment
 
 *getExecutionEnvironment*
 
@@ -26,7 +26,7 @@ env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 env.setParallelism(1)
 ----
 
-=== 4.2 Source
+=== Source
 
 以Kafka消息队列的数据为数据来源
 
@@ -149,11 +149,11 @@ val sensorData: DataStream[SensorReading] = env
   .addSource(new SensorSource)
 ----
 
-=== 4.3 Basic Transformations
+=== Basic Transformations
 
 基本转换算子
 
-==== 4.3.1 map
+==== map
 
 image::map.png[]
 
@@ -162,7 +162,7 @@ image::map.png[]
 val streamMap = stream.map { x => x * 2 }
 ----
 
-==== 4.3.2 flatMap
+==== flatMap
 
 image::flatmap.png[]
 
@@ -179,7 +179,7 @@ val streamFlatMap = stream.flatMap{
 }
 ----
 
-==== 4.3.3 Filter
+==== Filter
 
 image::filter.png[]
 
@@ -190,9 +190,9 @@ val streamFilter = stream.filter{
 }
 ----
 
-=== 4.4 KeyedStream Transformations
+=== KeyedStream Transformations
 
-==== 4.4.1 keyBy
+==== keyBy
 
 分流算子 DataStream -> KeyedStream
 
@@ -210,7 +210,7 @@ stream.keyBy("word")
 stream.keyBy(0)
 ----
 
-==== 4.4.2 Rolling Aggregations
+==== Rolling Aggregations
 
 针对KeyedStream的每一条流做聚合
 
@@ -231,7 +231,7 @@ val resultStream: DataStream[(Int, Int, Int)] = inputStream
   .sum(1)
 ----
 
-==== 4.4.3 Reduce
+==== Reduce
 
 KeyedStream -> DataStream：一个分组数据流的聚合操作，合并当前的元素和上次聚合的结果，产生一个新的值，返回的流中包含每一次聚合的结果，而不是只返回最后一次聚合的最终结果。
 
@@ -248,9 +248,9 @@ inputStream
   .reduce((x, y) => x._1, x._2 ::: y._2)
 ----
 
-=== 4.5 Multistream Transformations
+=== Multistream Transformations
 
-==== 4.5.1 Union
+==== Union
 
 image::union.png[]
 
@@ -265,7 +265,7 @@ val allCities: DataStream[SensorRreading] = parisStream
   .union(tokyoStream, rioStream)
 ----
 
-==== 4.5.2 Connect, Comap and Coflatmap
+==== Connect, Comap and Coflatmap
 
 联合两条流的事件是非常常见的流处理需求。例如监控一片森林然后发出高危的火警警报。报警的Application接收两条流，一条是温度传感器传回来的数据，一条是烟雾传感器传回来的数据。当两条流都超过各自的阈值时，报警。
 
@@ -327,7 +327,7 @@ one.keyBy(0).connect(two.keyBy(0))
 
 以上程序其实相当于实现了SQL中的JOIN语义。
 
-==== 4.5.3 Split and Select
+==== Split and Select
 
 Split是Union的反函数。
 
@@ -351,7 +351,7 @@ Connect与 Union 区别：
 1 Union之前两个流的类型必须是一样，Connect可以不一样，在之后的CoMapFunction中再去调整成为一样的。
 2 Connect只能操作两个流，Union可以操作多个。
 
-=== 4.6 支持的数据类型
+=== 支持的数据类型
 
 *Primitives*
 
@@ -394,7 +394,7 @@ persons.filter(p => p.age > 18)
 * Java's POJOs, ArrayList, HashMap, Enum
 * ...
 
-=== 4.7 keyBy相关用法
+=== keyBy相关用法
 
 [source,scala]
 ----
@@ -454,9 +454,9 @@ val input: DataStream[(Int, Int)] = ...
 val keyedStream = input.keyBy(value => math.max(value._1, value._2))
 ----
 
-=== 4.8 实现UDF函数，更细粒度的控制流
+=== 实现UDF函数，更细粒度的控制流
 
-==== 4.8.1 Function Classes
+==== Function Classes
 
 Flink暴露了所有udf函数的接口(实现方式为接口或者抽象类)。例如MapFunction, FilterFunction, ProcessFunction等等。
 
@@ -500,7 +500,7 @@ class KeywordFilter(keyWord: String) extends FilterFunction[String] {
 }
 ----
 
-==== 4.8.2 Lambda Functions
+==== Lambda Functions
 
 [source,scala]
 ----
@@ -508,7 +508,7 @@ val tweets: DataStream[String] = ...
 val flinkTweets = tweets.filter(_.contains("flink"))
 ----
 
-==== 4.8.3 Rich Functions
+==== Rich Functions
 
 * RichMapFunction
 * RichFlatMapFunction
@@ -546,100 +546,67 @@ class MyFlatMap extends RichFlatMapFunction[Int, (Int, Int)] {
 }
 ----
 
-=== 4.4 Sink
-   Flink没有类似于spark中foreach方法，让用户进行迭代的操作。虽有对外的输出操作都要利用Sink完成。最后通过类似如下方式完成整个任务最终输出操作。
+=== Sink
 
-   myDstream.addSink(new MySink(xxxx)) 
+Flink没有类似于Spark中foreach方法，让用户进行迭代的操作。所有对外的输出操作都要利用Sink完成。最后通过类似如下方式完成整个任务最终输出操作。
 
- 官方提供了一部分的框架的sink。除此以外，需要用户自定义实现sink。   
-
+[source,scala]
 ----
-<!-- https://mvnrepository.com/artifact/org.apache.flink/flink-connector-kafka-0.11 -->
-<dependency>
-    <groupId>org.apache.flink</groupId>
-    <artifactId>flink-connector-kafka-0.11_2.11</artifactId>
-    <version>1.7.0</version>
-</dependency>
+stream.addSink(new MySink(xxxx)) 
 ----
 
-mykafkaUtil中增加方法
+官方提供了一部分的框架的sink。除此以外，需要用户自定义实现sink。   
 
-----
-def getProducer(topic:String): FlinkKafkaProducer011[String] ={
-  new FlinkKafkaProducer011[String](brokerList,topic,new SimpleStringSchema())
-}
-----
+==== Elasticsearch
 
-主函数中添加sink
-
-----
-val myKafkaProducer: FlinkKafkaProducer011[String] = MyKafkaUtil.getProducer("channel_sum")
- 
-sumDstream.map( chCount=>chCount._1+":"+chCount._2 ).addSink(myKafkaProducer)
-----
-
-==== 4.4.1 Elasticsearch
-
+[source,xml]
 ----
 <dependency>
     <groupId>org.apache.flink</groupId>
-    <artifactId>flink-connector-elasticsearch6_2.11</artifactId>
-    <version>1.7.0</version>
-</dependency>
-
-<dependency>
-    <groupId>org.apache.httpcomponents</groupId>
-    <artifactId>httpclient</artifactId>
-    <version>4.5.3</version>
+    <artifactId>flink-connector-elasticsearch6_${scala.binary.version}</artifactId>
+    <version>${flink.version}</version>
 </dependency>
 ----
 
-添加MyEsUtil
-
+[source,scala]
 ----
-import java.util
-
-import com.alibaba.fastjson.{JSON, JSONObject}
 import org.apache.flink.api.common.functions.RuntimeContext
-import org.apache.flink.streaming.connectors.elasticsearch.{ElasticsearchSinkFunction, RequestIndexer}
+import org.apache.flink.streaming.api.datastream.DataStream
+import org.apache.flink.streaming.connectors.elasticsearch.ElasticsearchSinkFunction
+import org.apache.flink.streaming.connectors.elasticsearch.RequestIndexer
 import org.apache.flink.streaming.connectors.elasticsearch6.ElasticsearchSink
+
 import org.apache.http.HttpHost
 import org.elasticsearch.action.index.IndexRequest
 import org.elasticsearch.client.Requests
 
-object MyEsUtil {
-  
-  val httpHosts = new util.ArrayList[HttpHost]
-  httpHosts.add(new HttpHost("hadoop1",9200,"http"))
-   httpHosts.add(new HttpHost("hadoop2",9200,"http"))
-   httpHosts.add(new HttpHost("hadoop3",9200,"http"))
+import java.util.ArrayList
+import java.util.List
 
-  def  getElasticSearchSink(indexName:String):  ElasticsearchSink[String]  ={
-    val esFunc = new ElasticsearchSinkFunction[String] {
-      override def process(element: String, ctx: RuntimeContext, indexer: RequestIndexer): Unit = {
-        println("试图保存："+element)
-        val jsonObj: JSONObject = JSON.parseObject(element)
-        val indexRequest: IndexRequest = Requests.indexRequest().index(indexName).`type`("_doc").source(jsonObj)
-        indexer.add(indexRequest)
-        println("保存1条")
-      }
+val input: DataStream[String] = ...
+
+val httpHosts = new java.util.ArrayList[HttpHost]
+httpHosts.add(new HttpHost("127.0.0.1", 9200, "http"))
+
+val esSinkBuilder = new ElasticsearchSink.Builer[String](
+  httpHosts,
+  new ElasticsearchSinkFunction[String] {
+    def createIndexRequest(element: String): IndexRequest = {
+      val json = new java.util.HashMap[String, String]
+      json.put("data", element)
+      
+      return Requests.indexRequest()
+              .index("my-index")
+              .type("my-type")
+              .source(json)
     }
 
-    val sinkBuilder = new ElasticsearchSink.Builder[String](httpHosts, esFunc)
-
-    //刷新前缓冲的最大动作量
-    sinkBuilder.setBulkFlushMaxActions(10)
-
-    sinkBuilder.build()
+    override def process(element: String, ctx: RuntimeContext, indexer: RequestIndexer) {
+      indexer.add(createIndexRequest(element))
+    }
   }
-}
-----
+)
 
-在main方法中调用
-
-[source,scala]
-----
-// 明细发送到es 中
-val esSink: ElasticsearchSink[String] = MyEsUtil.getElasticSearchSink("gmall0503_startup")
-dstream.addSink(esSink)
+// finally, build and add the sink to the job's pipeline
+input.addSink(esSinkBuilder.build)
 ----
