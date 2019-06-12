@@ -1,8 +1,8 @@
 == 第六章 Event Time与Window
 
-=== Configure Time Characteristic
+=== 6.1 Configure Time Characteristic
 
-==== Event Time的引入
+==== 6.1.1 Event Time的引入
 
 在Flink的流式处理中，绝大部分的业务都会使用Event Time，一般只在Event Time无法使用时，才会被迫使用Processing Time或者Ingestion Time。
 如果要使用Event Time，那么需要引入Event Time的时间属性，引入方式如下所示：
@@ -15,9 +15,9 @@ val env = StreamExecutionEnvironment.getExecutionEnvironment
 env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 ----
 
-==== Watermark
+==== 6.1.2 Watermark
 
-===== 基本概念
+===== 6.1.2.1 基本概念
 
 我们知道，流处理从事件产生，到流经source，再到operator，中间是有一个过程和时间的，虽然大部分情况下，流到operator的数据都是按照事件产生的时间顺序来的，但是也不排除由于网络、分布式等原因，导致乱序的产生，所谓乱序，就是指Flink接收到的事件的先后顺序不是严格按照事件的Event Time顺序排列的。
 
@@ -48,7 +48,7 @@ Watermark就是触发前一窗口的"关窗时间"，一旦触发关门那么以
 
 只要没有达到水位那么不管现实中的时间推进了多久都不会触发关窗。
 
-==== Watermark的引入
+==== 6.1.3 Watermark的引入
 
 Event Time的使用一定要**指定数据源中的时间戳**。否则程序无法知道事件的事件时间是什么(数据源里的数据没有时间戳的话，就只能使用Processing Time了)。
 
@@ -164,7 +164,7 @@ class PunctuatedAssigner extends AssignerWithPunctuatedWatermarks[SensorReading]
 
 如果水印迟到得太久，收到结果的速度可能就会很慢，解决办法是在水印到达之前输出近似结果(Flink可以实现)。如果水印到达得太早，则可能收到错误结果，不过Flink处理迟到数据的机制可以解决这个问题。上述问题看起来很复杂，但是恰恰符合现实世界的规律——大部分真实的事件流都是乱序的，并且通常无法了解它们的乱序程度(因为理论上不能预见未来)。水印是唯一让我们直面乱序事件流并保证正确性的机制; 否则只能选择忽视事实，假装错误的结果是正确的。
 
-=== Process Function(Low-Level API)
+=== 6.2 Process Function(Low-Level API)
 
 我们之前学习的**转换算子**是无法访问事件的时间戳信息和水印信息的。而这在一些应用场景下，极为重要。例如MapFunction这样的map转换算子就无法访问时间戳或者当前事件的事件时间。
 
@@ -188,7 +188,7 @@ KeyedProcessFunction用来操作KeyedStream。KeyedProcessFunction会处理流�
 * processElement(v: IN, ctx: Context, out: Collector[OUT]), 流中的每一个元素都会调用这个方法，调用结果将会放在Collector数据类型中输出。**Context**可以访问元素的时间戳，元素的key，以及**TimerService**时间服务。**Context**还可以将结果输出到别的流(side outputs)。
 * onTimer(timestamp: Long, ctx: OnTimerContext, out: Collector[OUT])是一个回调函数。当之前注册的定时器触发时调用。参数timestamp为定时器所设定的触发的时间戳。Collector为输出结果的集合。OnTimerContext和processElement的Context参数一样，提供了上下文的一些信息，例如firing trigger的时间信息(事件时间或者处理时间)。
 
-==== TimerService and Timers
+==== 6.2.1 TimerService and Timers
 
 Context和OnTimerContext所持有的TimerService对象拥有以下方法:
 
@@ -263,7 +263,7 @@ class TempIncreaseAlertFunction extends KeyedProcessFunction[String, SensorReadi
 }
 ----
 
-==== Emitting to Side Outputs
+==== 6.2.2 Emitting to Side Outputs(侧输出)
 
 大部分的DataStream API的算子的输出是单一输出，也就是某种数据类型的流。除了split算子，可以将一条流分成多条流，这些流的数据类型也都相同。process function的side outputs功能可以产生多条流，并且这些流的数据类型可以不一样。一个side output可以定义为OutputTag[X]对象，X是输出流的数据类型。process function可以通过Context对象发射一个事件到一个或者多个side outputs。
 
@@ -303,7 +303,7 @@ class FreezingMonitor extends ProcessingFunction[SensorReading, SensorReading] {
 }
 ----
 
-==== CoProcessFunction
+==== 6.2.3 CoProcessFunction
 
 对于两条输入流，DataStream API提供了CoProcessFunction这样的low-level操作。CoProcessFunction提供了操作每一个输入流的方法: processElement1()和processElement2()。类似于ProcessFunction，这两种方法都通过Context对象来调用。这个Context对象可以访问事件数据，定时器时间戳，TimerService，以及side outputs。CoProcessFunction也提供了onTimer()回调函数。下面的例子展示了如何使用CoProcessFunction来合并两条流。
 
@@ -377,9 +377,9 @@ class ReadingFilter extends CoProcessFunction[SensorReading, (String, Long), Sen
 }
 ----
 
-=== Window Operators
+=== 6.3 Window Operators
 
-==== define window operators
+==== 6.3.1 define window operators
 
 window算子可以在keyed stream或者nokeyed stream上面使用。
 
@@ -402,9 +402,9 @@ stream
   .reduce/aggregate/process(...) // 指定window function
 ----
 
-==== 内置的window assigner
+==== 6.3.2 内置的window assigner
 
-===== tumbling windows
+===== 6.3.2.1 tumbling windows
 
 [source,scala]
 ----
@@ -431,7 +431,7 @@ val avgTemp = sensorData
 
 如果滚动窗口的时间长度为1小时，那么默认设定的窗口为：[00:00, 01:00), [01:00, 02:00), ...
 
-===== sliding window
+===== 6.3.2.2 sliding window
 
 [source,scala]
 ----
@@ -451,7 +451,7 @@ val slidingAvgTemp = sensorData
   .process(new TemperatureAverager)
 ----
 
-===== session windows
+===== 6.3.2.3 session windows
 
 [source,scala]
 ----
@@ -466,14 +466,14 @@ val sessionWindows = sensorData
   .process(...)
 ----
 
-==== Applying Functions on Windows
+==== 6.3.3 Applying Functions on Windows
 
 window functions定义了窗口中数据的计算逻辑。有两种计算逻辑：
 
 1. 增量聚合函数(Incremental aggregation functions)：当一个事件被添加到窗口时，触发函数计算，并且更新window的状态(单个值)。最终聚合的结果将作为输出。ReduceFunction和AggregateFunction是增量聚合函数。
 2. 全窗口函数(Full window functions)：这个函数将会收集窗口中所有的元素，可以做一些复杂计算。ProcessWindowFunction是window function。
 
-===== ReduceFunction
+===== 6.3.3.1 ReduceFunction
 
 例子: 计算每个传感器15s窗口中的温度最小值
 
@@ -486,7 +486,7 @@ val minTempPerWindow: DataStream[(String, Double)] = sensorData
   .reduce((r1, r2) => (r1._1, r1._2.min(r2._2)))
 ----
 
-===== AggregateFunction
+===== 6.3.3.2 AggregateFunction
 
 先来看接口定义
 
@@ -542,7 +542,7 @@ class AvgTempFunction extends AggregateFunction[(String, Double), (String, Doubl
 }
 ----
 
-===== ProcessWindowFunction
+===== 6.3.3.3 ProcessWindowFunction
 
 一些业务场景，我们需要收集窗口内所有的数据进行计算，例如计算窗口数据的中位数，或者计算窗口数据中出现频率最高的值。这样的需求，使用ReduceFunction和AggregateFunction就无法实现了。这个时候就需要ProcessWindowFunction了。
 
