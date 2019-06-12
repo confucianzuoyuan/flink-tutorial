@@ -503,41 +503,41 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_第四章_flink_datastream_api">第四章 Flink DataStream API</a>
 <ul class="sectlevel2">
-<li><a href="#_environment">Environment</a></li>
-<li><a href="#_source">Source</a></li>
-<li><a href="#_basic_transformations">Basic Transformations</a>
+<li><a href="#_4_1_environment">4.1 Environment</a></li>
+<li><a href="#_4_2_source">4.2 Source</a></li>
+<li><a href="#_4_3_basic_transformations">4.3 Basic Transformations</a>
 <ul class="sectlevel3">
-<li><a href="#_map">map</a></li>
-<li><a href="#_flatmap">flatMap</a></li>
-<li><a href="#_filter">Filter</a></li>
+<li><a href="#_4_3_1_map">4.3.1 map</a></li>
+<li><a href="#_4_3_2_flatmap">4.3.2 flatMap</a></li>
+<li><a href="#_4_3_3_filter">4.3.3 Filter</a></li>
 </ul>
 </li>
-<li><a href="#_keyedstream_transformations">KeyedStream Transformations</a>
+<li><a href="#_4_4_keyedstream_transformations">4.4 KeyedStream Transformations</a>
 <ul class="sectlevel3">
-<li><a href="#_keyby">keyBy</a></li>
-<li><a href="#_rolling_aggregations">Rolling Aggregations</a></li>
-<li><a href="#_reduce">Reduce</a></li>
+<li><a href="#_4_4_1_keyby">4.4.1 keyBy</a></li>
+<li><a href="#_4_4_2_rolling_aggregations">4.4.2 Rolling Aggregations</a></li>
+<li><a href="#_4_4_3_reduce">4.4.3 Reduce</a></li>
 </ul>
 </li>
-<li><a href="#_multistream_transformations">Multistream Transformations</a>
+<li><a href="#_4_5_multistream_transformations">4.5 Multistream Transformations</a>
 <ul class="sectlevel3">
-<li><a href="#_union">Union</a></li>
-<li><a href="#_connect_comap_and_coflatmap">Connect, Comap and Coflatmap</a></li>
-<li><a href="#_split_and_select">Split and Select</a></li>
+<li><a href="#_4_5_1_union">4.5.1 Union</a></li>
+<li><a href="#_4_5_2_connect_comap_and_coflatmap">4.5.2 Connect, Comap and Coflatmap</a></li>
+<li><a href="#_4_5_3_split_and_select">4.5.3 Split and Select</a></li>
 </ul>
 </li>
-<li><a href="#_支持的数据类型">支持的数据类型</a></li>
-<li><a href="#_keyby相关用法">keyBy相关用法</a></li>
-<li><a href="#_实现udf函数更细粒度的控制流">实现UDF函数，更细粒度的控制流</a>
+<li><a href="#_4_6_支持的数据类型">4.6 支持的数据类型</a></li>
+<li><a href="#_4_7_keyby相关用法">4.7 keyBy相关用法</a></li>
+<li><a href="#_4_8_实现udf函数更细粒度的控制流">4.8 实现UDF函数，更细粒度的控制流</a>
 <ul class="sectlevel3">
-<li><a href="#_function_classes">Function Classes</a></li>
-<li><a href="#_lambda_functions">Lambda Functions</a></li>
-<li><a href="#_rich_functions">Rich Functions</a></li>
+<li><a href="#_4_8_1_function_classes">4.8.1 Function Classes</a></li>
+<li><a href="#_4_8_2_lambda_functions">4.8.2 Lambda Functions</a></li>
+<li><a href="#_4_8_3_rich_functions">4.8.3 Rich Functions</a></li>
 </ul>
 </li>
-<li><a href="#_sink">Sink</a>
+<li><a href="#_4_9_sink">4.9 Sink</a>
 <ul class="sectlevel3">
-<li><a href="#_elasticsearch">Elasticsearch</a></li>
+<li><a href="#_4_9_1_elasticsearch">4.9.1 Elasticsearch</a></li>
 </ul>
 </li>
 </ul>
@@ -556,39 +556,39 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_第六章_event_time与window">第六章 Event Time与Window</a>
 <ul class="sectlevel2">
-<li><a href="#_configure_time_characteristic">Configure Time Characteristic</a>
+<li><a href="#_6_1_configure_time_characteristic">6.1 Configure Time Characteristic</a>
 <ul class="sectlevel3">
-<li><a href="#_event_time的引入">Event Time的引入</a></li>
-<li><a href="#_watermark">Watermark</a>
+<li><a href="#_6_1_1_event_time的引入">6.1.1 Event Time的引入</a></li>
+<li><a href="#_6_1_2_watermark">6.1.2 Watermark</a>
 <ul class="sectlevel4">
-<li><a href="#_基本概念">基本概念</a></li>
+<li><a href="#_6_1_2_1_基本概念">6.1.2.1 基本概念</a></li>
 </ul>
 </li>
-<li><a href="#_watermark的引入">Watermark的引入</a></li>
+<li><a href="#_6_1_3_watermark的引入">6.1.3 Watermark的引入</a></li>
 </ul>
 </li>
-<li><a href="#_process_functionlow_level_api">Process Function(Low-Level API)</a>
+<li><a href="#_6_2_process_functionlow_level_api">6.2 Process Function(Low-Level API)</a>
 <ul class="sectlevel3">
-<li><a href="#_timerservice_and_timers">TimerService and Timers</a></li>
-<li><a href="#_emitting_to_side_outputs">Emitting to Side Outputs</a></li>
-<li><a href="#_coprocessfunction">CoProcessFunction</a></li>
+<li><a href="#_6_2_1_timerservice_and_timers">6.2.1 TimerService and Timers</a></li>
+<li><a href="#_6_2_2_emitting_to_side_outputs侧输出">6.2.2 Emitting to Side Outputs(侧输出)</a></li>
+<li><a href="#_6_2_3_coprocessfunction">6.2.3 CoProcessFunction</a></li>
 </ul>
 </li>
-<li><a href="#_window_operators">Window Operators</a>
+<li><a href="#_6_3_window_operators">6.3 Window Operators</a>
 <ul class="sectlevel3">
-<li><a href="#_define_window_operators">define window operators</a></li>
-<li><a href="#_内置的window_assigner">内置的window assigner</a>
+<li><a href="#_6_3_1_define_window_operators">6.3.1 define window operators</a></li>
+<li><a href="#_6_3_2_内置的window_assigner">6.3.2 内置的window assigner</a>
 <ul class="sectlevel4">
-<li><a href="#_tumbling_windows">tumbling windows</a></li>
-<li><a href="#_sliding_window">sliding window</a></li>
-<li><a href="#_session_windows">session windows</a></li>
+<li><a href="#_6_3_2_1_tumbling_windows">6.3.2.1 tumbling windows</a></li>
+<li><a href="#_6_3_2_2_sliding_window">6.3.2.2 sliding window</a></li>
+<li><a href="#_6_3_2_3_session_windows">6.3.2.3 session windows</a></li>
 </ul>
 </li>
-<li><a href="#_applying_functions_on_windows">Applying Functions on Windows</a>
+<li><a href="#_6_3_3_applying_functions_on_windows">6.3.3 Applying Functions on Windows</a>
 <ul class="sectlevel4">
-<li><a href="#_reducefunction">ReduceFunction</a></li>
-<li><a href="#_aggregatefunction">AggregateFunction</a></li>
-<li><a href="#_processwindowfunction">ProcessWindowFunction</a></li>
+<li><a href="#_6_3_3_1_reducefunction">6.3.3.1 ReduceFunction</a></li>
+<li><a href="#_6_3_3_2_aggregatefunction">6.3.3.2 AggregateFunction</a></li>
+<li><a href="#_6_3_3_3_processwindowfunction">6.3.3.3 ProcessWindowFunction</a></li>
 </ul>
 </li>
 </ul>
@@ -597,13 +597,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_第七章_有状态的计算">第七章 有状态的计算</a>
 <ul class="sectlevel2">
-<li><a href="#_一致性">一致性</a></li>
-<li><a href="#_检查点_保证exactly_once">检查点: 保证exactly-once</a></li>
-<li><a href="#_stateful_operators_and_applications">Stateful Operators and Applications</a>
+<li><a href="#_7_1_一致性">7.1 一致性</a></li>
+<li><a href="#_7_2_检查点_保证exactly_once">7.2 检查点: 保证exactly-once</a></li>
+<li><a href="#_7_3_stateful_operators_and_applications">7.3 Stateful Operators and Applications</a>
 <ul class="sectlevel3">
-<li><a href="#_实现stateful_functions">实现stateful functions</a>
+<li><a href="#_7_3_1_实现stateful_functions">7.3.1 实现stateful functions</a>
 <ul class="sectlevel4">
-<li><a href="#_在runtimecontext中声明keyed_state">在RuntimeContext中声明Keyed State</a></li>
+<li><a href="#_7_3_1_1_在runtimecontext中声明keyed_state">7.3.1.1 在RuntimeContext中声明Keyed State</a></li>
 </ul>
 </li>
 </ul>
@@ -652,6 +652,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_8_4_总结">8.4 总结</a></li>
 </ul>
 </li>
+<li><a href="#_第九章_flink_cep简介">第九章 Flink CEP简介</a></li>
 </ul>
 </div>
 </div>
@@ -1345,7 +1346,7 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 </div>
 <div class="sect2">
-<h3 id="_environment">Environment</h3>
+<h3 id="_4_1_environment">4.1 Environment</h3>
 <div class="paragraph">
 <p><strong>getExecutionEnvironment</strong></p>
 </div>
@@ -1364,7 +1365,7 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 </div>
 <div class="sect2">
-<h3 id="_source">Source</h3>
+<h3 id="_4_2_source">4.2 Source</h3>
 <div class="paragraph">
 <p>以Kafka消息队列的数据为数据来源</p>
 </div>
@@ -1493,12 +1494,12 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 </div>
 <div class="sect2">
-<h3 id="_basic_transformations">Basic Transformations</h3>
+<h3 id="_4_3_basic_transformations">4.3 Basic Transformations</h3>
 <div class="paragraph">
 <p>基本转换算子</p>
 </div>
 <div class="sect3">
-<h4 id="_map">map</h4>
+<h4 id="_4_3_1_map">4.3.1 map</h4>
 <div class="imageblock">
 <div class="content">
 <img src="images/map.png" alt="map">
@@ -1511,7 +1512,7 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 </div>
 <div class="sect3">
-<h4 id="_flatmap">flatMap</h4>
+<h4 id="_4_3_2_flatmap">4.3.2 flatMap</h4>
 <div class="imageblock">
 <div class="content">
 <img src="images/flatmap.png" alt="flatmap">
@@ -1535,7 +1536,7 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 </div>
 <div class="sect3">
-<h4 id="_filter">Filter</h4>
+<h4 id="_4_3_3_filter">4.3.3 Filter</h4>
 <div class="imageblock">
 <div class="content">
 <img src="images/filter.png" alt="filter">
@@ -1551,9 +1552,9 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 </div>
 <div class="sect2">
-<h3 id="_keyedstream_transformations">KeyedStream Transformations</h3>
+<h3 id="_4_4_keyedstream_transformations">4.4 KeyedStream Transformations</h3>
 <div class="sect3">
-<h4 id="_keyby">keyBy</h4>
+<h4 id="_4_4_1_keyby">4.4.1 keyBy</h4>
 <div class="paragraph">
 <p>分流算子 DataStream &#8594; KeyedStream</p>
 </div>
@@ -1577,7 +1578,7 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 </div>
 <div class="sect3">
-<h4 id="_rolling_aggregations">Rolling Aggregations</h4>
+<h4 id="_4_4_2_rolling_aggregations">4.4.2 Rolling Aggregations</h4>
 <div class="paragraph">
 <p>针对KeyedStream的每一条流做聚合</p>
 </div>
@@ -1613,7 +1614,7 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 </div>
 <div class="sect3">
-<h4 id="_reduce">Reduce</h4>
+<h4 id="_4_4_3_reduce">4.4.3 Reduce</h4>
 <div class="paragraph">
 <p>KeyedStream &#8594; DataStream：一个分组数据流的聚合操作，合并当前的元素和上次聚合的结果，产生一个新的值，返回的流中包含每一次聚合的结果，而不是只返回最后一次聚合的最终结果。</p>
 </div>
@@ -1633,9 +1634,9 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 </div>
 <div class="sect2">
-<h3 id="_multistream_transformations">Multistream Transformations</h3>
+<h3 id="_4_5_multistream_transformations">4.5 Multistream Transformations</h3>
 <div class="sect3">
-<h4 id="_union">Union</h4>
+<h4 id="_4_5_1_union">4.5.1 Union</h4>
 <div class="imageblock">
 <div class="content">
 <img src="images/union.png" alt="union">
@@ -1655,7 +1656,7 @@ Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之�
 </div>
 </div>
 <div class="sect3">
-<h4 id="_connect_comap_and_coflatmap">Connect, Comap and Coflatmap</h4>
+<h4 id="_4_5_2_connect_comap_and_coflatmap">4.5.2 Connect, Comap and Coflatmap</h4>
 <div class="paragraph">
 <p>联合两条流的事件是非常常见的流处理需求。例如监控一片森林然后发出高危的火警警报。报警的Application接收两条流，一条是温度传感器传回来的数据，一条是烟雾传感器传回来的数据。当两条流都超过各自的阈值时，报警。</p>
 </div>
@@ -1734,7 +1735,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_split_and_select">Split and Select</h4>
+<h4 id="_4_5_3_split_and_select">4.5.3 Split and Select</h4>
 <div class="paragraph">
 <p>Split是Union的反函数。</p>
 </div>
@@ -1766,7 +1767,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_支持的数据类型">支持的数据类型</h3>
+<h3 id="_4_6_支持的数据类型">4.6 支持的数据类型</h3>
 <div class="paragraph">
 <p><strong>Primitives</strong></p>
 </div>
@@ -1823,7 +1824,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_keyby相关用法">keyBy相关用法</h3>
+<h3 id="_4_7_keyby相关用法">4.7 keyBy相关用法</h3>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">input</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span>, <span class="tok-kt">Long</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
@@ -1884,9 +1885,9 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_实现udf函数更细粒度的控制流">实现UDF函数，更细粒度的控制流</h3>
+<h3 id="_4_8_实现udf函数更细粒度的控制流">4.8 实现UDF函数，更细粒度的控制流</h3>
 <div class="sect3">
-<h4 id="_function_classes">Function Classes</h4>
+<h4 id="_4_8_1_function_classes">4.8.1 Function Classes</h4>
 <div class="paragraph">
 <p>Flink暴露了所有udf函数的接口(实现方式为接口或者抽象类)。例如MapFunction, FilterFunction, ProcessFunction等等。</p>
 </div>
@@ -1935,7 +1936,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lambda_functions">Lambda Functions</h4>
+<h4 id="_4_8_2_lambda_functions">4.8.2 Lambda Functions</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">tweets</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
@@ -1944,7 +1945,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_rich_functions">Rich Functions</h4>
+<h4 id="_4_8_3_rich_functions">4.8.3 Rich Functions</h4>
 <div class="ulist">
 <ul>
 <li>
@@ -2006,7 +2007,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_sink">Sink</h3>
+<h3 id="_4_9_sink">4.9 Sink</h3>
 <div class="paragraph">
 <p>Flink没有类似于Spark中foreach方法，让用户进行迭代的操作。所有对外的输出操作都要利用Sink完成。最后通过类似如下方式完成整个任务最终输出操作。</p>
 </div>
@@ -2019,7 +2020,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 <p>官方提供了一部分的框架的sink。除此以外，需要用户自定义实现sink。</p>
 </div>
 <div class="sect3">
-<h4 id="_elasticsearch">Elasticsearch</h4>
+<h4 id="_4_9_1_elasticsearch">4.9.1 Elasticsearch</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="xml"><span></span><span class="tok-nt">&lt;dependency&gt;</span>
@@ -2277,9 +2278,9 @@ CoFlatMapFunction[IN1, IN2, OUT]
 <h2 id="_第六章_event_time与window">第六章 Event Time与Window</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_configure_time_characteristic">Configure Time Characteristic</h3>
+<h3 id="_6_1_configure_time_characteristic">6.1 Configure Time Characteristic</h3>
 <div class="sect3">
-<h4 id="_event_time的引入">Event Time的引入</h4>
+<h4 id="_6_1_1_event_time的引入">6.1.1 Event Time的引入</h4>
 <div class="paragraph">
 <p>在Flink的流式处理中，绝大部分的业务都会使用Event Time，一般只在Event Time无法使用时，才会被迫使用Processing Time或者Ingestion Time。
 如果要使用Event Time，那么需要引入Event Time的时间属性，引入方式如下所示：</p>
@@ -2294,9 +2295,9 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_watermark">Watermark</h4>
+<h4 id="_6_1_2_watermark">6.1.2 Watermark</h4>
 <div class="sect4">
-<h5 id="_基本概念">基本概念</h5>
+<h5 id="_6_1_2_1_基本概念">6.1.2.1 基本概念</h5>
 <div class="paragraph">
 <p>我们知道，流处理从事件产生，到流经source，再到operator，中间是有一个过程和时间的，虽然大部分情况下，流到operator的数据都是按照事件产生的时间顺序来的，但是也不排除由于网络、分布式等原因，导致乱序的产生，所谓乱序，就是指Flink接收到的事件的先后顺序不是严格按照事件的Event Time顺序排列的。</p>
 </div>
@@ -2360,7 +2361,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_watermark的引入">Watermark的引入</h4>
+<h4 id="_6_1_3_watermark的引入">6.1.3 Watermark的引入</h4>
 <div class="paragraph">
 <p>Event Time的使用一定要<strong>指定数据源中的时间戳</strong>。否则程序无法知道事件的事件时间是什么(数据源里的数据没有时间戳的话，就只能使用Processing Time了)。</p>
 </div>
@@ -2503,7 +2504,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_process_functionlow_level_api">Process Function(Low-Level API)</h3>
+<h3 id="_6_2_process_functionlow_level_api">6.2 Process Function(Low-Level API)</h3>
 <div class="paragraph">
 <p>我们之前学习的<strong>转换算子</strong>是无法访问事件的时间戳信息和水印信息的。而这在一些应用场景下，极为重要。例如MapFunction这样的map转换算子就无法访问时间戳或者当前事件的事件时间。</p>
 </div>
@@ -2558,7 +2559,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </ul>
 </div>
 <div class="sect3">
-<h4 id="_timerservice_and_timers">TimerService and Timers</h4>
+<h4 id="_6_2_1_timerservice_and_timers">6.2.1 TimerService and Timers</h4>
 <div class="paragraph">
 <p>Context和OnTimerContext所持有的TimerService对象拥有以下方法:</p>
 </div>
@@ -2664,7 +2665,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_emitting_to_side_outputs">Emitting to Side Outputs</h4>
+<h4 id="_6_2_2_emitting_to_side_outputs侧输出">6.2.2 Emitting to Side Outputs(侧输出)</h4>
 <div class="paragraph">
 <p>大部分的DataStream API的算子的输出是单一输出，也就是某种数据类型的流。除了split算子，可以将一条流分成多条流，这些流的数据类型也都相同。process function的side outputs功能可以产生多条流，并且这些流的数据类型可以不一样。一个side output可以定义为OutputTag[X]对象，X是输出流的数据类型。process function可以通过Context对象发射一个事件到一个或者多个side outputs。</p>
 </div>
@@ -2708,7 +2709,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_coprocessfunction">CoProcessFunction</h4>
+<h4 id="_6_2_3_coprocessfunction">6.2.3 CoProcessFunction</h4>
 <div class="paragraph">
 <p>对于两条输入流，DataStream API提供了CoProcessFunction这样的low-level操作。CoProcessFunction提供了操作每一个输入流的方法: processElement1()和processElement2()。类似于ProcessFunction，这两种方法都通过Context对象来调用。这个Context对象可以访问事件数据，定时器时间戳，TimerService，以及side outputs。CoProcessFunction也提供了onTimer()回调函数。下面的例子展示了如何使用CoProcessFunction来合并两条流。</p>
 </div>
@@ -2785,9 +2786,9 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_window_operators">Window Operators</h3>
+<h3 id="_6_3_window_operators">6.3 Window Operators</h3>
 <div class="sect3">
-<h4 id="_define_window_operators">define window operators</h4>
+<h4 id="_6_3_1_define_window_operators">6.3.1 define window operators</h4>
 <div class="paragraph">
 <p>window算子可以在keyed stream或者nokeyed stream上面使用。</p>
 </div>
@@ -2821,9 +2822,9 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_内置的window_assigner">内置的window assigner</h4>
+<h4 id="_6_3_2_内置的window_assigner">6.3.2 内置的window assigner</h4>
 <div class="sect4">
-<h5 id="_tumbling_windows">tumbling windows</h5>
+<h5 id="_6_3_2_1_tumbling_windows">6.3.2.1 tumbling windows</h5>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">sensorData</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
@@ -2852,7 +2853,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect4">
-<h5 id="_sliding_window">sliding window</h5>
+<h5 id="_6_3_2_2_sliding_window">6.3.2.2 sliding window</h5>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">slidingAvgTemp</span> <span class="tok-k">=</span> <span class="tok-n">sensorData</span>
@@ -2873,7 +2874,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect4">
-<h5 id="_session_windows">session windows</h5>
+<h5 id="_6_3_2_3_session_windows">6.3.2.3 session windows</h5>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">sessionWindows</span> <span class="tok-k">=</span> <span class="tok-n">sensorData</span>
@@ -2890,7 +2891,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_applying_functions_on_windows">Applying Functions on Windows</h4>
+<h4 id="_6_3_3_applying_functions_on_windows">6.3.3 Applying Functions on Windows</h4>
 <div class="paragraph">
 <p>window functions定义了窗口中数据的计算逻辑。有两种计算逻辑：</p>
 </div>
@@ -2905,7 +2906,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </ol>
 </div>
 <div class="sect4">
-<h5 id="_reducefunction">ReduceFunction</h5>
+<h5 id="_6_3_3_1_reducefunction">6.3.3.1 ReduceFunction</h5>
 <div class="paragraph">
 <p>例子: 计算每个传感器15s窗口中的温度最小值</p>
 </div>
@@ -2920,7 +2921,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect4">
-<h5 id="_aggregatefunction">AggregateFunction</h5>
+<h5 id="_6_3_3_2_aggregatefunction">6.3.3.2 AggregateFunction</h5>
 <div class="paragraph">
 <p>先来看接口定义</p>
 </div>
@@ -2980,7 +2981,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect4">
-<h5 id="_processwindowfunction">ProcessWindowFunction</h5>
+<h5 id="_6_3_3_3_processwindowfunction">6.3.3.3 ProcessWindowFunction</h5>
 <div class="paragraph">
 <p>一些业务场景，我们需要收集窗口内所有的数据进行计算，例如计算窗口数据的中位数，或者计算窗口数据中出现频率最高的值。这样的需求，使用ReduceFunction和AggregateFunction就无法实现了。这个时候就需要ProcessWindowFunction了。</p>
 </div>
@@ -3150,7 +3151,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 <p>尽管无状态的计算很重要，但是流处理对有状态的计算更感兴趣。事实上，正确地实现有状态的计算比实现无状态的计算难得多。旧的流处理系统并不支持有状态的计算，而新一代的流处理系统则将状态及其正确性视为重中之重。</p>
 </div>
 <div class="sect2">
-<h3 id="_一致性">一致性</h3>
+<h3 id="_7_1_一致性">7.1 一致性</h3>
 <div class="paragraph">
 <p>当在分布式系统中引入状态时，自然也引入了一致性问题。一致性实际上是"正确性级别"的另一种说法，即在成功处理故障并恢复之后得到的结果，与没有发生任何故障时得到的结果相比，前者有多正确? 举例来说，假设要对最近一小时登录的用户计数。在系统经历故障之后，计数结果是多少? 在流处理中，一致性分为3个级别。</p>
 </div>
@@ -3194,7 +3195,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_检查点_保证exactly_once">检查点: 保证exactly-once</h3>
+<h3 id="_7_2_检查点_保证exactly_once">7.2 检查点: 保证exactly-once</h3>
 <div class="paragraph">
 <p>Flink如何保证exactly-once呢? 它使用一种被称为"检查点"的特性，在出现故障时将系统重置回正确状态。下面通过简单的类比来解释检查点的作用。</p>
 </div>
@@ -3319,12 +3320,12 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_stateful_operators_and_applications">Stateful Operators and Applications</h3>
+<h3 id="_7_3_stateful_operators_and_applications">7.3 Stateful Operators and Applications</h3>
 <div class="paragraph">
 <p>Flink内置的很多算子，数据源source，数据存储sink都是有状态的，流中的数据都是buffer records，会保存一定的元素或者元数据。例如: ProcessWindowFunction会缓存输入流的数据，ProcessFunction会保存设置的定时器信息等等。</p>
 </div>
 <div class="sect3">
-<h4 id="_实现stateful_functions">实现stateful functions</h4>
+<h4 id="_7_3_1_实现stateful_functions">7.3.1 实现stateful functions</h4>
 <div class="paragraph">
 <p>函数一般有两种类型的状态：</p>
 </div>
@@ -3339,7 +3340,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </ul>
 </div>
 <div class="sect4">
-<h5 id="_在runtimecontext中声明keyed_state">在RuntimeContext中声明Keyed State</h5>
+<h5 id="_7_3_1_1_在runtimecontext中声明keyed_state">7.3.1.1 在RuntimeContext中声明Keyed State</h5>
 <div class="ulist">
 <ul>
 <li>
@@ -4113,11 +4114,332 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_第九章_flink_cep简介">第九章 Flink CEP简介</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>什么是复杂事件CEP？</strong></p>
+</div>
+<div class="paragraph">
+<p>一个或多个由简单事件构成的事件流通过一定的规则匹配，然后输出用户想得到的数据，满足规则的复杂事件。</p>
+</div>
+<div class="paragraph">
+<p><strong>特征：</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>目标：从有序的简单事件流中发现一些高阶特征</p>
+</li>
+<li>
+<p>输入：一个或多个由简单事件构成的事件流</p>
+</li>
+<li>
+<p>处理：识别简单事件之间的内在联系，多个符合一定规则的简单事件构成复杂事件</p>
+</li>
+<li>
+<p>输出：满足规则的复杂事件</p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/cep1.jpg" alt="cep1">
+</div>
+</div>
+<div class="paragraph">
+<p>CEP用于分析低延迟、频繁产生的不同来源的事件流。CEP可以帮助在复杂的、不相关的事件流中找出有意义的模式和复杂的关系，以接近实时或准实时的获得通知并阻止一些行为。</p>
+</div>
+<div class="paragraph">
+<p>CEP支持在流上进行模式匹配，根据模式的条件不同，分为连续的条件或不连续的条件；模式的条件允许有时间的限制，当在条件范围内没有达到满足的条件时，会导致模式匹配超时。</p>
+</div>
+<div class="paragraph">
+<p>看起来很简单，但是它有很多不同的功能：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>输入的流数据，尽快产生结果</p>
+</li>
+<li>
+<p>在2个event流上，基于时间进行聚合类的计算</p>
+</li>
+<li>
+<p>提供实时/准实时的警告和通知</p>
+</li>
+<li>
+<p>在多样的数据源中产生关联并分析模式</p>
+</li>
+<li>
+<p>高吞吐、低延迟的处理</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>市场上有多种CEP的解决方案，例如Spark、Samza、Beam等，但他们都没有提供专门的library支持。但是Flink提供了专门的CEP library。</p>
+</div>
+<div class="paragraph">
+<p><strong>Flink CEP</strong></p>
+</div>
+<div class="paragraph">
+<p>Flink为CEP提供了专门的Flink CEP library，它包含如下组件：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Event Stream</p>
+</li>
+<li>
+<p>pattern定义</p>
+</li>
+<li>
+<p>pattern检测</p>
+</li>
+<li>
+<p>生成Alert</p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/cep6.png" alt="cep6">
+</div>
+</div>
+<div class="paragraph">
+<p>首先，开发人员要在DataStream流上定义出模式条件，之后Flink CEP引擎进行模式检测，必要时生成告警。</p>
+</div>
+<div class="paragraph">
+<p>为了使用Flink CEP，我们需要导入依赖：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="xml"><span></span><span class="tok-nt">&lt;dependency&gt;</span>
+  <span class="tok-nt">&lt;groupId&gt;</span>org.apache.flink<span class="tok-nt">&lt;/groupId&gt;</span>
+  <span class="tok-nt">&lt;artifactId&gt;</span>flink-cep_${scala.binary.version}<span class="tok-nt">&lt;/artifactId&gt;</span>
+  <span class="tok-nt">&lt;version&gt;</span>${flink.version}<span class="tok-nt">&lt;/version&gt;</span>
+<span class="tok-nt">&lt;/dependency&gt;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Event Streams</strong></p>
+</div>
+<div class="paragraph">
+<p>登陆事件流</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-n">userId</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">ip</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">eventType</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">eventTime</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">)</span>
+
+<span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
+<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
+<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+
+<span class="tok-k">val</span> <span class="tok-n">loginEventStream</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">fromCollection</span><span class="tok-o">(</span><span class="tok-nc">List</span><span class="tok-o">(</span>
+  <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;1&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.0.1&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;fail&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430842&quot;</span><span class="tok-o">),</span>
+  <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;1&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.0.2&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;fail&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430843&quot;</span><span class="tok-o">),</span>
+  <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;1&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.0.3&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;fail&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430844&quot;</span><span class="tok-o">),</span>
+  <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;2&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.10.10&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;success&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430845&quot;</span><span class="tok-o">)</span>
+<span class="tok-o">)).</span><span class="tok-n">assignAscendingTimestamps</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">eventTime</span><span class="tok-o">.</span><span class="tok-n">toLong</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Pattern API</strong></p>
+</div>
+<div class="paragraph">
+<p>每个Pattern都应该包含几个步骤，或者叫做state。从一个state到另一个state，通常我们需要定义一些条件，例如下列的代码：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">loginFailPattern</span> <span class="tok-k">=</span> <span class="tok-nc">Pattern</span><span class="tok-o">.</span><span class="tok-n">begin</span><span class="tok-o">[</span><span class="tok-kt">LoginEvent</span><span class="tok-o">](</span><span class="tok-s">&quot;begin&quot;</span><span class="tok-o">)</span>
+  <span class="tok-o">.</span><span class="tok-n">where</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">eventType</span><span class="tok-o">.</span><span class="tok-n">equals</span><span class="tok-o">(</span><span class="tok-s">&quot;fail&quot;</span><span class="tok-o">))</span>
+  <span class="tok-o">.</span><span class="tok-n">next</span><span class="tok-o">(</span><span class="tok-s">&quot;next&quot;</span><span class="tok-o">)</span>
+  <span class="tok-o">.</span><span class="tok-n">where</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">eventType</span><span class="tok-o">.</span><span class="tok-n">equals</span><span class="tok-o">(</span><span class="tok-s">&quot;fail&quot;</span><span class="tok-o">))</span>
+  <span class="tok-o">.</span><span class="tok-n">within</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">10</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>每个state都应该有一个标示：</p>
+</div>
+<div class="paragraph">
+<p>例如: <code>.begin[LoginEvent]("begin")</code>中的"begin"</p>
+</div>
+<div class="paragraph">
+<p>每个state都需要有一个唯一的名字，而且需要一个filter来过滤条件，这个过滤条件定义事件需要符合的条件</p>
+</div>
+<div class="paragraph">
+<p>例如: <code>.where(_.eventType.equals("fail"))</code></p>
+</div>
+<div class="paragraph">
+<p>我们也可以通过subtype来限制event的子类型：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-n">start</span><span class="tok-o">.</span><span class="tok-n">subtype</span><span class="tok-o">(</span><span class="tok-nc">SubEvent</span><span class="tok-o">.</span><span class="tok-n">class</span><span class="tok-o">).</span><span class="tok-n">where</span><span class="tok-o">(...);</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>事实上，你可以多次调用subtype和where方法；而且如果where条件是不相关的，你可以通过or来指定一个单独的filter函数：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-n">pattern</span><span class="tok-o">.</span><span class="tok-n">where</span><span class="tok-o">(...).</span><span class="tok-n">or</span><span class="tok-o">(...);</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>之后，我们可以在此条件基础上，通过next或者followedBy方法切换到下一个state，next的意思是说上一步符合条件的元素之后紧挨着的元素；而followedBy并不要求一定是挨着的元素。这两者分别称为严格近邻和非严格近邻。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">strictNext</span> <span class="tok-k">=</span> <span class="tok-n">start</span><span class="tok-o">.</span><span class="tok-n">next</span><span class="tok-o">(</span><span class="tok-s">&quot;middle&quot;</span><span class="tok-o">)</span>
+<span class="tok-k">val</span> <span class="tok-n">nonStrictNext</span> <span class="tok-k">=</span> <span class="tok-n">start</span><span class="tok-o">.</span><span class="tok-n">followedBy</span><span class="tok-o">(</span><span class="tok-s">&quot;middle&quot;</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>最后，我们可以将所有的Pattern的条件限定在一定的时间范围内：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-n">next</span><span class="tok-o">.</span><span class="tok-n">within</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">10</span><span class="tok-o">))</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>这个时间可以是Processing Time，也可以是Event Time。</p>
+</div>
+<div class="paragraph">
+<p><strong>Pattern 检测</strong></p>
+</div>
+<div class="paragraph">
+<p>通过一个input DataStream以及刚刚我们定义的Pattern，我们可以创建一个PatternStream：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">input</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">pattern</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+
+<span class="tok-k">val</span> <span class="tok-n">patternStream</span> <span class="tok-k">=</span> <span class="tok-nc">CEP</span><span class="tok-o">.</span><span class="tok-n">pattern</span><span class="tok-o">(</span><span class="tok-n">input</span><span class="tok-o">,</span> <span class="tok-n">pattern</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">patternStream</span> <span class="tok-k">=</span> <span class="tok-nc">CEP</span><span class="tok-o">.</span><span class="tok-n">pattern</span><span class="tok-o">(</span><span class="tok-n">loginEventStream</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">userId</span><span class="tok-o">),</span> <span class="tok-n">loginFailPattern</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>一旦获得PatternStream，我们就可以通过select或flatSelect，从一个Map序列找到我们需要的告警信息。</p>
+</div>
+<div class="paragraph">
+<p><strong>select</strong></p>
+</div>
+<div class="paragraph">
+<p>select方法需要实现一个PatternSelectFunction，通过select方法来输出需要的警告。它接受一个Map对，包含string/event，其中key为state的名字，event则为真是的Event。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">loginFailDataStream</span> <span class="tok-k">=</span> <span class="tok-n">patternStream</span>
+  <span class="tok-o">.</span><span class="tok-n">select</span><span class="tok-o">((</span><span class="tok-n">pattern</span><span class="tok-k">:</span> <span class="tok-kt">Map</span><span class="tok-o">[</span><span class="tok-kt">String</span>, <span class="tok-kt">Iterable</span><span class="tok-o">[</span><span class="tok-kt">LoginEvent</span><span class="tok-o">]])</span> <span class="tok-k">=&gt;</span> <span class="tok-o">{</span>
+    <span class="tok-k">val</span> <span class="tok-n">first</span> <span class="tok-k">=</span> <span class="tok-n">pattern</span><span class="tok-o">.</span><span class="tok-n">getOrElse</span><span class="tok-o">(</span><span class="tok-s">&quot;begin&quot;</span><span class="tok-o">,</span> <span class="tok-kc">null</span><span class="tok-o">).</span><span class="tok-n">iterator</span><span class="tok-o">.</span><span class="tok-n">next</span><span class="tok-o">()</span>
+    <span class="tok-k">val</span> <span class="tok-n">second</span> <span class="tok-k">=</span> <span class="tok-n">pattern</span><span class="tok-o">.</span><span class="tok-n">getOrElse</span><span class="tok-o">(</span><span class="tok-s">&quot;next&quot;</span><span class="tok-o">,</span> <span class="tok-kc">null</span><span class="tok-o">).</span><span class="tok-n">iterator</span><span class="tok-o">.</span><span class="tok-n">next</span><span class="tok-o">()</span>
+
+    <span class="tok-o">(</span><span class="tok-n">second</span><span class="tok-o">.</span><span class="tok-n">userId</span><span class="tok-o">,</span> <span class="tok-n">second</span><span class="tok-o">.</span><span class="tok-n">ip</span><span class="tok-o">,</span> <span class="tok-n">second</span><span class="tok-o">.</span><span class="tok-n">eventType</span><span class="tok-o">)</span>
+  <span class="tok-o">})</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>其返回值仅为1条记录。</p>
+</div>
+<div class="paragraph">
+<p><strong>flatSelect</strong></p>
+</div>
+<div class="paragraph">
+<p>通过实现PatternFlatSelectFunction，实现与select相似的功能。唯一的区别就是flatSelect方法可以返回多条记录。</p>
+</div>
+<div class="paragraph">
+<p><strong>超时事件的处理</strong></p>
+</div>
+<div class="paragraph">
+<p>通过within方法，我们的parttern规则限定在一定的窗口范围内。当有超过窗口时间后还到达的event，我们可以通过在select或flatSelect中，实现PatternTimeoutFunction/PatternFlatTimeoutFunction来处理这种情况。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">complexResult</span> <span class="tok-k">=</span> <span class="tok-n">patternStream</span><span class="tok-o">.</span><span class="tok-n">select</span><span class="tok-o">(</span><span class="tok-n">orderTimeoutOutput</span><span class="tok-o">)</span> <span class="tok-o">{</span>
+  <span class="tok-o">(</span><span class="tok-n">pattern</span><span class="tok-k">:</span> <span class="tok-kt">Map</span><span class="tok-o">[</span><span class="tok-kt">String</span>, <span class="tok-kt">Iterable</span><span class="tok-o">[</span><span class="tok-kt">OrderEvent</span><span class="tok-o">]],</span> <span class="tok-n">timestamp</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span> <span class="tok-k">=&gt;</span> <span class="tok-o">{</span>
+    <span class="tok-k">val</span> <span class="tok-n">createOrder</span> <span class="tok-k">=</span> <span class="tok-n">pattern</span><span class="tok-o">.</span><span class="tok-n">get</span><span class="tok-o">(</span><span class="tok-s">&quot;begin&quot;</span><span class="tok-o">)</span>
+    <span class="tok-nc">OrderTimeoutEvent</span><span class="tok-o">(</span><span class="tok-n">createOrder</span><span class="tok-o">.</span><span class="tok-n">get</span><span class="tok-o">.</span><span class="tok-n">iterator</span><span class="tok-o">.</span><span class="tok-n">next</span><span class="tok-o">().</span><span class="tok-n">orderId</span><span class="tok-o">,</span> <span class="tok-s">&quot;timeout&quot;</span><span class="tok-o">)</span>
+  <span class="tok-o">}</span>
+<span class="tok-o">}</span> <span class="tok-o">{</span>
+  <span class="tok-n">pattern</span><span class="tok-k">:</span> <span class="tok-kt">Map</span><span class="tok-o">[</span><span class="tok-kt">String</span>, <span class="tok-kt">Iterable</span><span class="tok-o">[</span><span class="tok-kt">OrderEvent</span><span class="tok-o">]]</span> <span class="tok-k">=&gt;</span> <span class="tok-o">{</span>
+    <span class="tok-k">val</span> <span class="tok-n">payOrder</span> <span class="tok-k">=</span> <span class="tok-n">pattern</span><span class="tok-o">.</span><span class="tok-n">get</span><span class="tok-o">(</span><span class="tok-s">&quot;next&quot;</span><span class="tok-o">)</span>
+    <span class="tok-nc">OrderTimeoutEvent</span><span class="tok-o">(</span><span class="tok-n">payOrder</span><span class="tok-o">.</span><span class="tok-n">get</span><span class="tok-o">.</span><span class="tok-n">iterator</span><span class="tok-o">.</span><span class="tok-n">next</span><span class="tok-o">().</span><span class="tok-n">orderId</span><span class="tok-o">,</span> <span class="tok-s">&quot;success&quot;</span><span class="tok-o">)</span>
+  <span class="tok-o">}</span>
+<span class="tok-o">}</span>
+
+<span class="tok-k">val</span> <span class="tok-n">timeoutResult</span> <span class="tok-k">=</span> <span class="tok-n">complexResult</span><span class="tok-o">.</span><span class="tok-n">getSideOutput</span><span class="tok-o">(</span><span class="tok-n">orderTimeoutOutput</span><span class="tok-o">)</span>
+
+<span class="tok-n">complexResult</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">()</span>
+<span class="tok-n">timeoutResult</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">()</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>完整例子:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.cep.scala.CEP</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.cep.scala.pattern.Pattern</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.TimeCharacteristic</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala._</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.windowing.time.Time</span>
+
+<span class="tok-k">import</span> <span class="tok-nn">scala.collection.Map</span>
+
+<span class="tok-k">object</span> <span class="tok-nc">ScalaFlinkLoginFail</span> <span class="tok-o">{</span>
+
+  <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+
+    <span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+
+    <span class="tok-k">val</span> <span class="tok-n">loginEventStream</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">fromCollection</span><span class="tok-o">(</span><span class="tok-nc">List</span><span class="tok-o">(</span>
+      <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;1&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.0.1&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;fail&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430842&quot;</span><span class="tok-o">),</span>
+      <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;1&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.0.2&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;fail&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430843&quot;</span><span class="tok-o">),</span>
+      <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;1&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.0.3&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;fail&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430844&quot;</span><span class="tok-o">),</span>
+      <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;2&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.10.10&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;success&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430845&quot;</span><span class="tok-o">)</span>
+    <span class="tok-o">)).</span><span class="tok-n">assignAscendingTimestamps</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">eventTime</span><span class="tok-o">.</span><span class="tok-n">toLong</span><span class="tok-o">)</span>
+
+    <span class="tok-k">val</span> <span class="tok-n">loginFailPattern</span> <span class="tok-k">=</span> <span class="tok-nc">Pattern</span><span class="tok-o">.</span><span class="tok-n">begin</span><span class="tok-o">[</span><span class="tok-kt">LoginEvent</span><span class="tok-o">](</span><span class="tok-s">&quot;begin&quot;</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">where</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">eventType</span><span class="tok-o">.</span><span class="tok-n">equals</span><span class="tok-o">(</span><span class="tok-s">&quot;fail&quot;</span><span class="tok-o">))</span>
+      <span class="tok-o">.</span><span class="tok-n">next</span><span class="tok-o">(</span><span class="tok-s">&quot;next&quot;</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">where</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">eventType</span><span class="tok-o">.</span><span class="tok-n">equals</span><span class="tok-o">(</span><span class="tok-s">&quot;fail&quot;</span><span class="tok-o">))</span>
+      <span class="tok-o">.</span><span class="tok-n">within</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">10</span><span class="tok-o">))</span>
+
+    <span class="tok-k">val</span> <span class="tok-n">patternStream</span> <span class="tok-k">=</span> <span class="tok-nc">CEP</span><span class="tok-o">.</span><span class="tok-n">pattern</span><span class="tok-o">(</span><span class="tok-n">loginEventStream</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">userId</span><span class="tok-o">),</span> <span class="tok-n">loginFailPattern</span><span class="tok-o">)</span>
+
+    <span class="tok-k">val</span> <span class="tok-n">loginFailDataStream</span> <span class="tok-k">=</span> <span class="tok-n">patternStream</span>
+      <span class="tok-o">.</span><span class="tok-n">select</span><span class="tok-o">((</span><span class="tok-n">pattern</span><span class="tok-k">:</span> <span class="tok-kt">Map</span><span class="tok-o">[</span><span class="tok-kt">String</span>, <span class="tok-kt">Iterable</span><span class="tok-o">[</span><span class="tok-kt">LoginEvent</span><span class="tok-o">]])</span> <span class="tok-k">=&gt;</span> <span class="tok-o">{</span>
+        <span class="tok-k">val</span> <span class="tok-n">first</span> <span class="tok-k">=</span> <span class="tok-n">pattern</span><span class="tok-o">.</span><span class="tok-n">getOrElse</span><span class="tok-o">(</span><span class="tok-s">&quot;begin&quot;</span><span class="tok-o">,</span> <span class="tok-kc">null</span><span class="tok-o">).</span><span class="tok-n">iterator</span><span class="tok-o">.</span><span class="tok-n">next</span><span class="tok-o">()</span>
+        <span class="tok-k">val</span> <span class="tok-n">second</span> <span class="tok-k">=</span> <span class="tok-n">pattern</span><span class="tok-o">.</span><span class="tok-n">getOrElse</span><span class="tok-o">(</span><span class="tok-s">&quot;next&quot;</span><span class="tok-o">,</span> <span class="tok-kc">null</span><span class="tok-o">).</span><span class="tok-n">iterator</span><span class="tok-o">.</span><span class="tok-n">next</span><span class="tok-o">()</span>
+
+        <span class="tok-o">(</span><span class="tok-n">second</span><span class="tok-o">.</span><span class="tok-n">userId</span><span class="tok-o">,</span> <span class="tok-n">second</span><span class="tok-o">.</span><span class="tok-n">ip</span><span class="tok-o">,</span> <span class="tok-n">second</span><span class="tok-o">.</span><span class="tok-n">eventType</span><span class="tok-o">)</span>
+      <span class="tok-o">})</span>
+
+    <span class="tok-n">loginFailDataStream</span><span class="tok-o">.</span><span class="tok-n">print</span>
+
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span>
+  <span class="tok-o">}</span>
+
+<span class="tok-o">}</span>
+
+<span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-n">userId</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">ip</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">eventType</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">eventTime</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2019-06-06 15:38:13 +0800
+Last updated 2019-06-12 11:46:56 +0800
 </div>
 </div>
 <style>
