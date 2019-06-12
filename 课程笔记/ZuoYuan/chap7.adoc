@@ -14,7 +14,7 @@ image::statevsunstate.png[]
 
 尽管无状态的计算很重要，但是流处理对有状态的计算更感兴趣。事实上，正确地实现有状态的计算比实现无状态的计算难得多。旧的流处理系统并不支持有状态的计算，而新一代的流处理系统则将状态及其正确性视为重中之重。
 
-=== 7.1 一致性
+=== 一致性
 
 当在分布式系统中引入状态时，自然也引入了一致性问题。一致性实际上是"正确性级别"的另一种说法，即在成功处理故障并恢复之后得到的结果，与没有发生任何故障时得到的结果相比，前者有多正确? 举例来说，假设要对最近一小时登录的用户计数。在系统经历故障之后，计数结果是多少? 在流处理中，一致性分为3个级别。
 
@@ -33,7 +33,7 @@ NOTE: Flink的一个重大价值在于，它既保证了exactly-once，也具有
 
 从根本上说，Flink通过使自身满足所有需求来避免权衡，它是业界的一次意义重大的技术飞跃。尽管这在外行看来很神奇，但是一旦了解，就会恍然大悟。
 
-=== 7.2 检查点: 保证exactly-once
+=== 检查点: 保证exactly-once
 
 Flink如何保证exactly-once呢? 它使用一种被称为"检查点"的特性，在出现故障时将系统重置回正确状态。下面通过简单的类比来解释检查点的作用。
 
@@ -104,3 +104,93 @@ Flink将输入流倒回到上一个检查点屏障的位置，同时恢复map算
 Flink检查点算法的正式名称是异步屏障快照(asynchronous barrier snapshotting)。该算法大致基于Chandy-Lamport分布式快照算法。
 
 NOTE: 检查点是Flink最有价值的创新之一，因为它使Flink可以保证exactly-once，并且不需要牺牲性能。
+
+=== Stateful Operators and Applications
+
+Flink内置的很多算子，数据源source，数据存储sink都是有状态的，流中的数据都是buffer records，会保存一定的元素或者元数据。例如: ProcessWindowFunction会缓存输入流的数据，ProcessFunction会保存设置的定时器信息等等。
+
+==== 实现stateful functions
+
+函数一般有两种类型的状态：
+
+* keyed state
+* operator state
+
+===== 在RuntimeContext中声明Keyed State
+
+* keyed state很类似于一个分布式的key-value map数据结构
+* keyed state只能用于KeyedStream(keyBy算子)
+
+Flink支持以下数据类型：
+
+* ValueState[T]保存单个的值，值的类型为T。
+** get操作: ValueState.value()
+** set操作: ValueState.update(value: T)
+* ListState[T]保存一个列表，列表里的元素的数据类型为T。基本操作如下：
+** ListState.add(value: T)
+** ListState.addAll(values: java.util.List[T])
+** ListState.get()返回Iterable[T]
+** ListState.update(values: java.util.List[T])
+* MapState[K, V]保存Key-Value对。
+** MapState.get(key: K)
+** MapState.put(key: K, value: V)
+** MapState.contains(key: K)
+** MapState.remove(key: K)
+* ReducingState[T]
+* AggregatingState[I, O]
+
+State.clear()是清空操作。
+
+[source,scala]
+----
+val sensorData: DataStream[SensorReading] = ...
+val keyedData: KeyedStream[SensorReading, String] = sensorData.keyBy(_.id)
+
+val alerts: DataStream[(String, Double, Double)] = keyedData
+  .flatMap(new TemperatureAlertFunction(1.7))
+
+class TemperatureAlertFunction(val threshold: Double) extends RichFlatMapFunction[SensorReading, (String, Double, Double)] {
+  private var lastTempState: ValueState[Double] = _
+
+  override def open(parameters: Configuration): Unit = {
+    val lastTempDescriptor = new ValueStateDescriptor[Double]("lastTemp", classOf[Double])
+
+    lastTempDescriptor = getRuntimeContext.getState[Double](lastTempDescriptor)
+  }
+
+  override def flatMap(reading: SendorReading,
+                       out: Collector[(String, Double, Double)]): Unit = {
+    val lastTemp = lastTempState.value()
+    val tempDiff = (reading.temperature - lastTemp).abs
+    if (tempDiff > threshold) {
+      out.collect((reading.id, reading.temperature, tempDiff))
+    }
+    this.lastTempState.update(reading.temperature)
+  }
+}
+----
+
+* 通过RuntimeContext注册StateDescriptor。StateDescriptor以状态state的名字和存储的数据类型为参数。
+* 在open()方法中创建state变量。注意复习之前的RichFunction相关知识。
+
+使用FlatMap with keyed ValueState的快捷方式flatMapWithState实现以上需求。还记得之前的例子mapWithState吗？
+
+[source,scala]
+----
+val alerts: DataStream[(String, Double, Double)] = keyedSensorData
+  .flatMapWithState[(String, Double, Double), Double] {
+    case (in: SensorReading, None) =>
+      // no previous temperature defined. Just update the last temperature
+      (List.empty, Some(in.temperature))
+    case (r: SensorReading, lastTemp: Some[Double]) =>
+      // compare temperature difference with threshold
+      val tempDiff = (r.temperature - lastTemp.get).abs
+      if (tempDiff > 1.7) {
+        // threshold exceeded. Emit an alert and update the last temperature
+        (List((r.id, r.temperature, tempDiff)), Some(r.temperature))
+      } else {
+        // threshold not exceeded. Just update the last temperature
+        (List.empty, Some(r.temperature))
+      }
+  }
+----
