@@ -115,7 +115,7 @@ image::sparkstreamingvsflink2.png[]
 
 2.数据模型
 
-image::shujumoxing1.jpeg[]
+image::shujumoxing1.jpg[]
 
 *Spark的数据模型*
 
