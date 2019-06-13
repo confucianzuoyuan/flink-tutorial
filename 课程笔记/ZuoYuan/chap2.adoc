@@ -87,7 +87,7 @@ object StreamingJob {
 
     // parse the data, group it, window it, and aggregate the counts
     val windowCounts = text
-      .flatMap { w => w.split("\\s") }
+      .flatMap { w => w.split("\\s") } // <1>
       .map { w => WordWithCount(w, 1) }
       .keyBy("word")
       .timeWindow(Time.seconds(5))
@@ -103,6 +103,10 @@ object StreamingJob {
   case class WordWithCount(word: String, count: Long)
 }
 ----
+<1> flatMap的函数签名：``def flatMap[A,B](as: List[A])(f: A => List[B]): List[B]``, 例如: +
+``flatMap(List(1,2,3))(i => List(i,i))``结果是``List(1,1,2,2,3,3)``, ``List("a b", "c d").flatMap(line => line.split(" "))``结果是``List(a, b, c, d)``。
+
+新建一个Terminal终端，然后运行以下:
 
 [source, shell]
 ----

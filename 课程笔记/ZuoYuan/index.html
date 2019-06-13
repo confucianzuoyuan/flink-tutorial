@@ -1128,7 +1128,7 @@ quickstart/
 
     <span class="tok-c1">// parse the data, group it, window it, and aggregate the counts</span>
     <span class="tok-k">val</span> <span class="tok-n">windowCounts</span> <span class="tok-k">=</span> <span class="tok-n">text</span>
-      <span class="tok-o">.</span><span class="tok-n">flatMap</span> <span class="tok-o">{</span> <span class="tok-n">w</span> <span class="tok-k">=&gt;</span> <span class="tok-n">w</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot;\\s&quot;</span><span class="tok-o">)</span> <span class="tok-o">}</span>
+      <span class="tok-o">.</span><span class="tok-n">flatMap</span> <span class="tok-o">{</span> <span class="tok-n">w</span> <span class="tok-k">=&gt;</span> <span class="tok-n">w</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot;\\s&quot;</span><span class="tok-o">)</span> <span class="tok-o">}</span> <i class="conum" data-value="1"></i><b>(1)</b>
       <span class="tok-o">.</span><span class="tok-n">map</span> <span class="tok-o">{</span> <span class="tok-n">w</span> <span class="tok-k">=&gt;</span> <span class="tok-nc">WordWithCount</span><span class="tok-o">(</span><span class="tok-n">w</span><span class="tok-o">,</span> <span class="tok-mi">1</span><span class="tok-o">)</span> <span class="tok-o">}</span>
       <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-s">&quot;word&quot;</span><span class="tok-o">)</span>
       <span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">5</span><span class="tok-o">))</span>
@@ -1144,6 +1144,15 @@ quickstart/
   <span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">WordWithCount</span><span class="tok-o">(</span><span class="tok-n">word</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">count</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span>
 <span class="tok-o">}</span></code></pre>
 </div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>flatMap的函数签名：<code>def flatMap[A,B](as: List[A])(f: A &#8658; List[B]): List[B]</code>, 例如:<br>
+<code>flatMap(List(1,2,3))(i &#8658; List(i,i))</code>结果是<code>List(1,1,2,2,3,3)</code></td>
+</tr>
+</table>
 </div>
 <div class="listingblock">
 <div class="content">
