@@ -106,6 +106,8 @@ object StreamingJob {
 <1> flatMap的函数签名：``def flatMap[A,B](as: List[A])(f: A => List[B]): List[B]``, 例如: +
 ``flatMap(List(1,2,3))(i => List(i,i))``结果是``List(1,1,2,2,3,3)``, ``List("a b", "c d").flatMap(line => line.split(" "))``结果是``List(a, b, c, d)``。
 
+NOTE: 与Flink无关，思考一下如何使用flatMap实现filter？
+
 新建一个Terminal终端，然后运行以下:
 
 [source, shell]

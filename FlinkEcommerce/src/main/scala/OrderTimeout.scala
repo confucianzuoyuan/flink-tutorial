@@ -17,8 +17,9 @@ object OrderTimeout {
     val orderEventStream = env.fromCollection(List(
       OrderEvent("1", "create", "1558430842"),
       OrderEvent("2", "create", "1558430843"),
-      OrderEvent("2", "pay", "1558430844")
-    )).assignAscendingTimestamps(_.eventTime.toLong)
+      OrderEvent("2", "pay", "1558430844"),
+      OrderEvent("3", "pay", "1558430942")
+    )).assignAscendingTimestamps(_.eventTime.toLong * 1000)
 
     val orderPayPattern = Pattern.begin[OrderEvent]("begin")
       .where(_.eventType.equals("create"))
@@ -32,6 +33,7 @@ object OrderTimeout {
 
     val complexResult = patternStream.select(orderTimeoutOutput) {
       (pattern: Map[String, Iterable[OrderEvent]], timestamp: Long) => {
+        println("timestamp: ", timestamp)
         val createOrder = pattern.get("begin")
         OrderTimeoutEvent(createOrder.get.iterator.next().orderId, "timeout")
       }
