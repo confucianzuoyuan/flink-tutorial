@@ -6,3 +6,4 @@ target/
 .settings/
 .vscode/
 *.iml
+.metals/
