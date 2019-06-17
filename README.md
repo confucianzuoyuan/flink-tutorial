@@ -1,1 +1,1 @@
-[尚硅谷Flink教材链接](https://confucianzuoyuan.github.io/flink-tutorial/docs)
+[尚硅谷Flink教材链接](https://confucianzuoyuan.github.io/flink-tutorial)
