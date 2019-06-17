@@ -694,6 +694,22 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <img src="images/flink-home-graphic.png" alt="flink home graphic">
 </div>
 </div>
+<div class="paragraph">
+<p>Flink几大模块</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Flink Table &amp; SQL(还没开发完)</p>
+</li>
+<li>
+<p>Flink Gelly(图计算)</p>
+</li>
+<li>
+<p>Flink CEP(复杂事件处理)</p>
+</li>
+</ul>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_1_2_为什么选择flink">1.2 为什么选择Flink</h3>
@@ -824,8 +840,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="paragraph">
 <p><strong>Spark Streaming</strong> vs <strong>Flink</strong></p>
 </div>
-<div class="paragraph">
-<p>1.两者最重要的区别(流和微批)</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>两者最重要的区别(流和微批)</p>
+</li>
+</ol>
 </div>
 <div class="paragraph">
 <p>(1). Micro Batching 模式(spark)</p>
@@ -853,18 +873,19 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="paragraph">
-<p>从上图可以看到输入的数据过来一条处理一条,然后输出,几乎不存在延迟,很明显Native Streaming模式占据了流计算领域 "低延时" 的核心竞争力，当然Native Streaming模式的实现框架是一个历史先河，第一个实现Native Streaming模式的流计算框架是第一个吃螃蟹的人，需要面临更多的挑战，后续章节我们会慢慢介绍。当然Native Streaming模式的框架实现上面很容易实现Micro-Batching和Batching模式的计算，Apache Flink就是Native Streaming计算模式的流批统一的计算引擎。</p>
+<p>从上图可以看到输入的数据过来一条处理一条, 然后输出, 几乎不存在延迟, 很明显Native Streaming模式占据了流计算领域"低延时"的核心竞争力, 当然Native Streaming模式的实现框架是一个历史先河，第一个实现Native Streaming模式的流计算框架是第一个吃螃蟹的人，需要面临更多的挑战，后续章节我们会慢慢介绍。当然Native Streaming模式的框架实现上面很容易实现Micro-Batching和Batching模式的计算，Apache Flink就是Native Streaming计算模式的流批统一的计算引擎。</p>
 </div>
-<div class="paragraph">
-<p>2.数据模型</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>数据模型</p>
+</li>
+</ol>
 </div>
 <div class="imageblock">
 <div class="content">
 <img src="images/shujumoxing1.jpg" alt="shujumoxing1">
 </div>
-</div>
-<div class="paragraph">
-<p><strong>Spark的数据模型</strong></p>
 </div>
 <div class="paragraph">
 <p>Spark最早采用RDD模型，达到比MapReduce计算快100倍的显著优势，对Hadoop生态大幅升级换代。RDD弹性数据集是分割为固定大小的批数据，RDD提供了丰富的底层API对数据集做操作。为持续降低使用门槛，Spark社区开始开发高阶API：DataFrame/DataSet，Spark SQL作为统一的API，掩盖了底层，同时针对性地做SQL逻辑优化和物理优化，非堆存储优化也大幅提升了性能。</p>
@@ -889,17 +910,21 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="paragraph">
 <p>Flink采用Dataflow模型，和Lambda模式不同。Dataflow是纯粹的节点组成的一个图，图中的节点可以执行批计算，也可以是流计算，也可以是机器学习算法，流数据在节点之间流动，被节点上的处理函数实时apply处理，节点之间是用netty连接起来，两个netty之间keepalive，网络buffer是自然反压的关键。经过逻辑优化和物理优化，Dataflow的逻辑关系和运行时的物理拓扑相差不大。这是纯粹的流式设计，时延和吞吐理论上是最优的。</p>
 </div>
-<div class="paragraph">
-<p>3.运行时架构</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>运行时架构</p>
+</li>
+</ol>
 </div>
 <div class="paragraph">
-<p>Spark运行时架构</p>
+<p><strong>Spark运行时架构</strong></p>
 </div>
 <div class="paragraph">
 <p>批计算是把DAG划分为不同stage，DAG节点之间有血缘关系，在运行期间一个stage的task任务列表执行完毕，销毁再去执行下一个stage；Spark Streaming则是对持续流入的数据划分一个批次，定时去执行批次的数据运算。Structured Streaming将无限输入流保存在状态存储中，对流数据做微批或实时的计算，跟Dataflow模型比较像。</p>
 </div>
 <div class="paragraph">
-<p>Flink运行时架构</p>
+<p><strong>Flink运行时架构</strong></p>
 </div>
 <div class="paragraph">
 <p>Flink有统一的runtime，在此之上可以是Batch API、Stream API、ML、Graph、CEP等，DAG中的节点上执行上述模块的功能函数，DAG会一步步转化成ExecutionGraph，即物理可执行的图，最终交给调度系统。节点中的逻辑在资源池中的task上被apply执行，task和Spark中的task类似，都对应线程池中的一个线程。</p>
@@ -1150,9 +1175,24 @@ quickstart/
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
 <td>flatMap的函数签名：<code>def flatMap[A,B](as: List[A])(f: A &#8658; List[B]): List[B]</code>, 例如:<br>
-<code>flatMap(List(1,2,3))(i &#8658; List(i,i))</code>结果是<code>List(1,1,2,2,3,3)</code></td>
+<code>flatMap(List(1,2,3))(i &#8658; List(i,i))</code>结果是<code>List(1,1,2,2,3,3)</code>, <code>List("a b", "c d").flatMap(line &#8658; line.split(" "))</code>结果是<code>List(a, b, c, d)</code>。</td>
 </tr>
 </table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+与Flink无关，思考一下如何使用flatMap实现filter？
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>新建一个Terminal终端，然后运行以下:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1240,10 +1280,10 @@ $ ./bin/start-cluster.sh</code></pre>
 <p>Client为提交Job的客户端，可以运行在任何机器上(与JobManager环境连通即可)。提交Job后，Client可以结束进程(Streaming的任务)，也可以不结束并等待结果返回。</p>
 </div>
 <div class="paragraph">
-<p>JobManager主要负责调度Job并协调Task做checkpoint。从Client处接收到Job和JAR包等资源后，会生成优化后的执行计划，并以Task为单元调度到各个TaskManager去执行。</p>
+<p>JobManager主要负责调度Job并协调Task做Checkpoint。从Client处接收到Job和JAR包等资源后，会生成优化后的执行计划，并以Task为单元调度到各个TaskManager去执行。</p>
 </div>
 <div class="paragraph">
-<p>TaskManager在启动的时候就设置好了槽位数(Slot)，每个Slot能启动一个Task，Task为线程。从JobManager处接收需要部署的Task，部署启动后，与自己的上游建立Netty连接，接收数据并处理。</p>
+<p>TaskManager在启动的时候就设置好了槽位数(Slot)，每个Slot能启动一个Task，Task为线程。从JobManager处接收需要部署的Task，部署启动后，与自己的上游建立Netty <sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup> 连接，接收数据并处理。</p>
 </div>
 <div class="paragraph">
 <p><strong>关于执行图</strong></p>
@@ -1272,13 +1312,13 @@ $ ./bin/start-cluster.sh</code></pre>
 <div class="sect2">
 <h3 id="_3_2_worker与slots">3.2 Worker与Slots</h3>
 <div class="paragraph">
-<p>每一个worker(TaskManager)是一个JVM进程，它可能会在独立的线程上执行一个或多个subtask。为了控制一个worker能接收多少个task，worker通过task slot来进行控制(一个worker至少有一个task slot)。</p>
+<p>每一个Worker(TaskManager)是一个JVM进程，它可能会在独立的线程上执行一个或多个SubTask。为了控制一个Worker能接收多少个Task，Worker通过Task Slot来进行控制(一个Worker至少有一个Task Slot)。</p>
 </div>
 <div class="paragraph">
-<p>每个task slot表示TaskManager拥有资源的一个固定大小的子集。假如一个TaskManager有三个slot，那么它会将其管理的内存分成三份给各个slot。资源slot化意味着一个subtask将不需要跟来自其他job的subtask竞争被管理的内存，取而代之的是它将拥有一定数量的内存储备。需要注意的是，这里不会涉及到CPU的隔离，slot目前仅仅用来隔离task的受管理的内存。</p>
+<p>每个Task Slot表示TaskManager拥有资源的一个固定大小的子集。假如一个TaskManager有三个Slot，那么它会将其管理的内存分成三份给各个Slot。资源Slot化意味着一个SubTask将不需要跟来自其他Job的SubTask竞争被管理的内存，取而代之的是它将拥有一定数量的内存储备。需要注意的是，这里不会涉及到CPU的隔离，Slot目前仅仅用来隔离Task的受管理的内存。</p>
 </div>
 <div class="paragraph">
-<p>通过调整task slot的数量，允许用户定义subtask之间如何互相隔离。如果一个TaskManager一个slot，那将意味着每个task group运行在独立的JVM中(该JVM可能是通过一个特定的容器启动的)，而一个TaskManager多个slot意味着更多的subtask可以共享同一个JVM。而在同一个JVM进程中的task将共享TCP连接(基于IO多路复用)和心跳消息。它们也可能共享数据集和数据结构，因此这减少了每个task的负载。</p>
+<p>通过调整Task Slot的数量，允许用户定义SubTask之间如何互相隔离。如果一个TaskManager一个Slot，那将意味着每个Task Group运行在独立的JVM中(该JVM可能是通过一个特定的容器启动的)，而一个TaskManager多个Slot意味着更多的SubTask可以共享同一个JVM。而在同一个JVM进程中的Task将共享TCP连接(基于IO多路复用)和心跳消息。它们也可能共享数据集和数据结构，因此这减少了每个Task的负载。</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -1289,7 +1329,7 @@ $ ./bin/start-cluster.sh</code></pre>
 <p>Task Slot是静态的概念，是指TaskManager具有的并发执行能力，可以通过参数taskmanager.numberOfTaskSlots进行配置，而并行度parallelism是动态概念，即TaskManager运行程序时实际使用的并发能力，可以通过参数parallelism.default进行配置。</p>
 </div>
 <div class="paragraph">
-<p>也就是说，假设一共有3个TaskManager，每一个TaskManager中的分配3个Task Slot，也就是每个TaskManager可以接收3个task，一共9个Task Slot，如果我们设置parallelism.default=1，即运行程序默认的并行度为1，9个TaskSlot只用了1个，有8个空闲，因此，设置合适的并行度才能提高效率。</p>
+<p>也就是说，假设一共有3个TaskManager，每一个TaskManager中的分配3个Task Slot，也就是每个TaskManager可以接收3个Task，一共9个Task Slot，如果我们设置parallelism.default=1，即运行程序默认的并行度为1，9个TaskSlot只用了1个，有8个空闲，因此，设置合适的并行度才能提高效率。</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -1311,14 +1351,16 @@ $ ./bin/start-cluster.sh</code></pre>
 <p>Source负责读取数据源，Transformation利用各种算子进行处理加工，Sink负责输出。</p>
 </div>
 <div class="paragraph">
-<p>在运行时，Flink上运行的程序会被映射成Streaming Dataflows，它包含了这三部分。每一个Dataflow以一个或多个sources开始以一个或多个sinks结束。dataflow类似于任意的有向无环图(DAG)，当然特定形式的环可以通过iteration构建。在大部分情况下，程序中的transformations跟dataflow中的operator是一一对应的关系，但有时候，一个transformation可能对应多个operator。</p>
+<p>在运行时，Flink上运行的程序会被映射成Streaming Dataflows，它包含了这三部分。每一个Dataflow以一个或多个sources开始以一个或多个sinks结束。dataflow类似于任意的有向无环图(DAG)。在大部分情况下，程序中的transformations跟dataflow中的operator是一一对应的关系，但有时候，一个transformation可能对应多个operator。</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_3_4_并行数据流">3.4 并行数据流</h3>
 <div class="paragraph">
-<p>Flink程序的执行具有并行、分布式的特性。在执行过程中，一个 stream 包含一个或多个 stream partition ，而每一个 operator 包含一个或多个 operator subtask，这些operator subtasks在不同的线程、不同的物理机或不同的容器中彼此互不依赖得执行。
-一个特定operator的subtask的个数被称之为其parallelism(并行度)。一个stream的并行度总是等同于其producing operator的并行度。一个程序中，不同的operator可能具有不同的并行度。</p>
+<p>Flink程序的执行具有并行、分布式的特性。在执行过程中，一个stream包含一个或多个stream partition，而每一个operator包含一个或多个operator subtask，这些operator subtasks在不同的线程、不同的物理机或不同的容器中彼此互不依赖的执行。</p>
+</div>
+<div class="paragraph">
+<p>一个特定operator的subtask的个数被称之为其parallelism(并行度)。一个stream的并行度总是等同于其producing operator的并行度。一个程序中，不同的operator可能具有不同的并行度。</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -1326,11 +1368,13 @@ $ ./bin/start-cluster.sh</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Stream在operator之间传输数据的形式可以是one-to-one(forwarding)的模式也可以是redistributing的模式，具体是哪一种形式，取决于operator的种类。
-One-to-one：stream(比如在source和map operator之间)维护着分区以及元素的顺序。那意味着map operator的subtask看到的元素的个数以及顺序跟source operator的subtask生产的元素的个数、顺序相同，map、fliter、flatMap等算子都是one-to-one的对应关系。
-类似于spark中的窄依赖
-Redistributing：stream(map()跟keyBy/window之间或者keyBy/window跟sink之间)的分区会发生改变。每一个operator subtask依据所选择的transformation发送数据到不同的目标subtask。例如，keyBy() 基于hashCode重分区、broadcast和rebalance会随机重新分区，这些算子都会引起redistribute过程，而redistribute过程就类似于Spark中的shuffle过程。
-类似于spark中的宽依赖</p>
+<p>Stream在operator之间传输数据的形式可以是one-to-one(forwarding)的模式也可以是redistributing的模式，具体是哪一种形式，取决于operator的种类。</p>
+</div>
+<div class="paragraph">
+<p><strong>One-to-one</strong>：stream(比如在source和map operator之间)维护着分区以及元素的顺序。那意味着map operator的subtask看到的元素的个数以及顺序跟source operator的subtask生产的元素的个数、顺序相同，map、fliter、flatMap等算子都是one-to-one的对应关系。<span class="red">类似于spark中的窄依赖</span></p>
+</div>
+<div class="paragraph">
+<p><strong>Redistributing</strong>：stream(map()跟keyBy/window之间或者keyBy/window跟sink之间)的分区会发生改变。每一个operator subtask依据所选择的transformation发送数据到不同的目标subtask。例如，keyBy()基于hashCode重分区、broadcast和rebalance会随机重新分区，这些算子都会引起redistributing过程，而redistributing过程就类似于Spark中的shuffle过程。<span class="red">类似于spark中的宽依赖</span></p>
 </div>
 </div>
 <div class="sect2">
@@ -4445,10 +4489,16 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 </div>
+<div id="footnotes">
+<hr>
+<div class="footnote" id="_footnotedef_1">
+<a href="#_footnoteref_1">1</a>. Java异步IO库
+</div>
+</div>
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2019-06-12 11:46:56 +0800
+Last updated 2019-06-18 00:00:34 +0800
 </div>
 </div>
 <style>
