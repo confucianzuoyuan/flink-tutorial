@@ -14,23 +14,24 @@ object OrderTimeout {
     env.setParallelism(1)
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
-//    val orderEventStream = env.fromCollection(List(
-//      OrderEvent("1", "create", "1558430842"),
-//      OrderEvent("2", "create", "1558430843"),
-//      OrderEvent("2", "pay", "1558430844"),
-//      OrderEvent("3", "pay", "1558430942")
-//    )).assignAscendingTimestamps(_.eventTime.toLong * 1000)
+    val orderEventStream = env.fromCollection(List(
+      OrderEvent("1", "create", "1558430842"),
+      OrderEvent("2", "create", "1558430843"),
+      OrderEvent("2", "pay", "1558430844"),
+      OrderEvent("3", "pay", "1558430942"),
+      OrderEvent("4", "pay", "1558430943")
+    )).assignAscendingTimestamps(_.eventTime.toLong * 1000)
 
-    val orders: DataStream[String] = env.socketTextStream("localhost", 9999)
-
-    val orderEventStream = orders
-      .map(s => {
-        println(s)
-        val slist = s.split("\\|")
-        println(slist)
-        OrderEvent(slist(0), slist(1), slist(2))
-      })
-      .assignAscendingTimestamps(_.eventTime.toLong * 1000)
+//    val orders: DataStream[String] = env.socketTextStream("localhost", 9999)
+//
+//    val orderEventStream = orders
+//      .map(s => {
+//        println(s)
+//        val slist = s.split("\\|")
+//        println(slist)
+//        OrderEvent(slist(0), slist(1), slist(2))
+//      })
+//      .assignAscendingTimestamps(_.eventTime.toLong * 1000)
 
     val orderPayPattern = Pattern.begin[OrderEvent]("begin")
       .where(_.eventType.equals("create"))
