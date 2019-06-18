@@ -4581,10 +4581,29 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <p>利用用户的常规业务行为，比如登录、下单、支付等，分析数据，对异常情况进行报警提示。</p>
 </div>
 <div class="paragraph">
-<p>本项目限于数据，我们只实现热门统计和风险控制中的部分内容，将包括以下四大模块：实时热门商品统计、实时流量统计、恶意登录监控和订单支付失效监控。</p>
+<p>例如订单失效监控，恶意登录(短时间内频繁登录失败)监控。</p>
 </div>
 <div class="paragraph">
-<p>由于对实时性要求较高，我们会用flink作为数据处理的框架。在项目中，我们将综合运用flink的各种API，基于EventTime去处理基本的业务需求，并且灵活地使用底层的processFunction，基于状态编程和CEP去处理更加复杂的情形。</p>
+<p>本项目限于数据，我们只实现热门统计和风险控制中的部分内容，将包括以下四大模块：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>实时热门商品统计</p>
+</li>
+<li>
+<p>实时流量统计</p>
+</li>
+<li>
+<p>恶意登录监控</p>
+</li>
+<li>
+<p>订单支付失效监控。</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>由于对实时性要求较高，我们会用Flink作为数据处理的框架。在项目中，我们将综合运用flink的各种API，基于EventTime去处理基本的业务需求，并且灵活地使用底层的processFunction，基于状态编程和CEP去处理更加复杂的情形。</p>
 </div>
 </div>
 <div class="sect3">
@@ -4686,6 +4705,198 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <h3 id="_10_2_实时热门商品统计">10.2 实时热门商品统计</h3>
 <div class="paragraph">
 <p>首先要实现的是实时热门商品统计，我们将会基于UserBehavior数据集来进行分析。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>基本需求</p>
+<div class="ulist">
+<ul>
+<li>
+<p>统计近1小时内的热门商品，每5分钟更新一次</p>
+</li>
+<li>
+<p>热门度用浏览次数("pv")来衡量</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>解决思路</p>
+<div class="ulist">
+<ul>
+<li>
+<p>在所有用户行为数据中，过滤出浏览("pv")行为进行统计</p>
+</li>
+<li>
+<p>构建滑动窗口，窗口长度为1小时，滑动距离为5分钟</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/电商用户行为数据分析1.png" alt="电商用户行为数据分析1">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/电商用户行为数据分析2.png" alt="电商用户行为数据分析2">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/电商用户行为数据分析3.png" alt="电商用户行为数据分析3">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/电商用户行为数据分析4.png" alt="电商用户行为数据分析4">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/电商用户行为数据分析5.png" alt="电商用户行为数据分析5">
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>窗口聚合策略——每出现一条记录就加一</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">class</span> <span class="tok-nc">CountAgg</span> <span class="tok-k">extends</span> <span class="tok-nc">AggregateFunction</span><span class="tok-o">[</span><span class="tok-kt">UserBehavior</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Long</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">createAccumulator</span><span class="tok-o">()</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-mi">0L</span>
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">add</span><span class="tok-o">(</span><span class="tok-n">userBehavior</span><span class="tok-k">:</span> <span class="tok-kt">UserBehavior</span><span class="tok-o">,</span> <span class="tok-n">acc</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-n">acc</span> <span class="tok-o">+</span> <span class="tok-mi">1</span>
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">getResult</span><span class="tok-o">(</span><span class="tok-n">acc</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-n">acc</span>
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">merge</span><span class="tok-o">(</span><span class="tok-n">acc1</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">acc2</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-n">acc1</span> <span class="tok-o">+</span> <span class="tok-n">acc2</span>
+<span class="tok-o">}</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>累加规则——窗口内碰到一条数据就加一(add方法)</p>
+</li>
+<li>
+<p>实现 AggregateFunction 接口</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>interface AggregateFunction&lt;IN, ACC, OUT&gt;</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>定义输出结构 —— ItemViewCount(itemId, windowEnd, count)</p>
+</li>
+<li>
+<p>实现<code>WindowFunction</code>接口</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>trait WindowFunction[IN, OUT, KEY, W &lt;: Window]</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>IN: 输入为累加器的类型，Long</p>
+</li>
+<li>
+<p>OUT: 窗口累加以后输出的类型为 ItemViewCount(itemId: Long, windowEnd: Long, count: Long), windowEnd为窗口的结束 时间，也是窗口的唯一标识</p>
+</li>
+<li>
+<p>KEY: Tuple泛型，在这里是 itemId，窗口根据itemId聚合</p>
+</li>
+<li>
+<p>W: 聚合的窗口，w.getEnd 就能拿到窗口的结束时间</p>
+</li>
+<li>
+<p><code>override def apply</code></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">apply</span><span class="tok-o">(</span><span class="tok-n">key</span><span class="tok-k">:</span> <span class="tok-kt">Tuple</span><span class="tok-o">,</span> <span class="tok-n">window</span><span class="tok-k">:</span> <span class="tok-kt">TimeWindow</span><span class="tok-o">,</span> <span class="tok-n">aggregateResult</span><span class="tok-k">:</span> <span class="tok-kt">Iterable</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">],</span> <span class="tok-n">collector</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[</span><span class="tok-kt">ItemViewCount</span><span class="tok-o">])</span> <span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+  <span class="tok-k">val</span> <span class="tok-n">itemId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-n">key</span><span class="tok-o">.</span><span class="tok-n">asInstanceOf</span><span class="tok-o">[</span><span class="tok-kt">Tuple1</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">]].</span><span class="tok-n">f0</span>
+  <span class="tok-k">val</span> <span class="tok-n">count</span> <span class="tok-k">=</span> <span class="tok-n">aggregateResult</span><span class="tok-o">.</span><span class="tok-n">iterator</span><span class="tok-o">.</span><span class="tok-n">next</span>
+  <span class="tok-n">collector</span><span class="tok-o">.</span><span class="tok-n">collect</span><span class="tok-o">(</span><span class="tok-nc">ItemViewCount</span><span class="tok-o">(</span><span class="tok-n">itemId</span><span class="tok-o">,</span> <span class="tok-n">window</span><span class="tok-o">.</span><span class="tok-n">getEnd</span><span class="tok-o">,</span> <span class="tok-n">count</span><span class="tok-o">))</span>
+<span class="tok-o">}</span></code></pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/电商用户行为数据分析6.png" alt="电商用户行为数据分析6">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/电商用户行为数据分析7.png" alt="电商用户行为数据分析7">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/电商用户行为数据分析8.png" alt="电商用户行为数据分析8">
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>最终排序输出 —— keyedProcessFunction</p>
+<div class="ulist">
+<ul>
+<li>
+<p>针对有状态流的底层API</p>
+</li>
+<li>
+<p>KeyedProcessFunction会对分流后的每一条流进行处理</p>
+</li>
+<li>
+<p>以windowEnd作为 key，保证分流以后每一条流的数据都在一个时间窗口内</p>
+</li>
+<li>
+<p>从 ListState 中读取当前流的状态，存储数据进行排序输出</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>用ProcessFunction来定义KeyedStream的处理逻辑</p>
+</li>
+<li>
+<p>分流之后，每个KeyedStream都有其自己的生命周期</p>
+<div class="ulist">
+<ul>
+<li>
+<p>open: 初始化，在这里可以获取当前流的状态</p>
+</li>
+<li>
+<p>processElement: 处理流中每一个元素时调用</p>
+</li>
+<li>
+<p>onTimer: 定时调用，注册定时器Timer并触发之后的回调操作</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/电商用户行为数据分析9.png" alt="电商用户行为数据分析9">
+</div>
 </div>
 <div class="paragraph">
 <p>项目主体用Scala编写，采用IDEA作为开发环境进行项目编写，采用maven作为项目构建和管理工具。首先我们需要搭建项目框架。</p>
@@ -5149,7 +5360,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="paragraph">
-<p>2.2.6 更换Kafka 作为数据源</p>
+<p>2.2.6 更换Kafka作为数据源</p>
 </div>
 <div class="paragraph">
 <p>实际生产环境中，我们的数据流往往是从Kafka获取到的。如果要让代码更贴近生产实际，我们只需将source更换为Kafka即可：</p>
@@ -5180,6 +5391,36 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 <div class="sect2">
 <h3 id="_10_3_实时流量统计">10.3 实时流量统计</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>基本需求</p>
+<div class="ulist">
+<ul>
+<li>
+<p>从web服务器的日志中，统计实时的访问流量</p>
+</li>
+<li>
+<p>统计每分钟的ip访问量，取出访问量最大的5个地址，每5秒更新一次</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>解决思路</p>
+<div class="ulist">
+<ul>
+<li>
+<p>将apache服务器日志中的时间，转换为时间戳，作为Event Time</p>
+</li>
+<li>
+<p>构建滑动窗口，窗口长度为1分钟，滑动距离为5秒</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
 <div class="sect3">
 <h4 id="_10_3_1_模块创建和数据准备">10.3.1 模块创建和数据准备</h4>
 <div class="paragraph">
@@ -5320,6 +5561,36 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 <div class="sect2">
 <h3 id="_10_4_恶意登录监控">10.4 恶意登录监控</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>基本需求</p>
+<div class="ulist">
+<ul>
+<li>
+<p>用户在短时间内频繁登录失败，有程序恶意攻击的可能</p>
+</li>
+<li>
+<p>同一用户(可以是不同IP)在2秒内连续两次登录失败，需要报警</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>解决思路</p>
+<div class="ulist">
+<ul>
+<li>
+<p>将用户的登录失败行为存入ListState，设定定时器10秒后触发，查看ListState中有几次失败登录</p>
+</li>
+<li>
+<p>更加精确的检测，可以使用CEP库实现事件流的模式匹配</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
 <div class="sect3">
 <h4 id="_10_4_1_模块创建和数据准备">10.4.1 模块创建和数据准备</h4>
 <div class="paragraph">
@@ -5486,6 +5757,33 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 <div class="sect2">
 <h3 id="_10_5_订单支付实时监控">10.5 订单支付实时监控</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>基本需求</p>
+<div class="ulist">
+<ul>
+<li>
+<p>用户下单之后，应设置订单失效时间，以提高用户支付的意愿，并降低系统风险</p>
+</li>
+<li>
+<p>用户下单后15分钟未支付，则输出监控信息</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>解决思路</p>
+<div class="ulist">
+<ul>
+<li>
+<p>利用CEP库进行事件流的模式匹配，并设定匹配的时间间隔</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
 <div class="sect3">
 <h4 id="_10_5_1_模块创建和数据准备">10.5.1 模块创建和数据准备</h4>
 <div class="paragraph">

@@ -24,9 +24,16 @@
 
 利用用户的常规业务行为，比如登录、下单、支付等，分析数据，对异常情况进行报警提示。
 
-本项目限于数据，我们只实现热门统计和风险控制中的部分内容，将包括以下四大模块：实时热门商品统计、实时流量统计、恶意登录监控和订单支付失效监控。
+例如订单失效监控，恶意登录(短时间内频繁登录失败)监控。
 
-由于对实时性要求较高，我们会用flink作为数据处理的框架。在项目中，我们将综合运用flink的各种API，基于EventTime去处理基本的业务需求，并且灵活地使用底层的processFunction，基于状态编程和CEP去处理更加复杂的情形。
+本项目限于数据，我们只实现热门统计和风险控制中的部分内容，将包括以下四大模块：
+
+* 实时热门商品统计
+* 实时流量统计
+* 恶意登录监控
+* 订单支付失效监控。
+
+由于对实时性要求较高，我们会用Flink作为数据处理的框架。在项目中，我们将综合运用flink的各种API，基于EventTime去处理基本的业务需求，并且灵活地使用底层的processFunction，基于状态编程和CEP去处理更加复杂的情形。
 
 ==== 10.1.3 数据源解析
 
@@ -93,6 +100,77 @@
 === 10.2 实时热门商品统计
 
 首先要实现的是实时热门商品统计，我们将会基于UserBehavior数据集来进行分析。
+
+* 基本需求
+** 统计近1小时内的热门商品，每5分钟更新一次
+** 热门度用浏览次数("pv")来衡量
+
+* 解决思路
+** 在所有用户行为数据中，过滤出浏览("pv")行为进行统计
+** 构建滑动窗口，窗口长度为1小时，滑动距离为5分钟
+
+image::电商用户行为数据分析1.png[]
+
+image::电商用户行为数据分析2.png[]
+
+image::电商用户行为数据分析3.png[]
+
+image::电商用户行为数据分析4.png[]
+
+image::电商用户行为数据分析5.png[]
+
+* 窗口聚合策略——每出现一条记录就加一
+
+[source,scala]
+----
+class CountAgg extends AggregateFunction[UserBehavior, Long, Long] {
+  override def createAccumulator(): Long = 0L
+  override def add(userBehavior: UserBehavior, acc: Long): Long = acc + 1
+  override def getResult(acc: Long): Long = acc
+  override def merge(acc1: Long, acc2: Long): Long = acc1 + acc2
+}
+----
+
+* 累加规则——窗口内碰到一条数据就加一(add方法)
+* 实现 AggregateFunction 接口
+** ``interface AggregateFunction<IN, ACC, OUT>``
+* 定义输出结构 —— ItemViewCount(itemId, windowEnd, count)
+* 实现``WindowFunction``接口
+** ``trait WindowFunction[IN, OUT, KEY, W <: Window]``
+*** IN: 输入为累加器的类型，Long
+*** OUT: 窗口累加以后输出的类型为 ItemViewCount(itemId: Long, windowEnd: Long, count: Long), windowEnd为窗口的结束 时间，也是窗口的唯一标识
+*** KEY: Tuple泛型，在这里是 itemId，窗口根据itemId聚合
+*** W: 聚合的窗口，w.getEnd 就能拿到窗口的结束时间
+*** ``override def apply``
+
+[source,scala]
+----
+override def apply(key: Tuple, window: TimeWindow, aggregateResult: Iterable[Long], collector: Collector[ItemViewCount]) : Unit = {
+  val itemId: Long = key.asInstanceOf[Tuple1[Long]].f0
+  val count = aggregateResult.iterator.next
+  collector.collect(ItemViewCount(itemId, window.getEnd, count))
+}
+----
+
+image::电商用户行为数据分析6.png[]
+
+image::电商用户行为数据分析7.png[]
+
+image::电商用户行为数据分析8.png[]
+
+* 最终排序输出 —— keyedProcessFunction
+** 针对有状态流的底层API
+** KeyedProcessFunction会对分流后的每一条流进行处理
+** 以windowEnd作为 key，保证分流以后每一条流的数据都在一个时间窗口内
+** 从 ListState 中读取当前流的状态，存储数据进行排序输出
+
+* 用ProcessFunction来定义KeyedStream的处理逻辑
+* 分流之后，每个KeyedStream都有其自己的生命周期
+** open: 初始化，在这里可以获取当前流的状态
+** processElement: 处理流中每一个元素时调用
+** onTimer: 定时调用，注册定时器Timer并触发之后的回调操作
+
+image::电商用户行为数据分析9.png[]
 
 项目主体用Scala编写，采用IDEA作为开发环境进行项目编写，采用maven作为项目构建和管理工具。首先我们需要搭建项目框架。
 
@@ -507,7 +585,7 @@ object HotItems {
 }
 ----
 
-2.2.6 更换Kafka 作为数据源
+2.2.6 更换Kafka作为数据源
 
 实际生产环境中，我们的数据流往往是从Kafka获取到的。如果要让代码更贴近生产实际，我们只需将source更换为Kafka即可：
 
@@ -532,6 +610,13 @@ val stream = env
 当然，根据实际的需要，我们还可以将Sink指定为Kafka、ES、Redis或其它存储，这里就不一一展开实现了。
 
 === 10.3 实时流量统计
+
+* 基本需求
+** 从web服务器的日志中，统计实时的访问流量
+** 统计每分钟的ip访问量，取出访问量最大的5个地址，每5秒更新一次
+* 解决思路
+** 将apache服务器日志中的时间，转换为时间戳，作为Event Time
+** 构建滑动窗口，窗口长度为1分钟，滑动距离为5秒
 
 ==== 10.3.1 模块创建和数据准备
 
@@ -662,6 +747,13 @@ object TrafficAnalysis {
 ----
 
 === 10.4 恶意登录监控
+
+* 基本需求
+** 用户在短时间内频繁登录失败，有程序恶意攻击的可能
+** 同一用户(可以是不同IP)在2秒内连续两次登录失败，需要报警
+* 解决思路
+** 将用户的登录失败行为存入ListState，设定定时器10秒后触发，查看ListState中有几次失败登录
+** 更加精确的检测，可以使用CEP库实现事件流的模式匹配
 
 ==== 10.4.1 模块创建和数据准备
 
@@ -813,6 +905,12 @@ object LoginFailWithCep {
 ----
 
 === 10.5 订单支付实时监控
+
+* 基本需求
+** 用户下单之后，应设置订单失效时间，以提高用户支付的意愿，并降低系统风险
+** 用户下单后15分钟未支付，则输出监控信息
+* 解决思路
+** 利用CEP库进行事件流的模式匹配，并设定匹配的时间间隔
 
 ==== 10.5.1 模块创建和数据准备
 
