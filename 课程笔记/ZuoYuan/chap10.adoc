@@ -32,7 +32,61 @@
 
 我们准备了一份淘宝用户行为数据集，保存为csv文件。本数据集包含了淘宝上某一天随机一百万用户的所有行为（包括点击、购买、收藏、喜欢）。数据集的每一行表示一条用户行为，由用户ID、商品ID、商品类目ID、行为类型和时间戳组成，并以逗号分隔。关于数据集中每一列的详细描述如下：
 
+[cols=3*,options="header"]
+|===
+|字段名
+|数据类型
+|说明
+
+|userId
+|Long
+|加密后的用户ID
+
+|itemId
+|Long
+|加密后的商品ID
+
+|categoryId
+|Int
+|加密后的商品所属类别ID
+
+|behavior
+|String
+|用户行为类型，包括('pv', 'buy', 'cart', 'fav')
+
+|timestamp
+|Long
+|行为发生的时间戳，单位秒
+|===
+
 另外，我们还可以拿到web服务器的日志数据，这里以apache服务器的一份log为例，每一行日志记录了访问者的IP、userId、访问时间、访问方法以及访问的url，具体描述如下：
+
+[cols=3*,options="header"]
+|===
+|字段名
+|数据类型
+|说明
+
+|ip
+|String
+|访问的IP
+
+|userId
+|Long
+|访问的user ID
+
+|eventTime
+|Long
+|访问时间
+
+|method
+|String
+|访问方法 GET/POST/PUT/DELETE
+
+|url
+|String
+|访问的url
+|===
 
 由于行为数据有限，在实时热门商品统计模块中可以使用UserBehavior数据集，而对于恶意登录监控和订单支付失效监控，我们只以示例数据来做演示。
 
@@ -802,54 +856,68 @@ val orderPayPattern = Pattern.begin[OrderEvent]("begin")
 .OrderTimeoutDetect/src/main/scala/OrderTimeout.scala
 [source,scala]
 ----
+import org.apache.flink.cep.scala.CEP
+import org.apache.flink.cep.scala.pattern.Pattern
+import org.apache.flink.streaming.api.scala._
+import org.apache.flink.streaming.api.windowing.time.Time
+import org.apache.flink.streaming.api.TimeCharacteristic
+import org.apache.flink.util.Collector
+import scala.collection.Map
+
 case class OrderEvent(orderId: Long, eventType: String, eventTime: Long)
-case class OrderResult(orderId: Long, eventType: String)
 
 object OrderTimeout {
 
   def main(args: Array[String]): Unit = {
+
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
     val orderEventStream = env.fromCollection(List(
-      OrderEvent(1, "create", 1558430842),
-      OrderEvent(2, "create", 1558430843),
-      OrderEvent(2, "pay", 1558430844)
-    )).assignAscendingTimestamps(_.eventTime * 1000)
+      OrderEvent("1", "create", "1558430842"),
+      OrderEvent("2", "create", "1558430843"),
+      OrderEvent("2", "pay", "1558430844"),
+      OrderEvent("3", "pay", "1558430942"),
+      OrderEvent("4", "pay", "1558430943")
+    )).assignAscendingTimestamps(_.eventTime.toLong * 1000)
 
-    // 定义一个带匹配时间窗口的模式
+//    val orders: DataStream[String] = env.socketTextStream("localhost", 9999)
+//
+//    val orderEventStream = orders
+//      .map(s => {
+//        println(s)
+//        val slist = s.split("\\|")
+//        println(slist)
+//        OrderEvent(slist(0), slist(1), slist(2))
+//      })
+//      .assignAscendingTimestamps(_.eventTime.toLong * 1000)
+
     val orderPayPattern = Pattern.begin[OrderEvent]("begin")
-      .where(_.eventType == "create")
-      .followedBy("follow")
-      .where(_.eventType == "pay")
-      .within(Time.minutes(15))
+      .where(_.eventType.equals("create"))
+      .next("next")
+      .where(_.eventType.equals("pay"))
+      .within(Time.seconds(5))
 
-    // 定义一个输出标签
-    val orderTimeoutOutput = OutputTag[OrderResult]("orderTimeout")
-    // 订单事件流根据 orderId 分流，然后在每一条流中匹配出定义好的模式
+    val orderTimeoutOutput = OutputTag[OrderEvent]("orderTimeout")
+
     val patternStream = CEP.pattern(orderEventStream.keyBy("orderId"), orderPayPattern)
 
-    val completedResult = patternStream.select(orderTimeoutOutput) {
-      // 对于已超时的部分模式匹配的事件序列，会调用这个函数
-      (pattern: Map[String, Iterable[OrderEvent]], timestamp: Long) => {
-        val createOrder = pattern.get("begin")
-        OrderResult(createOrder.get.iterator.next().orderId, "timeout")
-      }
-    } {
-      // 检测到定义好的模式序列时，就会调用这个函数
-      pattern: Map[String, Iterable[OrderEvent]] => {
-        val payOrder = pattern.get("follow")
-        OrderResult(payOrder.get.iterator.next().orderId, "success")
-      }
+    val timeoutFunction = (map: Map[String, Iterable[OrderEvent]], timestamp: Long, out: Collector[OrderEvent]) => {
+      print(timestamp)
+      val orderStart = map.get("begin").get.head
+      out.collect(orderStart)
     }
-    // 拿到同一输出标签中的 timeout 匹配结果（流）
-    val timeoutResult = completedResult.getSideOutput(orderTimeoutOutput)
 
-    completedResult.print()
-    timeoutResult.print()
+    val selectFunction = (map: Map[String, Iterable[OrderEvent]], out: Collector[OrderEvent]) => {
+    }
 
-    env.execute("Order Timeout Detect Job")
+    val timeoutOrder = patternStream.flatSelect(orderTimeoutOutput)(timeoutFunction)(selectFunction)
+
+    timeoutOrder.getSideOutput(orderTimeoutOutput).print()
+
+    env.execute
+
   }
 }
 ----
