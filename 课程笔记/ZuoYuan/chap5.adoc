@@ -13,7 +13,7 @@ image::event_ingestion_processing_time.svg[]
 
 image::starwars.png[]
 
-例如，一条日志进入Flink的时间为`2017-11-12 10:00:00.123`，到达Window的系统时间为`2017-11-12 10:00:01.234`，日志的内容如下:
+例如，一条日志进入Flink的时间为``2017-11-12 10:00:00.123``，到达Window的系统时间为``2017-11-12 10:00:01.234``，日志的内容如下:
 
 ----
 2017-11-02 18:37:15.624 INFO Fail over to rm2
@@ -36,7 +36,7 @@ object AverageSensorReadings {
 }
 ----
 
-如果想设置为Processing Time，将TimeCharacteristic.EventTime替换为TimeCharacteristic.ProcessingTime即可
+如果想设置为Processing Time，将TimeCharacteristic.EventTime替换为TimeCharacteristic.ProcessingTime即可。
 
 === 5.2 Window
 
@@ -50,9 +50,9 @@ Window是无限数据流处理的核心，Window将一个无限的Stream拆分�
 
 Window可以分成两类：
 
-*CountWindow*：按照指定的数据条数生成一个Window，与时间无关。
+* *CountWindow*：按照指定的数据条数生成一个Window，与时间无关。
 
-*TimeWindow*：按照时间生成Window。
+* *TimeWindow*：按照时间生成Window。
 
 对于TimeWindow，可以根据窗口实现原理的不同分成三类：滚动窗口(Tumbling Window)、滑动窗口(Sliding Window)和会话窗口(Session Window)。
 

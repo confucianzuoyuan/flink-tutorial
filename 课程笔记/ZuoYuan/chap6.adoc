@@ -75,7 +75,7 @@ MyAssigner有两种类型
 
 *Assigner with periodic watermarks*
 
-周期性的生成水印：系统会周期性的将水印插入到流中(水印也是一种特殊的事件！)。默认周期是200毫秒。可以使用ExecutionConfig.setAutoWatermarkInterval()方法进行设置。
+周期性的生成水印：系统会周期性的将水印插入到流中(水印也是一种特殊的事件!)。默认周期是200毫秒。可以使用ExecutionConfig.setAutoWatermarkInterval()方法进行设置。
 
 [source,scala]
 ----
@@ -105,8 +105,6 @@ class PeriodicAssigner extends AssignerWithPeriodicWatermarks[SensorReading] {
   }
 }
 ----
-
-相当于实现了``BoundedOutOfOrdernessTimestampExtractor[SensorReading](Time.milliseconds(1000))``
 
 如果我们事先得知数据流的时间戳是单调递增的，也就是说没有乱序。我们可以使用``assignAscendingTimestamps``，方法会直接使用数据的时间戳生成水印。
 
@@ -192,12 +190,12 @@ KeyedProcessFunction用来操作KeyedStream。KeyedProcessFunction会处理流�
 
 Context和OnTimerContext所持有的TimerService对象拥有以下方法:
 
-* currentProcessingTime(): Long 返回当前处理时间
-* currentWatermark(): Long 返回当前水印的时间戳
-* registerProcessingTimeTimer(timestamp: Long): Unit 会注册当前key的processing time的timer。当processing time到达定时时间时，触发timer。
-* registerEventTimeTimer(timestamp: Long): Unit 会注册当前key的event time timer。当水印大于等于定时器注册的时间时，触发定时器执行回调函数。
-* deleteProcessingTimeTimer(timestamp: Long): Unit 删除之前注册处理时间定时器。如果没有这个时间戳的定时器，则不执行。
-* deleteEventTimeTimer(timestamp: Long): Unit 删除之前注册的事件时间定时器，如果没有此时间戳的定时器，则不执行。
+* ``currentProcessingTime(): Long`` 返回当前处理时间
+* ``currentWatermark(): Long`` 返回当前水印的时间戳
+* ``registerProcessingTimeTimer(timestamp: Long): Unit`` 会注册当前key的processing time的timer。当processing time到达定时时间时，触发timer。
+* ``registerEventTimeTimer(timestamp: Long): Unit`` 会注册当前key的event time timer。当水印大于等于定时器注册的时间时，触发定时器执行回调函数。
+* ``deleteProcessingTimeTimer(timestamp: Long): Unit`` 删除之前注册处理时间定时器。如果没有这个时间戳的定时器，则不执行。
+* ``deleteEventTimeTimer(timestamp: Long): Unit`` 删除之前注册的事件时间定时器，如果没有此时间戳的定时器，则不执行。
 
 当定时器timer触发时，执行回调函数onTimer()。
 
@@ -216,7 +214,7 @@ val warnings = readings
   .process(new TempIncreaseAlertFunction)
 ----
 
-看一下TempIncreaseAlertFunction如何实现
+看一下TempIncreaseAlertFunction如何实现, 程序中使用了``ValueState``这样一个状态变量, 后面会详细讲解。
 
 [source,scala]
 ----
@@ -235,18 +233,23 @@ class TempIncreaseAlertFunction extends KeyedProcessFunction[String, SensorReadi
                               ctx: KeyedProcessFunction[String, SensorReading, String]#Context,
                               out: Collector[String]): Unit = {
     // get previous temperature
+    // 取出上一次的温度
     val prevTemp = lastTemp.value()
     // update last temperature
+    // 将当前温度更新到上一次的温度这个变量中
     lastTemp.update(r.temperature)
 
     val curTimerTimestamp = currentTimer.value()
     if (prevTemp == 0.0 || r.temperature < prevTemp) {
       // temperature decreased; delete current timer
+      // 温度下降或者是第一个温度值，删除定时器
       ctx.timerService().deleteProcessingTimeTimer(curTimerTimestamp)
+      // 清空状态变量
       currentTimer.clear()
     } else if (r.temperature > prevTemp && curTimerTimestamp == 0) {
       // temperature increased and we have not set a timer yet
       // set processing time timer for now + 1 second
+      // 温度上升且我们并没有设置定时器
       val timerTs = ctx.timerService().currentProcessingTime() + 1000
       ctx.timerService().registerProcessingTimeTimer(timerTs)
       // remember current timer
@@ -287,6 +290,7 @@ readings.print()
 ----
 class FreezingMonitor extends ProcessingFunction[SensorReading, SensorReading] {
   // define a side output tag
+  // 定义一个侧输出标签
   lazy val freezingAlarmOutput: OutputTag[String] =
     new OutputTag[String]("freezing-alarms")
 
@@ -305,7 +309,7 @@ class FreezingMonitor extends ProcessingFunction[SensorReading, SensorReading] {
 
 ==== 6.2.3 CoProcessFunction
 
-对于两条输入流，DataStream API提供了CoProcessFunction这样的low-level操作。CoProcessFunction提供了操作每一个输入流的方法: processElement1()和processElement2()。类似于ProcessFunction，这两种方法都通过Context对象来调用。这个Context对象可以访问事件数据，定时器时间戳，TimerService，以及side outputs。CoProcessFunction也提供了onTimer()回调函数。下面的例子展示了如何使用CoProcessFunction来合并两条流。
+对于两条输入流，DataStream API提供了``CoProcessFunction``这样的low-level操作。``CoProcessFunction``提供了操作每一个输入流的方法: ``processElement1()``和``processElement2()``。类似于``ProcessFunction``，这两种方法都通过``Context``对象来调用。这个``Context``对象可以访问事件数据，定时器时间戳，TimerService，以及side outputs。``CoProcessFunction``也提供了``onTimer()``回调函数。下面的例子展示了如何使用``CoProcessFunction``来合并两条流。
 
 [source,scala]
 ----
