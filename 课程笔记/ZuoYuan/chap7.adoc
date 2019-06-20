@@ -194,3 +194,21 @@ val alerts: DataStream[(String, Double, Double)] = keyedSensorData
       }
   }
 ----
+
+=== 7.4 选择一个状态后端(state backend)
+
+* MemoryStateBackend stores state as regular objects on the heap of the TaskManager JVM process.
+* FsStateBackend stores the local state on the TaskManager’s JVM heap, just like MemoryStateBackend. However, instead of checkpointing the state to the JobManager’s volatile memory, FsStateBackend writes the state to a remote and persistent file system.
+* RocksDBStateBackend stores all state into local RocksDB instances.
+
+[source,scala]
+----
+val env = StreamExecutionEnvironment.getExecutionEnvironment
+
+val checkpointPath: String = ???
+// configure path for checkpoints on the remote filesystem
+val backend = new RocksDBStateBackend(checkpointPath)
+
+// configure the state backend
+env.setStateBackend(backend)
+----

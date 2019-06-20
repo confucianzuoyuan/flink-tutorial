@@ -381,9 +381,9 @@ class ReadingFilter extends CoProcessFunction[SensorReading, (String, Long), Sen
 }
 ----
 
-=== 6.3 Window Operators
+=== 6.3 Window Operators(窗口操作符)
 
-==== 6.3.1 define window operators
+==== 6.3.1 define window operators(定义窗口操作符)
 
 window算子可以在keyed stream或者nokeyed stream上面使用。
 
@@ -406,9 +406,9 @@ stream
   .reduce/aggregate/process(...) // 指定window function
 ----
 
-==== 6.3.2 内置的window assigner
+==== 6.3.2 内置的window assigner(窗口分配器)
 
-===== 6.3.2.1 tumbling windows
+===== 6.3.2.1 tumbling windows(滚动窗口)
 
 [source,scala]
 ----
@@ -427,6 +427,7 @@ val avgTemp = sensorData
   .process(new TemperatureAverager)
 
 // 其实就是之前的
+// shortcut for window.(TumblingEventTimeWindows.of(size))
 val avgTemp = sensorData
   .keyBy(_.id)
   .timeWindow(Time.seconds(1))
@@ -435,7 +436,7 @@ val avgTemp = sensorData
 
 如果滚动窗口的时间长度为1小时，那么默认设定的窗口为：[00:00, 01:00), [01:00, 02:00), ...
 
-===== 6.3.2.2 sliding window
+===== 6.3.2.2 sliding window(滑动窗口)
 
 [source,scala]
 ----
@@ -455,7 +456,7 @@ val slidingAvgTemp = sensorData
   .process(new TemperatureAverager)
 ----
 
-===== 6.3.2.3 session windows
+===== 6.3.2.3 session windows(会话窗口)
 
 [source,scala]
 ----
@@ -470,7 +471,7 @@ val sessionWindows = sensorData
   .process(...)
 ----
 
-==== 6.3.3 Applying Functions on Windows
+==== 6.3.3 Applying Functions on Windows(在窗口上应用函数)
 
 window functions定义了窗口中数据的计算逻辑。有两种计算逻辑：
 

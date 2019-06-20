@@ -249,7 +249,7 @@ val filteredSensors = readings
 
 image::filter.png[]
 
-=== 4.4 KeyedStream Transformations
+=== 4.4 KeyedStream Transformations(键控流转换算子)
 
 ==== 4.4.1 keyBy
 
@@ -315,7 +315,7 @@ val resultStream: DataStream[(String, List[String])] = inputStream
 
 The lambda reduce function forwards the first tuple field (the key field) and concatenates the List[String] values of the second tuple field.
 
-=== 4.5 Multistream Transformations
+=== 4.5 Multistream Transformations(多流转换算子)
 
 ==== 4.5.1 Union
 
