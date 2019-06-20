@@ -28,36 +28,46 @@ env.setParallelism(1)
 
 === 4.2 Source
 
+从批读取数据
+
+[source,scala]
+----
+// 传感器id，时间戳，温度
+case class SensorReading(id: String, timestamp: Long, temperature: Double)
+
+val stream = env
+  .fromCollection(List(
+    SensorReading("sensor_1", 1547718199000, 35.80018327300259)
+    SensorReading("sensor_6", 1547718199000, 15.402984393403084)
+    SensorReading("sensor_7", 1547718199000, 6.720945201171228)
+    SensorReading("sensor_10", 1547718199000, 38.101067604893444)
+  ))
+----
+
+从文件读取数据
+
+[source,scala]
+----
+val stream = env.readTextFile(filePath)
+----
+
 以Kafka消息队列的数据为数据来源
 
 [source,scala]
 ----
-object ScalaHotItems {
-
-  def main(args: Array[String]): Unit = {
-    val properties = new Properties()
-    properties.setProperty("bootstrap.servers", "localhost:9092")
-    properties.setProperty("group.id", "consumer-group")
-    properties.setProperty("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
-    properties.setProperty("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
-    properties.setProperty("auto.offset.reset", "latest")
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-    env.setParallelism(1)
-    val stream = env
-      // source为来自Kafka的数据，这里我们实例化一个消费者，topic为hotitems
-      .addSource(new FlinkKafkaConsumer[String]("hotitems", new SimpleStringSchema(), properties))
-      .print()
-
-    // 执行DAG
-    env.execute("Hot Items Job")
-  }
-}
+val properties = new Properties()
+properties.setProperty("bootstrap.servers", "localhost:9092")
+properties.setProperty("group.id", "consumer-group")
+properties.setProperty("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
+properties.setProperty("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
+properties.setProperty("auto.offset.reset", "latest")
+val env = StreamExecutionEnvironment.getExecutionEnvironment
+env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+env.setParallelism(1)
+val stream = env
+  // source为来自Kafka的数据，这里我们实例化一个消费者，topic为hotitems
+  .addSource(new FlinkKafkaConsumer[String]("hotitems", new SimpleStringSchema(), properties))
 ----
-
-https://flink.apache.org/features/2018/03/01/end-to-end-exactly-once-apache-flink.html
-
-文档
 
 我们也可以自定义Source，这里举一个例子。
 
@@ -149,52 +159,103 @@ val sensorData: DataStream[SensorReading] = env
   .addSource(new SensorSource)
 ----
 
-=== 4.3 Basic Transformations
-
-基本转换算子
+=== 4.3 Basic Transformations(基本转换算子)
 
 ==== 4.3.1 map
 
 image::map.png[]
 
+我们需要实现接口``MapFunction``
+
+----
+// T: the type of input elements
+// O: the type of output elements
+MapFunction[T, O]
+    > map(T): O
+----
+
+例如
+
 [source,scala]
 ----
-val streamMap = stream.map { x => x * 2 }
+val readings: DataStream[SensorReading] = ...
+val sensorIds: DataStream[String] = readings.map(new MyMapFunction)
+
+class MyMapFunction extends MapFunction[SensorReading, String] {
+  override def map(r: SensorReading): String = r.id
+}
+----
+
+上面的代码实现了将SensorReading的id抽取出来的操作, 当然我们更推荐匿名函数的写法。
+
+[source,scala]
+----
+val readings: DataStream[SensorReading] = ...
+val sensorIds: DataStream[String] = readings.map(r => r.id)
 ----
 
 ==== 4.3.2 flatMap
+
+flatMap的函数签名：``def flatMap[A,B](as: List[A])(f: A => List[B]): List[B]``, 例如: ``flatMap(List(1,2,3))(i => List(i,i))``结果是``List(1,1,2,2,3,3)``, ``List("a b", "c d").flatMap(line => line.split(" "))``结果是``List(a, b, c, d)``。
+
+我们需要实现``FlatMapFunction``接口
+
+----
+// T: the type of input elements
+// O: the type of output elements
+FlatMapFunction[T, O]
+    > flatMap(T, Collector[O]): Unit
+----
 
 image::flatmap.png[]
 
 白框不变，黑框复制，灰框过滤
 
-flatmap类似map，但可以生成0个或者1个或者多个数据
+flatmap类似map，但可以生成0个或者1个或者多个数据, 所以最后需要一个集合Collector来收集输出数据
 
 flatmap可以实现map和filter
 
 [source,scala]
 ----
-val streamFlatMap = stream.flatMap{
-  x => x.split(" ")
-}
+def filterViaFlatMap[A](l: List[A])(f: A => Boolean): List[A] =
+  flatMap(l)(a => if (f(a)) List(a) else Nil)
+----
+
+[source,scala]
+----
+val sentences: DataStream[String] = ...
+val words: DataStream[String] = sentences
+  .flatMap(id => id.split(" "))
 ----
 
 ==== 4.3.3 Filter
 
-image::filter.png[]
+我们需要实现接口``FilterFunction``
+
+----
+// T: the type of elements
+FilterFunction[T]
+    > filter(T): Boolean
+----
+
+例如, 过滤出温度大于等于25度的传感器数据
 
 [source,scala]
 ----
-val streamFilter = stream.filter{
-  x => x == 1
-}
+val readings: DataStream[SensorReadings] = ...
+val filteredSensors = readings
+    .filter( r =>  r.temperature >= 25 )
 ----
+
+image::filter.png[]
 
 === 4.4 KeyedStream Transformations
 
 ==== 4.4.1 keyBy
 
-分流算子 DataStream -> KeyedStream
+分流算子, 流的类型改变了
+
+DataStream -> KeyedStream
 
 image::keyby.png[]
 
@@ -222,31 +283,37 @@ stream.keyBy(0)
 
 [source,scala]
 ----
-val inputStream: DataStream[(Int, Int, Int)] = 
-env.fromElements(
+val inputStream: DataStream[(Int, Int, Int)] = env.fromElements(
   (1, 2, 2), (2, 3, 1), (2, 2, 4), (1, 5, 3))
 
 val resultStream: DataStream[(Int, Int, Int)] = inputStream
-  .keyBy(0)
-  .sum(1)
+  .keyBy(0) // key on first field of the tuple
+  .sum(1)   // sum the second field of the tuple in place
 ----
 
 ==== 4.4.3 Reduce
 
-KeyedStream -> DataStream：一个分组数据流的聚合操作，合并当前的元素和上次聚合的结果，产生一个新的值，返回的流中包含每一次聚合的结果，而不是只返回最后一次聚合的最终结果。
+我们需要实现``ReduceFunction``接口
+
+----
+// T: the element type
+ReduceFunction[T]
+    > reduce(T, T): T
+----
+
+流的类型转换, ``KeyedStream -> DataStream``：一个分组数据流的聚合操作，合并当前的元素和上次聚合的结果，产生一个新的值，返回的流中包含每一次聚合的结果，而不是只返回最后一次聚合的最终结果。
 
 [source,scala]
 ----
-val inputStream: DataStream[(String, List[String])] =
-env.fromElements(
-  ("en", List("tea")), ("fr", List("vin")), ("en", List("cake"))
-)
+val inputStream: DataStream[(String, List[String])] = env.fromElements(
+  ("en", List("tea")), ("fr", List("vin")), ("en", List("cake")))
 
-val resultStream: DataStream[(String, List[String])] =
-inputStream
+val resultStream: DataStream[(String, List[String])] = inputStream
   .keyBy(0)
-  .reduce((x, y) => x._1, x._2 ::: y._2)
+  .reduce((x, y) => (x._1, x._2 ::: y._2))
 ----
+
+The lambda reduce function forwards the first tuple field (the key field) and concatenates the List[String] values of the second tuple field.
 
 === 4.5 Multistream Transformations
 
@@ -269,7 +336,7 @@ val allCities: DataStream[SensorRreading] = parisStream
 
 联合两条流的事件是非常常见的流处理需求。例如监控一片森林然后发出高危的火警警报。报警的Application接收两条流，一条是温度传感器传回来的数据，一条是烟雾传感器传回来的数据。当两条流都超过各自的阈值时，报警。
 
-DataStream.connect()方法就实现了这个功能。DataStream -> ConnectedStreams。
+DataStream.connect()方法就实现了这个功能。流的类型转换: ``DataStream -> ConnectedStreams``。
 
 [source,scala]
 ----
@@ -315,25 +382,51 @@ val one: DataStream[(Int, Long)] = ...
 val two: DataStream[(Int, String)] = ...
 
 // keyBy two connected streams
-val keyedConnect1: ConnectedStreams[(Int, Long), (Int, String)] =
-one
+val keyedConnect1: ConnectedStreams[(Int, Long), (Int, String)] = one
   .connect(two)
   .keyBy(0, 0) // key both input streams on first attribute
 
 // alternative: connect two keyed streams
-val keyedConnect2: ConnectedStreams[(Int, Long), (Int, String)] =
-one.keyBy(0).connect(two.keyBy(0))
+val keyedConnect2: ConnectedStreams[(Int, Long), (Int, String)] = one.keyBy(0)
+  .connect(two.keyBy(0))
 ----
 
-以上程序其实相当于实现了SQL中的JOIN语义。
+Regardless of whether you keyBy() ConnectedStreams or you connect() two KeyedStreams, the connect() transformation will route all events from both streams with the same key to the same operator instance. Note that the keys of both streams should refer to the same class of entities, just like a join predicate in a SQL query. An operator that is applied on a connected and keyed stream has access to keyed state.
+
+*broadcast*
+
+[source,scala]
+----
+val first: DataStream[(Int, Long)] = ...
+val second: DataStream[(Int, String)] = ...
+
+// connect streams with broadcast
+val keyedConnect: ConnectedStreams[(Int, Long), (Int, String)] = first
+  // broadcast second input stream
+  .connect(second.broadcast())
+----
+
+The example shows how to connect a (nonkeyed) DataStream with a broadcasted stream.
+
+All events of the broadcasted stream are replicated and sent to all parallel operator instances of the subsequent processing function. The events of the nonbroadcasted stream are simply forwarded. Hence, the elements of both input streams can be jointly processed.
+
+一条流如果broadcast, 将会广播到所有的分布式节点，如果不广播，将会向前发送，并不会广播。
+
+详细请参考: https://www.ververica.com/blog/a-practical-guide-to-broadcast-state-in-apache-flink
 
 ==== 4.5.3 Split and Select
 
 Split是Union的反函数。
 
+----
+// IN: the type of the split elements
+OutputSelector[IN]
+    > select(IN): Iterable[String]
+----
+
 image::split.png[]
 
-DataStream -> SplitStream
+流的类型转换: ``DataStream -> SplitStream``
 
 [source,scala]
 ----
@@ -347,13 +440,15 @@ val small: DataStream[(Int, String)] = splitted.select("small")
 val all: DataStream[(Int, String)] = splitted.select("small", "large")
 ----
 
-Connect与 Union 区别：
+Connect与Union区别：
 1 Union之前两个流的类型必须是一样，Connect可以不一样，在之后的CoMapFunction中再去调整成为一样的。
 2 Connect只能操作两个流，Union可以操作多个。
 
 === 4.6 支持的数据类型
 
-*Primitives*
+*Primitives(基础数据类型)*
+
+所有的基础数据类型都支持，Int, Double, Long, String, ...
 
 [source,scala]
 ----
@@ -609,4 +704,46 @@ val esSinkBuilder = new ElasticsearchSink.Builer[String](
 
 // finally, build and add the sink to the job's pipeline
 input.addSink(esSinkBuilder.build)
+----
+
+=== 4.10 Distribution Transformations(分布式转换算子)
+
+*Random*
+
+The random data exchange strategy is implemented by the DataStream.shuffle() method. The method distributes records randomly according to a uniform distribution to the parallel tasks of the following operator.
+
+*Round-Robin*
+
+The rebalance() method partitions the input stream so that events are evenly distributed to successor tasks in a round-robin fashion.
+
+*Rescale*
+
+The rescale() method also distributes events in a round-robin fashion, but only to a subset of successor tasks. In essence, the rescale partitioning strategy offers a way to perform a lightweight load rebalance when the number of sender and receiver tasks is not the same. The rescale transformation is more efficient if the number of receiver tasks is a multitude of the number of sender tasks or vice versa.
+
+The fundamental difference between rebalance() and rescale() lies in the way task connections are formed. While rebalance() will create communication channels between all sending tasks to all receiving tasks, rescale() will only create channels from each task to some of the tasks of the downstream operator.
+
+*Broadcast*
+
+The broadcast() method replicates the input data stream so that all events are sent to all parallel tasks of the downstream operator.
+
+*Global*
+
+The global() method sends all events of the input data stream to the first parallel task of the downstream operator. This partitioning strategy must be used with care, as routing all events to the same task might impact application performance.
+
+*Custom*
+
+When none of the predefined partitioning strategies is suitable, you can define your own by using the partitionCustom() method. This method receives a Partitioner object that implements the partitioning logic and the field or key position on which the stream is to be partitioned. The following example partitions a stream of integers so that all negative numbers are sent to the first task and all other numbers are sent to a random task:
+
+[source,scala]
+----
+val numbers: DataStream[(Int)] = ...
+numbers.partitionCustom(myPartitioner, 0)
+
+object myPartitioner extends Partitioner[Int] {
+  val r = scala.util.Random
+
+  override def partition(key: Int, numPartitions: Int): Int = {
+    if (key < 0) 0 else r.nextInt(numPartitions)
+  }
+}
 ----

@@ -5,9 +5,9 @@
 
 image::event_ingestion_processing_time.svg[]
 
-*Event Time*：是事件创建的时间。它通常由事件中的时间戳描述，例如采集的日志数据中，每一条日志都会记录自己的生成时间，Flink通过时间戳分配器访问事件时间戳。
-*Ingestion Time*：是数据进入Flink的时间。
-*Processing Time*：是每一个执行基于时间操作的算子的本地系统时间，与机器相关，默认的时间属性就是Processing Time。
+* *Event Time*：是事件创建的时间。它通常由事件中的时间戳描述，例如采集的日志数据中，每一条日志都会记录自己的生成时间，Flink通过时间戳分配器访问事件时间戳。
+* *Ingestion Time*：是数据进入Flink的时间。
+* *Processing Time*：是每一个执行基于时间操作的算子的本地系统时间，与机器相关，默认的时间属性就是Processing Time。
 
 *著名的星球大战的例子*
 

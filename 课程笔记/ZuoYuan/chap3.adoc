@@ -16,7 +16,17 @@ TaskManager在启动的时候就设置好了槽位数(Slot)，每个Slot能启�
 
 *关于执行图*
 
-Flink中的执行图可以分成四层：StreamGraph -> JobGraph -> ExecutionGraph -> 物理执行图。
+Flink中的执行图可以分成四层：
+
+[graphviz, dot-example1, svg]
+----
+digraph g {
+    rankdir=LR
+    StreamGraph -> JobGraph
+    JobGraph -> ExecutionGraph
+    ExecutionGraph -> 物理执行图
+}
+----
 
 *StreamGraph*：是根据用户通过Stream API编写的代码生成的最初的图。用来表示程序的拓扑结构。
 

@@ -1,5 +1,5 @@
-= Atguigu Flink Tutorial
-Yuan Zuo <zuoyuan@atguigu.com>
+= 尚硅谷Flink教程
+尚硅谷大数据讲师左元 <zuoyuan@atguigu.com>
 v1.0, 2019-06-01
 :icons: font
 :source-highlighter: pygments

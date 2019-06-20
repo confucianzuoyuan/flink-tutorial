@@ -5,8 +5,8 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.9">
-<meta name="author" content="Yuan Zuo">
-<title>Atguigu Flink Tutorial</title>
+<meta name="author" content="尚硅谷大数据讲师左元">
+<title>尚硅谷Flink教程</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -439,9 +439,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
-<h1>Atguigu Flink Tutorial</h1>
+<h1>尚硅谷Flink教程</h1>
 <div class="details">
-<span id="author" class="author">Yuan Zuo</span><br>
+<span id="author" class="author">尚硅谷大数据讲师左元</span><br>
 <span id="email" class="email"><a href="mailto:zuoyuan@atguigu.com">zuoyuan@atguigu.com</a></span><br>
 <span id="revnumber">version 1.0,</span>
 <span id="revdate">2019-06-01</span>
@@ -505,7 +505,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel2">
 <li><a href="#_4_1_environment">4.1 Environment</a></li>
 <li><a href="#_4_2_source">4.2 Source</a></li>
-<li><a href="#_4_3_basic_transformations">4.3 Basic Transformations</a>
+<li><a href="#_4_3_basic_transformations基本转换算子">4.3 Basic Transformations(基本转换算子)</a>
 <ul class="sectlevel3">
 <li><a href="#_4_3_1_map">4.3.1 map</a></li>
 <li><a href="#_4_3_2_flatmap">4.3.2 flatMap</a></li>
@@ -540,6 +540,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_4_9_1_elasticsearch">4.9.1 Elasticsearch</a></li>
 </ul>
 </li>
+<li><a href="#_4_10_distribution_transformations分布式转换算子">4.10 Distribution Transformations(分布式转换算子)</a></li>
 </ul>
 </li>
 <li><a href="#_第五章_time与window">第五章 Time与Window</a>
@@ -1229,8 +1230,7 @@ quickstart/
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>flatMap的函数签名：<code>def flatMap[A,B](as: List[A])(f: A &#8658; List[B]): List[B]</code>, 例如:<br>
-<code>flatMap(List(1,2,3))(i &#8658; List(i,i))</code>结果是<code>List(1,1,2,2,3,3)</code>, <code>List("a b", "c d").flatMap(line &#8658; line.split(" "))</code>结果是<code>List(a, b, c, d)</code>。</td>
+<td>flatMap的函数签名：<code>def flatMap[A,B](as: List[A])(f: A &#8658; List[B]): List[B]</code>, 例如: <code>flatMap(List(1,2,3))(i &#8658; List(i,i))</code>结果是<code>List(1,1,2,2,3,3)</code>, <code>List("a b", "c d").flatMap(line &#8658; line.split(" "))</code>结果是<code>List(a, b, c, d)</code>。</td>
 </tr>
 </table>
 </div>
@@ -1251,7 +1251,7 @@ quickstart/
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="shell"><span></span>nc -lk <span class="tok-m">9999</span></code></pre>
+<pre class="pygments highlight"><code data-lang="shell"><span></span>$ nc -lk <span class="tok-m">9999</span></code></pre>
 </div>
 </div>
 </div>
@@ -1344,7 +1344,12 @@ $ ./bin/start-cluster.sh</code></pre>
 <p><strong>关于执行图</strong></p>
 </div>
 <div class="paragraph">
-<p>Flink中的执行图可以分成四层：StreamGraph &#8594; JobGraph &#8594; ExecutionGraph &#8594; 物理执行图。</p>
+<p>Flink中的执行图可以分成四层：</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/dot-example1.svg" alt="dot example1" width="767" height="62">
+</div>
 </div>
 <div class="paragraph">
 <p><strong>StreamGraph</strong>：是根据用户通过Stream API编写的代码生成的最初的图。用来表示程序的拓扑结构。</p>
@@ -1475,38 +1480,48 @@ $ ./bin/start-cluster.sh</code></pre>
 <div class="sect2">
 <h3 id="_4_2_source">4.2 Source</h3>
 <div class="paragraph">
+<p>从批读取数据</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">// 传感器id，时间戳，温度</span>
+<span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">SensorReading</span><span class="tok-o">(</span><span class="tok-n">id</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">timestamp</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">temperature</span><span class="tok-k">:</span> <span class="tok-kt">Double</span><span class="tok-o">)</span>
+
+<span class="tok-k">val</span> <span class="tok-n">stream</span> <span class="tok-k">=</span> <span class="tok-n">env</span>
+  <span class="tok-o">.</span><span class="tok-n">fromCollection</span><span class="tok-o">(</span><span class="tok-nc">List</span><span class="tok-o">(</span>
+    <span class="tok-nc">SensorReading</span><span class="tok-o">(</span><span class="tok-s">&quot;sensor_1&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1547718199000</span><span class="tok-o">,</span> <span class="tok-mf">35.80018327300259</span><span class="tok-o">)</span>
+    <span class="tok-nc">SensorReading</span><span class="tok-o">(</span><span class="tok-s">&quot;sensor_6&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1547718199000</span><span class="tok-o">,</span> <span class="tok-mf">15.402984393403084</span><span class="tok-o">)</span>
+    <span class="tok-nc">SensorReading</span><span class="tok-o">(</span><span class="tok-s">&quot;sensor_7&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1547718199000</span><span class="tok-o">,</span> <span class="tok-mf">6.720945201171228</span><span class="tok-o">)</span>
+    <span class="tok-nc">SensorReading</span><span class="tok-o">(</span><span class="tok-s">&quot;sensor_10&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1547718199000</span><span class="tok-o">,</span> <span class="tok-mf">38.101067604893444</span><span class="tok-o">)</span>
+  <span class="tok-o">))</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>从文件读取数据</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">stream</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">readTextFile</span><span class="tok-o">(</span><span class="tok-n">filePath</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
 <p>以Kafka消息队列的数据为数据来源</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">object</span> <span class="tok-nc">ScalaHotItems</span> <span class="tok-o">{</span>
-
-  <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-    <span class="tok-k">val</span> <span class="tok-n">properties</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">Properties</span><span class="tok-o">()</span>
-    <span class="tok-n">properties</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;bootstrap.servers&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;localhost:9092&quot;</span><span class="tok-o">)</span>
-    <span class="tok-n">properties</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;group.id&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;consumer-group&quot;</span><span class="tok-o">)</span>
-    <span class="tok-n">properties</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;key.deserializer&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;org.apache.kafka.common.serialization.StringDeserializer&quot;</span><span class="tok-o">)</span>
-    <span class="tok-n">properties</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;value.deserializer&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;org.apache.kafka.common.serialization.StringDeserializer&quot;</span><span class="tok-o">)</span>
-    <span class="tok-n">properties</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;auto.offset.reset&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;latest&quot;</span><span class="tok-o">)</span>
-    <span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
-    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
-    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
-    <span class="tok-k">val</span> <span class="tok-n">stream</span> <span class="tok-k">=</span> <span class="tok-n">env</span>
-      <span class="tok-c1">// source为来自Kafka的数据，这里我们实例化一个消费者，topic为hotitems</span>
-      <span class="tok-o">.</span><span class="tok-n">addSource</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">FlinkKafkaConsumer</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">](</span><span class="tok-s">&quot;hotitems&quot;</span><span class="tok-o">,</span> <span class="tok-k">new</span> <span class="tok-nc">SimpleStringSchema</span><span class="tok-o">(),</span> <span class="tok-n">properties</span><span class="tok-o">))</span>
-      <span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">()</span>
-
-    <span class="tok-c1">// 执行DAG</span>
-    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span><span class="tok-o">(</span><span class="tok-s">&quot;Hot Items Job&quot;</span><span class="tok-o">)</span>
-  <span class="tok-o">}</span>
-<span class="tok-o">}</span></code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">properties</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">Properties</span><span class="tok-o">()</span>
+<span class="tok-n">properties</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;bootstrap.servers&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;localhost:9092&quot;</span><span class="tok-o">)</span>
+<span class="tok-n">properties</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;group.id&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;consumer-group&quot;</span><span class="tok-o">)</span>
+<span class="tok-n">properties</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;key.deserializer&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;org.apache.kafka.common.serialization.StringDeserializer&quot;</span><span class="tok-o">)</span>
+<span class="tok-n">properties</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;value.deserializer&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;org.apache.kafka.common.serialization.StringDeserializer&quot;</span><span class="tok-o">)</span>
+<span class="tok-n">properties</span><span class="tok-o">.</span><span class="tok-n">setProperty</span><span class="tok-o">(</span><span class="tok-s">&quot;auto.offset.reset&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;latest&quot;</span><span class="tok-o">)</span>
+<span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
+<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
+<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+<span class="tok-k">val</span> <span class="tok-n">stream</span> <span class="tok-k">=</span> <span class="tok-n">env</span>
+  <span class="tok-c1">// source为来自Kafka的数据，这里我们实例化一个消费者，topic为hotitems</span>
+  <span class="tok-o">.</span><span class="tok-n">addSource</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">FlinkKafkaConsumer</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">](</span><span class="tok-s">&quot;hotitems&quot;</span><span class="tok-o">,</span> <span class="tok-k">new</span> <span class="tok-nc">SimpleStringSchema</span><span class="tok-o">(),</span> <span class="tok-n">properties</span><span class="tok-o">))</span></code></pre>
 </div>
-</div>
-<div class="paragraph">
-<p><a href="https://flink.apache.org/features/2018/03/01/end-to-end-exactly-once-apache-flink.html" class="bare">https://flink.apache.org/features/2018/03/01/end-to-end-exactly-once-apache-flink.html</a></p>
-</div>
-<div class="paragraph">
-<p>文档</p>
 </div>
 <div class="paragraph">
 <p>我们也可以自定义Source，这里举一个例子。</p>
@@ -1602,10 +1617,7 @@ $ ./bin/start-cluster.sh</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_4_3_basic_transformations">4.3 Basic Transformations</h3>
-<div class="paragraph">
-<p>基本转换算子</p>
-</div>
+<h3 id="_4_3_basic_transformations基本转换算子">4.3 Basic Transformations(基本转换算子)</h3>
 <div class="sect3">
 <h4 id="_4_3_1_map">4.3.1 map</h4>
 <div class="imageblock">
@@ -1613,14 +1625,56 @@ $ ./bin/start-cluster.sh</code></pre>
 <img src="images/map.png" alt="map">
 </div>
 </div>
+<div class="paragraph">
+<p>我们需要实现接口<code>MapFunction</code></p>
+</div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">streamMap</span> <span class="tok-k">=</span> <span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">map</span> <span class="tok-o">{</span> <span class="tok-n">x</span> <span class="tok-k">=&gt;</span> <span class="tok-n">x</span> <span class="tok-o">*</span> <span class="tok-mi">2</span> <span class="tok-o">}</span></code></pre>
+<pre>// T: the type of input elements
+// O: the type of output elements
+MapFunction[T, O]
+    &gt; map(T): O</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>例如</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">readings</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">sensorIds</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">readings</span><span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">MyMapFunction</span><span class="tok-o">)</span>
+
+<span class="tok-k">class</span> <span class="tok-nc">MyMapFunction</span> <span class="tok-k">extends</span> <span class="tok-nc">MapFunction</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span>, <span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">r</span><span class="tok-k">:</span> <span class="tok-kt">SensorReading</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">String</span> <span class="tok-o">=</span> <span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">id</span>
+<span class="tok-o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>上面的代码实现了将SensorReading的id抽取出来的操作, 当然我们更推荐匿名函数的写法。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">readings</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">sensorIds</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">readings</span><span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">r</span> <span class="tok-k">=&gt;</span> <span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">id</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
 </div>
 <div class="sect3">
 <h4 id="_4_3_2_flatmap">4.3.2 flatMap</h4>
+<div class="paragraph">
+<p>flatMap的函数签名：<code>def flatMap[A,B](as: List[A])(f: A &#8658; List[B]): List[B]</code>, 例如: <code>flatMap(List(1,2,3))(i &#8658; List(i,i))</code>结果是<code>List(1,1,2,2,3,3)</code>, <code>List("a b", "c d").flatMap(line &#8658; line.split(" "))</code>结果是<code>List(a, b, c, d)</code>。</p>
+</div>
+<div class="paragraph">
+<p>我们需要实现<code>FlatMapFunction</code>接口</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>// T: the type of input elements
+// O: the type of output elements
+FlatMapFunction[T, O]
+    &gt; flatMap(T, Collector[O]): Unit</pre>
+</div>
+</div>
 <div class="imageblock">
 <div class="content">
 <img src="images/flatmap.png" alt="flatmap">
@@ -1630,31 +1684,50 @@ $ ./bin/start-cluster.sh</code></pre>
 <p>白框不变，黑框复制，灰框过滤</p>
 </div>
 <div class="paragraph">
-<p>flatmap类似map，但可以生成0个或者1个或者多个数据</p>
+<p>flatmap类似map，但可以生成0个或者1个或者多个数据, 所以最后需要一个集合Collector来收集输出数据</p>
 </div>
 <div class="paragraph">
 <p>flatmap可以实现map和filter</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">streamFlatMap</span> <span class="tok-k">=</span> <span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">flatMap</span><span class="tok-o">{</span>
-  <span class="tok-n">x</span> <span class="tok-k">=&gt;</span> <span class="tok-n">x</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot; &quot;</span><span class="tok-o">)</span>
-<span class="tok-o">}</span></code></pre>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">def</span> <span class="tok-n">filterViaFlatMap</span><span class="tok-o">[</span><span class="tok-kt">A</span><span class="tok-o">](</span><span class="tok-n">l</span><span class="tok-k">:</span> <span class="tok-kt">List</span><span class="tok-o">[</span><span class="tok-kt">A</span><span class="tok-o">])(</span><span class="tok-n">f</span><span class="tok-k">:</span> <span class="tok-kt">A</span> <span class="tok-o">=&gt;</span> <span class="tok-nc">Boolean</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">List</span><span class="tok-o">[</span><span class="tok-kt">A</span><span class="tok-o">]</span> <span class="tok-k">=</span>
+  <span class="tok-n">flatMap</span><span class="tok-o">(</span><span class="tok-n">l</span><span class="tok-o">)(</span><span class="tok-n">a</span> <span class="tok-k">=&gt;</span> <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">f</span><span class="tok-o">(</span><span class="tok-n">a</span><span class="tok-o">))</span> <span class="tok-nc">List</span><span class="tok-o">(</span><span class="tok-n">a</span><span class="tok-o">)</span> <span class="tok-k">else</span> <span class="tok-nc">Nil</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">sentences</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">words</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">sentences</span>
+  <span class="tok-o">.</span><span class="tok-n">flatMap</span><span class="tok-o">(</span><span class="tok-n">id</span> <span class="tok-k">=&gt;</span> <span class="tok-n">id</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot; &quot;</span><span class="tok-o">))</span></code></pre>
 </div>
 </div>
 </div>
 <div class="sect3">
 <h4 id="_4_3_3_filter">4.3.3 Filter</h4>
-<div class="imageblock">
-<div class="content">
-<img src="images/filter.png" alt="filter">
-</div>
+<div class="paragraph">
+<p>我们需要实现接口<code>FilterFunction</code></p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">streamFilter</span> <span class="tok-k">=</span> <span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">{</span>
-  <span class="tok-n">x</span> <span class="tok-k">=&gt;</span> <span class="tok-n">x</span> <span class="tok-o">==</span> <span class="tok-mi">1</span>
-<span class="tok-o">}</span></code></pre>
+<pre>// T: the type of elements
+FilterFunction[T]
+    &gt; filter(T): Boolean</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>例如, 过滤出温度大于等于25度的传感器数据</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">readings</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReadings</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">filteredSensors</span> <span class="tok-k">=</span> <span class="tok-n">readings</span>
+    <span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">(</span> <span class="tok-n">r</span> <span class="tok-k">=&gt;</span>  <span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">temperature</span> <span class="tok-o">&gt;=</span> <span class="tok-mi">25</span> <span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/filter.png" alt="filter">
 </div>
 </div>
 </div>
@@ -1664,7 +1737,10 @@ $ ./bin/start-cluster.sh</code></pre>
 <div class="sect3">
 <h4 id="_4_4_1_keyby">4.4.1 keyBy</h4>
 <div class="paragraph">
-<p>分流算子 DataStream &#8594; KeyedStream</p>
+<p>分流算子, 流的类型改变了</p>
+</div>
+<div class="paragraph">
+<p>DataStream &#8594; KeyedStream</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -1711,33 +1787,42 @@ $ ./bin/start-cluster.sh</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">inputStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Int</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span>
-<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">fromElements</span><span class="tok-o">(</span>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">inputStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Int</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">fromElements</span><span class="tok-o">(</span>
   <span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">,</span> <span class="tok-mi">2</span><span class="tok-o">,</span> <span class="tok-mi">2</span><span class="tok-o">),</span> <span class="tok-o">(</span><span class="tok-mi">2</span><span class="tok-o">,</span> <span class="tok-mi">3</span><span class="tok-o">,</span> <span class="tok-mi">1</span><span class="tok-o">),</span> <span class="tok-o">(</span><span class="tok-mi">2</span><span class="tok-o">,</span> <span class="tok-mi">2</span><span class="tok-o">,</span> <span class="tok-mi">4</span><span class="tok-o">),</span> <span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">,</span> <span class="tok-mi">5</span><span class="tok-o">,</span> <span class="tok-mi">3</span><span class="tok-o">))</span>
 
 <span class="tok-k">val</span> <span class="tok-n">resultStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Int</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">inputStream</span>
-  <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
-  <span class="tok-o">.</span><span class="tok-n">sum</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span></code></pre>
+  <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span> <span class="tok-c1">// key on first field of the tuple</span>
+  <span class="tok-o">.</span><span class="tok-n">sum</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>   <span class="tok-c1">// sum the second field of the tuple in place</span></code></pre>
 </div>
 </div>
 </div>
 <div class="sect3">
 <h4 id="_4_4_3_reduce">4.4.3 Reduce</h4>
 <div class="paragraph">
-<p>KeyedStream &#8594; DataStream：一个分组数据流的聚合操作，合并当前的元素和上次聚合的结果，产生一个新的值，返回的流中包含每一次聚合的结果，而不是只返回最后一次聚合的最终结果。</p>
+<p>我们需要实现<code>ReduceFunction</code>接口</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">inputStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">List</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])]</span> <span class="tok-k">=</span>
-<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">fromElements</span><span class="tok-o">(</span>
-  <span class="tok-o">(</span><span class="tok-s">&quot;en&quot;</span><span class="tok-o">,</span> <span class="tok-nc">List</span><span class="tok-o">(</span><span class="tok-s">&quot;tea&quot;</span><span class="tok-o">)),</span> <span class="tok-o">(</span><span class="tok-s">&quot;fr&quot;</span><span class="tok-o">,</span> <span class="tok-nc">List</span><span class="tok-o">(</span><span class="tok-s">&quot;vin&quot;</span><span class="tok-o">)),</span> <span class="tok-o">(</span><span class="tok-s">&quot;en&quot;</span><span class="tok-o">,</span> <span class="tok-nc">List</span><span class="tok-o">(</span><span class="tok-s">&quot;cake&quot;</span><span class="tok-o">))</span>
-<span class="tok-o">)</span>
-
-<span class="tok-k">val</span> <span class="tok-n">resultStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">List</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])]</span> <span class="tok-k">=</span>
-<span class="tok-n">inputStream</span>
-  <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
-  <span class="tok-o">.</span><span class="tok-n">reduce</span><span class="tok-o">((</span><span class="tok-n">x</span><span class="tok-o">,</span> <span class="tok-n">y</span><span class="tok-o">)</span> <span class="tok-k">=&gt;</span> <span class="tok-n">x</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-n">x</span><span class="tok-o">.</span><span class="tok-n">_2</span> <span class="tok-o">:::</span> <span class="tok-n">y</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">)</span></code></pre>
+<pre>// T: the element type
+ReduceFunction[T]
+    &gt; reduce(T, T): T</pre>
 </div>
+</div>
+<div class="paragraph">
+<p>流的类型转换, <code>KeyedStream &#8594; DataStream</code>：一个分组数据流的聚合操作，合并当前的元素和上次聚合的结果，产生一个新的值，返回的流中包含每一次聚合的结果，而不是只返回最后一次聚合的最终结果。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">inputStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">List</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])]</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">fromElements</span><span class="tok-o">(</span>
+  <span class="tok-o">(</span><span class="tok-s">&quot;en&quot;</span><span class="tok-o">,</span> <span class="tok-nc">List</span><span class="tok-o">(</span><span class="tok-s">&quot;tea&quot;</span><span class="tok-o">)),</span> <span class="tok-o">(</span><span class="tok-s">&quot;fr&quot;</span><span class="tok-o">,</span> <span class="tok-nc">List</span><span class="tok-o">(</span><span class="tok-s">&quot;vin&quot;</span><span class="tok-o">)),</span> <span class="tok-o">(</span><span class="tok-s">&quot;en&quot;</span><span class="tok-o">,</span> <span class="tok-nc">List</span><span class="tok-o">(</span><span class="tok-s">&quot;cake&quot;</span><span class="tok-o">)))</span>
+
+<span class="tok-k">val</span> <span class="tok-n">resultStream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">List</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])]</span> <span class="tok-k">=</span> <span class="tok-n">inputStream</span>
+  <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+  <span class="tok-o">.</span><span class="tok-n">reduce</span><span class="tok-o">((</span><span class="tok-n">x</span><span class="tok-o">,</span> <span class="tok-n">y</span><span class="tok-o">)</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span><span class="tok-n">x</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-n">x</span><span class="tok-o">.</span><span class="tok-n">_2</span> <span class="tok-o">:::</span> <span class="tok-n">y</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">))</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The lambda reduce function forwards the first tuple field (the key field) and concatenates the List[String] values of the second tuple field.</p>
 </div>
 </div>
 </div>
@@ -1769,7 +1854,7 @@ $ ./bin/start-cluster.sh</code></pre>
 <p>联合两条流的事件是非常常见的流处理需求。例如监控一片森林然后发出高危的火警警报。报警的Application接收两条流，一条是温度传感器传回来的数据，一条是烟雾传感器传回来的数据。当两条流都超过各自的阈值时，报警。</p>
 </div>
 <div class="paragraph">
-<p>DataStream.connect()方法就实现了这个功能。DataStream &#8594; ConnectedStreams。</p>
+<p>DataStream.connect()方法就实现了这个功能。流的类型转换: <code>DataStream &#8594; ConnectedStreams</code>。</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1828,18 +1913,43 @@ CoFlatMapFunction[IN1, IN2, OUT]
 <span class="tok-k">val</span> <span class="tok-n">two</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
 
 <span class="tok-c1">// keyBy two connected streams</span>
-<span class="tok-k">val</span> <span class="tok-n">keyedConnect1</span><span class="tok-k">:</span> <span class="tok-kt">ConnectedStreams</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Long</span><span class="tok-o">)</span>, <span class="tok-o">(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span><span class="tok-o">)]</span> <span class="tok-k">=</span>
-<span class="tok-n">one</span>
+<span class="tok-k">val</span> <span class="tok-n">keyedConnect1</span><span class="tok-k">:</span> <span class="tok-kt">ConnectedStreams</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Long</span><span class="tok-o">)</span>, <span class="tok-o">(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">one</span>
   <span class="tok-o">.</span><span class="tok-n">connect</span><span class="tok-o">(</span><span class="tok-n">two</span><span class="tok-o">)</span>
   <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">,</span> <span class="tok-mi">0</span><span class="tok-o">)</span> <span class="tok-c1">// key both input streams on first attribute</span>
 
 <span class="tok-c1">// alternative: connect two keyed streams</span>
-<span class="tok-k">val</span> <span class="tok-n">keyedConnect2</span><span class="tok-k">:</span> <span class="tok-kt">ConnectedStreams</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Long</span><span class="tok-o">)</span>, <span class="tok-o">(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span><span class="tok-o">)]</span> <span class="tok-k">=</span>
-<span class="tok-n">one</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">).</span><span class="tok-n">connect</span><span class="tok-o">(</span><span class="tok-n">two</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">))</span></code></pre>
+<span class="tok-k">val</span> <span class="tok-n">keyedConnect2</span><span class="tok-k">:</span> <span class="tok-kt">ConnectedStreams</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Long</span><span class="tok-o">)</span>, <span class="tok-o">(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">one</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">)</span>
+  <span class="tok-o">.</span><span class="tok-n">connect</span><span class="tok-o">(</span><span class="tok-n">two</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">))</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>以上程序其实相当于实现了SQL中的JOIN语义。</p>
+<p>Regardless of whether you keyBy() ConnectedStreams or you connect() two KeyedStreams, the connect() transformation will route all events from both streams with the same key to the same operator instance. Note that the keys of both streams should refer to the same class of entities, just like a join predicate in a SQL query. An operator that is applied on a connected and keyed stream has access to keyed state.</p>
+</div>
+<div class="paragraph">
+<p><strong>broadcast</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">first</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Long</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">val</span> <span class="tok-n">second</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+
+<span class="tok-c1">// connect streams with broadcast</span>
+<span class="tok-k">val</span> <span class="tok-n">keyedConnect</span><span class="tok-k">:</span> <span class="tok-kt">ConnectedStreams</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Long</span><span class="tok-o">)</span>, <span class="tok-o">(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">first</span>
+  <span class="tok-c1">// broadcast second input stream</span>
+  <span class="tok-o">.</span><span class="tok-n">connect</span><span class="tok-o">(</span><span class="tok-n">second</span><span class="tok-o">.</span><span class="tok-n">broadcast</span><span class="tok-o">())</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The example shows how to connect a (nonkeyed) DataStream with a broadcasted stream.</p>
+</div>
+<div class="paragraph">
+<p>All events of the broadcasted stream are replicated and sent to all parallel operator instances of the subsequent processing function. The events of the nonbroadcasted stream are simply forwarded. Hence, the elements of both input streams can be jointly processed.</p>
+</div>
+<div class="paragraph">
+<p>一条流如果broadcast, 将会广播到所有的分布式节点，如果不广播，将会向前发送，并不会广播。</p>
+</div>
+<div class="paragraph">
+<p>详细请参考: <a href="https://www.ververica.com/blog/a-practical-guide-to-broadcast-state-in-apache-flink" class="bare">https://www.ververica.com/blog/a-practical-guide-to-broadcast-state-in-apache-flink</a></p>
 </div>
 </div>
 <div class="sect3">
@@ -1847,13 +1957,20 @@ CoFlatMapFunction[IN1, IN2, OUT]
 <div class="paragraph">
 <p>Split是Union的反函数。</p>
 </div>
+<div class="listingblock">
+<div class="content">
+<pre>// IN: the type of the split elements
+OutputSelector[IN]
+    &gt; select(IN): Iterable[String]</pre>
+</div>
+</div>
 <div class="imageblock">
 <div class="content">
 <img src="images/split.png" alt="split">
 </div>
 </div>
 <div class="paragraph">
-<p>DataStream &#8594; SplitStream</p>
+<p>流的类型转换: <code>DataStream &#8594; SplitStream</code></p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1868,7 +1985,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="paragraph">
-<p>Connect与 Union 区别：
+<p>Connect与Union区别：
 1 Union之前两个流的类型必须是一样，Connect可以不一样，在之后的CoMapFunction中再去调整成为一样的。
 2 Connect只能操作两个流，Union可以操作多个。</p>
 </div>
@@ -1877,7 +1994,10 @@ CoFlatMapFunction[IN1, IN2, OUT]
 <div class="sect2">
 <h3 id="_4_6_支持的数据类型">4.6 支持的数据类型</h3>
 <div class="paragraph">
-<p><strong>Primitives</strong></p>
+<p><strong>Primitives(基础数据类型)</strong></p>
+</div>
+<div class="paragraph">
+<p>所有的基础数据类型都支持，Int, Double, Long, String, &#8230;&#8203;</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2183,6 +2303,62 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_4_10_distribution_transformations分布式转换算子">4.10 Distribution Transformations(分布式转换算子)</h3>
+<div class="paragraph">
+<p><strong>Random</strong></p>
+</div>
+<div class="paragraph">
+<p>The random data exchange strategy is implemented by the DataStream.shuffle() method. The method distributes records randomly according to a uniform distribution to the parallel tasks of the following operator.</p>
+</div>
+<div class="paragraph">
+<p><strong>Round-Robin</strong></p>
+</div>
+<div class="paragraph">
+<p>The rebalance() method partitions the input stream so that events are evenly distributed to successor tasks in a round-robin fashion.</p>
+</div>
+<div class="paragraph">
+<p><strong>Rescale</strong></p>
+</div>
+<div class="paragraph">
+<p>The rescale() method also distributes events in a round-robin fashion, but only to a subset of successor tasks. In essence, the rescale partitioning strategy offers a way to perform a lightweight load rebalance when the number of sender and receiver tasks is not the same. The rescale transformation is more efficient if the number of receiver tasks is a multitude of the number of sender tasks or vice versa.</p>
+</div>
+<div class="paragraph">
+<p>The fundamental difference between rebalance() and rescale() lies in the way task connections are formed. While rebalance() will create communication channels between all sending tasks to all receiving tasks, rescale() will only create channels from each task to some of the tasks of the downstream operator.</p>
+</div>
+<div class="paragraph">
+<p><strong>Broadcast</strong></p>
+</div>
+<div class="paragraph">
+<p>The broadcast() method replicates the input data stream so that all events are sent to all parallel tasks of the downstream operator.</p>
+</div>
+<div class="paragraph">
+<p><strong>Global</strong></p>
+</div>
+<div class="paragraph">
+<p>The global() method sends all events of the input data stream to the first parallel task of the downstream operator. This partitioning strategy must be used with care, as routing all events to the same task might impact application performance.</p>
+</div>
+<div class="paragraph">
+<p><strong>Custom</strong></p>
+</div>
+<div class="paragraph">
+<p>When none of the predefined partitioning strategies is suitable, you can define your own by using the partitionCustom() method. This method receives a Partitioner object that implements the partitioning logic and the field or key position on which the stream is to be partitioned. The following example partitions a stream of integers so that all negative numbers are sent to the first task and all other numbers are sent to a random task:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">numbers</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-n">numbers</span><span class="tok-o">.</span><span class="tok-n">partitionCustom</span><span class="tok-o">(</span><span class="tok-n">myPartitioner</span><span class="tok-o">,</span> <span class="tok-mi">0</span><span class="tok-o">)</span>
+
+<span class="tok-k">object</span> <span class="tok-nc">myPartitioner</span> <span class="tok-k">extends</span> <span class="tok-nc">Partitioner</span><span class="tok-o">[</span><span class="tok-kt">Int</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+  <span class="tok-k">val</span> <span class="tok-n">r</span> <span class="tok-k">=</span> <span class="tok-n">scala</span><span class="tok-o">.</span><span class="tok-n">util</span><span class="tok-o">.</span><span class="tok-nc">Random</span>
+
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">partition</span><span class="tok-o">(</span><span class="tok-n">key</span><span class="tok-k">:</span> <span class="tok-kt">Int</span><span class="tok-o">,</span> <span class="tok-n">numPartitions</span><span class="tok-k">:</span> <span class="tok-kt">Int</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Int</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">key</span> <span class="tok-o">&lt;</span> <span class="tok-mi">0</span><span class="tok-o">)</span> <span class="tok-mi">0</span> <span class="tok-k">else</span> <span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">nextInt</span><span class="tok-o">(</span><span class="tok-n">numPartitions</span><span class="tok-o">)</span>
+  <span class="tok-o">}</span>
+<span class="tok-o">}</span></code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -2198,10 +2374,18 @@ CoFlatMapFunction[IN1, IN2, OUT]
 <img src="images/event_ingestion_processing_time.svg" alt="event ingestion processing time">
 </div>
 </div>
-<div class="paragraph">
-<p><strong>Event Time</strong>：是事件创建的时间。它通常由事件中的时间戳描述，例如采集的日志数据中，每一条日志都会记录自己的生成时间，Flink通过时间戳分配器访问事件时间戳。
-<strong>Ingestion Time</strong>：是数据进入Flink的时间。
-<strong>Processing Time</strong>：是每一个执行基于时间操作的算子的本地系统时间，与机器相关，默认的时间属性就是Processing Time。</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Event Time</strong>：是事件创建的时间。它通常由事件中的时间戳描述，例如采集的日志数据中，每一条日志都会记录自己的生成时间，Flink通过时间戳分配器访问事件时间戳。</p>
+</li>
+<li>
+<p><strong>Ingestion Time</strong>：是数据进入Flink的时间。</p>
+</li>
+<li>
+<p><strong>Processing Time</strong>：是每一个执行基于时间操作的算子的本地系统时间，与机器相关，默认的时间属性就是Processing Time。</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
 <p><strong>著名的星球大战的例子</strong></p>
@@ -5912,7 +6096,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2019-06-18 12:25:24 +0800
+Last updated 2019-06-19 12:51:04 +0800
 </div>
 </div>
 <style>
