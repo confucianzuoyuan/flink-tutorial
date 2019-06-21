@@ -512,14 +512,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_4_3_3_filter">4.3.3 Filter</a></li>
 </ul>
 </li>
-<li><a href="#_4_4_keyedstream_transformations">4.4 KeyedStream Transformations</a>
+<li><a href="#_4_4_keyedstream_transformations键控流转换算子">4.4 KeyedStream Transformations(键控流转换算子)</a>
 <ul class="sectlevel3">
 <li><a href="#_4_4_1_keyby">4.4.1 keyBy</a></li>
 <li><a href="#_4_4_2_rolling_aggregations">4.4.2 Rolling Aggregations</a></li>
 <li><a href="#_4_4_3_reduce">4.4.3 Reduce</a></li>
 </ul>
 </li>
-<li><a href="#_4_5_multistream_transformations">4.5 Multistream Transformations</a>
+<li><a href="#_4_5_multistream_transformations多流转换算子">4.5 Multistream Transformations(多流转换算子)</a>
 <ul class="sectlevel3">
 <li><a href="#_4_5_1_union">4.5.1 Union</a></li>
 <li><a href="#_4_5_2_connect_comap_and_coflatmap">4.5.2 Connect, Comap and Coflatmap</a></li>
@@ -575,17 +575,17 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_6_2_3_coprocessfunction">6.2.3 CoProcessFunction</a></li>
 </ul>
 </li>
-<li><a href="#_6_3_window_operators">6.3 Window Operators</a>
+<li><a href="#_6_3_window_operators窗口操作符">6.3 Window Operators(窗口操作符)</a>
 <ul class="sectlevel3">
-<li><a href="#_6_3_1_define_window_operators">6.3.1 define window operators</a></li>
-<li><a href="#_6_3_2_内置的window_assigner">6.3.2 内置的window assigner</a>
+<li><a href="#_6_3_1_define_window_operators定义窗口操作符">6.3.1 define window operators(定义窗口操作符)</a></li>
+<li><a href="#_6_3_2_内置的window_assigner窗口分配器">6.3.2 内置的window assigner(窗口分配器)</a>
 <ul class="sectlevel4">
-<li><a href="#_6_3_2_1_tumbling_windows">6.3.2.1 tumbling windows</a></li>
-<li><a href="#_6_3_2_2_sliding_window">6.3.2.2 sliding window</a></li>
-<li><a href="#_6_3_2_3_session_windows">6.3.2.3 session windows</a></li>
+<li><a href="#_6_3_2_1_tumbling_windows滚动窗口">6.3.2.1 tumbling windows(滚动窗口)</a></li>
+<li><a href="#_6_3_2_2_sliding_window滑动窗口">6.3.2.2 sliding window(滑动窗口)</a></li>
+<li><a href="#_6_3_2_3_session_windows会话窗口">6.3.2.3 session windows(会话窗口)</a></li>
 </ul>
 </li>
-<li><a href="#_6_3_3_applying_functions_on_windows">6.3.3 Applying Functions on Windows</a>
+<li><a href="#_6_3_3_applying_functions_on_windows在窗口上应用函数">6.3.3 Applying Functions on Windows(在窗口上应用函数)</a>
 <ul class="sectlevel4">
 <li><a href="#_6_3_3_1_reducefunction">6.3.3.1 ReduceFunction</a></li>
 <li><a href="#_6_3_3_2_aggregatefunction">6.3.3.2 AggregateFunction</a></li>
@@ -609,6 +609,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
+<li><a href="#_7_4_选择一个状态后端state_backend">7.4 选择一个状态后端(state backend)</a></li>
 </ul>
 </li>
 <li><a href="#_第八章_dataflow模型">第八章 Dataflow模型</a>
@@ -1162,50 +1163,19 @@ quickstart/
 <div class="listingblock">
 <div class="title">StreamingJob.scala</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.java.utils.ParameterTool</span>
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala._</span>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala._</span> <span class="tok-c1">// 隐式类型转换</span>
 <span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.windowing.time.Time</span>
 
-<span class="tok-cm">/**</span>
-<span class="tok-cm">  * Implements a streaming windowed version of the &quot;WordCount&quot; program.</span>
-<span class="tok-cm">  *</span>
-<span class="tok-cm">  * This program connects to a server socket and reads strings from the socket.</span>
-<span class="tok-cm">  * The easiest way to try this out is to open a text sever (at port 12345)</span>
-<span class="tok-cm">  * using the &#39;&#39;netcat&#39;&#39; tool via</span>
-<span class="tok-cm">  * {{{</span>
-<span class="tok-cm">  * nc -l 12345</span>
-<span class="tok-cm">  * }}}</span>
-<span class="tok-cm">  * and run this example with the hostname and the port as arguments..</span>
-<span class="tok-cm">  */</span>
 <span class="tok-k">object</span> <span class="tok-nc">StreamingJob</span> <span class="tok-o">{</span>
 
   <span class="tok-cm">/** Main program method */</span>
   <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span> <span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
 
-    <span class="tok-c1">// the host and the port to connect to</span>
-    <span class="tok-k">var</span> <span class="tok-n">hostname</span><span class="tok-k">:</span> <span class="tok-kt">String</span> <span class="tok-o">=</span> <span class="tok-s">&quot;localhost&quot;</span>
-    <span class="tok-k">var</span> <span class="tok-n">port</span><span class="tok-k">:</span> <span class="tok-kt">Int</span> <span class="tok-o">=</span> <span class="tok-mi">0</span>
-
-    <span class="tok-k">try</span> <span class="tok-o">{</span>
-      <span class="tok-k">val</span> <span class="tok-n">params</span> <span class="tok-k">=</span> <span class="tok-nc">ParameterTool</span><span class="tok-o">.</span><span class="tok-n">fromArgs</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-o">)</span>
-      <span class="tok-n">hostname</span> <span class="tok-k">=</span> <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">params</span><span class="tok-o">.</span><span class="tok-n">has</span><span class="tok-o">(</span><span class="tok-s">&quot;hostname&quot;</span><span class="tok-o">))</span> <span class="tok-n">params</span><span class="tok-o">.</span><span class="tok-n">get</span><span class="tok-o">(</span><span class="tok-s">&quot;hostname&quot;</span><span class="tok-o">)</span> <span class="tok-k">else</span> <span class="tok-s">&quot;localhost&quot;</span>
-      <span class="tok-n">port</span> <span class="tok-k">=</span> <span class="tok-n">params</span><span class="tok-o">.</span><span class="tok-n">getInt</span><span class="tok-o">(</span><span class="tok-s">&quot;port&quot;</span><span class="tok-o">)</span>
-    <span class="tok-o">}</span> <span class="tok-k">catch</span> <span class="tok-o">{</span>
-      <span class="tok-k">case</span> <span class="tok-n">e</span><span class="tok-k">:</span> <span class="tok-kt">Exception</span> <span class="tok-o">=&gt;</span> <span class="tok-o">{</span>
-        <span class="tok-nc">System</span><span class="tok-o">.</span><span class="tok-n">err</span><span class="tok-o">.</span><span class="tok-n">println</span><span class="tok-o">(</span><span class="tok-s">&quot;No port specified. Please run &#39;SocketWindowWordCount &quot;</span> <span class="tok-o">+</span>
-          <span class="tok-s">&quot;--hostname &lt;hostname&gt; --port &lt;port&gt;&#39;, where hostname (localhost by default) and port &quot;</span> <span class="tok-o">+</span>
-          <span class="tok-s">&quot;is the address of the text server&quot;</span><span class="tok-o">)</span>
-        <span class="tok-nc">System</span><span class="tok-o">.</span><span class="tok-n">err</span><span class="tok-o">.</span><span class="tok-n">println</span><span class="tok-o">(</span><span class="tok-s">&quot;To start a simple text server, run &#39;netcat -l &lt;port&gt;&#39; &quot;</span> <span class="tok-o">+</span>
-          <span class="tok-s">&quot;and type the input text into the command line&quot;</span><span class="tok-o">)</span>
-        <span class="tok-k">return</span>
-      <span class="tok-o">}</span>
-    <span class="tok-o">}</span>
-
     <span class="tok-c1">// get the execution environment</span>
     <span class="tok-k">val</span> <span class="tok-n">env</span><span class="tok-k">:</span> <span class="tok-kt">StreamExecutionEnvironment</span> <span class="tok-o">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
 
     <span class="tok-c1">// get input data by connecting to the socket</span>
-    <span class="tok-k">val</span> <span class="tok-n">text</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">socketTextStream</span><span class="tok-o">(</span><span class="tok-n">hostname</span><span class="tok-o">,</span> <span class="tok-n">port</span><span class="tok-o">,</span> <span class="tok-sc">&#39;\n&#39;</span><span class="tok-o">)</span>
+    <span class="tok-k">val</span> <span class="tok-n">text</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">socketTextStream</span><span class="tok-o">(</span><span class="tok-s">&quot;localhost&quot;</span><span class="tok-o">,</span> <span class="tok-mi">9999</span><span class="tok-o">,</span> <span class="tok-sc">&#39;\n&#39;</span><span class="tok-o">)</span>
 
     <span class="tok-c1">// parse the data, group it, window it, and aggregate the counts</span>
     <span class="tok-k">val</span> <span class="tok-n">windowCounts</span> <span class="tok-k">=</span> <span class="tok-n">text</span>
@@ -1231,18 +1201,6 @@ quickstart/
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
 <td>flatMap的函数签名：<code>def flatMap[A,B](as: List[A])(f: A &#8658; List[B]): List[B]</code>, 例如: <code>flatMap(List(1,2,3))(i &#8658; List(i,i))</code>结果是<code>List(1,1,2,2,3,3)</code>, <code>List("a b", "c d").flatMap(line &#8658; line.split(" "))</code>结果是<code>List(a, b, c, d)</code>。</td>
-</tr>
-</table>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-与Flink无关，思考一下如何使用flatMap实现filter？
-</td>
 </tr>
 </table>
 </div>
@@ -1733,7 +1691,7 @@ FilterFunction[T]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_4_4_keyedstream_transformations">4.4 KeyedStream Transformations</h3>
+<h3 id="_4_4_keyedstream_transformations键控流转换算子">4.4 KeyedStream Transformations(键控流转换算子)</h3>
 <div class="sect3">
 <h4 id="_4_4_1_keyby">4.4.1 keyBy</h4>
 <div class="paragraph">
@@ -1827,7 +1785,7 @@ ReduceFunction[T]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_4_5_multistream_transformations">4.5 Multistream Transformations</h3>
+<h3 id="_4_5_multistream_transformations多流转换算子">4.5 Multistream Transformations(多流转换算子)</h3>
 <div class="sect3">
 <h4 id="_4_5_1_union">4.5.1 Union</h4>
 <div class="imageblock">
@@ -2396,7 +2354,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="paragraph">
-<p>例如，一条日志进入Flink的时间为`2017-11-12 10:00:00.123`，到达Window的系统时间为`2017-11-12 10:00:01.234`，日志的内容如下:</p>
+<p>例如，一条日志进入Flink的时间为<code>2017-11-12 10:00:00.123</code>，到达Window的系统时间为<code>2017-11-12 10:00:01.234</code>，日志的内容如下:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2423,7 +2381,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="paragraph">
-<p>如果想设置为Processing Time，将TimeCharacteristic.EventTime替换为TimeCharacteristic.ProcessingTime即可</p>
+<p>如果想设置为Processing Time，将TimeCharacteristic.EventTime替换为TimeCharacteristic.ProcessingTime即可。</p>
 </div>
 </div>
 <div class="sect2">
@@ -2442,11 +2400,15 @@ OutputSelector[IN]
 <div class="paragraph">
 <p>Window可以分成两类：</p>
 </div>
-<div class="paragraph">
+<div class="ulist">
+<ul>
+<li>
 <p><strong>CountWindow</strong>：按照指定的数据条数生成一个Window，与时间无关。</p>
-</div>
-<div class="paragraph">
+</li>
+<li>
 <p><strong>TimeWindow</strong>：按照时间生成Window。</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
 <p>对于TimeWindow，可以根据窗口实现原理的不同分成三类：滚动窗口(Tumbling Window)、滑动窗口(Sliding Window)和会话窗口(Session Window)。</p>
@@ -2692,7 +2654,7 @@ OutputSelector[IN]
 <p><strong>Assigner with periodic watermarks</strong></p>
 </div>
 <div class="paragraph">
-<p>周期性的生成水印：系统会周期性的将水印插入到流中(水印也是一种特殊的事件！)。默认周期是200毫秒。可以使用ExecutionConfig.setAutoWatermarkInterval()方法进行设置。</p>
+<p>周期性的生成水印：系统会周期性的将水印插入到流中(水印也是一种特殊的事件!)。默认周期是200毫秒。可以使用ExecutionConfig.setAutoWatermarkInterval()方法进行设置。</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2724,9 +2686,6 @@ OutputSelector[IN]
   <span class="tok-o">}</span>
 <span class="tok-o">}</span></code></pre>
 </div>
-</div>
-<div class="paragraph">
-<p>相当于实现了<code>BoundedOutOfOrdernessTimestampExtractor[SensorReading](Time.milliseconds(1000))</code></p>
 </div>
 <div class="paragraph">
 <p>如果我们事先得知数据流的时间戳是单调递增的，也就是说没有乱序。我们可以使用<code>assignAscendingTimestamps</code>，方法会直接使用数据的时间戳生成水印。</p>
@@ -2858,22 +2817,22 @@ OutputSelector[IN]
 <div class="ulist">
 <ul>
 <li>
-<p>currentProcessingTime(): Long 返回当前处理时间</p>
+<p><code>currentProcessingTime(): Long</code> 返回当前处理时间</p>
 </li>
 <li>
-<p>currentWatermark(): Long 返回当前水印的时间戳</p>
+<p><code>currentWatermark(): Long</code> 返回当前水印的时间戳</p>
 </li>
 <li>
-<p>registerProcessingTimeTimer(timestamp: Long): Unit 会注册当前key的processing time的timer。当processing time到达定时时间时，触发timer。</p>
+<p><code>registerProcessingTimeTimer(timestamp: Long): Unit</code> 会注册当前key的processing time的timer。当processing time到达定时时间时，触发timer。</p>
 </li>
 <li>
-<p>registerEventTimeTimer(timestamp: Long): Unit 会注册当前key的event time timer。当水印大于等于定时器注册的时间时，触发定时器执行回调函数。</p>
+<p><code>registerEventTimeTimer(timestamp: Long): Unit</code> 会注册当前key的event time timer。当水印大于等于定时器注册的时间时，触发定时器执行回调函数。</p>
 </li>
 <li>
-<p>deleteProcessingTimeTimer(timestamp: Long): Unit 删除之前注册处理时间定时器。如果没有这个时间戳的定时器，则不执行。</p>
+<p><code>deleteProcessingTimeTimer(timestamp: Long): Unit</code> 删除之前注册处理时间定时器。如果没有这个时间戳的定时器，则不执行。</p>
 </li>
 <li>
-<p>deleteEventTimeTimer(timestamp: Long): Unit 删除之前注册的事件时间定时器，如果没有此时间戳的定时器，则不执行。</p>
+<p><code>deleteEventTimeTimer(timestamp: Long): Unit</code> 删除之前注册的事件时间定时器，如果没有此时间戳的定时器，则不执行。</p>
 </li>
 </ul>
 </div>
@@ -2908,7 +2867,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="paragraph">
-<p>看一下TempIncreaseAlertFunction如何实现</p>
+<p>看一下TempIncreaseAlertFunction如何实现, 程序中使用了<code>ValueState</code>这样一个状态变量, 后面会详细讲解。</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2927,18 +2886,23 @@ OutputSelector[IN]
                               <span class="tok-n">ctx</span><span class="tok-k">:</span> <span class="tok-kt">KeyedProcessFunction</span><span class="tok-o">[</span><span class="tok-kt">String</span>, <span class="tok-kt">SensorReading</span>, <span class="tok-kt">String</span><span class="tok-o">]</span><span class="tok-k">#</span><span class="tok-nc">Context</span><span class="tok-o">,</span>
                               <span class="tok-n">out</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
     <span class="tok-c1">// get previous temperature</span>
+    <span class="tok-c1">// 取出上一次的温度</span>
     <span class="tok-k">val</span> <span class="tok-n">prevTemp</span> <span class="tok-k">=</span> <span class="tok-n">lastTemp</span><span class="tok-o">.</span><span class="tok-n">value</span><span class="tok-o">()</span>
     <span class="tok-c1">// update last temperature</span>
+    <span class="tok-c1">// 将当前温度更新到上一次的温度这个变量中</span>
     <span class="tok-n">lastTemp</span><span class="tok-o">.</span><span class="tok-n">update</span><span class="tok-o">(</span><span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">temperature</span><span class="tok-o">)</span>
 
     <span class="tok-k">val</span> <span class="tok-n">curTimerTimestamp</span> <span class="tok-k">=</span> <span class="tok-n">currentTimer</span><span class="tok-o">.</span><span class="tok-n">value</span><span class="tok-o">()</span>
     <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">prevTemp</span> <span class="tok-o">==</span> <span class="tok-mf">0.0</span> <span class="tok-o">||</span> <span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">temperature</span> <span class="tok-o">&lt;</span> <span class="tok-n">prevTemp</span><span class="tok-o">)</span> <span class="tok-o">{</span>
       <span class="tok-c1">// temperature decreased; delete current timer</span>
+      <span class="tok-c1">// 温度下降或者是第一个温度值，删除定时器</span>
       <span class="tok-n">ctx</span><span class="tok-o">.</span><span class="tok-n">timerService</span><span class="tok-o">().</span><span class="tok-n">deleteProcessingTimeTimer</span><span class="tok-o">(</span><span class="tok-n">curTimerTimestamp</span><span class="tok-o">)</span>
+      <span class="tok-c1">// 清空状态变量</span>
       <span class="tok-n">currentTimer</span><span class="tok-o">.</span><span class="tok-n">clear</span><span class="tok-o">()</span>
     <span class="tok-o">}</span> <span class="tok-k">else</span> <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">temperature</span> <span class="tok-o">&gt;</span> <span class="tok-n">prevTemp</span> <span class="tok-o">&amp;&amp;</span> <span class="tok-n">curTimerTimestamp</span> <span class="tok-o">==</span> <span class="tok-mi">0</span><span class="tok-o">)</span> <span class="tok-o">{</span>
       <span class="tok-c1">// temperature increased and we have not set a timer yet</span>
       <span class="tok-c1">// set processing time timer for now + 1 second</span>
+      <span class="tok-c1">// 温度上升且我们并没有设置定时器</span>
       <span class="tok-k">val</span> <span class="tok-n">timerTs</span> <span class="tok-k">=</span> <span class="tok-n">ctx</span><span class="tok-o">.</span><span class="tok-n">timerService</span><span class="tok-o">().</span><span class="tok-n">currentProcessingTime</span><span class="tok-o">()</span> <span class="tok-o">+</span> <span class="tok-mi">1000</span>
       <span class="tok-n">ctx</span><span class="tok-o">.</span><span class="tok-n">timerService</span><span class="tok-o">().</span><span class="tok-n">registerProcessingTimeTimer</span><span class="tok-o">(</span><span class="tok-n">timerTs</span><span class="tok-o">)</span>
       <span class="tok-c1">// remember current timer</span>
@@ -2983,6 +2947,7 @@ OutputSelector[IN]
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">class</span> <span class="tok-nc">FreezingMonitor</span> <span class="tok-k">extends</span> <span class="tok-nc">ProcessingFunction</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span>, <span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-o">{</span>
   <span class="tok-c1">// define a side output tag</span>
+  <span class="tok-c1">// 定义一个侧输出标签</span>
   <span class="tok-k">lazy</span> <span class="tok-k">val</span> <span class="tok-n">freezingAlarmOutput</span><span class="tok-k">:</span> <span class="tok-kt">OutputTag</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span>
     <span class="tok-k">new</span> <span class="tok-nc">OutputTag</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">](</span><span class="tok-s">&quot;freezing-alarms&quot;</span><span class="tok-o">)</span>
 
@@ -3003,7 +2968,7 @@ OutputSelector[IN]
 <div class="sect3">
 <h4 id="_6_2_3_coprocessfunction">6.2.3 CoProcessFunction</h4>
 <div class="paragraph">
-<p>对于两条输入流，DataStream API提供了CoProcessFunction这样的low-level操作。CoProcessFunction提供了操作每一个输入流的方法: processElement1()和processElement2()。类似于ProcessFunction，这两种方法都通过Context对象来调用。这个Context对象可以访问事件数据，定时器时间戳，TimerService，以及side outputs。CoProcessFunction也提供了onTimer()回调函数。下面的例子展示了如何使用CoProcessFunction来合并两条流。</p>
+<p>对于两条输入流，DataStream API提供了<code>CoProcessFunction</code>这样的low-level操作。<code>CoProcessFunction</code>提供了操作每一个输入流的方法: <code>processElement1()</code>和<code>processElement2()</code>。类似于<code>ProcessFunction</code>，这两种方法都通过<code>Context</code>对象来调用。这个<code>Context</code>对象可以访问事件数据，定时器时间戳，TimerService，以及side outputs。<code>CoProcessFunction</code>也提供了<code>onTimer()</code>回调函数。下面的例子展示了如何使用<code>CoProcessFunction</code>来合并两条流。</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -3078,9 +3043,9 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_6_3_window_operators">6.3 Window Operators</h3>
+<h3 id="_6_3_window_operators窗口操作符">6.3 Window Operators(窗口操作符)</h3>
 <div class="sect3">
-<h4 id="_6_3_1_define_window_operators">6.3.1 define window operators</h4>
+<h4 id="_6_3_1_define_window_operators定义窗口操作符">6.3.1 define window operators(定义窗口操作符)</h4>
 <div class="paragraph">
 <p>window算子可以在keyed stream或者nokeyed stream上面使用。</p>
 </div>
@@ -3114,9 +3079,9 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_6_3_2_内置的window_assigner">6.3.2 内置的window assigner</h4>
+<h4 id="_6_3_2_内置的window_assigner窗口分配器">6.3.2 内置的window assigner(窗口分配器)</h4>
 <div class="sect4">
-<h5 id="_6_3_2_1_tumbling_windows">6.3.2.1 tumbling windows</h5>
+<h5 id="_6_3_2_1_tumbling_windows滚动窗口">6.3.2.1 tumbling windows(滚动窗口)</h5>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">sensorData</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
@@ -3134,6 +3099,7 @@ OutputSelector[IN]
   <span class="tok-o">.</span><span class="tok-n">process</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">TemperatureAverager</span><span class="tok-o">)</span>
 
 <span class="tok-c1">// 其实就是之前的</span>
+<span class="tok-c1">// shortcut for window.(TumblingEventTimeWindows.of(size))</span>
 <span class="tok-k">val</span> <span class="tok-n">avgTemp</span> <span class="tok-k">=</span> <span class="tok-n">sensorData</span>
   <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">id</span><span class="tok-o">)</span>
   <span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">))</span>
@@ -3145,7 +3111,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect4">
-<h5 id="_6_3_2_2_sliding_window">6.3.2.2 sliding window</h5>
+<h5 id="_6_3_2_2_sliding_window滑动窗口">6.3.2.2 sliding window(滑动窗口)</h5>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">slidingAvgTemp</span> <span class="tok-k">=</span> <span class="tok-n">sensorData</span>
@@ -3166,7 +3132,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect4">
-<h5 id="_6_3_2_3_session_windows">6.3.2.3 session windows</h5>
+<h5 id="_6_3_2_3_session_windows会话窗口">6.3.2.3 session windows(会话窗口)</h5>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">sessionWindows</span> <span class="tok-k">=</span> <span class="tok-n">sensorData</span>
@@ -3183,7 +3149,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_6_3_3_applying_functions_on_windows">6.3.3 Applying Functions on Windows</h4>
+<h4 id="_6_3_3_applying_functions_on_windows在窗口上应用函数">6.3.3 Applying Functions on Windows(在窗口上应用函数)</h4>
 <div class="paragraph">
 <p>window functions定义了窗口中数据的计算逻辑。有两种计算逻辑：</p>
 </div>
@@ -3772,6 +3738,34 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
   <span class="tok-o">}</span></code></pre>
 </div>
 </div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_7_4_选择一个状态后端state_backend">7.4 选择一个状态后端(state backend)</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>MemoryStateBackend stores state as regular objects on the heap of the TaskManager JVM process.</p>
+</li>
+<li>
+<p>FsStateBackend stores the local state on the TaskManager’s JVM heap, just like MemoryStateBackend. However, instead of checkpointing the state to the JobManager’s volatile memory, FsStateBackend writes the state to a remote and persistent file system.</p>
+</li>
+<li>
+<p>RocksDBStateBackend stores all state into local RocksDB instances.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
+
+<span class="tok-k">val</span> <span class="tok-n">checkpointPath</span><span class="tok-k">:</span> <span class="tok-kt">String</span> <span class="tok-o">=</span> <span class="tok-o">???</span>
+<span class="tok-c1">// configure path for checkpoints on the remote filesystem</span>
+<span class="tok-k">val</span> <span class="tok-n">backend</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">RocksDBStateBackend</span><span class="tok-o">(</span><span class="tok-n">checkpointPath</span><span class="tok-o">)</span>
+
+<span class="tok-c1">// configure the state backend</span>
+<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStateBackend</span><span class="tok-o">(</span><span class="tok-n">backend</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
 </div>
