@@ -16,8 +16,10 @@ object StreamJoin {
         OrderEvent("2", "create", "1558430843"),
         OrderEvent("1", "pay", "1558430844"),
         OrderEvent("2", "pay", "1558430845"),
-        OrderEvent("3", "create", "1558430849")
+        OrderEvent("3", "create", "1558430849"),
+        OrderEvent("3", "pay", "1558430849")
       ))
+      .assignAscendingTimestamps(_.eventTime.toLong * 1000)
       .keyBy("orderId")
 
     val pays = env
@@ -25,6 +27,7 @@ object StreamJoin {
           PayEvent("1", "weixin", "1558430847"),
           PayEvent("2", "zhifubao", "1558430848")
         ))
+      .assignAscendingTimestamps(_.eventTime.toLong * 1000)
       .keyBy("orderId")
 
     val processed = orders

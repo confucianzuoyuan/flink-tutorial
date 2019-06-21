@@ -43,6 +43,7 @@ object ScalaFlinkLoginFailWithoutCep {
 
       if (login.eventType == "fail") {
         loginState.add(login)
+      } else if (login.eventType == "success") {
       }
 
       timerService.registerEventTimeTimer(login.eventTime.toLong + 10 * 1000)
