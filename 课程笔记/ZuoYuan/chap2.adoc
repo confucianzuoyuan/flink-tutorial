@@ -40,6 +40,8 @@ quickstart/
 .StreamingJob.scala
 [source, scala]
 ----
+package com.atguigu
+
 import org.apache.flink.streaming.api.scala._ // 隐式类型转换
 import org.apache.flink.streaming.api.windowing.time.Time
 
@@ -80,6 +82,8 @@ object StreamingJob {
 ----
 $ nc -lk 9999
 ----
+
+查看结果，在flink文件夹中的log文件夹里，后缀名为``.out``, 和在idea里面执行的样子不一样，不会打印到控制台。 
 
 === 2.2 Flink部署
 

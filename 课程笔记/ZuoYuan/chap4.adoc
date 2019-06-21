@@ -37,10 +37,10 @@ case class SensorReading(id: String, timestamp: Long, temperature: Double)
 
 val stream = env
   .fromCollection(List(
-    SensorReading("sensor_1", 1547718199000, 35.80018327300259)
-    SensorReading("sensor_6", 1547718199000, 15.402984393403084)
-    SensorReading("sensor_7", 1547718199000, 6.720945201171228)
-    SensorReading("sensor_10", 1547718199000, 38.101067604893444)
+    SensorReading("sensor_1", 1547718199, 35.80018327300259),
+    SensorReading("sensor_6", 1547718199, 15.402984393403084),
+    SensorReading("sensor_7", 1547718199, 6.720945201171228),
+    SensorReading("sensor_10", 1547718199, 38.101067604893444)
   ))
 ----
 
@@ -665,45 +665,58 @@ stream.addSink(new MySink(xxxx))
 
 [source,scala]
 ----
-import org.apache.flink.api.common.functions.RuntimeContext
-import org.apache.flink.streaming.api.datastream.DataStream
-import org.apache.flink.streaming.connectors.elasticsearch.ElasticsearchSinkFunction
-import org.apache.flink.streaming.connectors.elasticsearch.RequestIndexer
-import org.apache.flink.streaming.connectors.elasticsearch6.ElasticsearchSink
+package com.atguigu
 
+import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
+import org.apache.flink.streaming.connectors.elasticsearch.ElasticsearchSinkFunction
+import org.apache.flink.streaming.connectors.elasticsearch6.ElasticsearchSink
 import org.apache.http.HttpHost
 import org.elasticsearch.action.index.IndexRequest
 import org.elasticsearch.client.Requests
+import org.apache.flink.api.common.functions.RuntimeContext
+import org.apache.flink.streaming.connectors.elasticsearch.RequestIndexer
 
-import java.util.ArrayList
-import java.util.List
+import org.apache.flink.streaming.api.scala._
 
-val input: DataStream[String] = ...
+object StreamingJob {
+  def main(args: Array[String]): Unit = {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setParallelism(1)
 
-val httpHosts = new java.util.ArrayList[HttpHost]
-httpHosts.add(new HttpHost("127.0.0.1", 9200, "http"))
+    val stream = env.fromCollection(List(
+      "a",
+      "b"
+    ))
 
-val esSinkBuilder = new ElasticsearchSink.Builer[String](
-  httpHosts,
-  new ElasticsearchSinkFunction[String] {
-    def createIndexRequest(element: String): IndexRequest = {
-      val json = new java.util.HashMap[String, String]
-      json.put("data", element)
-      
-      return Requests.indexRequest()
-              .index("my-index")
-              .type("my-type")
-              .source(json)
-    }
+    val httpHosts = new java.util.ArrayList[HttpHost]
+    httpHosts.add(new HttpHost("127.0.0.1", 9200, "http"))
 
-    override def process(element: String, ctx: RuntimeContext, indexer: RequestIndexer) {
-      indexer.add(createIndexRequest(element))
-    }
+    val esSinkBuilder = new ElasticsearchSink.Builder[String](
+      httpHosts,
+      new ElasticsearchSinkFunction[String] {
+        def createIndexRequest(element: String): IndexRequest = {
+          val json = new java.util.HashMap[String, String]
+          json.put("data", element)
+
+          Requests.indexRequest()
+                  .index("my-index")
+                  .`type`("my-type")
+                  .source(json)
+        }
+
+        override def process(element: String, ctx: RuntimeContext, indexer: RequestIndexer): Unit = {
+          indexer.add(createIndexRequest(element))
+        }
+      }
+    )
+
+    // finally, build and add the sink to the job's pipeline
+    stream.addSink(esSinkBuilder.build)
+
+    env.execute
   }
-)
 
-// finally, build and add the sink to the job's pipeline
-input.addSink(esSinkBuilder.build)
+}
 ----
 
 === 4.10 Distribution Transformations(分布式转换算子)
