@@ -1163,7 +1163,9 @@ quickstart/
 <div class="listingblock">
 <div class="title">StreamingJob.scala</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala._</span> <span class="tok-c1">// 隐式类型转换</span>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">package</span> <span class="tok-nn">com.atguigu</span>
+
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala._</span> <span class="tok-c1">// 隐式类型转换</span>
 <span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.windowing.time.Time</span>
 
 <span class="tok-k">object</span> <span class="tok-nc">StreamingJob</span> <span class="tok-o">{</span>
@@ -1211,6 +1213,9 @@ quickstart/
 <div class="content">
 <pre class="pygments highlight"><code data-lang="shell"><span></span>$ nc -lk <span class="tok-m">9999</span></code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>查看结果，在flink文件夹中的log文件夹里，后缀名为<code>.out</code>, 和在idea里面执行的样子不一样，不会打印到控制台。</p>
 </div>
 </div>
 <div class="sect2">
@@ -1447,10 +1452,10 @@ $ ./bin/start-cluster.sh</code></pre>
 
 <span class="tok-k">val</span> <span class="tok-n">stream</span> <span class="tok-k">=</span> <span class="tok-n">env</span>
   <span class="tok-o">.</span><span class="tok-n">fromCollection</span><span class="tok-o">(</span><span class="tok-nc">List</span><span class="tok-o">(</span>
-    <span class="tok-nc">SensorReading</span><span class="tok-o">(</span><span class="tok-s">&quot;sensor_1&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1547718199000</span><span class="tok-o">,</span> <span class="tok-mf">35.80018327300259</span><span class="tok-o">)</span>
-    <span class="tok-nc">SensorReading</span><span class="tok-o">(</span><span class="tok-s">&quot;sensor_6&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1547718199000</span><span class="tok-o">,</span> <span class="tok-mf">15.402984393403084</span><span class="tok-o">)</span>
-    <span class="tok-nc">SensorReading</span><span class="tok-o">(</span><span class="tok-s">&quot;sensor_7&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1547718199000</span><span class="tok-o">,</span> <span class="tok-mf">6.720945201171228</span><span class="tok-o">)</span>
-    <span class="tok-nc">SensorReading</span><span class="tok-o">(</span><span class="tok-s">&quot;sensor_10&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1547718199000</span><span class="tok-o">,</span> <span class="tok-mf">38.101067604893444</span><span class="tok-o">)</span>
+    <span class="tok-nc">SensorReading</span><span class="tok-o">(</span><span class="tok-s">&quot;sensor_1&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1547718199</span><span class="tok-o">,</span> <span class="tok-mf">35.80018327300259</span><span class="tok-o">),</span>
+    <span class="tok-nc">SensorReading</span><span class="tok-o">(</span><span class="tok-s">&quot;sensor_6&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1547718199</span><span class="tok-o">,</span> <span class="tok-mf">15.402984393403084</span><span class="tok-o">),</span>
+    <span class="tok-nc">SensorReading</span><span class="tok-o">(</span><span class="tok-s">&quot;sensor_7&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1547718199</span><span class="tok-o">,</span> <span class="tok-mf">6.720945201171228</span><span class="tok-o">),</span>
+    <span class="tok-nc">SensorReading</span><span class="tok-o">(</span><span class="tok-s">&quot;sensor_10&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1547718199</span><span class="tok-o">,</span> <span class="tok-mf">38.101067604893444</span><span class="tok-o">)</span>
   <span class="tok-o">))</span></code></pre>
 </div>
 </div>
@@ -2218,45 +2223,58 @@ OutputSelector[IN]
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.common.functions.RuntimeContext</span>
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.datastream.DataStream</span>
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.connectors.elasticsearch.ElasticsearchSinkFunction</span>
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.connectors.elasticsearch.RequestIndexer</span>
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.connectors.elasticsearch6.ElasticsearchSink</span>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">package</span> <span class="tok-nn">com.atguigu</span>
 
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala.StreamExecutionEnvironment</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.connectors.elasticsearch.ElasticsearchSinkFunction</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.connectors.elasticsearch6.ElasticsearchSink</span>
 <span class="tok-k">import</span> <span class="tok-nn">org.apache.http.HttpHost</span>
 <span class="tok-k">import</span> <span class="tok-nn">org.elasticsearch.action.index.IndexRequest</span>
 <span class="tok-k">import</span> <span class="tok-nn">org.elasticsearch.client.Requests</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.common.functions.RuntimeContext</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.connectors.elasticsearch.RequestIndexer</span>
 
-<span class="tok-k">import</span> <span class="tok-nn">java.util.ArrayList</span>
-<span class="tok-k">import</span> <span class="tok-nn">java.util.List</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala._</span>
 
-<span class="tok-k">val</span> <span class="tok-n">input</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
+<span class="tok-k">object</span> <span class="tok-nc">StreamingJob</span> <span class="tok-o">{</span>
+  <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
 
-<span class="tok-k">val</span> <span class="tok-n">httpHosts</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-n">java</span><span class="tok-o">.</span><span class="tok-n">util</span><span class="tok-o">.</span><span class="tok-nc">ArrayList</span><span class="tok-o">[</span><span class="tok-kt">HttpHost</span><span class="tok-o">]</span>
-<span class="tok-n">httpHosts</span><span class="tok-o">.</span><span class="tok-n">add</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">HttpHost</span><span class="tok-o">(</span><span class="tok-s">&quot;127.0.0.1&quot;</span><span class="tok-o">,</span> <span class="tok-mi">9200</span><span class="tok-o">,</span> <span class="tok-s">&quot;http&quot;</span><span class="tok-o">))</span>
+    <span class="tok-k">val</span> <span class="tok-n">stream</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">fromCollection</span><span class="tok-o">(</span><span class="tok-nc">List</span><span class="tok-o">(</span>
+      <span class="tok-s">&quot;a&quot;</span><span class="tok-o">,</span>
+      <span class="tok-s">&quot;b&quot;</span>
+    <span class="tok-o">))</span>
 
-<span class="tok-k">val</span> <span class="tok-n">esSinkBuilder</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">ElasticsearchSink</span><span class="tok-o">.</span><span class="tok-nc">Builer</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">](</span>
-  <span class="tok-n">httpHosts</span><span class="tok-o">,</span>
-  <span class="tok-k">new</span> <span class="tok-nc">ElasticsearchSinkFunction</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-o">{</span>
-    <span class="tok-k">def</span> <span class="tok-n">createIndexRequest</span><span class="tok-o">(</span><span class="tok-n">element</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">IndexRequest</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-      <span class="tok-k">val</span> <span class="tok-n">json</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-n">java</span><span class="tok-o">.</span><span class="tok-n">util</span><span class="tok-o">.</span><span class="tok-nc">HashMap</span><span class="tok-o">[</span><span class="tok-kt">String</span>, <span class="tok-kt">String</span><span class="tok-o">]</span>
-      <span class="tok-n">json</span><span class="tok-o">.</span><span class="tok-n">put</span><span class="tok-o">(</span><span class="tok-s">&quot;data&quot;</span><span class="tok-o">,</span> <span class="tok-n">element</span><span class="tok-o">)</span>
+    <span class="tok-k">val</span> <span class="tok-n">httpHosts</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-n">java</span><span class="tok-o">.</span><span class="tok-n">util</span><span class="tok-o">.</span><span class="tok-nc">ArrayList</span><span class="tok-o">[</span><span class="tok-kt">HttpHost</span><span class="tok-o">]</span>
+    <span class="tok-n">httpHosts</span><span class="tok-o">.</span><span class="tok-n">add</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">HttpHost</span><span class="tok-o">(</span><span class="tok-s">&quot;127.0.0.1&quot;</span><span class="tok-o">,</span> <span class="tok-mi">9200</span><span class="tok-o">,</span> <span class="tok-s">&quot;http&quot;</span><span class="tok-o">))</span>
 
-      <span class="tok-k">return</span> <span class="tok-nc">Requests</span><span class="tok-o">.</span><span class="tok-n">indexRequest</span><span class="tok-o">()</span>
-              <span class="tok-o">.</span><span class="tok-n">index</span><span class="tok-o">(</span><span class="tok-s">&quot;my-index&quot;</span><span class="tok-o">)</span>
-              <span class="tok-o">.</span><span class="tok-n">type</span><span class="tok-o">(</span><span class="tok-s">&quot;my-type&quot;</span><span class="tok-o">)</span>
-              <span class="tok-o">.</span><span class="tok-n">source</span><span class="tok-o">(</span><span class="tok-n">json</span><span class="tok-o">)</span>
-    <span class="tok-o">}</span>
+    <span class="tok-k">val</span> <span class="tok-n">esSinkBuilder</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">ElasticsearchSink</span><span class="tok-o">.</span><span class="tok-nc">Builder</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">](</span>
+      <span class="tok-n">httpHosts</span><span class="tok-o">,</span>
+      <span class="tok-k">new</span> <span class="tok-nc">ElasticsearchSinkFunction</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+        <span class="tok-k">def</span> <span class="tok-n">createIndexRequest</span><span class="tok-o">(</span><span class="tok-n">element</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">IndexRequest</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+          <span class="tok-k">val</span> <span class="tok-n">json</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-n">java</span><span class="tok-o">.</span><span class="tok-n">util</span><span class="tok-o">.</span><span class="tok-nc">HashMap</span><span class="tok-o">[</span><span class="tok-kt">String</span>, <span class="tok-kt">String</span><span class="tok-o">]</span>
+          <span class="tok-n">json</span><span class="tok-o">.</span><span class="tok-n">put</span><span class="tok-o">(</span><span class="tok-s">&quot;data&quot;</span><span class="tok-o">,</span> <span class="tok-n">element</span><span class="tok-o">)</span>
 
-    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">process</span><span class="tok-o">(</span><span class="tok-n">element</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">ctx</span><span class="tok-k">:</span> <span class="tok-kt">RuntimeContext</span><span class="tok-o">,</span> <span class="tok-n">indexer</span><span class="tok-k">:</span> <span class="tok-kt">RequestIndexer</span><span class="tok-o">)</span> <span class="tok-o">{</span>
-      <span class="tok-n">indexer</span><span class="tok-o">.</span><span class="tok-n">add</span><span class="tok-o">(</span><span class="tok-n">createIndexRequest</span><span class="tok-o">(</span><span class="tok-n">element</span><span class="tok-o">))</span>
-    <span class="tok-o">}</span>
+          <span class="tok-nc">Requests</span><span class="tok-o">.</span><span class="tok-n">indexRequest</span><span class="tok-o">()</span>
+                  <span class="tok-o">.</span><span class="tok-n">index</span><span class="tok-o">(</span><span class="tok-s">&quot;my-index&quot;</span><span class="tok-o">)</span>
+                  <span class="tok-o">.</span><span class="tok-n">`type`</span><span class="tok-o">(</span><span class="tok-s">&quot;my-type&quot;</span><span class="tok-o">)</span>
+                  <span class="tok-o">.</span><span class="tok-n">source</span><span class="tok-o">(</span><span class="tok-n">json</span><span class="tok-o">)</span>
+        <span class="tok-o">}</span>
+
+        <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">process</span><span class="tok-o">(</span><span class="tok-n">element</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">ctx</span><span class="tok-k">:</span> <span class="tok-kt">RuntimeContext</span><span class="tok-o">,</span> <span class="tok-n">indexer</span><span class="tok-k">:</span> <span class="tok-kt">RequestIndexer</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+          <span class="tok-n">indexer</span><span class="tok-o">.</span><span class="tok-n">add</span><span class="tok-o">(</span><span class="tok-n">createIndexRequest</span><span class="tok-o">(</span><span class="tok-n">element</span><span class="tok-o">))</span>
+        <span class="tok-o">}</span>
+      <span class="tok-o">}</span>
+    <span class="tok-o">)</span>
+
+    <span class="tok-c1">// finally, build and add the sink to the job&#39;s pipeline</span>
+    <span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">addSink</span><span class="tok-o">(</span><span class="tok-n">esSinkBuilder</span><span class="tok-o">.</span><span class="tok-n">build</span><span class="tok-o">)</span>
+
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span>
   <span class="tok-o">}</span>
-<span class="tok-o">)</span>
 
-<span class="tok-c1">// finally, build and add the sink to the job&#39;s pipeline</span>
-<span class="tok-n">input</span><span class="tok-o">.</span><span class="tok-n">addSink</span><span class="tok-o">(</span><span class="tok-n">esSinkBuilder</span><span class="tok-o">.</span><span class="tok-n">build</span><span class="tok-o">)</span></code></pre>
+<span class="tok-o">}</span></code></pre>
 </div>
 </div>
 </div>
