@@ -1,10 +1,10 @@
-import org.apache.flink.api.common.functions.AggregateFunction
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
-import org.apache.flink.streaming.api.scala.function.ProcessAllWindowFunction
 import org.apache.flink.streaming.api.scala.function.AllWindowFunction
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow
+import org.apache.flink.util.Collector
 
 object UserBehaviorUv {
 
@@ -27,23 +27,28 @@ object UserBehaviorUv {
       UserBehavior(1, 1, 1, "1", 1561107116),
       UserBehavior(1, 1, 1, "1", 1561107117)
     ))
-      .assignAscendingTimestamps(_.timestamp * 1000)
-      //      .filter(_.behavior.equals("pv"))
-      .map(_ => 1)
-      //      .timeWindowAll(Time.minutes(1))
-      .timeWindowAll(Time.seconds(4))
-      .sum(0)
-      .print()
+    .assignAscendingTimestamps(_.timestamp * 1000)
+    //      .filter(_.behavior.equals("pv"))
+//    .map(_ => 1)
+    //      .timeWindowAll(Time.minutes(1))
+    .timeWindowAll(Time.seconds(4))
+        .apply(new MyReduceProcessFunction).print()
 
 
     env.execute("Hot Items Job")
   }
 
-  class CountAgg extends AggregateFunction[UserBehavior, Long, Long] {
-    override def createAccumulator(): Long = 0L
-    override def add(userBehavior: UserBehavior, acc: Long): Long = acc + 1
-    override def getResult(acc: Long): Long = acc
-    override def merge(acc1: Long, acc2: Long): Long = acc1 + acc2
+  class MyReduceProcessFunction extends AllWindowFunction[UserBehavior, Long, TimeWindow] {
+    override def apply(window: TimeWindow, vals: Iterable[UserBehavior], out: Collector[Long]): Unit = {
+//      val count = Set()
+      val s : collection.mutable.Set[Long] = collection.mutable.Set()
+
+      for (v <- vals) {
+        s += v.itemId
+      }
+
+      out.collect(s.size)
+    }
   }
 
 }
