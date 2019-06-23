@@ -2,7 +2,7 @@ import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
-import org.apache.flink.streaming.api.scala.function.AllWindowFunction
+import org.apache.flink.streaming.api.scala.function.{AllWindowFunction, ProcessAllWindowFunction}
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow
 import org.apache.flink.util.Collector
 
@@ -40,7 +40,6 @@ object UserBehaviorUv {
 
   class MyReduceProcessFunction extends AllWindowFunction[UserBehavior, Long, TimeWindow] {
     override def apply(window: TimeWindow, vals: Iterable[UserBehavior], out: Collector[Long]): Unit = {
-//      val count = Set()
       val s : collection.mutable.Set[Long] = collection.mutable.Set()
 
       for (v <- vals) {
@@ -50,5 +49,4 @@ object UserBehaviorUv {
       out.collect(s.size)
     }
   }
-
 }
