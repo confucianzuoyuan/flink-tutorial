@@ -967,6 +967,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="paragraph">
 <p>Flink采用Dataflow模型，和Lambda模式不同。Dataflow是纯粹的节点组成的一个图，图中的节点可以执行批计算，也可以是流计算，也可以是机器学习算法，流数据在节点之间流动，被节点上的处理函数实时apply处理，节点之间是用netty连接起来，两个netty之间keepalive，网络buffer是自然反压的关键。经过逻辑优化和物理优化，Dataflow的逻辑关系和运行时的物理拓扑相差不大。这是纯粹的流式设计，时延和吞吐理论上是最优的。</p>
 </div>
+<div class="imageblock">
+<div class="content">
+<img src="images/lambdaarch.png" alt="lambdaarch">
+</div>
+</div>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
