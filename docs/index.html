@@ -1437,7 +1437,7 @@ $ ./bin/start-cluster.sh</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">// 获取执行环境</span>
-<span class="tok-k">val</span> <span class="tok-n">env</span><span class="tok-k">:</span> <span class="tok-kt">ExecutionEnvironment</span> <span class="tok-o">=</span> <span class="tok-nc">ExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
+<span class="tok-k">val</span> <span class="tok-n">env</span><span class="tok-k">:</span> <span class="tok-kt">ExecutionEnvironment</span> <span class="tok-o">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
 <span class="tok-c1">// 设置流的时间为Event Time</span>
 <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
 <span class="tok-c1">// 设置并行度为1，如果不设置，那么默认为当前机器的cpu的数量</span>
