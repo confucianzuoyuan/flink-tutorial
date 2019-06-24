@@ -19,7 +19,7 @@ digraph g {
 [source,scala]
 ----
 // 获取执行环境
-val env: ExecutionEnvironment = ExecutionEnvironment.getExecutionEnvironment
+val env: ExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
 // 设置流的时间为Event Time
 env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 // 设置并行度为1，如果不设置，那么默认为当前机器的cpu的数量
