@@ -125,8 +125,15 @@ E(1), W(1), E(2), W(2), ...
 ----
 val stream: DataStream[SensorReading] = ...
 val withTimestampsAndWatermarks = stream.assignTimestampsAndWatermarks(
-  new BoundedOutOfOrdernessTimestampExtractor[SensorReading](
-    Time.seconds(10))(e => e.timestamp))
+  new SensorTimeAssigner 
+)
+
+class SensorTimeAssigner
+  extends BoundedOutOfOrdernessTimestampExtractor[SensorReading](Time.seconds(5)) {
+
+  // 抽取时间戳
+  override def extractTimestamp(r: SensorReading): Long = r.timestamp
+}
 ----
 
 ----

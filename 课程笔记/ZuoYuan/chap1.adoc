@@ -7,7 +7,7 @@ Flink起源于Stratosphere项目，Stratosphere是在2010～2014年由3所地处
 在德语中，Flink一词表示快速和灵巧，项目采用一只松鼠的彩色图案作为logo，这不仅是因为松鼠具有快速和灵巧的特点，还因为柏林的松鼠有一种迷人的红棕色，而Flink的松鼠logo拥有可爱的尾巴，尾巴的颜色与Apache软件基金会的logo颜色相呼应，也就是说，这是一只Apache风格的松鼠。
 
 .apache flink logo
-image::flink-header-logo.svg[flink,300,200,float="left"]
+image::flink-header-logo.svg[]
 
 Flink主页在其顶部展示了该项目的理念: "[red]#Apache Flink是为分布式、高性能、随时可用以及准确的流处理应用程序打造的开源流处理框架#"。
 
