@@ -734,9 +734,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="paragraph">
 <p>在德语中，Flink一词表示快速和灵巧，项目采用一只松鼠的彩色图案作为logo，这不仅是因为松鼠具有快速和灵巧的特点，还因为柏林的松鼠有一种迷人的红棕色，而Flink的松鼠logo拥有可爱的尾巴，尾巴的颜色与Apache软件基金会的logo颜色相呼应，也就是说，这是一只Apache风格的松鼠。</p>
 </div>
-<div class="imageblock left">
+<div class="imageblock">
 <div class="content">
-<img src="images/flink-header-logo.svg" alt="flink" width="300" height="200">
+<img src="images/flink-header-logo.svg" alt="flink header logo">
 </div>
 <div class="title">Figure 1. apache flink logo</div>
 </div>
@@ -2732,8 +2732,15 @@ OutputSelector[IN]
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">stream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
 <span class="tok-k">val</span> <span class="tok-n">withTimestampsAndWatermarks</span> <span class="tok-k">=</span> <span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">assignTimestampsAndWatermarks</span><span class="tok-o">(</span>
-  <span class="tok-k">new</span> <span class="tok-nc">BoundedOutOfOrdernessTimestampExtractor</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">](</span>
-    <span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">10</span><span class="tok-o">))(</span><span class="tok-n">e</span> <span class="tok-k">=&gt;</span> <span class="tok-n">e</span><span class="tok-o">.</span><span class="tok-n">timestamp</span><span class="tok-o">))</span></code></pre>
+  <span class="tok-k">new</span> <span class="tok-nc">SensorTimeAssigner</span>
+<span class="tok-o">)</span>
+
+<span class="tok-k">class</span> <span class="tok-nc">SensorTimeAssigner</span>
+  <span class="tok-k">extends</span> <span class="tok-nc">BoundedOutOfOrdernessTimestampExtractor</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">](</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">5</span><span class="tok-o">))</span> <span class="tok-o">{</span>
+
+  <span class="tok-c1">// 抽取时间戳</span>
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">extractTimestamp</span><span class="tok-o">(</span><span class="tok-n">r</span><span class="tok-k">:</span> <span class="tok-kt">SensorReading</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">timestamp</span>
+<span class="tok-o">}</span></code></pre>
 </div>
 </div>
 <div class="listingblock">
