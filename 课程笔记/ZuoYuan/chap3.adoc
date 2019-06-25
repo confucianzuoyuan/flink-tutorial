@@ -2,7 +2,7 @@
 
 === 3.1 任务调度原理
 
-image::processes.svg[]
+image::processes.png[]
 
 客户端不是运行时和程序执行的一部分，但它用于准备并发送Dataflow(JobGraph)给Master(JobManager)，然后，客户端断开连接或者维持连接以等待接收计算结果。
 
@@ -18,15 +18,7 @@ TaskManager在启动的时候就设置好了槽位数(Slot)，每个Slot能启�
 
 Flink中的执行图可以分成四层：
 
-[graphviz, dot-example1, svg]
-----
-digraph g {
-    rankdir=LR
-    StreamGraph -> JobGraph
-    JobGraph -> ExecutionGraph
-    ExecutionGraph -> 物理执行图
-}
-----
+image::dot-example1.png[]
 
 *StreamGraph*：是根据用户通过Stream API编写的代码生成的最初的图。用来表示程序的拓扑结构。
 
@@ -46,7 +38,7 @@ image::jobgraph.png[]
 
 通过调整Task Slot的数量，允许用户定义SubTask之间如何互相隔离。如果一个TaskManager一个Slot，那将意味着每个Task Group运行在独立的JVM中(该JVM可能是通过一个特定的容器启动的)，而一个TaskManager多个Slot意味着更多的SubTask可以共享同一个JVM。而在同一个JVM进程中的Task将共享TCP连接(基于IO多路复用)和心跳消息。它们也可能共享数据集和数据结构，因此这减少了每个Task的负载。
 
-image::tasks_slots.svg[]
+image::tasks_slots.png[]
 
 Task Slot是静态的概念，是指TaskManager具有的并发执行能力，可以通过参数taskmanager.numberOfTaskSlots进行配置，而并行度parallelism是动态概念，即TaskManager运行程序时实际使用的并发能力，可以通过参数parallelism.default进行配置。
 
@@ -56,7 +48,7 @@ image::slots_parallelism.png[]
 
 === 3.3 程序与数据流
 
-image::program_dataflow.svg[]
+image::program_dataflow.png[]
 
 所有的Flink程序都是由三部分组成的：Source、Transformation和Sink。
 
@@ -70,7 +62,7 @@ Flink程序的执行具有并行、分布式的特性。在执行过程中，一
 
 一个特定operator的subtask的个数被称之为其parallelism(并行度)。一个stream的并行度总是等同于其producing operator的并行度。一个程序中，不同的operator可能具有不同的并行度。
 
-image::parallel_dataflow.svg[]
+image::parallel_dataflow.png[]
 
 Stream在operator之间传输数据的形式可以是one-to-one(forwarding)的模式也可以是redistributing的模式，具体是哪一种形式，取决于operator的种类。
 

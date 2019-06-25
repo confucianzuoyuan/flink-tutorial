@@ -3,7 +3,7 @@
 === 5.1 Time
 在Flink的流式处理中，会涉及到时间的不同概念，如下图所示：
 
-image::event_ingestion_processing_time.svg[]
+image::event_ingestion_processing_time.png[]
 
 * *Event Time*：是事件创建的时间。它通常由事件中的时间戳描述，例如采集的日志数据中，每一条日志都会记录自己的生成时间，Flink通过时间戳分配器访问事件时间戳。
 * *Ingestion Time*：是数据进入Flink的时间。
@@ -64,7 +64,7 @@ Window可以分成两类：
 
 滚动窗口分配器将每个元素分配到一个指定窗口大小的窗口中，滚动窗口有一个固定的大小，并且不会出现重叠。例如：如果你指定了一个5分钟大小的滚动窗口，窗口的创建如下图所示：
 
-image::tumbling-windows.svg[]
+image::tumbling-windows.png[]
 
 适用场景：适合做BI统计等(做每个时间段的聚合计算)。
 
@@ -78,7 +78,7 @@ image::tumbling-windows.svg[]
 
 例如，你有10分钟的窗口和5分钟的滑动，那么每个窗口中5分钟的窗口里包含着上个10分钟产生的数据，如下图所示：
 
-image::sliding-windows.svg[]
+image::sliding-windows.png[]
 
 适用场景：对最近一个时间段内的统计(求某接口最近5min的失败率来决定是否要报警)。
 
@@ -90,7 +90,7 @@ image::sliding-windows.svg[]
 
 session窗口分配器通过session活动来对元素进行分组，session窗口跟滚动窗口和滑动窗口相比，不会有重叠和固定的开始时间和结束时间的情况，相反，当它在一个固定的时间周期内不再收到元素，即非活动间隔产生，那个这个窗口就会关闭。一个session窗口通过一个session间隔来配置，这个session间隔定义了非活跃周期的长度，当这个非活跃周期产生，那么当前的session将关闭并且后续的元素将被分配到新的session窗口中去。
 
-image::session-windows.svg[]
+image::session-windows.png[]
 
 === 5.3 Window API
 

@@ -21,9 +21,9 @@ env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
 我们知道，流处理从事件产生，到流经source，再到operator，中间是有一个过程和时间的，虽然大部分情况下，流到operator的数据都是按照事件产生的时间顺序来的，但是也不排除由于网络、分布式等原因，导致乱序的产生，所谓乱序，就是指Flink接收到的事件的先后顺序不是严格按照事件的Event Time顺序排列的。
 
-image::stream_watermark_in_order.svg[]
+image::stream_watermark_in_order.png[]
 
-image::stream_watermark_out_of_order.svg[]
+image::stream_watermark_out_of_order.png[]
 
 那么此时出现一个问题，一旦出现乱序，如果只根据Event Time决定Window的运行，我们不能明确数据是否全部到位，但又不能无限期的等下去，此时必须要有个机制来保证一个特定的时间后，必须触发Window去进行计算了，这个特别的机制，就是Watermark。
 

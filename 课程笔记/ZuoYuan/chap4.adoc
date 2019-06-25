@@ -1,14 +1,6 @@
 == 第四章 Flink DataStream API
 
-[graphviz, dot-example, svg]
-----
-digraph g {
-    rankdir=LR
-    environment -> source
-    source -> transform
-    transform -> sink
-}
-----
+image::dot-example.png[]
 
 === 4.1 Environment
 
