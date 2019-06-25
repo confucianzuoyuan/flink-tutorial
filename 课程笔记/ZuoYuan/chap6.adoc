@@ -93,7 +93,7 @@ env.getConfig.setAutoWatermarkInterval(5000)
 ----
 class PeriodicAssigner extends AssignerWithPeriodicWatermarks[SensorReading] {
   val bound: Long = 60 * 1000 // 延时为1分钟
-  val maxTs: Long = Long.MinValue // 观察到的最大时间戳
+  var maxTs: Long = Long.MinValue // 观察到的最大时间戳
 
   override def getCurrentWatermark: Watermark = {
     new Watermark(maxTs - bound)
@@ -295,7 +295,7 @@ readings.print()
 
 [source,scala]
 ----
-class FreezingMonitor extends ProcessingFunction[SensorReading, SensorReading] {
+class FreezingMonitor extends ProcessFunction[SensorReading, SensorReading] {
   // define a side output tag
   // 定义一个侧输出标签
   lazy val freezingAlarmOutput: OutputTag[String] =
@@ -598,7 +598,7 @@ process()方法接受的参数为：window的key，Iterable迭代器包含窗口
 * per-window state: 用于保存一些信息，这些信息可以被process()访问，只要process所处理的元素属于这个窗口。
 * per-key global state: 同一个key，也就是在一条KeyedStream上，不同的window可以访问per-key global state保存的值。
 
-例子：计算5s滚动窗口中的最低和最高的温度。输出的元素包含了(窗口开始时间，窗口结束时间，最低温度，最高温度)。
+例子：计算5s滚动窗口中的最低和最高的温度。输出的元素包含了(流的Key, 最低温度, 最高温度, 窗口结束时间)。
 
 [source,scala]
 ----
