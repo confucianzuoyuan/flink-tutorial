@@ -155,7 +155,7 @@ class TemperatureAlertFunction(val threshold: Double) extends RichFlatMapFunctio
   override def open(parameters: Configuration): Unit = {
     val lastTempDescriptor = new ValueStateDescriptor[Double]("lastTemp", classOf[Double])
 
-    lastTempDescriptor = getRuntimeContext.getState[Double](lastTempDescriptor)
+    lastTempState = getRuntimeContext.getState[Double](lastTempDescriptor)
   }
 
   override def flatMap(reading: SendorReading,
@@ -211,4 +211,12 @@ val backend = new RocksDBStateBackend(checkpointPath)
 
 // configure the state backend
 env.setStateBackend(backend)
+----
+
+[source,scala]
+----
+// set up checkpointing
+env.setStateBackend(new FsStateBackend("file:///tmp/checkpoints"))
+env.enableCheckpointing(1000)
+env.setRestartStrategy(RestartStrategies.fixedDelayRestart(60, Time.of(10, TimeUnit.SECONDS)))
 ----

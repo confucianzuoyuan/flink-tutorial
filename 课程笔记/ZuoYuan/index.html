@@ -2697,7 +2697,7 @@ OutputSelector[IN]
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">class</span> <span class="tok-nc">PeriodicAssigner</span> <span class="tok-k">extends</span> <span class="tok-nc">AssignerWithPeriodicWatermarks</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-o">{</span>
   <span class="tok-k">val</span> <span class="tok-n">bound</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-mi">60</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span> <span class="tok-c1">// 延时为1分钟</span>
-  <span class="tok-k">val</span> <span class="tok-n">maxTs</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-nc">Long</span><span class="tok-o">.</span><span class="tok-nc">MinValue</span> <span class="tok-c1">// 观察到的最大时间戳</span>
+  <span class="tok-k">var</span> <span class="tok-n">maxTs</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-nc">Long</span><span class="tok-o">.</span><span class="tok-nc">MinValue</span> <span class="tok-c1">// 观察到的最大时间戳</span>
 
   <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">getCurrentWatermark</span><span class="tok-k">:</span> <span class="tok-kt">Watermark</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
     <span class="tok-k">new</span> <span class="tok-nc">Watermark</span><span class="tok-o">(</span><span class="tok-n">maxTs</span> <span class="tok-o">-</span> <span class="tok-n">bound</span><span class="tok-o">)</span>
@@ -2975,7 +2975,7 @@ OutputSelector[IN]
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">class</span> <span class="tok-nc">FreezingMonitor</span> <span class="tok-k">extends</span> <span class="tok-nc">ProcessingFunction</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span>, <span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">class</span> <span class="tok-nc">FreezingMonitor</span> <span class="tok-k">extends</span> <span class="tok-nc">ProcessFunction</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span>, <span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-o">{</span>
   <span class="tok-c1">// define a side output tag</span>
   <span class="tok-c1">// 定义一个侧输出标签</span>
   <span class="tok-k">lazy</span> <span class="tok-k">val</span> <span class="tok-n">freezingAlarmOutput</span><span class="tok-k">:</span> <span class="tok-kt">OutputTag</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span>
@@ -3323,7 +3323,7 @@ OutputSelector[IN]
 </ul>
 </div>
 <div class="paragraph">
-<p>例子：计算5s滚动窗口中的最低和最高的温度。输出的元素包含了(窗口开始时间，窗口结束时间，最低温度，最高温度)。</p>
+<p>例子：计算5s滚动窗口中的最低和最高的温度。输出的元素包含了(流的Key, 最低温度, 最高温度, 窗口结束时间)。</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -3796,6 +3796,14 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 
 <span class="tok-c1">// configure the state backend</span>
 <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStateBackend</span><span class="tok-o">(</span><span class="tok-n">backend</span><span class="tok-o">)</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">// set up checkpointing</span>
+<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStateBackend</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">FsStateBackend</span><span class="tok-o">(</span><span class="tok-s">&quot;file:///tmp/checkpoints&quot;</span><span class="tok-o">))</span>
+<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">enableCheckpointing</span><span class="tok-o">(</span><span class="tok-mi">1000</span><span class="tok-o">)</span>
+<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setRestartStrategy</span><span class="tok-o">(</span><span class="tok-nc">RestartStrategies</span><span class="tok-o">.</span><span class="tok-n">fixedDelayRestart</span><span class="tok-o">(</span><span class="tok-mi">60</span><span class="tok-o">,</span> <span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">of</span><span class="tok-o">(</span><span class="tok-mi">10</span><span class="tok-o">,</span> <span class="tok-nc">TimeUnit</span><span class="tok-o">.</span><span class="tok-nc">SECONDS</span><span class="tok-o">)))</span></code></pre>
 </div>
 </div>
 </div>
