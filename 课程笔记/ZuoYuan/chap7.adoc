@@ -158,7 +158,7 @@ class TemperatureAlertFunction(val threshold: Double) extends RichFlatMapFunctio
     lastTempState = getRuntimeContext.getState[Double](lastTempDescriptor)
   }
 
-  override def flatMap(reading: SendorReading,
+  override def flatMap(reading: SensorReading,
                        out: Collector[(String, Double, Double)]): Unit = {
     val lastTemp = lastTempState.value()
     val tempDiff = (reading.temperature - lastTemp).abs
