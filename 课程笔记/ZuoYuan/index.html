@@ -4539,7 +4539,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <div class="content">
 <pre class="pygments highlight"><code data-lang="xml"><span></span><span class="tok-nt">&lt;dependency&gt;</span>
   <span class="tok-nt">&lt;groupId&gt;</span>org.apache.flink<span class="tok-nt">&lt;/groupId&gt;</span>
-  <span class="tok-nt">&lt;artifactId&gt;</span>flink-cep_${scala.binary.version}<span class="tok-nt">&lt;/artifactId&gt;</span>
+  <span class="tok-nt">&lt;artifactId&gt;</span>flink-cep-scala_${scala.binary.version}<span class="tok-nt">&lt;/artifactId&gt;</span>
   <span class="tok-nt">&lt;version&gt;</span>${flink.version}<span class="tok-nt">&lt;/version&gt;</span>
 <span class="tok-nt">&lt;/dependency&gt;</span></code></pre>
 </div>
@@ -4548,7 +4548,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <p><strong>Event Streams</strong></p>
 </div>
 <div class="paragraph">
-<p>登陆事件流</p>
+<p>登录事件流</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -4563,7 +4563,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
   <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;1&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.0.2&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;fail&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430843&quot;</span><span class="tok-o">),</span>
   <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;1&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.0.3&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;fail&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430844&quot;</span><span class="tok-o">),</span>
   <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;2&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.10.10&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;success&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430845&quot;</span><span class="tok-o">)</span>
-<span class="tok-o">)).</span><span class="tok-n">assignAscendingTimestamps</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">eventTime</span><span class="tok-o">.</span><span class="tok-n">toLong</span><span class="tok-o">)</span></code></pre>
+<span class="tok-o">)).</span><span class="tok-n">assignAscendingTimestamps</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">eventTime</span><span class="tok-o">.</span><span class="tok-n">toLong</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">

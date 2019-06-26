@@ -25,6 +25,8 @@ object ScalaFlinkLoginFail {
       .where(_.eventType.equals("fail"))
       .next("next")
       .where(_.eventType.equals("fail"))
+      .next("third")
+      .where(_.eventType.equals("fail"))
       .within(Time.seconds(10))
 
     val patternStream = CEP.pattern(loginEventStream.keyBy(_.userId), loginFailPattern)
@@ -33,8 +35,9 @@ object ScalaFlinkLoginFail {
       .select((pattern: Map[String, Iterable[LoginEvent]]) => {
         val first = pattern.getOrElse("begin", null).iterator.next()
         val second = pattern.getOrElse("next", null).iterator.next()
+        val third = pattern.getOrElse("third", null).iterator.next()
 
-        (second.userId, second.ip, second.eventType)
+        (third.userId, third.ip, third.eventType)
       })
 
     loginFailDataStream.print

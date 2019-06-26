@@ -46,14 +46,14 @@ image::cep6.png[]
 ----
 <dependency>
   <groupId>org.apache.flink</groupId>
-  <artifactId>flink-cep_${scala.binary.version}</artifactId>
+  <artifactId>flink-cep-scala_${scala.binary.version}</artifactId>
   <version>${flink.version}</version>
 </dependency>
 ----
 
 *Event Streams*
 
-登陆事件流
+登录事件流
 
 [source,scala]
 ----
@@ -68,7 +68,7 @@ val loginEventStream = env.fromCollection(List(
   LoginEvent("1", "192.168.0.2", "fail", "1558430843"),
   LoginEvent("1", "192.168.0.3", "fail", "1558430844"),
   LoginEvent("2", "192.168.10.10", "success", "1558430845")
-)).assignAscendingTimestamps(_.eventTime.toLong)
+)).assignAscendingTimestamps(_.eventTime.toLong * 1000)
 ----
 
 *Pattern API*
