@@ -500,6 +500,8 @@ import org.apache.flink.api.common.state.ListState
 import org.apache.flink.api.common.state.ListStateDescriptor
 import org.apache.flink.configuration.Configuration
 
+import scala.collection.mutable.ListBuffer
+
 case class UserBehavior(userId: Long, itemId: Long, categoryId: Int, behavior: String, timestamp: Long)
 
 case class ItemViewCount(itemId: Long, windowEnd: Long, count: Long)

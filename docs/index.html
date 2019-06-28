@@ -5490,6 +5490,8 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.common.state.ListStateDescriptor</span>
 <span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.configuration.Configuration</span>
 
+<span class="tok-k">import</span> <span class="tok-nn">scala.collection.mutable.ListBuffer</span>
+
 <span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">UserBehavior</span><span class="tok-o">(</span><span class="tok-n">userId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">itemId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">categoryId</span><span class="tok-k">:</span> <span class="tok-kt">Int</span><span class="tok-o">,</span> <span class="tok-n">behavior</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">timestamp</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span>
 
 <span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">ItemViewCount</span><span class="tok-o">(</span><span class="tok-n">itemId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">windowEnd</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">count</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span>
