@@ -5472,7 +5472,25 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <h5 id="_10_2_2_5_完整代码">10.2.2.5 完整代码</h5>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">UserBehavior</span><span class="tok-o">(</span><span class="tok-n">userId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">itemId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">categoryId</span><span class="tok-k">:</span> <span class="tok-kt">Int</span><span class="tok-o">,</span> <span class="tok-n">behavior</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">timestamp</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">import</span> <span class="tok-nn">java.sql.Timestamp</span>
+<span class="tok-k">import</span> <span class="tok-nn">java.util.</span><span class="tok-o">{</span><span class="tok-nc">ArrayList</span><span class="tok-o">,</span> <span class="tok-nc">Comparator</span><span class="tok-o">,</span> <span class="tok-nc">List</span><span class="tok-o">}</span>
+
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.TimeCharacteristic</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala.StreamExecutionEnvironment</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala._</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.windowing.time.Time</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.common.functions.AggregateFunction</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala.function.WindowFunction</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.windowing.windows.TimeWindow</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.java.tuple.Tuple</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.java.tuple.Tuple1</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.util.Collector</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.functions.KeyedProcessFunction</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.common.state.ListState</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.common.state.ListStateDescriptor</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.configuration.Configuration</span>
+
+<span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">UserBehavior</span><span class="tok-o">(</span><span class="tok-n">userId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">itemId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">categoryId</span><span class="tok-k">:</span> <span class="tok-kt">Int</span><span class="tok-o">,</span> <span class="tok-n">behavior</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">timestamp</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span>
 
 <span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">ItemViewCount</span><span class="tok-o">(</span><span class="tok-n">itemId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">windowEnd</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">count</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span>
 
