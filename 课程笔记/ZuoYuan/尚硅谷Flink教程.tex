@@ -4,7 +4,7 @@
 \usepackage{xcolor}
 \usepackage{graphicx}
 \graphicspath{ {./images/} }
-
+\setlength\parindent{0pt}
 \begin{document}
 \section{Flink简介}
 
@@ -14,19 +14,15 @@ Flink起源于Stratosphere项目，Stratosphere是在2010～2014年由3所地处
 
 在德语中，Flink一词表示快速和灵巧，项目采用一只松鼠的彩色图案作为logo，这不仅是因为松鼠具有快速和灵巧的特点，还因为柏林的松鼠有一种迷人的红棕色，而Flink的松鼠logo拥有可爱的尾巴，尾巴的颜色与Apache软件基金会的logo颜色相呼应，也就是说，这是一只Apache风格的松鼠。
 
-\begin{center}
-\includegraphics[scale=0.1]{flink-header-logo.png}
-\end{center}
+\includegraphics[width=\textwidth]{flink-header-logo.png}
 
 Flink主页在其顶部展示了该项目的理念: "Apache Flink是为分布式、高性能、随时可用以及准确的流处理应用程序打造的开源流处理框架"。
 
 Apache Flink是一个框架和分布式处理引擎，[red]用于对无界和有界数据流进行有状态计算。Flink被设计在所有常见的集群环境中运行，以内存执行速度和任意规模来执行计算。
 
-\begin{center}
-\includegraphics[scale=0.1]{flink-home-graphic.png}
-\end{center}
+\includegraphics[width=\textwidth]{flink-home-graphic.png}
 
-Flink几大模块
+\textbf{Flink几大模块}
 
 \begin{itemize}
 \item Flink Table and SQL(还没开发完)
@@ -94,7 +90,7 @@ Flink几大模块
 
 为了处理这种情况，有些用户开发出了自己的流处理系统。在开源世界里，Apache Storm项目(以下简称Storm)是流处理先锋。Storm提供了低延迟的流处理，但是它为实时性付出了一些代价: 很难实现高吞吐，并且其正确性没能达到通常所需的水平。换句话说，它并不能保证exactly-once; 即便是它能够保证的正确性级别，其开销也相当大。
 
-\begin{bclogo}[logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+\begin{bclogo}[logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{笔记}
 若要依靠多个流事件来计算结果，必须将数据从一个事件保留到下一个事件。这些保存下来的数据叫作计算的状态。准确处理状态对于计算结果的一致性至关重要。在故障或中断之后能够继续准确地更新状态是容错的关键。
 \end{bclogo}
 
@@ -110,7 +106,7 @@ Flink几大模块
 
 与Storm和Spark Streaming类似，其他流处理技术同样可以提供一些有用的功能，但是没有一个像Flink那样功能如此齐全。举例来说，Apache Samza(以下简称Samza)是早期的一个开源流处理器，它不仅没能实现exactly-once语义，而且只能提供底层的API; 同样，Apache Apex提供了与Flink相同的一些功能，但不全面(比如只提供底层的API，不支持事件时间，也不支持批量计算)。这些项目没有一个能和Flink在开源社区的规模上相提并论。
 
-\includegraphics[width=\linewidth]{flinkvsother.png}
+\includegraphics[width=\textwidth]{flinkvsother.png}
 
 Flink的一个优势是，它拥有诸多重要的流式计算功能。其他项目为了实现这些功能，都不得不付出代价。比如，Storm实现了低延迟，但是做不到高吞吐，也不能在故障发生时准确地处理计算状态; Spark Streaming通过采用微批处理方法实现了高吞吐和容错性，但是牺牲了低延迟和实时处理能力，也不能使窗口与自然时间相匹配，并且表现力欠佳。
 
@@ -130,13 +126,13 @@ Micro-Batching计算模式认为"流是批的特例"，流计算就是将连续�
 
 Native Streaming计算模式认为批是流的特例"，这个认知更贴切流的概念，比如一些监控类的消息流，数据库操作的binlog，实时的支付交易信息等等自然流数据都是一条，一条的流入。Native Streaming计算模式每条数据的到来都进行计算，这种计算模式显得更自然，并且延时性能达到更低。具体如下示意图：
 
-image::sparkstreamingvsflink2.png[]
+\includegraphics[width=\textwidth]{sparkstreamingvsflink2.png}
 
 从上图可以看到输入的数据过来一条处理一条, 然后输出, 几乎不存在延迟, 很明显Native Streaming模式占据了流计算领域"低延时"的核心竞争力, 当然Native Streaming模式的实现框架是一个历史先河，第一个实现Native Streaming模式的流计算框架是第一个吃螃蟹的人，需要面临更多的挑战，后续章节我们会慢慢介绍。当然Native Streaming模式的框架实现上面很容易实现Micro-Batching和Batching模式的计算，Apache Flink就是Native Streaming计算模式的流批统一的计算引擎。
 
 2. 数据模型
 
-image::shujumoxing1.jpg[]
+\includegraphics[width=\textwidth]{shujumoxing1.png}
 
 Spark最早采用RDD模型，达到比MapReduce计算快100倍的显著优势，对Hadoop生态大幅升级换代。RDD弹性数据集是分割为固定大小的批数据，RDD提供了丰富的底层API对数据集做操作。为持续降低使用门槛，Spark社区开始开发高阶API：DataFrame/DataSet，Spark SQL作为统一的API，掩盖了底层，同时针对性地做SQL逻辑优化和物理优化，非堆存储优化也大幅提升了性能。
 
@@ -146,13 +142,13 @@ Spark Structured Streaming提供了微批和流式两个处理引擎。微批的
 
 综上，Spark Streaming和Structured Streaming是用批计算的思路做流计算。其实，用流计算的思路开发批计算才是最合理的。对Spark来讲，大换血不大可能，只有局部优化。其实，Spark里core、streaming、structured streaming、graphx四个模块，是四种实现思路，通过上层SQL统一显得不纯粹和谐。
 
-image::shujumoxing2.png[]
+\includegraphics[width=\textwidth]{shujumoxing2.png}
 
 Flink的基本数据模型是数据流，及事件(Event)的序列。数据流作为数据的基本模型可能没有表或者数据块直观熟悉，但是可以证明是完全等效的。流可以是无边界的无限流，即一般意义上的流处理。也可以是有边界的有限流，这样就是批处理。
 
 Flink采用Dataflow模型，和Lambda模式不同。Dataflow是纯粹的节点组成的一个图，图中的节点可以执行批计算，也可以是流计算，也可以是机器学习算法，流数据在节点之间流动，被节点上的处理函数实时apply处理，节点之间是用netty连接起来，两个netty之间keepalive，网络buffer是自然反压的关键。经过逻辑优化和物理优化，Dataflow的逻辑关系和运行时的物理拓扑相差不大。这是纯粹的流式设计，时延和吞吐理论上是最优的。
 
-image::lambdaarch.png[]
+\includegraphics[width=\textwidth]{lambdaarch.png}
 
 3. 运行时架构
 
@@ -168,7 +164,9 @@ Flink有统一的runtime，在此之上可以是Batch API、Stream API、ML、Gr
 
 在流计算的运行时架构方面，Flink明显更为统一且优雅一些。
 
-NOTE: Lambda架构的问题是改变代码后需要重新在两个复杂的分布式系统中再次处理输出结果是非常痛苦的，而且我不认为这个问题能够解决。相当于同一套数据集的处理逻辑，使用Spark Core需要写一遍，使用Spark Streaming需要再写一遍，无法复用，这是致命缺陷。
+\begin{bclogo}[logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{笔记}
+Lambda架构的问题是改变代码后需要重新在两个复杂的分布式系统中再次处理输出结果是非常痛苦的，而且我不认为这个问题能够解决。相当于同一套数据集的处理逻辑，使用Spark Core需要写一遍，使用Spark Streaming需要再写一遍，无法复用，这是致命缺陷。
+\end{bclogo}
 
 \subsection{Flink的重要特点}
 
@@ -178,11 +176,11 @@ NOTE: Lambda架构的问题是改变代码后需要重新在两个复杂的分�
 
 与之不同的就是Spark Streaming微批次，如图：
 
-image::streaming-flow.png[]
+\includegraphics[width=\textwidth]{streaming-flow.png}
 
 事件驱动型：
 
-image::usecases-eventdrivenapps.png[]
+\includegraphics[width=\textwidth]{usecases-eventdrivenapps.png}
 
 ==== 1.3.2 流与批的世界观
 
@@ -198,13 +196,13 @@ image::usecases-eventdrivenapps.png[]
 
 *有界数据流*：有界数据流有明确定义的开始和结束，可以在执行任何计算之前通过获取所有数据来处理有界流，处理有界流不需要有序获取，因为可以始终对有界数据集进行排序，有界流的处理也称为批处理。
 
-image::bounded-unbounded.png[]
+\includegraphics[width=\textwidth]{bounded-unbounded.png}
 
 这种以流为世界观的架构，获得的最大好处就是具有极低的延迟。
 
 \subsubsection{分层api}
 
-image::api-stack.png[]
+\includegraphics[width=\textwidth]{api-stack.png}
 
 最底层级的抽象仅仅提供了有状态流，它将通过在DataStream API中嵌入Process Function来处理数据。Process Function与DataStream API相集成，使其可以对某些特定的操作进行底层的抽象，它允许用户可以自由地处理来自一个或多个数据流的事件，并使用一致的容错的状态。除此之外，用户可以注册事件时间并处理时间回调，从而使程序可以处理复杂的计算。
 
@@ -217,5 +215,147 @@ Table API是以表为中心的声明式编程，其中表可能会动态变化(�
 Flink提供的最高层级的抽象是SQL。这一层抽象在语法与表达能力上与Table API类似，但是是以SQL查询表达式的形式表现程序。SQL抽象与Table API交互密切，同时SQL查询可以直接在Table API定义的表上执行。
 
 WARNING: 目前Flink作为批处理还不是主流，不如Spark成熟，所以DataSet使用的并不是很多。Flink Table API和Flink SQL也并不完善，大多都由各大厂商自己定制。所以我们主要学习DataStream API的使用。实际上Flink作为最接近Google DataFlow模型的实现，是流批统一的观点，所以基本上使用DataStream就可以了。
+
+
+== 第二章 Flink快速上手
+
+=== 2.1 使用Maven搭建工程
+
+*IDE推荐使用Idea*
+
+我们使用Flink官方提供的flink-quickstart-scala原型来创建我们的工程，因为Flink官方提供的pom.xml经过了精心配置，可以打包出很小的Jar包。
+
+image::quickstart1.png[]
+
+image::quickstart2.png[]
+
+image::quickstart3.png[]
+
+image::quickstart4.png[]
+
+image::quickstart5.png[]
+
+image::quickstart6.png[]
+
+image::quickstart7.png[]
+
+[source,shell]
+----
+$ tree quickstart/
+quickstart/
+├── pom.xml
+└── src
+    └── main
+        ├── resources
+        │   └── log4j.properties
+        └── scala
+            └── org
+                └── myorg
+                    └── quickstart
+                        ├── BatchJob.scala
+                        └── StreamingJob.scala
+----
+
+.StreamingJob.scala
+[source, scala]
+----
+package com.atguigu
+
+import org.apache.flink.streaming.api.scala._ // 隐式类型转换
+import org.apache.flink.streaming.api.windowing.time.Time
+
+object StreamingJob {
+
+  /** Main program method */
+  def main(args: Array[String]) : Unit = {
+
+    // get the execution environment
+    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+
+    // get input data by connecting to the socket
+    val text: DataStream[String] = env.socketTextStream("localhost", 9999, '\n')
+
+    // parse the data, group it, window it, and aggregate the counts
+    val windowCounts = text
+      .flatMap { w => w.split("\\s") } // <1>
+      .map { w => WordWithCount(w, 1) }
+      .keyBy("word")
+      .timeWindow(Time.seconds(5))
+      .sum("count")
+
+    // print the results with a single thread, rather than in parallel
+    windowCounts.print().setParallelism(1)
+
+    env.execute("Socket Window WordCount")
+  }
+
+  /** Data type for words with count */
+  case class WordWithCount(word: String, count: Long)
+}
+----
+<1> flatMap的函数签名：``def flatMap[A,B](as: List[A])(f: A => List[B]): List[B]``, 例如: ``flatMap(List(1,2,3))(i => List(i,i))``结果是``List(1,1,2,2,3,3)``, ``List("a b", "c d").flatMap(line => line.split(" "))``结果是``List(a, b, c, d)``。
+
+新建一个Terminal终端，然后运行以下:
+
+[source, shell]
+----
+$ nc -lk 9999
+----
+
+查看结果，在flink文件夹中的log文件夹里，后缀名为``.out``, 和在idea里面执行的样子不一样，不会打印到控制台。 
+
+=== 2.2 Flink部署
+
+==== 2.2.1 下载Hadoop Free版本的Flink
+
+:download-link: https://www.apache.org/dyn/closer.lua/flink/flink-1.7.2/flink-1.7.2-bin-scala_2.11.tgz[下载链接]
+
+{download-link}
+
+==== 2.2.2 解压缩
+
+[source,shell]
+----
+$ tar xvfz flink-1.7.2-bin-scala_2.11.tgz
+----
+
+==== 2.2.3 启动Flink集群
+
+[source,shell]
+----
+$ cd flink-1.7.2
+$ ./bin/start-cluster.sh
+----
+
+==== 2.2.4 在浏览器中打开Flink的Web UI
+
+http://localhost:8081
+
+==== 2.2.5 打包编写好的StreamingJob程序
+
+在Idea中使用maven package功能打包。
+
+==== 2.2.6 提交打包好的程序
+
+[source,shell]
+----
+$ ./bin/flink run xxxx.jar
+----
+
+==== 2.2.7 在Flink Web UI查看Dashboard中job的执行状态
+
+==== 2.2.8 停止Flink集群
+
+[source,shell]
+----
+$ ./bin/stop-cluster.sh
+----
+
+
+
+
+
+
+
 
 \end{document}

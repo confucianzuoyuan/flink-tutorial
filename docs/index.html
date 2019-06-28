@@ -5622,6 +5622,37 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <div class="paragraph">
 <p>当然，根据实际的需要，我们还可以将Sink指定为Kafka、ES、Redis或其它存储，这里就不一一展开实现了。</p>
 </div>
+<div class="paragraph">
+<p>kafka生产者程序</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">import</span> <span class="tok-nn">java.util.Properties</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.kafka.clients.producer.</span><span class="tok-o">{</span><span class="tok-nc">KafkaProducer</span><span class="tok-o">,</span> <span class="tok-nc">ProducerRecord</span><span class="tok-o">}</span>
+
+<span class="tok-k">object</span> <span class="tok-nc">KafkaProducerUtil</span> <span class="tok-o">{</span>
+
+  <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-n">writeToKafka</span><span class="tok-o">(</span><span class="tok-s">&quot;hotitems&quot;</span><span class="tok-o">)</span>
+  <span class="tok-o">}</span>
+
+  <span class="tok-k">def</span> <span class="tok-n">writeToKafka</span><span class="tok-o">(</span><span class="tok-n">topic</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-k">val</span> <span class="tok-n">props</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">Properties</span><span class="tok-o">()</span>
+    <span class="tok-n">props</span><span class="tok-o">.</span><span class="tok-n">put</span><span class="tok-o">(</span><span class="tok-s">&quot;bootstrap.servers&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;localhost:9092&quot;</span><span class="tok-o">)</span>
+    <span class="tok-n">props</span><span class="tok-o">.</span><span class="tok-n">put</span><span class="tok-o">(</span><span class="tok-s">&quot;key.serializer&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;org.apache.kafka.common.serialization.StringSerializer&quot;</span><span class="tok-o">)</span>
+    <span class="tok-n">props</span><span class="tok-o">.</span><span class="tok-n">put</span><span class="tok-o">(</span><span class="tok-s">&quot;value.serializer&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;org.apache.kafka.common.serialization.StringSerializer&quot;</span><span class="tok-o">)</span>
+    <span class="tok-k">val</span> <span class="tok-n">producer</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">KafkaProducer</span><span class="tok-o">[</span><span class="tok-kt">String</span>, <span class="tok-kt">String</span><span class="tok-o">](</span><span class="tok-n">props</span><span class="tok-o">)</span>
+    <span class="tok-k">val</span> <span class="tok-n">resourcesPath</span> <span class="tok-k">=</span> <span class="tok-n">getClass</span><span class="tok-o">.</span><span class="tok-n">getResource</span><span class="tok-o">(</span><span class="tok-s">&quot;/UserBehavior.csv&quot;</span><span class="tok-o">)</span>
+    <span class="tok-k">val</span> <span class="tok-n">bufferedSource</span> <span class="tok-k">=</span> <span class="tok-n">io</span><span class="tok-o">.</span><span class="tok-nc">Source</span><span class="tok-o">.</span><span class="tok-n">fromFile</span><span class="tok-o">(</span><span class="tok-n">resourcesPath</span><span class="tok-o">.</span><span class="tok-n">getPath</span><span class="tok-o">)</span>
+    <span class="tok-k">for</span> <span class="tok-o">(</span><span class="tok-n">line</span> <span class="tok-k">&lt;-</span> <span class="tok-n">bufferedSource</span><span class="tok-o">.</span><span class="tok-n">getLines</span><span class="tok-o">)</span> <span class="tok-o">{</span>
+      <span class="tok-k">val</span> <span class="tok-n">record</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">ProducerRecord</span><span class="tok-o">[</span><span class="tok-kt">String</span>, <span class="tok-kt">String</span><span class="tok-o">](</span><span class="tok-n">topic</span><span class="tok-o">,</span> <span class="tok-n">line</span><span class="tok-o">)</span>
+      <span class="tok-n">producer</span><span class="tok-o">.</span><span class="tok-n">send</span><span class="tok-o">(</span><span class="tok-n">record</span><span class="tok-o">)</span>
+    <span class="tok-o">}</span>
+    <span class="tok-n">producer</span><span class="tok-o">.</span><span class="tok-n">close</span><span class="tok-o">()</span>
+  <span class="tok-o">}</span>
+<span class="tok-o">}</span></code></pre>
+</div>
+</div>
 </div>
 </div>
 </div>

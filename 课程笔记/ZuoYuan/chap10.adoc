@@ -629,6 +629,36 @@ val stream = env
 
 当然，根据实际的需要，我们还可以将Sink指定为Kafka、ES、Redis或其它存储，这里就不一一展开实现了。
 
+kafka生产者程序
+
+[source,scala]
+----
+import java.util.Properties
+import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
+
+object KafkaProducerUtil {
+
+  def main(args: Array[String]): Unit = {
+    writeToKafka("hotitems")
+  }
+
+  def writeToKafka(topic: String): Unit = {
+    val props = new Properties()
+    props.put("bootstrap.servers", "localhost:9092")
+    props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
+    props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
+    val producer = new KafkaProducer[String, String](props)
+    val resourcesPath = getClass.getResource("/UserBehavior.csv")
+    val bufferedSource = io.Source.fromFile(resourcesPath.getPath)
+    for (line <- bufferedSource.getLines) {
+      val record = new ProducerRecord[String, String](topic, line)
+      producer.send(record)
+    }
+    producer.close()
+  }
+}
+----
+
 === 10.3 实时流量统计
 
 * 基本需求
