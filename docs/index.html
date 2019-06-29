@@ -706,8 +706,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel3">
 <li><a href="#_10_5_1_模块创建和数据准备">10.5.1 模块创建和数据准备</a></li>
 <li><a href="#_10_5_2_代码实现">10.5.2 代码实现</a></li>
+<li><a href="#_10_5_3_使用process_function实现订单超时需求">10.5.3 使用Process Function实现订单超时需求</a></li>
 </ul>
 </li>
+<li><a href="#_10_6_实现两条流的join">10.6 实现两条流的join</a></li>
 </ul>
 </li>
 </ul>
@@ -6164,6 +6166,210 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
   <span class="tok-o">}</span>
 <span class="tok-o">}</span></code></pre>
 </div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_10_5_3_使用process_function实现订单超时需求">10.5.3 使用Process Function实现订单超时需求</h4>
+<div class="listingblock">
+<div class="title">OrderTimeoutWithoutCep.scala</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.common.state.</span><span class="tok-o">{</span><span class="tok-nc">ValueState</span><span class="tok-o">,</span> <span class="tok-nc">ValueStateDescriptor</span><span class="tok-o">}</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.TimeCharacteristic</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.functions.KeyedProcessFunction</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala.StreamExecutionEnvironment</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala._</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.util.Collector</span>
+
+<span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">OrderEvent1</span><span class="tok-o">(</span><span class="tok-n">orderId</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span>
+                      <span class="tok-n">eventType</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span>
+                      <span class="tok-n">eventTime</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">)</span>
+
+<span class="tok-k">object</span> <span class="tok-nc">OrderTimeoutWithoutCep</span> <span class="tok-o">{</span>
+  <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
+
+    <span class="tok-k">val</span> <span class="tok-n">orderEventsStream</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">fromCollection</span><span class="tok-o">(</span><span class="tok-nc">List</span><span class="tok-o">(</span>
+      <span class="tok-nc">OrderEvent1</span><span class="tok-o">(</span><span class="tok-s">&quot;1&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;create&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430842&quot;</span><span class="tok-o">),</span>
+      <span class="tok-nc">OrderEvent1</span><span class="tok-o">(</span><span class="tok-s">&quot;2&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;create&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430843&quot;</span><span class="tok-o">),</span>
+      <span class="tok-nc">OrderEvent1</span><span class="tok-o">(</span><span class="tok-s">&quot;2&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;pay&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430844&quot;</span><span class="tok-o">),</span>
+      <span class="tok-nc">OrderEvent1</span><span class="tok-o">(</span><span class="tok-s">&quot;3&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;pay&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430942&quot;</span><span class="tok-o">),</span>
+      <span class="tok-nc">OrderEvent1</span><span class="tok-o">(</span><span class="tok-s">&quot;4&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;pay&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430943&quot;</span><span class="tok-o">)</span>
+    <span class="tok-o">)).</span><span class="tok-n">assignAscendingTimestamps</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">eventTime</span><span class="tok-o">.</span><span class="tok-n">toLong</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span><span class="tok-o">)</span>
+
+    <span class="tok-k">val</span> <span class="tok-n">orders</span> <span class="tok-k">=</span> <span class="tok-n">orderEventsStream</span>
+      <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">orderId</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">process</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">OrderMatchFunction</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">()</span>
+
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span>
+  <span class="tok-o">}</span>
+
+  <span class="tok-k">class</span> <span class="tok-nc">OrderMatchFunction</span> <span class="tok-k">extends</span> <span class="tok-nc">KeyedProcessFunction</span><span class="tok-o">[</span><span class="tok-kt">String</span>,
+    <span class="tok-kt">OrderEvent1</span>, <span class="tok-kt">OrderEvent1</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+    <span class="tok-k">lazy</span> <span class="tok-k">val</span> <span class="tok-n">orderState</span><span class="tok-k">:</span> <span class="tok-kt">ValueState</span><span class="tok-o">[</span><span class="tok-kt">OrderEvent1</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">getRuntimeContext</span>
+      <span class="tok-o">.</span><span class="tok-n">getState</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">ValueStateDescriptor</span><span class="tok-o">[</span><span class="tok-kt">OrderEvent1</span><span class="tok-o">](</span><span class="tok-s">&quot;saved order&quot;</span><span class="tok-o">,</span>
+        <span class="tok-n">classOf</span><span class="tok-o">[</span><span class="tok-kt">OrderEvent1</span><span class="tok-o">]))</span>
+
+    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">processElement</span><span class="tok-o">(</span><span class="tok-n">order</span><span class="tok-k">:</span> <span class="tok-kt">OrderEvent1</span><span class="tok-o">,</span>
+                                <span class="tok-n">context</span><span class="tok-k">:</span> <span class="tok-kt">KeyedProcessFunction</span><span class="tok-o">[</span>
+                                  <span class="tok-kt">String</span>, <span class="tok-kt">OrderEvent1</span>, <span class="tok-kt">OrderEvent1</span><span class="tok-o">]</span><span class="tok-k">#</span><span class="tok-nc">Context</span><span class="tok-o">,</span>
+                                <span class="tok-n">out</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[</span><span class="tok-kt">OrderEvent1</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+      <span class="tok-k">val</span> <span class="tok-n">timerService</span> <span class="tok-k">=</span> <span class="tok-n">context</span><span class="tok-o">.</span><span class="tok-n">timerService</span>
+
+      <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">order</span><span class="tok-o">.</span><span class="tok-n">eventType</span> <span class="tok-o">==</span> <span class="tok-s">&quot;create&quot;</span><span class="tok-o">)</span> <span class="tok-o">{</span>
+        <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">orderState</span><span class="tok-o">.</span><span class="tok-n">value</span><span class="tok-o">()</span> <span class="tok-o">==</span> <span class="tok-kc">null</span><span class="tok-o">)</span> <span class="tok-o">{</span>
+          <span class="tok-n">orderState</span><span class="tok-o">.</span><span class="tok-n">update</span><span class="tok-o">(</span><span class="tok-n">order</span><span class="tok-o">)</span>
+        <span class="tok-o">}</span>
+      <span class="tok-o">}</span> <span class="tok-k">else</span> <span class="tok-o">{</span>
+        <span class="tok-n">orderState</span><span class="tok-o">.</span><span class="tok-n">update</span><span class="tok-o">(</span><span class="tok-n">order</span><span class="tok-o">)</span>
+      <span class="tok-o">}</span>
+
+      <span class="tok-n">timerService</span><span class="tok-o">.</span><span class="tok-n">registerEventTimeTimer</span><span class="tok-o">(</span>
+        <span class="tok-n">order</span><span class="tok-o">.</span><span class="tok-n">eventTime</span><span class="tok-o">.</span><span class="tok-n">toLong</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span> <span class="tok-o">+</span> <span class="tok-mi">5</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span>
+      <span class="tok-o">)</span>
+    <span class="tok-o">}</span>
+
+    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">onTimer</span><span class="tok-o">(</span><span class="tok-n">timestamp</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span>
+                         <span class="tok-n">ctx</span><span class="tok-k">:</span> <span class="tok-kt">KeyedProcessFunction</span><span class="tok-o">[</span>
+                           <span class="tok-kt">String</span>, <span class="tok-kt">OrderEvent1</span>, <span class="tok-kt">OrderEvent1</span><span class="tok-o">]</span><span class="tok-k">#</span><span class="tok-nc">OnTimerContext</span><span class="tok-o">,</span>
+                         <span class="tok-n">out</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[</span><span class="tok-kt">OrderEvent1</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+      <span class="tok-k">val</span> <span class="tok-n">savedOrder</span> <span class="tok-k">=</span> <span class="tok-n">orderState</span><span class="tok-o">.</span><span class="tok-n">value</span><span class="tok-o">()</span>
+
+      <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">savedOrder</span> <span class="tok-o">!=</span> <span class="tok-kc">null</span> <span class="tok-o">&amp;&amp;</span>
+        <span class="tok-o">(</span><span class="tok-n">savedOrder</span><span class="tok-o">.</span><span class="tok-n">eventType</span> <span class="tok-o">==</span> <span class="tok-s">&quot;create&quot;</span><span class="tok-o">))</span> <span class="tok-o">{</span>
+        <span class="tok-n">out</span><span class="tok-o">.</span><span class="tok-n">collect</span><span class="tok-o">(</span><span class="tok-n">savedOrder</span><span class="tok-o">)</span>
+      <span class="tok-o">}</span>
+
+      <span class="tok-n">orderState</span><span class="tok-o">.</span><span class="tok-n">clear</span><span class="tok-o">()</span>
+    <span class="tok-o">}</span>
+  <span class="tok-o">}</span>
+<span class="tok-o">}</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_10_6_实现两条流的join">10.6 实现两条流的join</h3>
+<div class="listingblock">
+<div class="title">TwoStreamsJoin.scala</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.common.state.</span><span class="tok-o">{</span><span class="tok-nc">ValueState</span><span class="tok-o">,</span> <span class="tok-nc">ValueStateDescriptor</span><span class="tok-o">}</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.TimeCharacteristic</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.functions.co.CoProcessFunction</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala.OutputTag</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala._</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.util.Collector</span>
+
+<span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">OrderEvent</span><span class="tok-o">(</span><span class="tok-n">orderId</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span>
+                      <span class="tok-n">eventType</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span>
+                      <span class="tok-n">eventTime</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">)</span>
+
+<span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">PayEvent</span><span class="tok-o">(</span><span class="tok-n">orderId</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span>
+                    <span class="tok-n">eventType</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span>
+                    <span class="tok-n">eventTime</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">)</span>
+
+<span class="tok-k">object</span> <span class="tok-nc">TwoStreamsJoin</span> <span class="tok-o">{</span>
+  <span class="tok-k">val</span> <span class="tok-n">unmatchedOrders</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">OutputTag</span><span class="tok-o">[</span><span class="tok-kt">OrderEvent</span><span class="tok-o">](</span><span class="tok-s">&quot;unmatchedOrders&quot;</span><span class="tok-o">){}</span>
+  <span class="tok-k">val</span> <span class="tok-n">unmatchedPays</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">OutputTag</span><span class="tok-o">[</span><span class="tok-kt">PayEvent</span><span class="tok-o">](</span><span class="tok-s">&quot;unmatchedPays&quot;</span><span class="tok-o">){}</span>
+
+  <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+
+    <span class="tok-k">val</span> <span class="tok-n">orders</span> <span class="tok-k">=</span> <span class="tok-n">env</span>
+      <span class="tok-o">.</span><span class="tok-n">fromCollection</span><span class="tok-o">(</span><span class="tok-nc">List</span><span class="tok-o">(</span>
+      <span class="tok-nc">OrderEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;1&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;create&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430842&quot;</span><span class="tok-o">),</span>
+      <span class="tok-nc">OrderEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;2&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;create&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430843&quot;</span><span class="tok-o">),</span>
+      <span class="tok-nc">OrderEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;1&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;pay&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430844&quot;</span><span class="tok-o">),</span>
+      <span class="tok-nc">OrderEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;2&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;pay&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430845&quot;</span><span class="tok-o">),</span>
+      <span class="tok-nc">OrderEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;3&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;create&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430849&quot;</span><span class="tok-o">),</span>
+      <span class="tok-nc">OrderEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;3&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;pay&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430849&quot;</span><span class="tok-o">)</span>
+    <span class="tok-o">)).</span><span class="tok-n">assignAscendingTimestamps</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">eventTime</span><span class="tok-o">.</span><span class="tok-n">toLong</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-s">&quot;orderId&quot;</span><span class="tok-o">)</span>
+
+    <span class="tok-k">val</span> <span class="tok-n">pays</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">fromCollection</span><span class="tok-o">(</span><span class="tok-nc">List</span><span class="tok-o">(</span>
+      <span class="tok-nc">PayEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;1&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;weixin&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430847&quot;</span><span class="tok-o">),</span>
+      <span class="tok-nc">PayEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;2&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;zhifubao&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430848&quot;</span><span class="tok-o">),</span>
+      <span class="tok-nc">PayEvent</span><span class="tok-o">(</span><span class="tok-s">&quot;4&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;zhifubao&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;1558430850&quot;</span><span class="tok-o">)</span>
+    <span class="tok-o">)).</span><span class="tok-n">assignAscendingTimestamps</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">eventTime</span><span class="tok-o">.</span><span class="tok-n">toLong</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-s">&quot;orderId&quot;</span><span class="tok-o">)</span>
+
+    <span class="tok-k">val</span> <span class="tok-n">processed</span> <span class="tok-k">=</span> <span class="tok-n">orders</span>
+      <span class="tok-o">.</span><span class="tok-n">connect</span><span class="tok-o">(</span><span class="tok-n">pays</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">process</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">EnrichmentFunction</span><span class="tok-o">)</span>
+
+    <span class="tok-n">processed</span><span class="tok-o">.</span><span class="tok-n">getSideOutput</span><span class="tok-o">[</span><span class="tok-kt">PayEvent</span><span class="tok-o">](</span><span class="tok-n">unmatchedPays</span><span class="tok-o">).</span><span class="tok-n">print</span><span class="tok-o">()</span>
+    <span class="tok-n">processed</span><span class="tok-o">.</span><span class="tok-n">getSideOutput</span><span class="tok-o">[</span><span class="tok-kt">OrderEvent</span><span class="tok-o">](</span><span class="tok-n">unmatchedOrders</span><span class="tok-o">).</span><span class="tok-n">print</span><span class="tok-o">()</span>
+
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span>
+  <span class="tok-o">}</span>
+
+  <span class="tok-k">class</span> <span class="tok-nc">EnrichmentFunction</span> <span class="tok-k">extends</span> <span class="tok-nc">CoProcessFunction</span><span class="tok-o">[</span>
+    <span class="tok-kt">OrderEvent</span>, <span class="tok-kt">PayEvent</span>, <span class="tok-o">(</span><span class="tok-kt">OrderEvent</span>, <span class="tok-kt">PayEvent</span><span class="tok-o">)]</span> <span class="tok-o">{</span>
+    <span class="tok-k">lazy</span> <span class="tok-k">val</span> <span class="tok-n">orderState</span><span class="tok-k">:</span> <span class="tok-kt">ValueState</span><span class="tok-o">[</span><span class="tok-kt">OrderEvent</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">getRuntimeContext</span>
+      <span class="tok-o">.</span><span class="tok-n">getState</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">ValueStateDescriptor</span><span class="tok-o">[</span><span class="tok-kt">OrderEvent</span><span class="tok-o">](</span><span class="tok-s">&quot;saved order&quot;</span><span class="tok-o">,</span>
+        <span class="tok-n">classOf</span><span class="tok-o">[</span><span class="tok-kt">OrderEvent</span><span class="tok-o">]))</span>
+
+    <span class="tok-k">lazy</span> <span class="tok-k">val</span> <span class="tok-n">payState</span><span class="tok-k">:</span> <span class="tok-kt">ValueState</span><span class="tok-o">[</span><span class="tok-kt">PayEvent</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">getRuntimeContext</span>
+      <span class="tok-o">.</span><span class="tok-n">getState</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">ValueStateDescriptor</span><span class="tok-o">[</span><span class="tok-kt">PayEvent</span><span class="tok-o">](</span><span class="tok-s">&quot;saved pay&quot;</span><span class="tok-o">,</span>
+        <span class="tok-n">classOf</span><span class="tok-o">[</span><span class="tok-kt">PayEvent</span><span class="tok-o">]))</span>
+
+    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">processElement1</span><span class="tok-o">(</span><span class="tok-n">order</span><span class="tok-k">:</span> <span class="tok-kt">OrderEvent</span><span class="tok-o">,</span>
+                                 <span class="tok-n">context</span><span class="tok-k">:</span> <span class="tok-kt">CoProcessFunction</span><span class="tok-o">[</span>
+                                   <span class="tok-kt">OrderEvent</span>,
+                                   <span class="tok-kt">PayEvent</span>,
+                                   <span class="tok-o">(</span><span class="tok-kt">OrderEvent</span>, <span class="tok-kt">PayEvent</span><span class="tok-o">)]</span><span class="tok-k">#</span><span class="tok-nc">Context</span><span class="tok-o">,</span>
+                                 <span class="tok-n">out</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[(</span><span class="tok-kt">OrderEvent</span>, <span class="tok-kt">PayEvent</span><span class="tok-o">)])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+      <span class="tok-k">val</span> <span class="tok-n">pay</span> <span class="tok-k">=</span> <span class="tok-n">payState</span><span class="tok-o">.</span><span class="tok-n">value</span><span class="tok-o">()</span>
+
+      <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">pay</span> <span class="tok-o">!=</span> <span class="tok-kc">null</span><span class="tok-o">)</span> <span class="tok-o">{</span>
+        <span class="tok-n">payState</span><span class="tok-o">.</span><span class="tok-n">clear</span><span class="tok-o">()</span>
+        <span class="tok-n">out</span><span class="tok-o">.</span><span class="tok-n">collect</span><span class="tok-o">((</span><span class="tok-n">order</span><span class="tok-o">,</span> <span class="tok-n">pay</span><span class="tok-o">))</span>
+      <span class="tok-o">}</span> <span class="tok-k">else</span> <span class="tok-o">{</span>
+        <span class="tok-n">orderState</span><span class="tok-o">.</span><span class="tok-n">update</span><span class="tok-o">(</span><span class="tok-n">order</span><span class="tok-o">)</span>
+        <span class="tok-c1">// as soon as the watermark arrives,</span>
+        <span class="tok-c1">// we can stop waiting for the corresponding pay</span>
+        <span class="tok-n">context</span><span class="tok-o">.</span><span class="tok-n">timerService</span>
+          <span class="tok-o">.</span><span class="tok-n">registerEventTimeTimer</span><span class="tok-o">(</span><span class="tok-n">order</span><span class="tok-o">.</span><span class="tok-n">eventTime</span><span class="tok-o">.</span><span class="tok-n">toLong</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span><span class="tok-o">)</span>
+      <span class="tok-o">}</span>
+    <span class="tok-o">}</span>
+
+    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">processElement2</span><span class="tok-o">(</span><span class="tok-n">pay</span><span class="tok-k">:</span> <span class="tok-kt">PayEvent</span><span class="tok-o">,</span>
+                                 <span class="tok-n">context</span><span class="tok-k">:</span> <span class="tok-kt">CoProcessFunction</span><span class="tok-o">[</span>
+                                   <span class="tok-kt">OrderEvent</span>,
+                                   <span class="tok-kt">PayEvent</span>,
+                                   <span class="tok-o">(</span><span class="tok-kt">OrderEvent</span>, <span class="tok-kt">PayEvent</span><span class="tok-o">)]</span><span class="tok-k">#</span><span class="tok-nc">Context</span><span class="tok-o">,</span>
+                                 <span class="tok-n">out</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[(</span><span class="tok-kt">OrderEvent</span>, <span class="tok-kt">PayEvent</span><span class="tok-o">)])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+      <span class="tok-k">val</span> <span class="tok-n">order</span> <span class="tok-k">=</span> <span class="tok-n">orderState</span><span class="tok-o">.</span><span class="tok-n">value</span><span class="tok-o">()</span>
+
+      <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">order</span> <span class="tok-o">!=</span> <span class="tok-kc">null</span><span class="tok-o">)</span> <span class="tok-o">{</span>
+        <span class="tok-n">orderState</span><span class="tok-o">.</span><span class="tok-n">clear</span><span class="tok-o">()</span>
+        <span class="tok-n">out</span><span class="tok-o">.</span><span class="tok-n">collect</span><span class="tok-o">((</span><span class="tok-n">order</span><span class="tok-o">,</span> <span class="tok-n">pay</span><span class="tok-o">))</span>
+      <span class="tok-o">}</span> <span class="tok-k">else</span> <span class="tok-o">{</span>
+        <span class="tok-n">payState</span><span class="tok-o">.</span><span class="tok-n">update</span><span class="tok-o">(</span><span class="tok-n">pay</span><span class="tok-o">)</span>
+        <span class="tok-n">context</span><span class="tok-o">.</span><span class="tok-n">timerService</span><span class="tok-o">.</span><span class="tok-n">registerEventTimeTimer</span><span class="tok-o">(</span><span class="tok-n">pay</span><span class="tok-o">.</span><span class="tok-n">eventTime</span><span class="tok-o">.</span><span class="tok-n">toLong</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span><span class="tok-o">)</span>
+      <span class="tok-o">}</span>
+    <span class="tok-o">}</span>
+
+    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">onTimer</span><span class="tok-o">(</span><span class="tok-n">timestamp</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span>
+                         <span class="tok-n">ctx</span><span class="tok-k">:</span> <span class="tok-kt">CoProcessFunction</span><span class="tok-o">[</span><span class="tok-kt">OrderEvent</span>,
+                           <span class="tok-kt">PayEvent</span>, <span class="tok-o">(</span><span class="tok-kt">OrderEvent</span>, <span class="tok-kt">PayEvent</span><span class="tok-o">)]</span><span class="tok-k">#</span><span class="tok-nc">OnTimerContext</span><span class="tok-o">,</span>
+                         <span class="tok-n">out</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[(</span><span class="tok-kt">OrderEvent</span>, <span class="tok-kt">PayEvent</span><span class="tok-o">)])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+      <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">payState</span><span class="tok-o">.</span><span class="tok-n">value</span> <span class="tok-o">!=</span> <span class="tok-kc">null</span><span class="tok-o">)</span> <span class="tok-o">{</span>
+        <span class="tok-n">ctx</span><span class="tok-o">.</span><span class="tok-n">output</span><span class="tok-o">(</span><span class="tok-n">unmatchedPays</span><span class="tok-o">,</span> <span class="tok-n">payState</span><span class="tok-o">.</span><span class="tok-n">value</span><span class="tok-o">)</span>
+        <span class="tok-n">payState</span><span class="tok-o">.</span><span class="tok-n">clear</span><span class="tok-o">()</span>
+      <span class="tok-o">}</span>
+
+      <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">orderState</span><span class="tok-o">.</span><span class="tok-n">value</span> <span class="tok-o">!=</span> <span class="tok-kc">null</span><span class="tok-o">)</span> <span class="tok-o">{</span>
+        <span class="tok-n">ctx</span><span class="tok-o">.</span><span class="tok-n">output</span><span class="tok-o">(</span><span class="tok-n">unmatchedOrders</span><span class="tok-o">,</span> <span class="tok-n">orderState</span><span class="tok-o">.</span><span class="tok-n">value</span><span class="tok-o">)</span>
+        <span class="tok-n">orderState</span><span class="tok-o">.</span><span class="tok-n">clear</span><span class="tok-o">()</span>
+      <span class="tok-o">}</span>
+    <span class="tok-o">}</span>
+  <span class="tok-o">}</span>
+<span class="tok-o">}</span></code></pre>
 </div>
 </div>
 </div>
