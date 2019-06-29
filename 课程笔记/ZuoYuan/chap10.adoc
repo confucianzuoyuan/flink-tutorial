@@ -1012,7 +1012,7 @@ import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.util.Collector
 import scala.collection.Map
 
-case class OrderEvent(orderId: Long, eventType: String, eventTime: Long)
+case class OrderEvent(orderId: String, eventType: String, eventTime: String)
 
 object OrderTimeout {
 

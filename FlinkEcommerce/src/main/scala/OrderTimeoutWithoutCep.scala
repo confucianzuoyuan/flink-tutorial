@@ -22,7 +22,7 @@ object OrderTimeoutWithoutCep {
       OrderEvents("4", "pay", "1558430943")
     )).assignAscendingTimestamps(_.eventTime.toLong * 1000)
 
-    val longRides = orderEventsStream
+    val orders = orderEventsStream
       .keyBy(_.orderId)
       .process(new OrderMatchFunction())
       .print()
@@ -32,36 +32,36 @@ object OrderTimeoutWithoutCep {
 
   class OrderMatchFunction extends KeyedProcessFunction[String, OrderEvents, OrderEvents] {
     // keyed, managed state
-    // holds an END event if the ride has ended, otherwise a START event
+    // holds an END event if the order has ended, otherwise a START event
     lazy val orderState: ValueState[OrderEvents] = getRuntimeContext.getState(
-      new ValueStateDescriptor[OrderEvents]("saved ride", classOf[OrderEvents]))
+      new ValueStateDescriptor[OrderEvents]("saved order", classOf[OrderEvents]))
 
-    override def processElement(ride: OrderEvents,
+    override def processElement(order: OrderEvents,
                                 context: KeyedProcessFunction[String, OrderEvents, OrderEvents]#Context,
                                 out: Collector[OrderEvents]): Unit = {
       val timerService = context.timerService
 
-      if (ride.eventType == "create") {
+      if (order.eventType == "create") {
         // the matching END might have arrived first; don't overwrite it
         if (orderState.value() == null) {
-          orderState.update(ride)
+          orderState.update(order)
         }
       }
       else {
-        orderState.update(ride)
+        orderState.update(order)
       }
 
-      timerService.registerEventTimeTimer(ride.eventTime.toLong * 1000 + 5 * 1000)
+      timerService.registerEventTimeTimer(order.eventTime.toLong * 1000 + 5 * 1000)
     }
 
     override def onTimer(timestamp: Long,
                          ctx: KeyedProcessFunction[String, OrderEvents, OrderEvents]#OnTimerContext,
                          out: Collector[OrderEvents]): Unit = {
       println(timestamp)
-      val savedRide = orderState.value
+      val savedOrder = orderState.value
 
-      if (savedRide != null && (savedRide.eventType == "create")) {
-        out.collect(savedRide)
+      if (savedOrder != null && (savedOrder.eventType == "create")) {
+        out.collect(savedOrder)
       }
 
       orderState.clear()

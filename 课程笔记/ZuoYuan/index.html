@@ -6109,7 +6109,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.util.Collector</span>
 <span class="tok-k">import</span> <span class="tok-nn">scala.collection.Map</span>
 
-<span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">OrderEvent</span><span class="tok-o">(</span><span class="tok-n">orderId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">eventType</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">eventTime</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span>
+<span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">OrderEvent</span><span class="tok-o">(</span><span class="tok-n">orderId</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">eventType</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">eventTime</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">)</span>
 
 <span class="tok-k">object</span> <span class="tok-nc">OrderTimeout</span> <span class="tok-o">{</span>
 
