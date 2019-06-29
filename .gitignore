@@ -7,3 +7,7 @@ target/
 .vscode/
 *.iml
 .metals/
+*.aux
+*.log
+*.toc
+*.synctex.gz
