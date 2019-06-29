@@ -1152,6 +1152,9 @@ object OrderTimeoutWithoutCep {
 
 === 10.6 实现两条流的join
 
+.示意图
+image::twostreamsjoin.png[]
+
 .TwoStreamsJoin.scala
 [source,scala]
 ----

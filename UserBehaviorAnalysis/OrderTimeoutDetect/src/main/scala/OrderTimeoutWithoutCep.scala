@@ -41,7 +41,7 @@ object OrderTimeoutWithoutCep {
                                 context: KeyedProcessFunction[
                                   String, OrderEvent1, OrderEvent1]#Context,
                                 out: Collector[OrderEvent1]): Unit = {
-      val timerService = context.timerService
+//      val timerService = context.timerService
 
       if (order.eventType == "create") {
         if (orderState.value() == null) {
@@ -51,7 +51,7 @@ object OrderTimeoutWithoutCep {
         orderState.update(order)
       }
 
-      timerService.registerEventTimeTimer(
+      context.timerService.registerEventTimeTimer(
         order.eventTime.toLong * 1000 + 5 * 1000
       )
     }

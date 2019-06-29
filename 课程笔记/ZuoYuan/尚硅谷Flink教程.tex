@@ -5,7 +5,18 @@
 \usepackage{graphicx}
 \graphicspath{ {./images/} }
 \setlength\parindent{0pt}
+
+\title{尚硅谷Flink教程}
+\author{左元}
+\date{ }
+
+
 \begin{document}
+
+\maketitle
+
+\tableofcontents
+
 \section{Flink简介}
 
 \subsection{初识Flink}
@@ -18,7 +29,7 @@ Flink起源于Stratosphere项目，Stratosphere是在2010～2014年由3所地处
 
 Flink主页在其顶部展示了该项目的理念: "Apache Flink是为分布式、高性能、随时可用以及准确的流处理应用程序打造的开源流处理框架"。
 
-Apache Flink是一个框架和分布式处理引擎，[red]用于对无界和有界数据流进行有状态计算。Flink被设计在所有常见的集群环境中运行，以内存执行速度和任意规模来执行计算。
+Apache Flink是一个框架和分布式处理引擎，用于对无界和有界数据流进行有状态计算。Flink被设计在所有常见的集群环境中运行，以内存执行速度和任意规模来执行计算。
 
 \includegraphics[width=\textwidth]{flink-home-graphic.png}
 
@@ -110,19 +121,19 @@ Apache Flink是一个框架和分布式处理引擎，[red]用于对无界和有
 
 Flink的一个优势是，它拥有诸多重要的流式计算功能。其他项目为了实现这些功能，都不得不付出代价。比如，Storm实现了低延迟，但是做不到高吞吐，也不能在故障发生时准确地处理计算状态; Spark Streaming通过采用微批处理方法实现了高吞吐和容错性，但是牺牲了低延迟和实时处理能力，也不能使窗口与自然时间相匹配，并且表现力欠佳。
 
-*Spark Streaming* vs *Flink*
+\subsubsection{Spark Streaming vs Flink}
 
-1. 两者最重要的区别(流和微批)
+\textbf{两者最重要的区别(流和微批)}
 
-(1). Micro Batching 模式(spark)
+\textit{Micro Batching模式(spark)}
 
-Micro-Batching计算模式认为"流是批的特例"，流计算就是将连续不断的批进行持续计算，如果批足够小那么就有足够小的延时，在一定程度上满足了99%的实时计算场景。那么那1%为啥做不到呢? 这就是架构的魅力，在Micro-Batching模式的架构实现上就有一个自然流数据流入系统进行攒批的过程，这在一定程度上就增加了延时。具体如下示意图：
+Micro-Batching计算模式认为"流是批的特例"，流计算就是将连续不断的批进行持续计算，如果批足够小那么就有足够小的延时，在一定程度上满足了99\%的实时计算场景。那么那1\%为啥做不到呢? 这就是架构的魅力，在Micro-Batching模式的架构实现上就有一个自然流数据流入系统进行攒批的过程，这在一定程度上就增加了延时。具体如下示意图：
 
 \includegraphics[width=\linewidth]{sparkstreamingvsflink1.png}
 
 从上面可以看到是把输入的数据, 分成微小的批次, 然后一个批次一个批次的处理, 然后也是一片批次的输出. 很显然Micro-Batching模式有其天生的低延时瓶颈，但任何事物的存在都有两面性，在大数据计算的发展历史上，最初Hadoop上的MapReduce就是优秀的批模式计算框架，Micro-Batching在设计和实现上可以借鉴很多成熟实践。
 
-(2). Native Streaming 模式(flink)
+\textit{Native Streaming模式(flink)}
 
 Native Streaming计算模式认为批是流的特例"，这个认知更贴切流的概念，比如一些监控类的消息流，数据库操作的binlog，实时的支付交易信息等等自然流数据都是一条，一条的流入。Native Streaming计算模式每条数据的到来都进行计算，这种计算模式显得更自然，并且延时性能达到更低。具体如下示意图：
 
@@ -130,9 +141,9 @@ Native Streaming计算模式认为批是流的特例"，这个认知更贴切流
 
 从上图可以看到输入的数据过来一条处理一条, 然后输出, 几乎不存在延迟, 很明显Native Streaming模式占据了流计算领域"低延时"的核心竞争力, 当然Native Streaming模式的实现框架是一个历史先河，第一个实现Native Streaming模式的流计算框架是第一个吃螃蟹的人，需要面临更多的挑战，后续章节我们会慢慢介绍。当然Native Streaming模式的框架实现上面很容易实现Micro-Batching和Batching模式的计算，Apache Flink就是Native Streaming计算模式的流批统一的计算引擎。
 
-2. 数据模型
+\textbf{数据模型}
 
-\includegraphics[width=\textwidth]{shujumoxing1.png}
+\includegraphics[width=\textwidth]{shujumoxing1.jpg}
 
 Spark最早采用RDD模型，达到比MapReduce计算快100倍的显著优势，对Hadoop生态大幅升级换代。RDD弹性数据集是分割为固定大小的批数据，RDD提供了丰富的底层API对数据集做操作。为持续降低使用门槛，Spark社区开始开发高阶API：DataFrame/DataSet，Spark SQL作为统一的API，掩盖了底层，同时针对性地做SQL逻辑优化和物理优化，非堆存储优化也大幅提升了性能。
 
@@ -150,13 +161,13 @@ Flink采用Dataflow模型，和Lambda模式不同。Dataflow是纯粹的节点�
 
 \includegraphics[width=\textwidth]{lambdaarch.png}
 
-3. 运行时架构
+\textbf{运行时架构}
 
-*Spark运行时架构*
+\textit{Spark运行时架构}
 
 批计算是把DAG划分为不同stage，DAG节点之间有血缘关系，在运行期间一个stage的task任务列表执行完毕，销毁再去执行下一个stage；Spark Streaming则是对持续流入的数据划分一个批次，定时去执行批次的数据运算。Structured Streaming将无限输入流保存在状态存储中，对流数据做微批或实时的计算，跟Dataflow模型比较像。
 
-*Flink运行时架构*
+\textit{Flink运行时架构}
 
 Flink有统一的runtime，在此之上可以是Batch API、Stream API、ML、Graph、CEP等，DAG中的节点上执行上述模块的功能函数，DAG会一步步转化成ExecutionGraph，即物理可执行的图，最终交给调度系统。节点中的逻辑在资源池中的task上被apply执行，task和Spark中的task类似，都对应线程池中的一个线程。
 
@@ -182,19 +193,19 @@ Lambda架构的问题是改变代码后需要重新在两个复杂的分布式�
 
 \includegraphics[width=\textwidth]{usecases-eventdrivenapps.png}
 
-==== 1.3.2 流与批的世界观
+\subsubsection{流与批的世界观}
 
-**批处理**的特点是有界、持久、大量，非常适合需要访问全套记录才能完成的计算工作，一般用于离线统计。
+\textbf{批处理}的特点是有界、持久、大量，非常适合需要访问全套记录才能完成的计算工作，一般用于离线统计。
 
-**流处理**的特点是无界、实时，无需针对整个数据集执行操作，而是对通过系统传输的每个数据项执行操作，一般用于实时统计。
+\textbf{流处理}的特点是无界、实时，无需针对整个数据集执行操作，而是对通过系统传输的每个数据项执行操作，一般用于实时统计。
 
 在Spark的世界观中，一切都是由批次组成的，离线数据是一个大批次，而实时数据是由一个一个无限的小批次组成的。
 
 而在Flink的世界观中，一切都是由流组成的，离线数据是有界限的流，实时数据是一个没有界限的流，这就是所谓的有界流和无界流。
 
-*无界数据流*：无界数据流有一个开始但是没有结束，它们不会在生成时终止并提供数据，必须连续处理无界流，也就是说必须在获取后立即处理event。对于无界数据流我们无法等待所有数据都到达，因为输入是无界的，并且在任何时间点都不会完成。处理无界数据通常要求以特定顺序(例如事件发生的顺序)获取event，以便能够推断结果完整性。
+\textbf{无界数据流}：无界数据流有一个开始但是没有结束，它们不会在生成时终止并提供数据，必须连续处理无界流，也就是说必须在获取后立即处理event。对于无界数据流我们无法等待所有数据都到达，因为输入是无界的，并且在任何时间点都不会完成。处理无界数据通常要求以特定顺序(例如事件发生的顺序)获取event，以便能够推断结果完整性。
 
-*有界数据流*：有界数据流有明确定义的开始和结束，可以在执行任何计算之前通过获取所有数据来处理有界流，处理有界流不需要有序获取，因为可以始终对有界数据集进行排序，有界流的处理也称为批处理。
+\textbf{有界数据流}：有界数据流有明确定义的开始和结束，可以在执行任何计算之前通过获取所有数据来处理有界流，处理有界流不需要有序获取，因为可以始终对有界数据集进行排序，有界流的处理也称为批处理。
 
 \includegraphics[width=\textwidth]{bounded-unbounded.png}
 
@@ -216,32 +227,34 @@ Flink提供的最高层级的抽象是SQL。这一层抽象在语法与表达能
 
 WARNING: 目前Flink作为批处理还不是主流，不如Spark成熟，所以DataSet使用的并不是很多。Flink Table API和Flink SQL也并不完善，大多都由各大厂商自己定制。所以我们主要学习DataStream API的使用。实际上Flink作为最接近Google DataFlow模型的实现，是流批统一的观点，所以基本上使用DataStream就可以了。
 
+\section{Flink快速上手}
 
-== 第二章 Flink快速上手
+\subsection{使用Maven搭建工程}
 
-=== 2.1 使用Maven搭建工程
-
-*IDE推荐使用Idea*
+\textbf{IDE推荐使用Idea}
 
 我们使用Flink官方提供的flink-quickstart-scala原型来创建我们的工程，因为Flink官方提供的pom.xml经过了精心配置，可以打包出很小的Jar包。
 
-image::quickstart1.png[]
+\includegraphics[width=\textwidth]{quickstart1.png}
+\includegraphics[width=\textwidth]{quickstart2.png}
+\includegraphics[width=\textwidth]{quickstart3.png}
+\includegraphics[width=\textwidth]{quickstart4.png}
+\includegraphics[width=\textwidth]{quickstart5.png}
+\includegraphics[width=\textwidth]{quickstart6.png}
+\includegraphics[width=\textwidth]{quickstart7.png}
 
-image::quickstart2.png[]
 
-image::quickstart3.png[]
-
-image::quickstart4.png[]
-
-image::quickstart5.png[]
-
-image::quickstart6.png[]
-
-image::quickstart7.png[]
-
-[source,shell]
-----
-$ tree quickstart/
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+bgcolor=lightgray,
+fontsize=\footnotesize,
+linenos
+]
+{shell}
+tree quickstart/
 quickstart/
 ├── pom.xml
 └── src
@@ -254,11 +267,14 @@ quickstart/
                     └── quickstart
                         ├── BatchJob.scala
                         └── StreamingJob.scala
-----
+\end{minted}
 
-.StreamingJob.scala
-[source, scala]
-----
+
+\begin{minted}
+[
+frame=lines,
+]
+{scala}
 package com.atguigu
 
 import org.apache.flink.streaming.api.scala._ // 隐式类型转换
@@ -270,14 +286,23 @@ object StreamingJob {
   def main(args: Array[String]) : Unit = {
 
     // get the execution environment
-    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+    val env: StreamExecutionEnvironment = StreamExecutionEnvironment
+      .getExecutionEnvironment
 
     // get input data by connecting to the socket
     val text: DataStream[String] = env.socketTextStream("localhost", 9999, '\n')
 
     // parse the data, group it, window it, and aggregate the counts
     val windowCounts = text
-      .flatMap { w => w.split("\\s") } // <1>
+      // flatMap的函数签名：
+      // def flatMap[A,B](as: List[A])(f: A => List[B]): List[B]
+      // 例如: flatMap(List(1,2,3))(i => List(i,i))}
+      // 结果是
+      // List(1,1,2,2,3,3)
+      // List("a b", "c d").flatMap(line => line.split(" "))
+      // 结果是
+      // List(a, b, c, d)
+      .flatMap { w => w.split("\\s") }
       .map { w => WordWithCount(w, 1) }
       .keyBy("word")
       .timeWindow(Time.seconds(5))
@@ -292,70 +317,133 @@ object StreamingJob {
   /** Data type for words with count */
   case class WordWithCount(word: String, count: Long)
 }
-----
-<1> flatMap的函数签名：``def flatMap[A,B](as: List[A])(f: A => List[B]): List[B]``, 例如: ``flatMap(List(1,2,3))(i => List(i,i))``结果是``List(1,1,2,2,3,3)``, ``List("a b", "c d").flatMap(line => line.split(" "))``结果是``List(a, b, c, d)``。
+\end{minted}
 
 新建一个Terminal终端，然后运行以下:
 
-[source, shell]
-----
-$ nc -lk 9999
-----
+\begin{minted}{shell}
+nc -lk 9999
+\end{minted}
 
 查看结果，在flink文件夹中的log文件夹里，后缀名为``.out``, 和在idea里面执行的样子不一样，不会打印到控制台。 
 
-=== 2.2 Flink部署
+\subsection{Flink部署}
 
-==== 2.2.1 下载Hadoop Free版本的Flink
+\subsubsection{下载Hadoop Free版本的Flink}
 
-:download-link: https://www.apache.org/dyn/closer.lua/flink/flink-1.7.2/flink-1.7.2-bin-scala_2.11.tgz[下载链接]
+https://www.apache.org/dyn/closer.lua/flink/flink-1.7.2/flink-1.7.2-bin-scala\_2.11.tgz
 
-{download-link}
+\subsubsection{解压缩}
 
-==== 2.2.2 解压缩
+\begin{minted}{shell}
+tar xvfz flink-1.7.2-bin-scala\_2.11.tgz
+\end{minted}
 
-[source,shell]
-----
-$ tar xvfz flink-1.7.2-bin-scala_2.11.tgz
-----
+\subsubsection{启动Flink集群}
 
-==== 2.2.3 启动Flink集群
+\begin{minted}{shell}
+cd flink-1.7.2
+./bin/start-cluster.sh
+\end{minted}
 
-[source,shell]
-----
-$ cd flink-1.7.2
-$ ./bin/start-cluster.sh
-----
-
-==== 2.2.4 在浏览器中打开Flink的Web UI
+\subsubsection{在浏览器中打开Flink的Web UI}
 
 http://localhost:8081
 
-==== 2.2.5 打包编写好的StreamingJob程序
+\subsubsection{打包编写好的StreamingJob程序}
 
 在Idea中使用maven package功能打包。
 
-==== 2.2.6 提交打包好的程序
+\subsubsection{提交打包好的程序}
 
-[source,shell]
-----
-$ ./bin/flink run xxxx.jar
-----
+\begin{minted}{shell}
+./bin/flink run xxxx.jar
+\end{minted}
 
-==== 2.2.7 在Flink Web UI查看Dashboard中job的执行状态
+\subsubsection{在Flink Web UI查看Dashboard中job的执行状态}
 
-==== 2.2.8 停止Flink集群
+\subsubsection{停止Flink集群}
 
-[source,shell]
-----
-$ ./bin/stop-cluster.sh
-----
+\begin{minted}{shell}
+./bin/stop-cluster.sh
+\end{minted}
 
+\section{Flink运行架构}
 
+\subsection{任务调度原理}
 
+\includegraphics[width=\textwidth]{processes.png}
 
+客户端不是运行时和程序执行的一部分，但它用于准备并发送Dataflow(JobGraph)给Master(JobManager)，然后，客户端断开连接或者维持连接以等待接收计算结果。
 
+当Flink集群启动后，首先会启动一个JobManger和一个或多个的TaskManager。由Client提交任务给JobManager，JobManager再调度任务到各个TaskManager去执行，然后TaskManager将心跳和统计信息汇报给JobManager。TaskManager之间以流的形式进行数据的传输。上述三者均为独立的JVM进程。
 
+Client为提交Job的客户端，可以运行在任何机器上(与JobManager环境连通即可)。提交Job后，Client可以结束进程(Streaming的任务)，也可以不结束并等待结果返回。
 
+JobManager主要负责调度Job并协调Task做Checkpoint。从Client处接收到Job和JAR包等资源后，会生成优化后的执行计划，并以Task为单元调度到各个TaskManager去执行。
+
+TaskManager在启动的时候就设置好了槽位数(Slot)，每个Slot能启动一个Task，Task为线程。从JobManager处接收需要部署的Task，部署启动后，与自己的上游建立Netty footnote:[Java异步IO库] 连接，接收数据并处理。
+
+\textbf{关于执行图}
+
+Flink中的执行图可以分成四层：
+
+\includegraphics[width=\textwidth]{dot-example1.png}
+
+\textbf{StreamGraph}：是根据用户通过Stream API编写的代码生成的最初的图。用来表示程序的拓扑结构。
+
+\textbf{JobGraph}：StreamGraph经过优化后生成了JobGraph，提交给JobManager的数据结构。主要的优化为，将多个符合条件的节点chain在一起作为一个节点，这样可以减少数据在节点之间流动所需要的序列化/反序列化/传输消耗。
+
+\textbf{ExecutionGraph}：JobManager根据JobGraph生成ExecutionGraph。ExecutionGraph是JobGraph的并行化版本，是调度层最核心的数据结构。
+
+\textbf{物理执行图}：JobManager根据ExecutionGraph对Job进行调度后，在各个TaskManager上部署Task后形成的"图"，并不是一个具体的数据结构。
+
+\includegraphics[width=\textwidth]{jobgraph.png}
+
+\subsection{Worker与Slots}
+
+每一个Worker(TaskManager)是一个JVM进程，它可能会在独立的线程上执行一个或多个SubTask。为了控制一个Worker能接收多少个Task，Worker通过Task Slot来进行控制(一个Worker至少有一个Task Slot)。
+
+每个Task Slot表示TaskManager拥有资源的一个固定大小的子集。假如一个TaskManager有三个Slot，那么它会将其管理的内存分成三份给各个Slot。资源Slot化意味着一个SubTask将不需要跟来自其他Job的SubTask竞争被管理的内存，取而代之的是它将拥有一定数量的内存储备。需要注意的是，这里不会涉及到CPU的隔离，Slot目前仅仅用来隔离Task的受管理的内存。
+
+通过调整Task Slot的数量，允许用户定义SubTask之间如何互相隔离。如果一个TaskManager一个Slot，那将意味着每个Task Group运行在独立的JVM中(该JVM可能是通过一个特定的容器启动的)，而一个TaskManager多个Slot意味着更多的SubTask可以共享同一个JVM。而在同一个JVM进程中的Task将共享TCP连接(基于IO多路复用)和心跳消息。它们也可能共享数据集和数据结构，因此这减少了每个Task的负载。
+
+\includegraphics[width=\textwidth]{tasks_slots.png}
+
+Task Slot是静态的概念，是指TaskManager具有的并发执行能力，可以通过参数taskmanager.numberOfTaskSlots进行配置，而并行度parallelism是动态概念，即TaskManager运行程序时实际使用的并发能力，可以通过参数parallelism.default进行配置。
+
+也就是说，假设一共有3个TaskManager，每一个TaskManager中的分配3个Task Slot，也就是每个TaskManager可以接收3个Task，一共9个Task Slot，如果我们设置parallelism.default=1，即运行程序默认的并行度为1，9个TaskSlot只用了1个，有8个空闲，因此，设置合适的并行度才能提高效率。
+
+\includegraphics[width=\textwidth]{slots_parallelism.png}
+
+\subsection{程序与数据流}
+
+\includegraphics[width=\textwidth]{program_dataflow.png}
+
+所有的Flink程序都是由三部分组成的：Source、Transformation和Sink。
+
+Source负责读取数据源，Transformation利用各种算子进行处理加工，Sink负责输出。
+
+在运行时，Flink上运行的程序会被映射成Streaming Dataflows，它包含了这三部分。每一个Dataflow以一个或多个sources开始以一个或多个sinks结束。dataflow类似于任意的有向无环图(DAG)。在大部分情况下，程序中的transformations跟dataflow中的operator是一一对应的关系，但有时候，一个transformation可能对应多个operator。
+
+\subsection{并行数据流}
+
+Flink程序的执行具有并行、分布式的特性。在执行过程中，一个stream包含一个或多个stream partition，而每一个operator包含一个或多个operator subtask，这些operator subtasks在不同的线程、不同的物理机或不同的容器中彼此互不依赖的执行。
+
+一个特定operator的subtask的个数被称之为其parallelism(并行度)。一个stream的并行度总是等同于其producing operator的并行度。一个程序中，不同的operator可能具有不同的并行度。
+
+\includegraphics[width=\textwidth]{parallel_dataflow.png}
+
+Stream在operator之间传输数据的形式可以是one-to-one(forwarding)的模式也可以是redistributing的模式，具体是哪一种形式，取决于operator的种类。
+
+\textbf{One-to-one}：stream(比如在source和map operator之间)维护着分区以及元素的顺序。那意味着map operator的subtask看到的元素的个数以及顺序跟source operator的subtask生产的元素的个数、顺序相同，map、fliter、flatMap等算子都是one-to-one的对应关系。类似于spark中的窄依赖
+
+\textbf{Redistributing}：stream(map()跟keyBy/window之间或者keyBy/window跟sink之间)的分区会发生改变。每一个operator subtask依据所选择的transformation发送数据到不同的目标subtask。例如，keyBy()基于hashCode重分区、broadcast和rebalance会随机重新分区，这些算子都会引起redistributing过程，而redistributing过程就类似于Spark中的shuffle过程。类似于spark中的宽依赖
+
+\subsection{task与operator chains}
+
+相同并行度的one to one操作，Flink这样相连的operator链接在一起形成一个task，原来的operator成为里面的subtask。将operators链接成task是非常有效的优化：它能减少线程之间的切换和基于缓存区的数据交换，在减少时延的同时提升吞吐量。链接的行为可以在编程API中进行指定。
+
+\includegraphics[width=\textwidth]{operatorschains.png}
 
 \end{document}
