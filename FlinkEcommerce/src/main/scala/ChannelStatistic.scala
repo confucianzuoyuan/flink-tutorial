@@ -6,7 +6,6 @@ import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction
 import org.apache.flink.streaming.api.functions.source.SourceFunction.SourceContext
 import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
-import org.slf4j.LoggerFactory
 import org.apache.flink.streaming.api.windowing.time.Time
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.scala.function.ProcessWindowFunction
@@ -17,13 +16,12 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow
 
 class SimulatedEventSource extends RichParallelSourceFunction[(String, String)] {
 
-  val LOG = LoggerFactory.getLogger(classOf[SimulatedEventSource])
-  @volatile private var running = true
-  val channelSet = Seq("a", "b", "c", "d")
-  val behaviorTypes = Seq(
+  var running = true
+  val channelSet: Seq[String] = Seq("a", "b", "c", "d")
+  val behaviorTypes: Seq[String] = Seq(
     "INSTALL", "OPEN", "BROWSE", "CLICK",
     "PURCHASE", "CLOSE", "UNINSTALL")
-  val rand = Random
+  val rand: Random = Random
 
   override def run(ctx: SourceContext[(String, String)]): Unit = {
     val numElements = Long.MaxValue
@@ -32,8 +30,7 @@ class SimulatedEventSource extends RichParallelSourceFunction[(String, String)] 
     while (running && count < numElements) {
       val channel = channelSet(rand.nextInt(channelSet.size))
       val event = generateEvent()
-      LOG.info("Event: " + event)
-      val ts = event(0).toLong
+      val ts = event.head.toLong
       ctx.collectWithTimestamp((channel, event.mkString("\t")), ts)
       count += 1
       TimeUnit.MILLISECONDS.sleep(5L)
@@ -93,9 +90,11 @@ object ChannelStatistic {
 class MyReduceWindowFunction
   extends ProcessWindowFunction[((String, String), Long), ((String, String, String, String), Long), Tuple, TimeWindow] {
 
-  override def process(key: Tuple, context: Context,
+  override def process(key: Tuple,
+                       context: Context,
                        elements: Iterable[((String, String), Long)],
                        collector: Collector[((String, String, String, String), Long)]): Unit = {
+
     val startTs = context.window.getStart
     val endTs = context.window.getEnd
 

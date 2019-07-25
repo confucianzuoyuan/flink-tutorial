@@ -5,9 +5,9 @@ import org.apache.flink.streaming.api.functions.KeyedProcessFunction
 import org.apache.flink.streaming.api.scala.{StreamExecutionEnvironment, _}
 import org.apache.flink.util.Collector
 
-case class OrderEvents(orderId: String, eventType: String, eventTime: String)
-
 object OrderTimeoutWithoutCep {
+
+  case class OrderEvents(orderId: String, eventType: String, eventTime: String)
 
   def main(args: Array[String]) {
     val env = StreamExecutionEnvironment.getExecutionEnvironment

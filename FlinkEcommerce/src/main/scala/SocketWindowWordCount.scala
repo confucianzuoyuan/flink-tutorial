@@ -22,26 +22,13 @@ object SocketWindowWordCount {
     var hostname: String = "localhost"
     var port: Int = 0
 
-    try {
-      val params = ParameterTool.fromArgs(args)
-      hostname = if (params.has("hostname")) params.get("hostname") else "localhost"
-      port = params.getInt("port")
-    } catch {
-      case e: Exception => {
-        System.err.println("No port specified. Please run 'SocketWindowWordCount " +
-          "--hostname <hostname> --port <port>', where hostname (localhost by default) and port " +
-          "is the address of the text server")
-        System.err.println("To start a simple text server, run 'netcat -l <port>' " +
-          "and type the input text into the command line")
-        return
-      }
-    }
-
     // get the execution environment
     val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setParallelism(9)
+    val text = env.fromCollection(List(
+      "hello world haha hehe heihei"
+    ))
 
-    // get input data by connecting to the socket
-    val text: DataStream[String] = env.socketTextStream(hostname, port, '\n')
 
     // parse the data, group it, window it, and aggregate the counts
     val windowCounts = text
@@ -52,7 +39,7 @@ object SocketWindowWordCount {
       .sum("count")
 
     // print the results with a single thread, rather than in parallel
-    windowCounts.print().setParallelism(1)
+    windowCounts.print()
 
     env.execute("Socket Window WordCount")
   }

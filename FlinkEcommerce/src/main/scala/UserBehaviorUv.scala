@@ -14,33 +14,26 @@ object UserBehaviorUv {
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
     val stream = env
-      //      .readTextFile(resourcesPath.getPath)
-      //      .map(line => {
-      //        val linearray = line.split(",")
-      //        UserBehavior(linearray(0).toLong, linearray(1).toLong, linearray(2).toInt, linearray(3), linearray(4).toLong)
-      //      })
-      .fromCollection(List(
-      UserBehavior(1, 1, 1, "1", 1561107112),
-      UserBehavior(1, 1, 1, "1", 1561107113),
-      UserBehavior(1, 1, 1, "1", 1561107114),
-      UserBehavior(1, 1, 1, "1", 1561107115),
-      UserBehavior(1, 1, 1, "1", 1561107116),
-      UserBehavior(1, 1, 1, "1", 1561107117)
-    ))
-    .assignAscendingTimestamps(_.timestamp * 1000)
-    //      .filter(_.behavior.equals("pv"))
-//    .map(_ => 1)
-    //      .timeWindowAll(Time.minutes(1))
-    .timeWindowAll(Time.seconds(4))
-        .apply(new MyReduceProcessFunction).print()
-
+      .readTextFile(resourcesPath.getPath)
+      .map(line => {
+        val linearray = line.split(",")
+        UserBehavior(linearray(0).toLong, linearray(1).toLong, linearray(2).toInt, linearray(3), linearray(4).toLong)
+      })
+      .assignAscendingTimestamps(_.timestamp * 1000)
+      .filter(_.behavior.equals("pv"))
+      .timeWindowAll(Time.seconds(60 * 60))
+      .apply(new MyReduceProcessFunction)
+      .print()
 
     env.execute("Hot Items Job")
   }
 
   class MyReduceProcessFunction extends AllWindowFunction[UserBehavior, Long, TimeWindow] {
-    override def apply(window: TimeWindow, vals: Iterable[UserBehavior], out: Collector[Long]): Unit = {
-      val s : collection.mutable.Set[Long] = collection.mutable.Set()
+    override def apply(window: TimeWindow,
+                       vals: Iterable[UserBehavior],
+                       out: Collector[Long]): Unit = {
+
+      val s: collection.mutable.Set[Long] = collection.mutable.Set()
 
       for (v <- vals) {
         s += v.itemId
