@@ -8,6 +8,9 @@
 \graphicspath{ {./images/} }
 \usepackage{forest}
 \usepackage{fancyhdr}
+\usepackage{hyperref}
+\hypersetup{pdftex,colorlinks=true,allcolors=blue}
+\usepackage{hypcap}
 
 \pagestyle{fancy}
 \fancyhf{}
@@ -16,11 +19,15 @@
 \fancyfoot[CE,CO]{\leftmark}
 \fancyfoot[LE,RO]{\thepage}
 
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+
 \lstset{
   basicstyle=\sffamily,
-  keywordstyle=\bfseries,
-  commentstyle=\rmfamily\itshape,
-  stringstyle=\ttfamily,
+  keywordstyle=\color{blue},
+  commentstyle=\color{mygreen},
+  stringstyle=\color{mymauve},
   columns=flexible,
   frame=single,
   breaklines=true
@@ -578,7 +585,7 @@ $ ./bin/stop-cluster.sh
 
 \noindent \includegraphics[width=\textwidth]{processes.png}
 
-客户端不是运行时和程序执行的一部分，但它用于准备并发送Dataflow(JobGraph)给Master(JobManager)，然后，客户端断开连接或者维持连接以等待接收计算结果。
+客户端不是运行时和程序执行的一部分，但它用于准备并发送Dataflow（JobGraph）给Master（JobManager），然后，客户端断开连接或者维持连接以等待接收计算结果。
 
 当Flink集群启动后，首先会启动一个JobManger和一个或多个的TaskManager。由Client提交任务给JobManager，JobManager再调度任务到各个TaskManager去执行，然后TaskManager将心跳和统计信息汇报给JobManager。TaskManager之间以流的形式进行数据的传输。上述三者均为独立的JVM进程。
 
@@ -640,9 +647,10 @@ Flink程序的执行具有并行、分布式的特性。在执行过程中，一
 
 Stream在operator之间传输数据的形式可以是one-to-one(forwarding)的模式也可以是redistributing的模式，具体是哪一种形式，取决于operator的种类。
 
-\textbf{One-to-one}：stream(比如在source和map operator之间)维护着分区以及元素的顺序。那意味着map operator的subtask看到的元素的个数以及顺序跟source operator的subtask生产的元素的个数、顺序相同，map、fliter、flatMap等算子都是one-to-one的对应关系。类似于spark中的窄依赖
+\textbf{One-to-One}：stream(比如在source和map operator之间)维护着分区以及元素的顺序。那意味着map operator的subtask看到的元素的个数以及顺序跟source operator的subtask生产的元素的个数、顺序相同，map、fliter、flatMap等算子都是one-to-one的对应关系。类似于spark中的窄依赖。
 
-\textbf{Redistributing}：stream(map()跟keyBy/window之间或者keyBy/window跟sink之间)的分区会发生改变。每一个operator subtask依据所选择的transformation发送数据到不同的目标subtask。例如，keyBy()基于hashCode重分区、broadcast和rebalance会随机重新分区，这些算子都会引起redistributing过程，而redistributing过程就类似于Spark中的shuffle过程。类似于spark中的宽依赖
+\sloppy
+\textbf{Redistributing}：stream（map()跟keyBy/window之间或者keyBy/window跟sink之间）的分区会发生改变。每一个operator subtask依据所选择的transformation发送数据到不同的目标subtask。例如，keyBy()基于hashCode重分区、broadcast和rebalance会随机重新分区，这些算子都会引起redistributing过程，而redistributing过程就类似于Spark中的shuffle过程。类似于spark中的宽依赖。
 
 \section{task与operator chains}
 
@@ -965,6 +973,7 @@ Flink的恢复机制的核心，就是应用状态的一致检查点。有状态
   \item 恢复所有任务的处理。
 \end{enumerate}
 
+\sloppy
 这种检查点的保存和恢复机制可以为应用程序状态提供“精确一次”（exactly-once）的一致性，因为所有算子都会保存检查点并恢复其所有状态，这样一来所有的输入流就都会被重置到检查点完成时的位置。至于数据源是否可以重置它的输入流，这取决于其实现方式和消费流数据的外部接口。例如，像Apache Kafka这样的事件日志系统可以提供流上之前偏移位置的数据，所以我们可以将源重置到之前的偏移量，重新消费数据。而从套接字（socket）消费数据的流就不能被重置了，因为套接字的数据一旦被消费就会丢弃掉。因此，对于应用程序而言，只有当所有的输入流消费的都是可重置的数据源时，才能确保在“精确一次”的状态一致性下运行。
 
 从检查点重新启动应用程序后，其内部状态与检查点完成时的状态完全相同。然后它就会开始消费并处理检查点和发生故障之间的所有数据。尽管这意味着Flink会对一些数据处理两次（在故障之前和之后），我们仍然可以说这个机制实现了精确一次的一致性语义，因为所有算子的状态都已被重置，而重置后的状态下还不曾看到这些数据。
@@ -1922,6 +1931,7 @@ val minTempPerWindow: DataStream[(String, Double)] = sensorData
   .reduce((r1, r2) => (r1._1, r1._2.min(r2._2))
 \end{lstlisting}
 
+\sloppy
 时间间隔可以通过Time.milliseconds(x)，Time.seconds(x)，Time.minutes(x)等其中的一个来指定。
 
 \textbf{滑动窗口}
@@ -2020,7 +2030,7 @@ MyAssigner有两种类型
 
 \textbf{Assigner with periodic watermarks}
 
-周期性的生成水印：系统会周期性的将水印插入到流中(水印也是一种特殊的事件!)。默认周期是200毫秒。可以使用ExecutionConfig.setAutoWatermarkInterval()方法进行设置。
+周期性的生成水印：系统会周期性的将水印插入到流中（水印也是一种特殊的事件!）。默认周期是200毫秒。可以使用ExecutionConfig.setAutoWatermarkInterval()方法进行设置。
 
 \begin{lstlisting}[language=scala]
 val env = StreamExecutionEnvironment.getExecutionEnvironment
