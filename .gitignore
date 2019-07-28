@@ -12,3 +12,4 @@ target/
 *.toc
 *.synctex.gz
 _minted-尚硅谷Flink教程/
+*.out
