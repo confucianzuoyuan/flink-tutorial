@@ -19,19 +19,31 @@
 \fancyfoot[CE,CO]{\leftmark}
 \fancyfoot[LE,RO]{\thepage}
 
-\definecolor{mygreen}{rgb}{0,0.6,0}
-\definecolor{mygray}{rgb}{0.5,0.5,0.5}
-\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
 
-\lstset{
-  basicstyle=\sffamily,
-  keywordstyle=\color{blue},
-  commentstyle=\color{mygreen},
-  stringstyle=\color{mymauve},
-  columns=flexible,
-  frame=single,
-  breaklines=true
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
 }
+
+\lstset{style=mystyle}
 
 \begin{document}
 
@@ -1931,7 +1943,6 @@ val minTempPerWindow: DataStream[(String, Double)] = sensorData
   .reduce((r1, r2) => (r1._1, r1._2.min(r2._2))
 \end{lstlisting}
 
-\sloppy
 时间间隔可以通过Time.milliseconds(x)，Time.seconds(x)，Time.minutes(x)等其中的一个来指定。
 
 \textbf{滑动窗口}
@@ -5708,6 +5719,7 @@ object PvLocationToES {
 }
 \end{lstlisting}
 
+\appendix
 \chapter{Dataflow模型}
 
 一种能平衡准确性，延迟程度，处理成本的大规模无边界乱序数据处理实践方法
@@ -6090,5 +6102,115 @@ PCollection<KV<String, Integer>> output = input
 数据处理的未来是无边界数据处理。 尽管有边界数据的处理永远都有着重要地位并且有用武之地，但是语义上它会被无边界数据处理模型所涵盖。一方面，无边界数据处理技术发展上步履蹒跚，另一方面对于数据进行处理并消费的要求在不断提高，比如说，需要对按事件发生时间对数据处理，或者支持非对齐窗口等。要发展能够支撑未来业务需要的数据处理系统，当前存在的系统和模型是一个非常好的基础，但我们坚持相信如果要完善地解决用户对无边界数据处理的需求，我们必须根本地改变我们的思维。
 
 根据我们多年在谷歌处理大规模无边界数据的实践经验，我们相信我们提出的模型一个非常好的进展。它支持非对齐，事件发生时间窗口。这些都是当前用户所需要的。它提供了灵活的窗口触发机制，支持窗口累积和撤回，把关注点从寻求等待数据的完整性变为自动适应现实世界中持续变更的数据源。它对批处理，微批次，流处理提供了统一的抽象，允许数据开发人员灵活从三者中选择。同时，它避免了单一系统容易把系统本身的构建蔓延到数据处理抽象层面中去的问题。它的灵活性让数据开发者能根据使用场景恰当地平衡数据处理的准确性，成本和延迟程度。对于处理多样化的场景和需求来说，这一点很关键。最后，通过把数据处理的逻辑划分为计算什么，在哪个事件发生时间范围内计算，在什么处理时间点触发计算，如何用新的结果订正之前的数据处理结果让整个数据处理逻辑透明清晰。我们希望其他人能够认同这个模型并且和我们一起推进这个复杂而又令人着迷的领域的发展。
+
+\chapter{常见面试题解答}
+
+\section{面试题一}
+
+问题：公司怎么提交的实时任务，有多少Job Manager？
+
+解答：
+
+1. 我们每次提交都会创建一个新的Flink集群，为每一个每个job提供一个yarn-session，任务之间互相独立，互不影响，方便管理。任务执行完成之后创建的集群也会消失。
+
+线上脚本如下：
+
+\begin{lstlisting}[language=sh]
+bin/yarn-session.sh -n 7 -s 8 -jm 3072 -tm 32768 -qu root.*.*-nm *-* -d
+\end{lstlisting}
+
+其中申请7个taskManager，每个8核，每个taskmanager有32768M内存。
+
+2. 集群默认只有一个Job Manager。但为了防止单点故障，我们配置了高可用。我们公司一般配置一个主Job Manager，两个备用Job Manager，然后结合ZooKeeper的使用，来达到高可用。
+
+\section{面试题二}
+
+问题：怎么做压力测试和监控？
+
+解答：我们一般碰到的压力来自以下几个方面：
+
+一，产生数据流的速度如果过快，而下游的算子消费不过来的话，会产生背压问题。背压的监控可以使用Flink Web UI(localhost:8081)来可视化监控，一旦报警就能知道。一般情况下背压问题的产生可能是由于sink这个操作符没有优化好，做一下优化就可以了。比如如果是写入ElasticSearch，那么可以改成批量写入，可以调大ElasticSearch队列的大小等等策略。
+
+二，设置水印的最大延迟时间这个参数，如果设置的过大，可能会造成内存的压力。可以设置的最大延迟时间小一些，然后把迟到元素发送到侧输出流中去。晚一点更新结果。或者使用类似于RocksDB这样的状态后端，RocksDB会开辟堆外存储空间，但IO速度会变慢，需要权衡。
+
+三，还有就是滑动窗口的长度如果过长，而滑动距离很短的话，Flink的性能会下降的很厉害。
+
+\begin{lstlisting}
+参见链接：https://www.infoq.cn/article/sIhs_qY6HCpMQNblTI9M
+\end{lstlisting}
+
+四，状态后端使用RocksDB，还没有碰到被撑爆的问题。
+
+\section{面试题三}
+
+问题：问什么使用Flink替代Spark？
+
+解答：教材里面有Flink和Spark的详细对比。
+
+\section{面试题四}
+
+问题：Flink的CheckPoint存在哪里？
+
+解答：教材里有。内存，文件系统，或者RocksDB。
+
+\section{面试题五}
+
+问题：如果下级存储不支持事务，Flink怎么保证exactly-once？
+
+解答：参见链接：https://www.whitewood.me/2018/10/16/Flink-Exactly-Once-%E6%8A%95%E9%80%92%E5%AE%9E%E7%8E%B0%E6%B5%85%E6%9E%90/
+
+\section{面试题六}
+
+问题：说一下Flink状态机制？
+
+解答：参见教材相关内容。
+
+\section{面试题七}
+
+问题：怎么去重？考虑一个实时场景：双十一场景，滑动窗口长度为1小时，滑动距离为10秒钟，亿级用户，计算UV？
+
+解答：使用类似于scala的set数据结构或者redis的set数据结构显然是不行的，因为可能有上亿个Key，内存放不下。所以可以考虑使用布隆过滤器（Bloom Filter）来去重。
+
+\section{面试题八}
+
+问题：Flink的checkpoint机制对比spark有什么不同和优势？
+
+解答：spark streaming的Checkpoint仅仅是针对driver的故障恢复做了数据和元数据的Checkpoint。而flink的checkpoint机制要复杂了很多，它采用的是轻量级的分布式快照，实现了每个操作符的快照，及循环流的在循环的数据的快照。参见教材内容和链接：https://cloud.tencent.com/developer/article/1189624
+
+\section{面试题九}
+
+问题：Flink的Watermark详细说明？
+
+解答：见教材。
+
+\section{面试题十}
+
+问题：Flink ExactlyOnce语义是如何实现的，状态是如何存储的？
+
+解答：见教材。
+
+\section{面试题十一}
+
+问题：Flink CEP编程中当状态没有到达的时候会将数据保存在哪里？
+
+解答：CEP当然在流式处理中是要支持EventTime的，那么相对应的要支持数据的晚到现象，也就是watermark的处理逻辑。在Flink的处理逻辑中，将晚到数据明细存储在了Map<Long, List<IN>>的结构中，也就是说，如果watermark设置为当前时间减去5分钟，那么内存中就会存储5分钟的数据，这在我看来，也是对内存的极大损伤之一。
+
+\section{面试题十二}
+
+问题：Flink三种时间概念分别说出应用场景？
+
+解答：
+
+1. Event Time：见教材。
+
+2. Processing Time：没有事件时间的情况下，或者对实时性要求超高的情况下。
+
+3. Ingestion Time：存在多个Source Operator的情况下，每个Source Operator会使用自己本地系统时钟指派Ingestion Time。后续基于时间相关的各种操作，都会使用数据记录中的Ingestion Time。
+
+\section{面试题十三}
+
+问题：Flink程序在面对数据高峰期时如何处理？
+
+解答：使用大容量的Kafka把数据先放到消息队列里面。再使用Flink进行消费，不过这样会影响到一点实时性。
 
 \end{document}
