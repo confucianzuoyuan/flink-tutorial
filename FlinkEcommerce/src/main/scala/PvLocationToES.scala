@@ -159,7 +159,7 @@ object PvLocationToES {
 
   class PvCounter extends WindowFunction[Int, PvAgg, Tuple, TimeWindow] {
     override def apply(key: Tuple, window: TimeWindow, aggregateResult: Iterable[Int], out: Collector[PvAgg]) : Unit = {
-      val cellId = key.asInstanceOf[Tuple1].f0
+      val cellId = key.asInstanceOf[Tuple1[Long]].f0
       val windowTime = window.getEnd
 
       var cnt = 0

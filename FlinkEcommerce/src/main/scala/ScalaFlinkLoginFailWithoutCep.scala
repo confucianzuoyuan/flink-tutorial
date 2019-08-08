@@ -14,12 +14,12 @@ object ScalaFlinkLoginFailWithoutCep {
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
-    val loginEventStream = env.fromCollection(List(
-      LoginEvent("1", "192.168.0.1", "fail", "1558430842"),
-      LoginEvent("1", "192.168.0.2", "fail", "1558430843"),
-      LoginEvent("1", "192.168.0.3", "fail", "1558430844"),
-      LoginEvent("2", "192.168.10.10", "success", "1558430845")
-    ))
+    val loginEventStream = env
+      .socketTextStream("localhost", 5555, '\n')
+      .map(line => {
+        val splitted = line.split("\\s")
+        LoginEvent(splitted(0), splitted(1), splitted(2), splitted(3))
+      })
 
     val loginFailDataStream = loginEventStream
         .assignAscendingTimestamps(_.eventTime.toLong * 1000)
@@ -39,18 +39,19 @@ object ScalaFlinkLoginFailWithoutCep {
     override def processElement(login: LoginEvent,
                                 context: KeyedProcessFunction[String, LoginEvent, LoginEvent]#Context,
                                 out: Collector[LoginEvent]): Unit = {
-      val timerService = context.timerService
 
       if (login.eventType == "fail") {
         loginState.add(login)
       }
 
-      timerService.registerEventTimeTimer(login.eventTime.toLong + 10 * 1000)
+      context.timerService.registerEventTimeTimer(login.eventTime.toLong * 1000 + 10 * 1000)
     }
 
     override def onTimer(timestamp: Long,
                          ctx: KeyedProcessFunction[String, LoginEvent, LoginEvent]#OnTimerContext,
                          out: Collector[LoginEvent]): Unit = {
+
+      println("定时器被触发！")
 
       var allItems: util.List[LoginEvent] = new util.ArrayList[LoginEvent]
       import scala.collection.JavaConversions._
@@ -63,6 +64,7 @@ object ScalaFlinkLoginFailWithoutCep {
       }
 
       loginState.clear()
+
     }
   }
 
