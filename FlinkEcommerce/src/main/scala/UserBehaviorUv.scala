@@ -23,7 +23,7 @@ object UserBehaviorUv {
       .filter(_.behavior.equals("pv"))
       .timeWindowAll(Time.seconds(60 * 60))
       .apply(new MyReduceProcessFunction)
-      .print()
+//      .print()
 
     env.execute("Hot Items Job")
   }
@@ -36,8 +36,10 @@ object UserBehaviorUv {
       val s: collection.mutable.Set[Long] = collection.mutable.Set()
 
       for (v <- vals) {
-        s += v.itemId
+        s += v.userId
       }
+
+      println((window.getEnd, s.size))
 
       out.collect(s.size)
     }
