@@ -60,24 +60,14 @@ object BloomFilterUV {
   class Bloom extends Serializable {
     //总的bitmap大小  64M
     private val cap = 1 << 29
-    /*
-     * 不同哈希函数的种子，一般取质数
-     * seeds数组共有8个值，则代表采用8种不同的哈希函数
-     */
-    private val seeds = Array[Int](3, 5, 7, 11, 13, 31, 37, 61)
 
     def hash(value: String, seed: Int) = {
       var result = 0
       val length = value.length
       var i = 0
-      while ( {
-        i < length
-      }) {
+      while (i < length) {
         result = seed * result + value.charAt(i)
-
-        {
-          i += 1; i - 1
-        }
+        i += 1
       }
       (cap - 1) & result
     }
