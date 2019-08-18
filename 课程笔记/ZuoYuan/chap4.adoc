@@ -1,8 +1,8 @@
-== 第四章 Flink DataStream API
+== Flink DataStream API
 
 image::dot-example.png[]
 
-=== 4.1 Environment
+=== Environment
 
 *getExecutionEnvironment*
 
@@ -18,7 +18,7 @@ env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 env.setParallelism(1)
 ----
 
-=== 4.2 Source
+=== Source
 
 从批读取数据
 
@@ -151,9 +151,9 @@ val sensorData: DataStream[SensorReading] = env
   .addSource(new SensorSource)
 ----
 
-=== 4.3 Basic Transformations(基本转换算子)
+=== Basic Transformations(基本转换算子)
 
-==== 4.3.1 map
+==== map
 
 image::map.png[]
 

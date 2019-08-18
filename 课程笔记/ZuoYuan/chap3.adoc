@@ -1,6 +1,6 @@
-== 第三章 Flink运行架构
+== Flink运行架构
 
-=== 3.1 任务调度原理
+=== 任务调度原理
 
 image::processes.png[]
 
@@ -30,7 +30,7 @@ image::dot-example1.png[]
 
 image::jobgraph.png[]
 
-=== 3.2 Worker与Slots
+=== Worker与Slots
 
 每一个Worker(TaskManager)是一个JVM进程，它可能会在独立的线程上执行一个或多个SubTask。为了控制一个Worker能接收多少个Task，Worker通过Task Slot来进行控制(一个Worker至少有一个Task Slot)。
 
@@ -46,7 +46,7 @@ Task Slot是静态的概念，是指TaskManager具有的并发执行能力，可
 
 image::slots_parallelism.png[]
 
-=== 3.3 程序与数据流
+=== 程序与数据流
 
 image::program_dataflow.png[]
 
@@ -56,7 +56,7 @@ Source负责读取数据源，Transformation利用各种算子进行处理加工
 
 在运行时，Flink上运行的程序会被映射成Streaming Dataflows，它包含了这三部分。每一个Dataflow以一个或多个sources开始以一个或多个sinks结束。dataflow类似于任意的有向无环图(DAG)。在大部分情况下，程序中的transformations跟dataflow中的operator是一一对应的关系，但有时候，一个transformation可能对应多个operator。
 
-=== 3.4 并行数据流
+=== 并行数据流
 
 Flink程序的执行具有并行、分布式的特性。在执行过程中，一个stream包含一个或多个stream partition，而每一个operator包含一个或多个operator subtask，这些operator subtasks在不同的线程、不同的物理机或不同的容器中彼此互不依赖的执行。
 
@@ -70,7 +70,7 @@ Stream在operator之间传输数据的形式可以是one-to-one(forwarding)的�
 
 *Redistributing*：stream(map()跟keyBy/window之间或者keyBy/window跟sink之间)的分区会发生改变。每一个operator subtask依据所选择的transformation发送数据到不同的目标subtask。例如，keyBy()基于hashCode重分区、broadcast和rebalance会随机重新分区，这些算子都会引起redistributing过程，而redistributing过程就类似于Spark中的shuffle过程。[red]#类似于spark中的宽依赖#
 
-=== 3.5 task与operator chains
+=== task与operator chains
 
 相同并行度的one to one操作，Flink这样相连的operator链接在一起形成一个task，原来的operator成为里面的subtask。将operators链接成task是非常有效的优化：它能减少线程之间的切换和基于缓存区的数据交换，在减少时延的同时提升吞吐量。链接的行为可以在编程API中进行指定。
 

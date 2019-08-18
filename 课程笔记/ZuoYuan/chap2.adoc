@@ -1,6 +1,6 @@
-== 第二章 Flink快速上手
+== Flink快速上手
 
-=== 2.1 使用Maven搭建工程
+=== 使用Maven搭建工程
 
 *IDE推荐使用Idea*
 
@@ -85,22 +85,22 @@ $ nc -lk 9999
 
 查看结果，在flink文件夹中的log文件夹里，后缀名为``.out``, 和在idea里面执行的样子不一样，不会打印到控制台。 
 
-=== 2.2 Flink部署
+=== Flink部署
 
-==== 2.2.1 下载Hadoop Free版本的Flink
+==== 下载Hadoop Free版本的Flink
 
 :download-link: https://www.apache.org/dyn/closer.lua/flink/flink-1.7.2/flink-1.7.2-bin-scala_2.11.tgz[下载链接]
 
 {download-link}
 
-==== 2.2.2 解压缩
+==== 解压缩
 
 [source,shell]
 ----
 $ tar xvfz flink-1.7.2-bin-scala_2.11.tgz
 ----
 
-==== 2.2.3 启动Flink集群
+==== 启动Flink集群
 
 [source,shell]
 ----
@@ -108,24 +108,24 @@ $ cd flink-1.7.2
 $ ./bin/start-cluster.sh
 ----
 
-==== 2.2.4 在浏览器中打开Flink的Web UI
+==== 在浏览器中打开Flink的Web UI
 
 http://localhost:8081
 
-==== 2.2.5 打包编写好的StreamingJob程序
+==== 打包编写好的StreamingJob程序
 
 在Idea中使用maven package功能打包。
 
-==== 2.2.6 提交打包好的程序
+==== 提交打包好的程序
 
 [source,shell]
 ----
 $ ./bin/flink run xxxx.jar
 ----
 
-==== 2.2.7 在Flink Web UI查看Dashboard中job的执行状态
+==== 在Flink Web UI查看Dashboard中job的执行状态
 
-==== 2.2.8 停止Flink集群
+==== 停止Flink集群
 
 [source,shell]
 ----

@@ -6,6 +6,7 @@ v1.0, 2019-06-01
 :toc:
 :toclevels: 4
 :imagesdir: images
+:sectnums:
 
 image::atguigu.jpg[atguigu, 300, 200]
 

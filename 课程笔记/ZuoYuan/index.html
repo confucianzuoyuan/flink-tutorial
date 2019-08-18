@@ -449,143 +449,166 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_第一章_flink简介">第一章 Flink简介</a>
+<li><a href="#_flink简介">1. Flink简介</a>
 <ul class="sectlevel2">
-<li><a href="#_1_1_初识flink">1.1 初识Flink</a></li>
-<li><a href="#_1_2_为什么选择flink">1.2 为什么选择Flink</a>
+<li><a href="#_初识flink">1.1. 初识Flink</a></li>
+<li><a href="#_为什么选择flink">1.2. 为什么选择Flink</a>
 <ul class="sectlevel3">
-<li><a href="#_1_2_1_流处理欠佳的后果">1.2.1 流处理欠佳的后果</a>
+<li><a href="#_流处理欠佳的后果">1.2.1. 流处理欠佳的后果</a>
 <ul class="sectlevel4">
-<li><a href="#_1_2_1_1_零售业和市场营销">1.2.1.1 零售业和市场营销</a></li>
-<li><a href="#_1_2_1_2_物联网">1.2.1.2 物联网</a></li>
-<li><a href="#_1_2_1_3_电信业">1.2.1.3 电信业</a></li>
-<li><a href="#_1_2_1_4_银行和金融业">1.2.1.4 银行和金融业</a></li>
+<li><a href="#_零售业和市场营销">零售业和市场营销</a></li>
+<li><a href="#_物联网">物联网</a></li>
+<li><a href="#_电信业">电信业</a></li>
+<li><a href="#_银行和金融业">银行和金融业</a></li>
 </ul>
 </li>
-<li><a href="#_1_2_2_连续事件处理的目标">1.2.2 连续事件处理的目标</a></li>
-<li><a href="#_1_2_3_流处理技术的演变">1.2.3 流处理技术的演变</a></li>
+<li><a href="#_连续事件处理的目标">1.2.2. 连续事件处理的目标</a></li>
+<li><a href="#_流处理技术的演变">1.2.3. 流处理技术的演变</a></li>
 </ul>
 </li>
-<li><a href="#_1_3_flink的重要特点">1.3 Flink的重要特点</a>
+<li><a href="#_flink的重要特点">1.3. Flink的重要特点</a>
 <ul class="sectlevel3">
-<li><a href="#_1_3_1_事件驱动型event_driven">1.3.1 事件驱动型(Event-Driven)</a></li>
-<li><a href="#_1_3_2_流与批的世界观">1.3.2 流与批的世界观</a></li>
-<li><a href="#_1_3_3_分层api">1.3.3 分层api</a></li>
+<li><a href="#_事件驱动型event_driven">1.3.1. 事件驱动型(Event-Driven)</a></li>
+<li><a href="#_流与批的世界观">1.3.2. 流与批的世界观</a></li>
+<li><a href="#_分层api">1.3.3. 分层api</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#_第二章_flink快速上手">第二章 Flink快速上手</a>
+<li><a href="#_有状态的流式处理简介">2. 有状态的流式处理简介</a>
 <ul class="sectlevel2">
-<li><a href="#_2_1_使用maven搭建工程">2.1 使用Maven搭建工程</a></li>
-<li><a href="#_2_2_flink部署">2.2 Flink部署</a>
+<li><a href="#_传统数据处理架构">2.1. 传统数据处理架构</a>
 <ul class="sectlevel3">
-<li><a href="#_2_2_1_下载hadoop_free版本的flink">2.2.1 下载Hadoop Free版本的Flink</a></li>
-<li><a href="#_2_2_2_解压缩">2.2.2 解压缩</a></li>
-<li><a href="#_2_2_3_启动flink集群">2.2.3 启动Flink集群</a></li>
-<li><a href="#_2_2_4_在浏览器中打开flink的web_ui">2.2.4 在浏览器中打开Flink的Web UI</a></li>
-<li><a href="#_2_2_5_打包编写好的streamingjob程序">2.2.5 打包编写好的StreamingJob程序</a></li>
-<li><a href="#_2_2_6_提交打包好的程序">2.2.6 提交打包好的程序</a></li>
-<li><a href="#_2_2_7_在flink_web_ui查看dashboard中job的执行状态">2.2.7 在Flink Web UI查看Dashboard中job的执行状态</a></li>
-<li><a href="#_2_2_8_停止flink集群">2.2.8 停止Flink集群</a></li>
+<li><a href="#_事务处理">2.1.1. 事务处理</a></li>
+<li><a href="#_分析处理">2.1.2. 分析处理</a></li>
 </ul>
 </li>
+<li><a href="#_有状态的流式处理">2.2. 有状态的流式处理</a>
+<ul class="sectlevel3">
+<li><a href="#_事件驱动应用程序event_driven_applications">2.2.1. 事件驱动应用程序（Event-Driven Applications）</a></li>
+<li><a href="#_数据管道data_pipelines">2.2.2. 数据管道（Data Pipelines）</a></li>
+<li><a href="#_流分析">2.2.3. 流分析</a></li>
 </ul>
 </li>
-<li><a href="#_第三章_flink运行架构">第三章 Flink运行架构</a>
+<li><a href="#_开源流处理的演进">2.3. 开源流处理的演进</a>
+<ul class="sectlevel3">
+<li><a href="#_流处理的历史">2.3.1. 流处理的历史</a></li>
+</ul>
+</li>
+<li><a href="#_flink_简介">2.4. Flink 简介</a></li>
+</ul>
+</li>
+<li><a href="#_flink快速上手">3. Flink快速上手</a>
 <ul class="sectlevel2">
-<li><a href="#_3_1_任务调度原理">3.1 任务调度原理</a></li>
-<li><a href="#_3_2_worker与slots">3.2 Worker与Slots</a></li>
-<li><a href="#_3_3_程序与数据流">3.3 程序与数据流</a></li>
-<li><a href="#_3_4_并行数据流">3.4 并行数据流</a></li>
-<li><a href="#_3_5_task与operator_chains">3.5 task与operator chains</a></li>
+<li><a href="#_使用maven搭建工程">3.1. 使用Maven搭建工程</a></li>
+<li><a href="#_flink部署">3.2. Flink部署</a>
+<ul class="sectlevel3">
+<li><a href="#_下载hadoop_free版本的flink">3.2.1. 下载Hadoop Free版本的Flink</a></li>
+<li><a href="#_解压缩">3.2.2. 解压缩</a></li>
+<li><a href="#_启动flink集群">3.2.3. 启动Flink集群</a></li>
+<li><a href="#_在浏览器中打开flink的web_ui">3.2.4. 在浏览器中打开Flink的Web UI</a></li>
+<li><a href="#_打包编写好的streamingjob程序">3.2.5. 打包编写好的StreamingJob程序</a></li>
+<li><a href="#_提交打包好的程序">3.2.6. 提交打包好的程序</a></li>
+<li><a href="#_在flink_web_ui查看dashboard中job的执行状态">3.2.7. 在Flink Web UI查看Dashboard中job的执行状态</a></li>
+<li><a href="#_停止flink集群">3.2.8. 停止Flink集群</a></li>
 </ul>
 </li>
-<li><a href="#_第四章_flink_datastream_api">第四章 Flink DataStream API</a>
+</ul>
+</li>
+<li><a href="#_flink运行架构">4. Flink运行架构</a>
 <ul class="sectlevel2">
-<li><a href="#_4_1_environment">4.1 Environment</a></li>
-<li><a href="#_4_2_source">4.2 Source</a></li>
-<li><a href="#_4_3_basic_transformations基本转换算子">4.3 Basic Transformations(基本转换算子)</a>
-<ul class="sectlevel3">
-<li><a href="#_4_3_1_map">4.3.1 map</a></li>
-<li><a href="#_4_3_2_flatmap">4.3.2 flatMap</a></li>
-<li><a href="#_4_3_3_filter">4.3.3 Filter</a></li>
+<li><a href="#_任务调度原理">4.1. 任务调度原理</a></li>
+<li><a href="#_worker与slots">4.2. Worker与Slots</a></li>
+<li><a href="#_程序与数据流">4.3. 程序与数据流</a></li>
+<li><a href="#_并行数据流">4.4. 并行数据流</a></li>
+<li><a href="#_task与operator_chains">4.5. task与operator chains</a></li>
 </ul>
 </li>
-<li><a href="#_4_4_keyedstream_transformations键控流转换算子">4.4 KeyedStream Transformations(键控流转换算子)</a>
-<ul class="sectlevel3">
-<li><a href="#_4_4_1_keyby">4.4.1 keyBy</a></li>
-<li><a href="#_4_4_2_rolling_aggregations">4.4.2 Rolling Aggregations</a></li>
-<li><a href="#_4_4_3_reduce">4.4.3 Reduce</a></li>
-</ul>
-</li>
-<li><a href="#_4_5_multistream_transformations多流转换算子">4.5 Multistream Transformations(多流转换算子)</a>
-<ul class="sectlevel3">
-<li><a href="#_4_5_1_union">4.5.1 Union</a></li>
-<li><a href="#_4_5_2_connect_comap_and_coflatmap">4.5.2 Connect, Comap and Coflatmap</a></li>
-<li><a href="#_4_5_3_split_and_select">4.5.3 Split and Select</a></li>
-</ul>
-</li>
-<li><a href="#_4_6_支持的数据类型">4.6 支持的数据类型</a></li>
-<li><a href="#_4_7_keyby相关用法">4.7 keyBy相关用法</a></li>
-<li><a href="#_4_8_实现udf函数更细粒度的控制流">4.8 实现UDF函数，更细粒度的控制流</a>
-<ul class="sectlevel3">
-<li><a href="#_4_8_1_function_classes">4.8.1 Function Classes</a></li>
-<li><a href="#_4_8_2_lambda_functions">4.8.2 Lambda Functions</a></li>
-<li><a href="#_4_8_3_rich_functions">4.8.3 Rich Functions</a></li>
-</ul>
-</li>
-<li><a href="#_4_9_sink">4.9 Sink</a>
-<ul class="sectlevel3">
-<li><a href="#_4_9_1_elasticsearch">4.9.1 Elasticsearch</a></li>
-</ul>
-</li>
-<li><a href="#_4_10_distribution_transformations分布式转换算子">4.10 Distribution Transformations(分布式转换算子)</a></li>
-</ul>
-</li>
-<li><a href="#_第五章_time与window">第五章 Time与Window</a>
+<li><a href="#_flink_datastream_api">5. Flink DataStream API</a>
 <ul class="sectlevel2">
-<li><a href="#_5_1_time">5.1 Time</a></li>
-<li><a href="#_5_2_window">5.2 Window</a>
+<li><a href="#_environment">5.1. Environment</a></li>
+<li><a href="#_source">5.2. Source</a></li>
+<li><a href="#_basic_transformations基本转换算子">5.3. Basic Transformations(基本转换算子)</a>
 <ul class="sectlevel3">
-<li><a href="#_5_2_1_window概述">5.2.1 Window概述</a></li>
-<li><a href="#_5_2_2_window类型">5.2.2 Window类型</a></li>
+<li><a href="#_map">5.3.1. map</a></li>
+<li><a href="#_4_3_2_flatmap">5.3.2. 4.3.2 flatMap</a></li>
+<li><a href="#_4_3_3_filter">5.3.3. 4.3.3 Filter</a></li>
 </ul>
 </li>
-<li><a href="#_5_3_window_api">5.3 Window API</a></li>
+<li><a href="#_4_4_keyedstream_transformations键控流转换算子">5.4. 4.4 KeyedStream Transformations(键控流转换算子)</a>
+<ul class="sectlevel3">
+<li><a href="#_4_4_1_keyby">5.4.1. 4.4.1 keyBy</a></li>
+<li><a href="#_4_4_2_rolling_aggregations">5.4.2. 4.4.2 Rolling Aggregations</a></li>
+<li><a href="#_4_4_3_reduce">5.4.3. 4.4.3 Reduce</a></li>
 </ul>
 </li>
-<li><a href="#_第六章_event_time与window">第六章 Event Time与Window</a>
+<li><a href="#_4_5_multistream_transformations多流转换算子">5.5. 4.5 Multistream Transformations(多流转换算子)</a>
+<ul class="sectlevel3">
+<li><a href="#_4_5_1_union">5.5.1. 4.5.1 Union</a></li>
+<li><a href="#_4_5_2_connect_comap_and_coflatmap">5.5.2. 4.5.2 Connect, Comap and Coflatmap</a></li>
+<li><a href="#_4_5_3_split_and_select">5.5.3. 4.5.3 Split and Select</a></li>
+</ul>
+</li>
+<li><a href="#_4_6_支持的数据类型">5.6. 4.6 支持的数据类型</a></li>
+<li><a href="#_4_7_keyby相关用法">5.7. 4.7 keyBy相关用法</a></li>
+<li><a href="#_4_8_实现udf函数更细粒度的控制流">5.8. 4.8 实现UDF函数，更细粒度的控制流</a>
+<ul class="sectlevel3">
+<li><a href="#_4_8_1_function_classes">5.8.1. 4.8.1 Function Classes</a></li>
+<li><a href="#_4_8_2_lambda_functions">5.8.2. 4.8.2 Lambda Functions</a></li>
+<li><a href="#_4_8_3_rich_functions">5.8.3. 4.8.3 Rich Functions</a></li>
+</ul>
+</li>
+<li><a href="#_4_9_sink">5.9. 4.9 Sink</a>
+<ul class="sectlevel3">
+<li><a href="#_4_9_1_elasticsearch">5.9.1. 4.9.1 Elasticsearch</a></li>
+</ul>
+</li>
+<li><a href="#_4_10_distribution_transformations分布式转换算子">5.10. 4.10 Distribution Transformations(分布式转换算子)</a></li>
+</ul>
+</li>
+<li><a href="#_第五章_time与window">6. 第五章 Time与Window</a>
 <ul class="sectlevel2">
-<li><a href="#_6_1_configure_time_characteristic">6.1 Configure Time Characteristic</a>
+<li><a href="#_5_1_time">6.1. 5.1 Time</a></li>
+<li><a href="#_5_2_window">6.2. 5.2 Window</a>
 <ul class="sectlevel3">
-<li><a href="#_6_1_1_event_time的引入">6.1.1 Event Time的引入</a></li>
-<li><a href="#_6_1_2_watermark">6.1.2 Watermark</a>
+<li><a href="#_5_2_1_window概述">6.2.1. 5.2.1 Window概述</a></li>
+<li><a href="#_5_2_2_window类型">6.2.2. 5.2.2 Window类型</a></li>
+</ul>
+</li>
+<li><a href="#_5_3_window_api">6.3. 5.3 Window API</a></li>
+</ul>
+</li>
+<li><a href="#_第六章_event_time与window">7. 第六章 Event Time与Window</a>
+<ul class="sectlevel2">
+<li><a href="#_6_1_configure_time_characteristic">7.1. 6.1 Configure Time Characteristic</a>
+<ul class="sectlevel3">
+<li><a href="#_6_1_1_event_time的引入">7.1.1. 6.1.1 Event Time的引入</a></li>
+<li><a href="#_6_1_2_watermark">7.1.2. 6.1.2 Watermark</a>
 <ul class="sectlevel4">
 <li><a href="#_6_1_2_1_基本概念">6.1.2.1 基本概念</a></li>
 </ul>
 </li>
-<li><a href="#_6_1_3_watermark的引入">6.1.3 Watermark的引入</a></li>
+<li><a href="#_6_1_3_watermark的引入">7.1.3. 6.1.3 Watermark的引入</a></li>
 </ul>
 </li>
-<li><a href="#_6_2_process_functionlow_level_api">6.2 Process Function(Low-Level API)</a>
+<li><a href="#_6_2_process_functionlow_level_api">7.2. 6.2 Process Function(Low-Level API)</a>
 <ul class="sectlevel3">
-<li><a href="#_6_2_1_timerservice_and_timers">6.2.1 TimerService and Timers</a></li>
-<li><a href="#_6_2_2_emitting_to_side_outputs侧输出">6.2.2 Emitting to Side Outputs(侧输出)</a></li>
-<li><a href="#_6_2_3_coprocessfunction">6.2.3 CoProcessFunction</a></li>
+<li><a href="#_6_2_1_timerservice_and_timers">7.2.1. 6.2.1 TimerService and Timers</a></li>
+<li><a href="#_6_2_2_emitting_to_side_outputs侧输出">7.2.2. 6.2.2 Emitting to Side Outputs(侧输出)</a></li>
+<li><a href="#_6_2_3_coprocessfunction">7.2.3. 6.2.3 CoProcessFunction</a></li>
 </ul>
 </li>
-<li><a href="#_6_3_window_operators窗口操作符">6.3 Window Operators(窗口操作符)</a>
+<li><a href="#_6_3_window_operators窗口操作符">7.3. 6.3 Window Operators(窗口操作符)</a>
 <ul class="sectlevel3">
-<li><a href="#_6_3_1_define_window_operators定义窗口操作符">6.3.1 define window operators(定义窗口操作符)</a></li>
-<li><a href="#_6_3_2_内置的window_assigner窗口分配器">6.3.2 内置的window assigner(窗口分配器)</a>
+<li><a href="#_6_3_1_define_window_operators定义窗口操作符">7.3.1. 6.3.1 define window operators(定义窗口操作符)</a></li>
+<li><a href="#_6_3_2_内置的window_assigner窗口分配器">7.3.2. 6.3.2 内置的window assigner(窗口分配器)</a>
 <ul class="sectlevel4">
 <li><a href="#_6_3_2_1_tumbling_windows滚动窗口">6.3.2.1 tumbling windows(滚动窗口)</a></li>
 <li><a href="#_6_3_2_2_sliding_window滑动窗口">6.3.2.2 sliding window(滑动窗口)</a></li>
 <li><a href="#_6_3_2_3_session_windows会话窗口">6.3.2.3 session windows(会话窗口)</a></li>
 </ul>
 </li>
-<li><a href="#_6_3_3_applying_functions_on_windows在窗口上应用函数">6.3.3 Applying Functions on Windows(在窗口上应用函数)</a>
+<li><a href="#_6_3_3_applying_functions_on_windows在窗口上应用函数">7.3.3. 6.3.3 Applying Functions on Windows(在窗口上应用函数)</a>
 <ul class="sectlevel4">
 <li><a href="#_6_3_3_1_reducefunction">6.3.3.1 ReduceFunction</a></li>
 <li><a href="#_6_3_3_2_aggregatefunction">6.3.3.2 AggregateFunction</a></li>
@@ -596,50 +619,50 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
-<li><a href="#_第七章_有状态的计算">第七章 有状态的计算</a>
+<li><a href="#_第七章_有状态的计算">8. 第七章 有状态的计算</a>
 <ul class="sectlevel2">
-<li><a href="#_7_1_一致性">7.1 一致性</a></li>
-<li><a href="#_7_2_检查点_保证exactly_once">7.2 检查点: 保证exactly-once</a></li>
-<li><a href="#_7_3_stateful_operators_and_applications">7.3 Stateful Operators and Applications</a>
+<li><a href="#_7_1_一致性">8.1. 7.1 一致性</a></li>
+<li><a href="#_7_2_检查点_保证exactly_once">8.2. 7.2 检查点: 保证exactly-once</a></li>
+<li><a href="#_7_3_stateful_operators_and_applications">8.3. 7.3 Stateful Operators and Applications</a>
 <ul class="sectlevel3">
-<li><a href="#_7_3_1_实现stateful_functions">7.3.1 实现stateful functions</a>
+<li><a href="#_7_3_1_实现stateful_functions">8.3.1. 7.3.1 实现stateful functions</a>
 <ul class="sectlevel4">
 <li><a href="#_7_3_1_1_在runtimecontext中声明keyed_state">7.3.1.1 在RuntimeContext中声明Keyed State</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#_7_4_选择一个状态后端state_backend">7.4 选择一个状态后端(state backend)</a></li>
+<li><a href="#_7_4_选择一个状态后端state_backend">8.4. 7.4 选择一个状态后端(state backend)</a></li>
 </ul>
 </li>
-<li><a href="#_第八章_dataflow模型">第八章 Dataflow模型</a>
+<li><a href="#_第八章_dataflow模型">9. 第八章 Dataflow模型</a>
 <ul class="sectlevel2">
-<li><a href="#_8_0_摘要">8.0 摘要</a></li>
-<li><a href="#_8_1_简介">8.1 简介</a>
+<li><a href="#_8_0_摘要">9.1. 8.0 摘要</a></li>
+<li><a href="#_8_1_简介">9.2. 8.1 简介</a>
 <ul class="sectlevel3">
-<li><a href="#_8_1_1_无边界有边界与流处理批处理">8.1.1   无边界、有边界与流处理、批处理</a></li>
-<li><a href="#_8_1_2_窗口">8.1.2 窗口</a></li>
-<li><a href="#_8_1_3_时间域">8.1.3 时间域</a></li>
+<li><a href="#_8_1_1_无边界有边界与流处理批处理">9.2.1. 8.1.1   无边界、有边界与流处理、批处理</a></li>
+<li><a href="#_8_1_2_窗口">9.2.2. 8.1.2 窗口</a></li>
+<li><a href="#_8_1_3_时间域">9.2.3. 8.1.3 时间域</a></li>
 </ul>
 </li>
-<li><a href="#_8_2_dataflow模型">8.2 DataFlow模型</a>
+<li><a href="#_8_2_dataflow模型">9.3. 8.2 DataFlow模型</a>
 <ul class="sectlevel3">
-<li><a href="#_8_2_1_核心编程模型">8.2.1 核心编程模型</a></li>
-<li><a href="#_8_2_2_窗口">8.2.2 窗口</a>
+<li><a href="#_8_2_1_核心编程模型">9.3.1. 8.2.1 核心编程模型</a></li>
+<li><a href="#_8_2_2_窗口">9.3.2. 8.2.2 窗口</a>
 <ul class="sectlevel4">
 <li><a href="#_8_2_2_1_窗口分配">8.2.2.1 窗口分配</a></li>
 <li><a href="#_8_2_2_2_窗口合并">8.2.2.2 窗口合并</a></li>
 <li><a href="#_8_2_2_3_api">8.2.2.3 API</a></li>
 </ul>
 </li>
-<li><a href="#_8_2_3_触发器和增量处理">8.2.3 触发器和增量处理</a></li>
+<li><a href="#_8_2_3_触发器和增量处理">9.3.3. 8.2.3 触发器和增量处理</a></li>
 </ul>
 </li>
-<li><a href="#_8_3_实现和设计">8.3 实现和设计</a>
+<li><a href="#_8_3_实现和设计">9.4. 8.3 实现和设计</a>
 <ul class="sectlevel3">
-<li><a href="#_8_3_1_实现">8.3.1 实现</a></li>
-<li><a href="#_8_3_2_设计原则">8.3.2 设计原则</a></li>
-<li><a href="#_8_3_3_业务场景">8.3.3 业务场景</a>
+<li><a href="#_8_3_1_实现">9.4.1. 8.3.1 实现</a></li>
+<li><a href="#_8_3_2_设计原则">9.4.2. 8.3.2 设计原则</a></li>
+<li><a href="#_8_3_3_业务场景">9.4.3. 8.3.3 业务场景</a>
 <ul class="sectlevel4">
 <li><a href="#_8_3_3_1_大规模数据回写和lambda架构统一模型">8.3.3.1 大规模数据回写和Lambda架构；统一模型</a></li>
 <li><a href="#_8_3_3_2_非对齐窗口会话">8.3.3.2 非对齐窗口：会话</a></li>
@@ -651,22 +674,22 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
-<li><a href="#_8_4_总结">8.4 总结</a></li>
+<li><a href="#_8_4_总结">9.5. 8.4 总结</a></li>
 </ul>
 </li>
-<li><a href="#_第九章_flink_cep简介">第九章 Flink CEP简介</a></li>
-<li><a href="#_第十章_尚硅谷大数据技术之电商用户行为分析">第十章 尚硅谷大数据技术之电商用户行为分析</a>
+<li><a href="#_第九章_flink_cep简介">10. 第九章 Flink CEP简介</a></li>
+<li><a href="#_第十章_尚硅谷大数据技术之电商用户行为分析">11. 第十章 尚硅谷大数据技术之电商用户行为分析</a>
 <ul class="sectlevel2">
-<li><a href="#_10_1_项目整体介绍">10.1 项目整体介绍</a>
+<li><a href="#_10_1_项目整体介绍">11.1. 10.1 项目整体介绍</a>
 <ul class="sectlevel3">
-<li><a href="#_10_1_1_电商的用户行为">10.1.1 电商的用户行为</a></li>
-<li><a href="#_10_1_2_项目主要模块">10.1.2 项目主要模块</a></li>
-<li><a href="#_10_1_3_数据源解析">10.1.3 数据源解析</a></li>
+<li><a href="#_10_1_1_电商的用户行为">11.1.1. 10.1.1 电商的用户行为</a></li>
+<li><a href="#_10_1_2_项目主要模块">11.1.2. 10.1.2 项目主要模块</a></li>
+<li><a href="#_10_1_3_数据源解析">11.1.3. 10.1.3 数据源解析</a></li>
 </ul>
 </li>
-<li><a href="#_10_2_实时热门商品统计">10.2 实时热门商品统计</a>
+<li><a href="#_10_2_实时热门商品统计">11.2. 10.2 实时热门商品统计</a>
 <ul class="sectlevel3">
-<li><a href="#_10_2_1_创建maven项目">10.2.1 创建Maven项目</a>
+<li><a href="#_10_2_1_创建maven项目">11.2.1. 10.2.1 创建Maven项目</a>
 <ul class="sectlevel4">
 <li><a href="#_10_2_1_1_项目框架搭建">10.2.1.1 项目框架搭建</a></li>
 <li><a href="#_10_2_1_2_声明项目中工具的版本信息">10.2.1.2 声明项目中工具的版本信息</a></li>
@@ -674,10 +697,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_10_2_1_4_数据准备">10.2.1.4 数据准备</a></li>
 </ul>
 </li>
-<li><a href="#_10_2_2_模块代码实现">10.2.2 模块代码实现</a></li>
-<li><a href="#_10_2_2_1_程序主体">10.2.2.1 程序主体</a></li>
-<li><a href="#_10_2_2_2_过滤出点击事件">10.2.2.2 过滤出点击事件</a></li>
-<li><a href="#_10_2_2_3_设置滑动窗口统计点击量">10.2.2.3 设置滑动窗口，统计点击量</a>
+<li><a href="#_10_2_2_模块代码实现">11.2.2. 10.2.2 模块代码实现</a></li>
+<li><a href="#_10_2_2_1_程序主体">11.2.3. 10.2.2.1 程序主体</a></li>
+<li><a href="#_10_2_2_2_过滤出点击事件">11.2.4. 10.2.2.2 过滤出点击事件</a></li>
+<li><a href="#_10_2_2_3_设置滑动窗口统计点击量">11.2.5. 10.2.2.3 设置滑动窗口，统计点击量</a>
 <ul class="sectlevel4">
 <li><a href="#_10_2_2_4_计算最热门top_n商品">10.2.2.4 计算最热门Top N商品</a></li>
 <li><a href="#_10_2_2_5_完整代码">10.2.2.5 完整代码</a></li>
@@ -685,16 +708,16 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
-<li><a href="#_10_3_实时流量统计">10.3 实时流量统计</a>
+<li><a href="#_10_3_实时流量统计">11.3. 10.3 实时流量统计</a>
 <ul class="sectlevel3">
-<li><a href="#_10_3_1_模块创建和数据准备">10.3.1 模块创建和数据准备</a></li>
-<li><a href="#_10_3_2_代码实现">10.3.2 代码实现</a></li>
+<li><a href="#_10_3_1_模块创建和数据准备">11.3.1. 10.3.1 模块创建和数据准备</a></li>
+<li><a href="#_10_3_2_代码实现">11.3.2. 10.3.2 代码实现</a></li>
 </ul>
 </li>
-<li><a href="#_10_4_恶意登录监控">10.4 恶意登录监控</a>
+<li><a href="#_10_4_恶意登录监控">11.4. 10.4 恶意登录监控</a>
 <ul class="sectlevel3">
-<li><a href="#_10_4_1_模块创建和数据准备">10.4.1 模块创建和数据准备</a></li>
-<li><a href="#_10_4_2_代码实现">10.4.2 代码实现</a>
+<li><a href="#_10_4_1_模块创建和数据准备">11.4.1. 10.4.1 模块创建和数据准备</a></li>
+<li><a href="#_10_4_2_代码实现">11.4.2. 10.4.2 代码实现</a>
 <ul class="sectlevel4">
 <li><a href="#_10_4_2_1_状态编程">10.4.2.1 状态编程</a></li>
 <li><a href="#_10_4_2_2_cep编程">10.4.2.2 CEP编程</a></li>
@@ -702,14 +725,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
-<li><a href="#_10_5_订单支付实时监控">10.5 订单支付实时监控</a>
+<li><a href="#_10_5_订单支付实时监控">11.5. 10.5 订单支付实时监控</a>
 <ul class="sectlevel3">
-<li><a href="#_10_5_1_模块创建和数据准备">10.5.1 模块创建和数据准备</a></li>
-<li><a href="#_10_5_2_代码实现">10.5.2 代码实现</a></li>
-<li><a href="#_10_5_3_使用process_function实现订单超时需求">10.5.3 使用Process Function实现订单超时需求</a></li>
+<li><a href="#_10_5_1_模块创建和数据准备">11.5.1. 10.5.1 模块创建和数据准备</a></li>
+<li><a href="#_10_5_2_代码实现">11.5.2. 10.5.2 代码实现</a></li>
+<li><a href="#_10_5_3_使用process_function实现订单超时需求">11.5.3. 10.5.3 使用Process Function实现订单超时需求</a></li>
 </ul>
 </li>
-<li><a href="#_10_6_实现两条流的join">10.6 实现两条流的join</a></li>
+<li><a href="#_10_6_实现两条流的join">11.6. 10.6 实现两条流的join</a></li>
 </ul>
 </li>
 </ul>
@@ -726,10 +749,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect1">
-<h2 id="_第一章_flink简介">第一章 Flink简介</h2>
+<h2 id="_flink简介">1. Flink简介</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_1_1_初识flink">1.1 初识Flink</h3>
+<h3 id="_初识flink">1.1. 初识Flink</h3>
 <div class="paragraph">
 <p>Flink起源于Stratosphere项目，Stratosphere是在2010～2014年由3所地处柏林的大学和欧洲的一些其他的大学共同进行的研究项目，2014年4月Stratosphere的代码被复制并捐赠给了Apache软件基金会，参加这个孵化项目的初始成员是Stratosphere系统的核心开发人员，2014年12月，Flink一跃成为Apache软件基金会的顶级项目。</p>
 </div>
@@ -771,7 +794,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect2">
-<h3 id="_1_2_为什么选择flink">1.2 为什么选择Flink</h3>
+<h3 id="_为什么选择flink">1.2. 为什么选择Flink</h3>
 <div class="paragraph">
 <p>许多系统都会产生连续的事件流，如行驶中的汽车发射出GPS信号，金融交易，移动通信基站与繁忙的智能手机进行信号交换，网络流量，机器日志，工业传感器和可穿戴设备的测量结果，等等。如果能够高效地分析大规模流数据，我们对上述系统的理解将会更清楚、更快速。简而言之，流数据更真实地反映了我们的生活方式。</p>
 </div>
@@ -785,12 +808,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>而Flink为大容量数据提供流处理，并用同一种技术实现批处理。</p>
 </div>
 <div class="sect3">
-<h4 id="_1_2_1_流处理欠佳的后果">1.2.1 流处理欠佳的后果</h4>
+<h4 id="_流处理欠佳的后果">1.2.1. 流处理欠佳的后果</h4>
 <div class="paragraph">
 <p>谁需要和流数据打交道呢? 首先映入脑海的是从事传感器测量和金融交易的工作人员。对于他们来说，流处理非常有用。但是流数据来源非常广泛，两个常见的例子是: 网站获得的能够反映用户行为的点击流数据，以及私有数据中心的机器日志。事实上，流数据来源无处不在，但是从连续事件中获得数据并不意味着可以在批量计算中使用这些数据。如今，处理大规模流数据的新技术正在改变这一状况。</p>
 </div>
 <div class="sect4">
-<h5 id="_1_2_1_1_零售业和市场营销">1.2.1.1 零售业和市场营销</h5>
+<h5 id="_零售业和市场营销">零售业和市场营销</h5>
 <div class="paragraph">
 <p>在现代零售业中，网站点击量就代表了销量。网站获得的点击数据可能是大量、连续、不均匀的。用以往的技术很难处理好如此规模的数据。仅是构建批量系统处理这些数据流就很有挑战性: 结果很可能是需要一个庞大且复杂的系统。并且，传统的做法还会带来数据丢失、延迟、错误的聚合结果等问题。这样的结果怎能对商业领域有所帮助呢?</p>
 </div>
@@ -808,7 +831,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect4">
-<h5 id="_1_2_1_2_物联网">1.2.1.2 物联网</h5>
+<h5 id="_物联网">物联网</h5>
 <div class="paragraph">
 <p>物联网是流数据被普遍应用的领域。在物联网中，低延迟的数据传输和处理，以及准确的数据分析通常很关键。各类仪器中的传感器频繁地获得测量数据，并将它们以流的形式传输至数据中心。在数据中心内，实时或者接近实时的应用程序将更新显示板，运行机器学习模型，发布警告，并就许多不同的服务项目提供反馈。</p>
 </div>
@@ -826,13 +849,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect4">
-<h5 id="_1_2_1_3_电信业">1.2.1.3 电信业</h5>
+<h5 id="_电信业">电信业</h5>
 <div class="paragraph">
 <p>电信业是一个特殊的例子，它广泛地应用了基于各种目的而产生的跨地域的事件流数据。如果电信公司不能很好地处理流数据，就不能在某个移动通信基站出现流量高峰前预先将流量分配给其他的基站，也不能在断电时快速做出反应。通过处理流数据来进行异常检测，如检测通话中断或者设备故障，对于电信业来说至关重要。</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_1_2_1_4_银行和金融业">1.2.1.4 银行和金融业</h5>
+<h5 id="_银行和金融业">银行和金融业</h5>
 <div class="paragraph">
 <p>因为流处理做得不好而给银行以及金融业带来的潜在问题是极其显著的。从事零售业务的银行不希望客户交易被延迟或者因为错误统计而造成账户余额出错。曾有一个说法叫作"银行家工作时间"，指的就是银行需要在下午早早关门进行结算，这样才能保证第二天营业之前算出准确的账。这种批量作业的营业模式早已消失。如今，交易和报表都必须快速且准确地生成; 有些新兴的银行甚至提供实时的推送通知，以及随时随地访问手机银行的服务。在全球化经济中，能够提供24小时服务变得越来越重要。</p>
 </div>
@@ -842,7 +865,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect3">
-<h4 id="_1_2_2_连续事件处理的目标">1.2.2 连续事件处理的目标</h4>
+<h4 id="_连续事件处理的目标">1.2.2. 连续事件处理的目标</h4>
 <div class="paragraph">
 <p>能够以非常低的延迟处理数据，这并不是流处理的唯一优势。人们希望流处理不仅做到低延迟和高吞吐，还可以处理中断。优秀的流处理技术应该能使系统在崩溃之后重新启动，并且产出准确的结果; 换句话说，优秀的流处理技术可以容错，而且能保证exactly-once。</p>
 </div>
@@ -851,7 +874,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect3">
-<h4 id="_1_2_3_流处理技术的演变">1.2.3 流处理技术的演变</h4>
+<h4 id="_流处理技术的演变">1.2.3. 流处理技术的演变</h4>
 <div class="paragraph">
 <p>分开处理连续的实时数据和有限批次的数据，可以使系统构建工作变得更加简单，但是这种做法将管理两套系统的复杂性留给了系统用户: 应用程序的开发团队和DevOps团队需要自己使用并管理这两套系统。</p>
 </div>
@@ -1014,9 +1037,9 @@ Lambda架构的问题是改变代码后需要重新在两个复杂的分布式�
 </div>
 </div>
 <div class="sect2">
-<h3 id="_1_3_flink的重要特点">1.3 Flink的重要特点</h3>
+<h3 id="_flink的重要特点">1.3. Flink的重要特点</h3>
 <div class="sect3">
-<h4 id="_1_3_1_事件驱动型event_driven">1.3.1 事件驱动型(Event-Driven)</h4>
+<h4 id="_事件驱动型event_driven">1.3.1. 事件驱动型(Event-Driven)</h4>
 <div class="paragraph">
 <p>事件驱动型应用是一类具有状态的应用，它从一个或多个事件流提取数据，并根据到来的事件触发计算、状态更新或其他外部动作。比较典型的就是以Kafka为代表的消息队列几乎都是事件驱动型应用。</p>
 </div>
@@ -1038,7 +1061,7 @@ Lambda架构的问题是改变代码后需要重新在两个复杂的分布式�
 </div>
 </div>
 <div class="sect3">
-<h4 id="_1_3_2_流与批的世界观">1.3.2 流与批的世界观</h4>
+<h4 id="_流与批的世界观">1.3.2. 流与批的世界观</h4>
 <div class="paragraph">
 <p><strong>批处理</strong>的特点是有界、持久、大量，非常适合需要访问全套记录才能完成的计算工作，一般用于离线统计。</p>
 </div>
@@ -1067,7 +1090,7 @@ Lambda架构的问题是改变代码后需要重新在两个复杂的分布式�
 </div>
 </div>
 <div class="sect3">
-<h4 id="_1_3_3_分层api">1.3.3 分层api</h4>
+<h4 id="_分层api">1.3.3. 分层api</h4>
 <div class="imageblock">
 <div class="content">
 <img src="images/api-stack.png" alt="api stack">
@@ -1105,10 +1128,273 @@ Lambda架构的问题是改变代码后需要重新在两个复杂的分布式�
 </div>
 </div>
 <div class="sect1">
-<h2 id="_第二章_flink快速上手">第二章 Flink快速上手</h2>
+<h2 id="_有状态的流式处理简介">2. 有状态的流式处理简介</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Apache Flink是一个分布式流处理器，具有直观和富有表现力的API，可实现有状态的流处理应用程序。它以容错的方式有效地大规模运行这些应用程序。 Flink于2014年4月加入Apache软件基金会作为孵化项目，并于2015年1月成为顶级项目。从一开始，Flink就拥有一个非常活跃且不断增长的用户和贡献者社区。到目前为止，已有超过五百人为Flink做出贡献，并且它已经发展成为最复杂的开源流处理引擎之一，并得到了广泛采用的证明。 Flink为不同行业和全球的许多公司和企业提供大规模的商业关键应用。</p>
+</div>
+<div class="paragraph">
+<p>流处理技术在大大小小的公司中越来越受欢迎，因为它为许多已建立的用例（如数据分析，ETL和事务应用程序）提供了卓越的解决方案，同时也促进了新颖的应用程序，软件架构和商机。接下来我们将讨论，为什么有状态流处理变得如此受欢迎并评估其潜力。我们首先回顾传统的数据应用程序架构并指出它们的局限性。接下来，我们介绍基于状态流处理的应用程序设计 与传统方法相比，它具有许多有趣的特征最后，我们简要讨论开源流处理器的发展，并在本地Flink实例上运行流应用程序。</p>
+</div>
+<div class="sect2">
+<h3 id="_传统数据处理架构">2.1. 传统数据处理架构</h3>
+<div class="paragraph">
+<p>数十年来，数据和数据处理在企业中无处不在。多年来，数据的收集和使用一直在增长，公司已经设计并构建了基础架构来管理数据。大多数企业实施的传统架构区分了两种类型的数据处理：事务处理（OLTP）和分析处理（OLAP）。</p>
+</div>
+<div class="sect3">
+<h4 id="_事务处理">2.1.1. 事务处理</h4>
+<div class="paragraph">
+<p>公司将各种应用程序用于日常业务活动，例如企业资源规划（ERP）系统，客户关系管理（CRM）软件和基于Web的应用程序。这些系统通常设计有单独的层，用于数据处理（应用程序本身）和数据存储（事务数据库系统），如图1-1所示。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/spaf_0101.png" alt="spaf 0101">
+</div>
+</div>
+<div class="paragraph">
+<p>应用程序通常连接到外部服务或直接面向用户，并持续处理传入的事件，如网站上的订单，电子邮件或点击。处理事件时，应用程序将会读取远程数据库的状态，或者通过运行事务来更新它。通常，一个数据库系统可以服务于多个应用程序，它们有时会访问相同的数据库或表。</p>
+</div>
+<div class="paragraph">
+<p>当应用程序需要扩展时，这样的设计可能会导致问题。由于多个应用程序可能会同时用到相同的数据表示，或者共享相同的基础设施，因此想要更改表的结构或扩展数据库，就需要仔细的规划和大量的工作。克服紧耦合应用程序的最新方法是微服务设计模式。微服务被设计为小型、完备且独立的应用程序。他们遵循UNIX的理念，即“只做一件事并且把它做好”。通过将几个微服务相互连接来构建更复杂的应用程序，这些微服务仅通过标准化接口（例如RESTful HTTP连接）进行通信。由于微服务严格地彼此分离并且仅通过明确定义的接口进行通信，因此每个微服务都可以用不同技术栈来实现，包括编程语言、类库和数据存储。微服务和所有必需的软件和服务通常捆绑在一起并部署在独立的容器中。图1-2描绘了一种微服务架构。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/spaf_0102.png" alt="spaf 0102">
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_分析处理">2.1.2. 分析处理</h4>
+<div class="paragraph">
+<p>大量数据存储在公司的各种事务数据库系统中，它们可以为公司业务运营提供宝贵的参考意见。例如，分析订单处理系统的数据，可以获得销量随时间的增长曲线；可以识别延迟发货的原因；还可以预测未来的销量以便提前调整库存。但是，事务数据通常分布在多个数据库中，它们往往汇总起来联合分析时更有价值。而且，数据通常需要转换为通用格式。</p>
+</div>
+<div class="paragraph">
+<p>所以我们一般不会直接在事务数据库上运行分析查询，而是复制数据到数据仓库。数据仓库是对工作负载进行分析和查询的专用数据存储。为了填充数据仓库，需要将事务数据库系统管理的数据复制过来。将数据复制到数据仓库的过程称为extract-transform-load（ETL）。 ETL过程从事务数据库中提取数据，将其转换为某种通用的结构表示，可能包括验证，值的规范化，编码，重复数据删除（去重）和模式转换，最后将其加载到分析数据库中。 ETL过程可能非常复杂，并且通常需要技术复杂的解决方案来满足性能要求。 ETL过程需要定期运行以保持数据仓库中的数据同步。</p>
+</div>
+<div class="paragraph">
+<p>将数据导入数据仓库后，可以查询和分析数据。通常，在数据仓库上执行两类查询。第一种类型是定期报告查询，用于计算与业务相关的统计信息，比如收入、用户增长或者输出的产量。这些指标汇总到报告中，帮助管理层评估业务的整体健康状况。第二种类型是即席查询，旨在提供特定问题的答案并支持关键业务决策，例如收集统计在投放商业广告上的花费，和获取的相应收入，以评估营销活动的有效性。两种查询由批处理方式由数据仓库执行，如图1-3所示。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/spaf_0103.png" alt="spaf 0103">
+</div>
+</div>
+<div class="paragraph">
+<p>如今，Apache Hadoop生态系统的组件，已经是许多企业IT基础架构中不可或缺的组成部分。现在的做法不是直接将所有数据都插入关系数据库系统，而是将大量数据（如日志文件，社交媒体或Web点击日志）写入Hadoop的分布式文件系统（HDFS）、S3或其他批量数据存储库，如Apache HBase，以较低的成本提供大容量存储容量。驻留在此类存储系统中的数据可以通过SQL-on-Hadoop引擎查询和处理，例如Apache Hive，Apache Drill或Apache Impala。但是，基础结构与传统数据仓库架构基本相同。</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_有状态的流式处理">2.2. 有状态的流式处理</h3>
+<div class="paragraph">
+<p>日常生活中，所有数据都是作为连续的事件流创建的。比如网站或者移动应用中的用户交互动作，订单的提交，服务器日志或传感器测量数据：所有这些都是事件流。实际上，很少有应用场景，能一次性地生成所需要的完整（有限）数据集。实际应用中更多的是无限事件流。有状态的流处理就是用于处理这种无限事件流的应用程序设计模式，在公司的IT基础设施中有广泛的应用场景。在我们讨论其用例之前，我们将简要介绍有状态流处理的工作原理。</p>
+</div>
+<div class="paragraph">
+<p>如果我们想要无限处理事件流，并且不愿意繁琐地每收到一个事件就记录一次，那这样的应用程序就需要是有状态的，也就是说能够存储和访问中间数据。当应用程序收到一个新事件时，它可以从状态中读取数据，或者向该状态写入数据，总之可以执行任何计算。原则上讲，我们可以在各种不同的地方存储和访问状态，包括程序变量（内存）、本地文件，还有嵌入式或外部数据库。</p>
+</div>
+<div class="paragraph">
+<p>Apache Flink将应用程序状态，存储在内存或者嵌入式数据库中。由于Flink是一个分布式系统，因此需要保护本地状态以防止在应用程序或计算机故障时数据丢失。 Flink通过定期将应用程序状态的一致性检查点（check point）写入远程且持久的存储，来保证这一点。状态、状态一致性和Flink的检查点将在后面的章节中更详细地讨论，但是，现在，图1-4显示了有状态的流式Flink应用程序。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/spaf_0104.png" alt="spaf 0104">
+</div>
+</div>
+<div class="paragraph">
+<p>有状态的流处理应用程序，通常从事件日志中提取输入事件。事件日志就用来存储和分发事件流。事件被写入持久的仅添加（append-only）日志，这意味着无法更改写入事件的顺序。写入事件日志的流，可以被相同或不同的消费者多次读取。由于日志的仅附加（append-only）属性，事件始终以完全相同的顺序发布给所有消费者。现在已有几种事件日志系统，其中Apache Kafka是最受欢迎的，可以作为开源软件使用，或者是云计算提供商提供的集成服务。</p>
+</div>
+<div class="paragraph">
+<p>在Flink上运行的有状态的流处理应用程序，是很有意思的一件事。在这个架构中，事件日志会按顺序保留输入事件，并且可以按确定的顺序重播它们。如果发生故障，Flink将从先前的检查点（check point）恢复其状态，并重置事件日志上的读取位置，这样就可以恢复整个应用。应用程序将重放（并快进）事件日志中的输入事件，直到它到达流的尾部。此技术一般用于从故障中恢复，但也可用于更新应用程序、修复bug或者修复以前发出的结果，另外还可以用于将应用程序迁移到其他群集，或使用不同的应用程序版本执行A / B测试。</p>
+</div>
+<div class="paragraph">
+<p>如前所述，有状态的流处理是一种通用且灵活的设计架构，可用于许多不同的场景。在下文中，我们提出了三类通常使用有状态流处理实现的应用程序：（1）事件驱动应用程序，（2）数据管道应用程序，以及（3）数据分析应用程序。</p>
+</div>
+<div class="paragraph">
+<p>我们将应用程序分类描述，是为了强调有状态流处理适用于多种业务场景；而实际的应用中，往往会具有以上多种情况的特征。</p>
+</div>
+<div class="sect3">
+<h4 id="_事件驱动应用程序event_driven_applications">2.2.1. 事件驱动应用程序（Event-Driven Applications）</h4>
+<div class="paragraph">
+<p>事件驱动的应用程序是有状态的流应用程序，它们使用特定的业务逻辑来提取事件流并处理事件。根据业务逻辑，事件驱动的应用程序可以触发诸如发送警报、或电子邮件之类的操作，或者将事件写入向外发送的事件流以供另一个应用程序使用。</p>
+</div>
+<div class="paragraph">
+<p>事件驱动应用程序的典型场景包括：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>实时推荐（例如，在客户浏览零售商网站时推荐产品）</p>
+</li>
+<li>
+<p>行为模式检测或复杂事件处理（例如，用于信用卡交易中的欺诈检测）</p>
+</li>
+<li>
+<p>异常检测（例如，检测侵入计算机网络的尝试</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>事件驱动应用程序是微服务的演变。它们通过事件日志而不是REST调用进行通信，并将应用程序数据保存为本地状态，而不是将其写入外部数据存储区（例如关系数据库或键值数据库）。图1-5显示了由事件驱动的流应用程序组成的服务架构。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/spaf_0105.png" alt="spaf 0105">
+</div>
+</div>
+<div class="paragraph">
+<p>图1-5中的应用程序通过事件日志连接。一个应用程序将其输出发送到事件日志通道（kafka），另一个应用程序使用其他应用程序发出的事件。事件日志通道将发送者和接收者分离，并提供异步、非阻塞的事件传输。每个应用程序都可以是有状态的，并且可以本地管理自己的状态而无需访问外部数据存储。应用程序也可以单独处理和扩展。</p>
+</div>
+<div class="paragraph">
+<p>与事务性应用程序或微服务相比，事件驱动的应用程序具有多种优势。与读写远程数据库相比，本地状态访问提供了非常好的性能。扩展性和容错性都由流处理器来保证，并且以事件日志作为输入源，应用程序的整个输入数据可以可靠地存储，并且可以确定性地重放。此外，Flink可以将应用程序的状态重置为先前的保存点（save point），从而可以在不丢失状态的情况下更新或重新扩展应用程序。</p>
+</div>
+<div class="paragraph">
+<p>事件驱动的应用程序对运行它们的流处理器有很高的要求，并不是所有流处理器都适合运行事件驱动的应用程序。 API的表现力，以及对状态处理和事件时间支持的程度，决定了可以实现和执行的业务逻辑。这方面取决于流处理器的API，主要看它能提供什么样的状态类型，以及它对事件时间处理的支持程度。此外，精确一次（exactly-once）的状态一致性和扩展应用程序的能力是事件驱动应用程序的基本要求。 Apache Flink符合所有的这些要求，是运行此类应用程序的一个非常好的选择。</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_数据管道data_pipelines">2.2.2. 数据管道（Data Pipelines）</h4>
+<div class="paragraph">
+<p>当今的IT架构包括许多不同的数据存储，例如关系型数据库和专用数据库系统、事件日志、分布式文件系统，内存中的缓存和搜索索引。所有这些系统都以不同的格式和数据结构存储数据，为其特定的访问模式提供最佳性能。公司通常将相同的数据存储在多个不同的系统中，以提高数据访问的性能。例如，网上商店中提供的产品的信息，可以存储在交易数据库中，同时也存储在缓存（如redis）和搜索索引（如ES）中。由于数据的这种复制，数据存储必须保持同步。</p>
+</div>
+<div class="paragraph">
+<p>在不同存储系统中同步数据的传统方法是定期ETL作业。但是，它们不能满足当今许多场景的延迟要求。另一种方法是使用事件日志（event log）来发布更新。更新将写入事件日志并由事件日志分发。日志的消费者获取到更新之后，将更新合并到受影响的数据存储中。根据使用情况，传输的数据可能需要标准化、使用外部数据进行扩展，或者在目标数据存储提取之前进行聚合。</p>
+</div>
+<div class="paragraph">
+<p>以较低的延迟，来提取、转换和插入数据是有状态流处理应用程序的另一个常见应用场景。这种类型的应用程序称为数据管道（data pipeline）。数据管道必须能够在短时间内处理大量数据。操作数据管道的流处理器还应具有许多源（source）和接收器（sink）的连接器，以便从各种存储系统读取数据并将数据写入各种存储系统。当然，同样地，Flink完成了所有这些功能。</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_流分析">2.2.3. 流分析</h4>
+<div class="paragraph">
+<p>ETL作业定期将数据导入数据存储区，数据的处理是由即席查询（用户自定义查询）或设定好的通常查询来做的。无论架构是基于数据仓库还是基于Hadoop生态系统的组件，这都是批处理。多年来最好的处理方式就是，定期将数据加载到数据分析系统中，但它给分析管道带了的延迟相当大，而且无法避免。</p>
+</div>
+<div class="paragraph">
+<p>根据设定好的时间间隔，可能需要数小时或数天才能将数据点包含在报告中。我们前面已经提到，数据管道可以实现低延迟的ETL，所以在某种程度上，可以通过使用数据管道将数据导入存储区来减少延迟。但是，即使持续不停地进行ETL操作，在用查询来处理事件之前总会有延迟。虽然这种延迟在过去可能是可以接受的，但是今天的应用程序，往往要求必须能够实时收集数据，并立即对其进行操作（例如，在手机游戏中去适应不断变化的条件，或者在电商网站中提供个性化的用户体验）。</p>
+</div>
+<div class="paragraph">
+<p>流式分析应用程序不是等待定期触发，而是连续地提取事件流，并且通过纳入最新事件来更新其计算结果，这个过程是低延迟的。这有些类似于数据库中用于更新视图（views）的技术。通常，流应用程序将其结果存储在支持更新的外部数据存储中，例如数据库或键值（key-value）存储。流分析应用程序的实时更新结果可用于驱动监控仪表板（dashboard）应用程序，如图1-6所示。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/spaf_0106.png" alt="spaf 0106">
+</div>
+</div>
+<div class="paragraph">
+<p>流分析应用程序最大的优势就是，将每个事件纳入到分析结果所需的时间短得多。除此之外，流分析应用程序还有另一个不太明显的优势。传统的分析管道由几个独立的组件组成，例如ETL过程、存储系统、对于基于Hadoop的环境，还包括用于触发任务（jobs）的数据处理和调度程序。相比之下，如果我们运行一个有状态流应用程序，那么流处理器就会负责所有这些处理步骤，包括事件提取、带有状态维护的连续计算以及更新结果。此外，流处理器可以从故障中恢复，并且具有精确一次（exactly-once）的状态一致性保证，还可以调整应用程序的计算资源。像Flink这样的流处理器还支持事件时间（event-time）处理，这可以保证产生正确和确定的结果，并且能够在很短的时间内处理大量数据。</p>
+</div>
+<div class="paragraph">
+<p>流分析应用程序通常用于：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>监控手机网络的质量分析</p>
+</li>
+<li>
+<p>移动应用中的用户行为</p>
+</li>
+<li>
+<p>实时数据的即席分析</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>虽然我们不在此处介绍，但Flink还提供对流上的分析SQL查询的支持。</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_开源流处理的演进">2.3. 开源流处理的演进</h3>
+<div class="paragraph">
+<p>数据流处理并不是一项新技术。一些最初的研究原型和商业产品可以追溯到20世纪90年代（1990s）。然而，在很大程度上，过去采用的流处理技术是由成熟的开源流处理器驱动的。如今，分布式开源流处理器在不同行业的许多企业中，处理着核心业务应用，比如电商、社交媒体、电信、游戏和银行等。开源软件是这一趋势的主要驱动力，主要原因有两个：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>开源流处理软件是大家每一个人都可以评估和使用的产品。</p>
+</li>
+<li>
+<p>由于许多开源社区的努力，可扩展流处理技术正在迅速成熟和发展</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>仅仅一个Apache软件基金会就支持了十几个与流处理相关的项目。新的分布式流处理项目不断进入开源阶段，并不断增加新的特性和功能。开源社区不断改进其项目的功能，并正在推动流处理的技术边界。我们将简要介绍一下过去，看看开源流处理的起源和今天的状态。</p>
+</div>
+<div class="sect3">
+<h4 id="_流处理的历史">2.3.1. 流处理的历史</h4>
+<div class="paragraph">
+<p>第一代分布式开源流处理器（2011）专注于具有毫秒延迟的事件处理，并提供了在发生故障时防止事件丢失的保证。这些系统具有相当低级的API，并且对于流应用程序的准确性和结果的一致性，不提供内置支持，因为结果会取决于到达事件的时间和顺序。另外，即使事件没有丢失，也可能不止一次地处理它们。与批处理器相比，第一代开源流处理器牺牲了结果准确性，用来获得更低的延迟。为了让当时的数据处理系统，可以同时提供快速和准确的结果，人们设计了所谓的lambda架构，如图1-7所示。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/spaf_0107.png" alt="spaf 0107">
+</div>
+</div>
+<div class="paragraph">
+<p>lambda架构增强了传统的批处理架构，其“快速层”（speed layer）由低延迟的流处理器来支持。数据到达之后由流处理器提取出来，并写入批处理存储。流处理器近乎实时地计算近似结果并将它们写入“快速表”（speed table）。批处理器定期处理批量存储中的数据，将准确的结果写入批处理表，并从速度表中删除相应的不准确结果。应用程序会合并快速表中的近似结果和批处理表中的准确结果，然后消费最终的结果。</p>
+</div>
+<div class="paragraph">
+<p>lambda架构现在已经不再是最先进的，但仍在许多地方使用。该体系结构的最初目标是改善原始批处理分析体系结构的高延迟。但是，它有一些明显的缺点。首先，它需要对一个应用程序，做出两个语义上等效的逻辑实现，用于两个独立的、具有不同API的处理系统。其次，流处理器计算的结果只是近似的。第三，lambda架构很难建立和维护。</p>
+</div>
+<div class="paragraph">
+<p>通过在第一代基础上进行改进，下一代分布式开源流处理器（2013）提供了更好的故障保证，并确保在发生故障时，每个输入记录仅对结果产生一次影响（exactly -once）。此外，编程API从相当低级的操作符接口演变为高级API。但是，一些改进（例如更高的吞吐量和更好的故障保证）是以将处理延迟从毫秒增加到几秒为代价的。此外，结果仍然取决于到达事件的时间和顺序。</p>
+</div>
+<div class="paragraph">
+<p>第三代分布式开源流处理器（2015）解决了结果对到达事件的时间和顺序的依赖性。结合精确一次（exactly-once）的故障语义，这一代系统是第一个具有计算一致性和准确结果的开源流处理器。通过基于实际数据来计算结果（“重演”数据），这些系统还能够以与“实时”数据相同的方式处理历史数据。另一个改进是解决了延迟/吞吐量无法同时保证的问题。先前的流处理器仅能提供高吞吐量或者低延迟（其中之一），而第三代系统能够同时提供这两个特性。这一代的流处理器使得lambda架构过时了。当然，这一代流处理以flink为代表。</p>
+</div>
+<div class="paragraph">
+<p>除了目前讨论的特性，例如容错、性能和结果准确性之外，流处理器还不断添加新的操作功能，例如高可用性设置，与资源管理器（如YARN或Kubernetes）的紧密集成，以及能够动态扩展流应用程序。其他功能包括：支持升级应用程序代码，或将作业迁移到其他群集或新版本的流处理器，而不会丢失当前状态。</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_flink_简介">2.4. Flink 简介</h3>
+<div class="paragraph">
+<p>Apache Flink是第三代分布式流处理器，它拥有极富竞争力的功能。它提供准确的大规模流处理，具有高吞吐量和低延迟。特别的是，以下功能使Flink脱颖而出：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>事件时间（event-time）和处理时间（processing-tme）语义。即使对于无序事件流，事件时间（event-time）语义仍然能提供一致且准确的结果。而处理时间（processing-time）语义可用于具有极低延迟要求的应用程序。</p>
+</li>
+<li>
+<p>精确一次（exactly-once）的状态一致性保证。</p>
+</li>
+<li>
+<p>每秒处理数百万个事件，毫秒级延迟。 Flink应用程序可以扩展为在数千个核（cores）上运行。</p>
+</li>
+<li>
+<p>分层API，具有不同的权衡表现力和易用性。本书介绍了DataStream API和过程函数（process function），为常见的流处理操作提供原语，如窗口和异步操作，以及精确控制状态和时间的接口。本书不讨论Flink的关系API，SQL和LINQ风格的Table API。</p>
+</li>
+<li>
+<p>连接到最常用的存储系统，如Apache Kafka，Apache Cassandra，Elasticsearch，JDBC，Kinesis和（分布式）文件系统，如HDFS和S3。</p>
+</li>
+<li>
+<p>由于其高可用的设置（无单点故障），以及与Kubernetes，YARN和Apache Mesos的紧密集成，再加上从故障中快速恢复和动态扩展任务的能力，Flink能够以极少的停机时间7*24全天候运行流应用程序。</p>
+</li>
+<li>
+<p>能够更新应用程序代码并将作业（jobs）迁移到不同的Flink集群，而不会丢失应用程序的状态。</p>
+</li>
+<li>
+<p>详细且可自定义的系统和应用程序指标集合，以提前识别问题并对其做出反应。</p>
+</li>
+<li>
+<p>最后但同样重要的是，Flink也是一个成熟的批处理器。</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>除了这些功能之外，Flink还是一个非常易于开发的框架，因为它易于使用的API。嵌入式执行模式，可以在单个JVM进程中启动应用程序和整个Flink系统，这种模式一般用于在IDE中运行和调试Flink作业。在开发和测试Flink应用程序时，此功能非常有用。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_flink快速上手">3. Flink快速上手</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_2_1_使用maven搭建工程">2.1 使用Maven搭建工程</h3>
+<h3 id="_使用maven搭建工程">3.1. 使用Maven搭建工程</h3>
 <div class="paragraph">
 <p><strong>IDE推荐使用Idea</strong></p>
 </div>
@@ -1226,15 +1512,15 @@ quickstart/
 </div>
 </div>
 <div class="sect2">
-<h3 id="_2_2_flink部署">2.2 Flink部署</h3>
+<h3 id="_flink部署">3.2. Flink部署</h3>
 <div class="sect3">
-<h4 id="_2_2_1_下载hadoop_free版本的flink">2.2.1 下载Hadoop Free版本的Flink</h4>
+<h4 id="_下载hadoop_free版本的flink">3.2.1. 下载Hadoop Free版本的Flink</h4>
 <div class="paragraph">
 <p><a href="https://www.apache.org/dyn/closer.lua/flink/flink-1.7.2/flink-1.7.2-bin-scala_2.11.tgz">下载链接</a></p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_2_2_2_解压缩">2.2.2 解压缩</h4>
+<h4 id="_解压缩">3.2.2. 解压缩</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="shell"><span></span>$ tar xvfz flink-1.7.2-bin-scala_2.11.tgz</code></pre>
@@ -1242,7 +1528,7 @@ quickstart/
 </div>
 </div>
 <div class="sect3">
-<h4 id="_2_2_3_启动flink集群">2.2.3 启动Flink集群</h4>
+<h4 id="_启动flink集群">3.2.3. 启动Flink集群</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="shell"><span></span>$ <span class="tok-nb">cd</span> flink-1.7.2
@@ -1251,19 +1537,19 @@ $ ./bin/start-cluster.sh</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_2_2_4_在浏览器中打开flink的web_ui">2.2.4 在浏览器中打开Flink的Web UI</h4>
+<h4 id="_在浏览器中打开flink的web_ui">3.2.4. 在浏览器中打开Flink的Web UI</h4>
 <div class="paragraph">
 <p><a href="http://localhost:8081" class="bare">http://localhost:8081</a></p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_2_2_5_打包编写好的streamingjob程序">2.2.5 打包编写好的StreamingJob程序</h4>
+<h4 id="_打包编写好的streamingjob程序">3.2.5. 打包编写好的StreamingJob程序</h4>
 <div class="paragraph">
 <p>在Idea中使用maven package功能打包。</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_2_2_6_提交打包好的程序">2.2.6 提交打包好的程序</h4>
+<h4 id="_提交打包好的程序">3.2.6. 提交打包好的程序</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="shell"><span></span>$ ./bin/flink run xxxx.jar</code></pre>
@@ -1271,11 +1557,11 @@ $ ./bin/start-cluster.sh</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_2_2_7_在flink_web_ui查看dashboard中job的执行状态">2.2.7 在Flink Web UI查看Dashboard中job的执行状态</h4>
+<h4 id="_在flink_web_ui查看dashboard中job的执行状态">3.2.7. 在Flink Web UI查看Dashboard中job的执行状态</h4>
 
 </div>
 <div class="sect3">
-<h4 id="_2_2_8_停止flink集群">2.2.8 停止Flink集群</h4>
+<h4 id="_停止flink集群">3.2.8. 停止Flink集群</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="shell"><span></span>$ ./bin/stop-cluster.sh</code></pre>
@@ -1286,10 +1572,10 @@ $ ./bin/start-cluster.sh</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_第三章_flink运行架构">第三章 Flink运行架构</h2>
+<h2 id="_flink运行架构">4. Flink运行架构</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_3_1_任务调度原理">3.1 任务调度原理</h3>
+<h3 id="_任务调度原理">4.1. 任务调度原理</h3>
 <div class="imageblock">
 <div class="content">
 <img src="images/processes.png" alt="processes">
@@ -1340,7 +1626,7 @@ $ ./bin/start-cluster.sh</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_3_2_worker与slots">3.2 Worker与Slots</h3>
+<h3 id="_worker与slots">4.2. Worker与Slots</h3>
 <div class="paragraph">
 <p>每一个Worker(TaskManager)是一个JVM进程，它可能会在独立的线程上执行一个或多个SubTask。为了控制一个Worker能接收多少个Task，Worker通过Task Slot来进行控制(一个Worker至少有一个Task Slot)。</p>
 </div>
@@ -1368,7 +1654,7 @@ $ ./bin/start-cluster.sh</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_3_3_程序与数据流">3.3 程序与数据流</h3>
+<h3 id="_程序与数据流">4.3. 程序与数据流</h3>
 <div class="imageblock">
 <div class="content">
 <img src="images/program_dataflow.png" alt="program dataflow">
@@ -1385,7 +1671,7 @@ $ ./bin/start-cluster.sh</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_3_4_并行数据流">3.4 并行数据流</h3>
+<h3 id="_并行数据流">4.4. 并行数据流</h3>
 <div class="paragraph">
 <p>Flink程序的执行具有并行、分布式的特性。在执行过程中，一个stream包含一个或多个stream partition，而每一个operator包含一个或多个operator subtask，这些operator subtasks在不同的线程、不同的物理机或不同的容器中彼此互不依赖的执行。</p>
 </div>
@@ -1408,7 +1694,7 @@ $ ./bin/start-cluster.sh</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_3_5_task与operator_chains">3.5 task与operator chains</h3>
+<h3 id="_task与operator_chains">4.5. task与operator chains</h3>
 <div class="paragraph">
 <p>相同并行度的one to one操作，Flink这样相连的operator链接在一起形成一个task，原来的operator成为里面的subtask。将operators链接成task是非常有效的优化：它能减少线程之间的切换和基于缓存区的数据交换，在减少时延的同时提升吞吐量。链接的行为可以在编程API中进行指定。</p>
 </div>
@@ -1421,7 +1707,7 @@ $ ./bin/start-cluster.sh</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_第四章_flink_datastream_api">第四章 Flink DataStream API</h2>
+<h2 id="_flink_datastream_api">5. Flink DataStream API</h2>
 <div class="sectionbody">
 <div class="imageblock">
 <div class="content">
@@ -1429,7 +1715,7 @@ $ ./bin/start-cluster.sh</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_4_1_environment">4.1 Environment</h3>
+<h3 id="_environment">5.1. Environment</h3>
 <div class="paragraph">
 <p><strong>getExecutionEnvironment</strong></p>
 </div>
@@ -1448,7 +1734,7 @@ $ ./bin/start-cluster.sh</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_4_2_source">4.2 Source</h3>
+<h3 id="_source">5.2. Source</h3>
 <div class="paragraph">
 <p>从批读取数据</p>
 </div>
@@ -1587,9 +1873,9 @@ $ ./bin/start-cluster.sh</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_4_3_basic_transformations基本转换算子">4.3 Basic Transformations(基本转换算子)</h3>
+<h3 id="_basic_transformations基本转换算子">5.3. Basic Transformations(基本转换算子)</h3>
 <div class="sect3">
-<h4 id="_4_3_1_map">4.3.1 map</h4>
+<h4 id="_map">5.3.1. map</h4>
 <div class="imageblock">
 <div class="content">
 <img src="images/map.png" alt="map">
@@ -1630,7 +1916,7 @@ MapFunction[T, O]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_4_3_2_flatmap">4.3.2 flatMap</h4>
+<h4 id="_4_3_2_flatmap">5.3.2. 4.3.2 flatMap</h4>
 <div class="paragraph">
 <p>flatMap的函数签名：<code>def flatMap[A,B](as: List[A])(f: A &#8658; List[B]): List[B]</code>, 例如: <code>flatMap(List(1,2,3))(i &#8658; List(i,i))</code>结果是<code>List(1,1,2,2,3,3)</code>, <code>List("a b", "c d").flatMap(line &#8658; line.split(" "))</code>结果是<code>List(a, b, c, d)</code>。</p>
 </div>
@@ -1674,7 +1960,7 @@ FlatMapFunction[T, O]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_4_3_3_filter">4.3.3 Filter</h4>
+<h4 id="_4_3_3_filter">5.3.3. 4.3.3 Filter</h4>
 <div class="paragraph">
 <p>我们需要实现接口<code>FilterFunction</code></p>
 </div>
@@ -1703,9 +1989,9 @@ FilterFunction[T]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_4_4_keyedstream_transformations键控流转换算子">4.4 KeyedStream Transformations(键控流转换算子)</h3>
+<h3 id="_4_4_keyedstream_transformations键控流转换算子">5.4. 4.4 KeyedStream Transformations(键控流转换算子)</h3>
 <div class="sect3">
-<h4 id="_4_4_1_keyby">4.4.1 keyBy</h4>
+<h4 id="_4_4_1_keyby">5.4.1. 4.4.1 keyBy</h4>
 <div class="paragraph">
 <p>分流算子, 流的类型改变了</p>
 </div>
@@ -1732,7 +2018,7 @@ FilterFunction[T]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_4_4_2_rolling_aggregations">4.4.2 Rolling Aggregations</h4>
+<h4 id="_4_4_2_rolling_aggregations">5.4.2. 4.4.2 Rolling Aggregations</h4>
 <div class="paragraph">
 <p>针对KeyedStream的每一条流做聚合</p>
 </div>
@@ -1767,7 +2053,7 @@ FilterFunction[T]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_4_4_3_reduce">4.4.3 Reduce</h4>
+<h4 id="_4_4_3_reduce">5.4.3. 4.4.3 Reduce</h4>
 <div class="paragraph">
 <p>我们需要实现<code>ReduceFunction</code>接口</p>
 </div>
@@ -1797,9 +2083,9 @@ ReduceFunction[T]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_4_5_multistream_transformations多流转换算子">4.5 Multistream Transformations(多流转换算子)</h3>
+<h3 id="_4_5_multistream_transformations多流转换算子">5.5. 4.5 Multistream Transformations(多流转换算子)</h3>
 <div class="sect3">
-<h4 id="_4_5_1_union">4.5.1 Union</h4>
+<h4 id="_4_5_1_union">5.5.1. 4.5.1 Union</h4>
 <div class="imageblock">
 <div class="content">
 <img src="images/union.png" alt="union">
@@ -1819,7 +2105,7 @@ ReduceFunction[T]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_4_5_2_connect_comap_and_coflatmap">4.5.2 Connect, Comap and Coflatmap</h4>
+<h4 id="_4_5_2_connect_comap_and_coflatmap">5.5.2. 4.5.2 Connect, Comap and Coflatmap</h4>
 <div class="paragraph">
 <p>联合两条流的事件是非常常见的流处理需求。例如监控一片森林然后发出高危的火警警报。报警的Application接收两条流，一条是温度传感器传回来的数据，一条是烟雾传感器传回来的数据。当两条流都超过各自的阈值时，报警。</p>
 </div>
@@ -1923,7 +2209,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_4_5_3_split_and_select">4.5.3 Split and Select</h4>
+<h4 id="_4_5_3_split_and_select">5.5.3. 4.5.3 Split and Select</h4>
 <div class="paragraph">
 <p>Split是Union的反函数。</p>
 </div>
@@ -1962,7 +2248,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_4_6_支持的数据类型">4.6 支持的数据类型</h3>
+<h3 id="_4_6_支持的数据类型">5.6. 4.6 支持的数据类型</h3>
 <div class="paragraph">
 <p><strong>Primitives(基础数据类型)</strong></p>
 </div>
@@ -2022,7 +2308,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_4_7_keyby相关用法">4.7 keyBy相关用法</h3>
+<h3 id="_4_7_keyby相关用法">5.7. 4.7 keyBy相关用法</h3>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">input</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">Int</span>, <span class="tok-kt">String</span>, <span class="tok-kt">Long</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
@@ -2083,9 +2369,9 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_4_8_实现udf函数更细粒度的控制流">4.8 实现UDF函数，更细粒度的控制流</h3>
+<h3 id="_4_8_实现udf函数更细粒度的控制流">5.8. 4.8 实现UDF函数，更细粒度的控制流</h3>
 <div class="sect3">
-<h4 id="_4_8_1_function_classes">4.8.1 Function Classes</h4>
+<h4 id="_4_8_1_function_classes">5.8.1. 4.8.1 Function Classes</h4>
 <div class="paragraph">
 <p>Flink暴露了所有udf函数的接口(实现方式为接口或者抽象类)。例如MapFunction, FilterFunction, ProcessFunction等等。</p>
 </div>
@@ -2134,7 +2420,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_4_8_2_lambda_functions">4.8.2 Lambda Functions</h4>
+<h4 id="_4_8_2_lambda_functions">5.8.2. 4.8.2 Lambda Functions</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">tweets</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
@@ -2143,7 +2429,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_4_8_3_rich_functions">4.8.3 Rich Functions</h4>
+<h4 id="_4_8_3_rich_functions">5.8.3. 4.8.3 Rich Functions</h4>
 <div class="ulist">
 <ul>
 <li>
@@ -2205,7 +2491,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_4_9_sink">4.9 Sink</h3>
+<h3 id="_4_9_sink">5.9. 4.9 Sink</h3>
 <div class="paragraph">
 <p>Flink没有类似于Spark中foreach方法，让用户进行迭代的操作。所有对外的输出操作都要利用Sink完成。最后通过类似如下方式完成整个任务最终输出操作。</p>
 </div>
@@ -2218,7 +2504,7 @@ OutputSelector[IN]
 <p>官方提供了一部分的框架的sink。除此以外，需要用户自定义实现sink。</p>
 </div>
 <div class="sect3">
-<h4 id="_4_9_1_elasticsearch">4.9.1 Elasticsearch</h4>
+<h4 id="_4_9_1_elasticsearch">5.9.1. 4.9.1 Elasticsearch</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="xml"><span></span><span class="tok-nt">&lt;dependency&gt;</span>
@@ -2287,7 +2573,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_4_10_distribution_transformations分布式转换算子">4.10 Distribution Transformations(分布式转换算子)</h3>
+<h3 id="_4_10_distribution_transformations分布式转换算子">5.10. 4.10 Distribution Transformations(分布式转换算子)</h3>
 <div class="paragraph">
 <p><strong>Random</strong></p>
 </div>
@@ -2345,10 +2631,10 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect1">
-<h2 id="_第五章_time与window">第五章 Time与Window</h2>
+<h2 id="_第五章_time与window">6. 第五章 Time与Window</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_5_1_time">5.1 Time</h3>
+<h3 id="_5_1_time">6.1. 5.1 Time</h3>
 <div class="paragraph">
 <p>在Flink的流式处理中，会涉及到时间的不同概念，如下图所示：</p>
 </div>
@@ -2410,9 +2696,9 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_5_2_window">5.2 Window</h3>
+<h3 id="_5_2_window">6.2. 5.2 Window</h3>
 <div class="sect3">
-<h4 id="_5_2_1_window概述">5.2.1 Window概述</h4>
+<h4 id="_5_2_1_window概述">6.2.1. 5.2.1 Window概述</h4>
 <div class="paragraph">
 <p>Streaming流式计算是一种被设计用于处理无限数据集的数据处理引擎，而无限数据集是指一种不断增长的本质上无限的数据集，而Window是一种切割无限数据为有限块进行处理的手段。</p>
 </div>
@@ -2421,7 +2707,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_5_2_2_window类型">5.2.2 Window类型</h4>
+<h4 id="_5_2_2_window类型">6.2.2. 5.2.2 Window类型</h4>
 <div class="paragraph">
 <p>Window可以分成两类：</p>
 </div>
@@ -2501,7 +2787,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_5_3_window_api">5.3 Window API</h3>
+<h3 id="_5_3_window_api">6.3. 5.3 Window API</h3>
 <div class="paragraph">
 <p><strong>TimeWindow</strong></p>
 </div>
@@ -2554,12 +2840,12 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect1">
-<h2 id="_第六章_event_time与window">第六章 Event Time与Window</h2>
+<h2 id="_第六章_event_time与window">7. 第六章 Event Time与Window</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_6_1_configure_time_characteristic">6.1 Configure Time Characteristic</h3>
+<h3 id="_6_1_configure_time_characteristic">7.1. 6.1 Configure Time Characteristic</h3>
 <div class="sect3">
-<h4 id="_6_1_1_event_time的引入">6.1.1 Event Time的引入</h4>
+<h4 id="_6_1_1_event_time的引入">7.1.1. 6.1.1 Event Time的引入</h4>
 <div class="paragraph">
 <p>在Flink的流式处理中，绝大部分的业务都会使用Event Time，一般只在Event Time无法使用时，才会被迫使用Processing Time或者Ingestion Time。
 如果要使用Event Time，那么需要引入Event Time的时间属性，引入方式如下所示：</p>
@@ -2574,7 +2860,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_6_1_2_watermark">6.1.2 Watermark</h4>
+<h4 id="_6_1_2_watermark">7.1.2. 6.1.2 Watermark</h4>
 <div class="sect4">
 <h5 id="_6_1_2_1_基本概念">6.1.2.1 基本概念</h5>
 <div class="paragraph">
@@ -2640,7 +2926,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_6_1_3_watermark的引入">6.1.3 Watermark的引入</h4>
+<h4 id="_6_1_3_watermark的引入">7.1.3. 6.1.3 Watermark的引入</h4>
 <div class="paragraph">
 <p>Event Time的使用一定要<strong>指定数据源中的时间戳</strong>。否则程序无法知道事件的事件时间是什么(数据源里的数据没有时间戳的话，就只能使用Processing Time了)。</p>
 </div>
@@ -2787,7 +3073,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_6_2_process_functionlow_level_api">6.2 Process Function(Low-Level API)</h3>
+<h3 id="_6_2_process_functionlow_level_api">7.2. 6.2 Process Function(Low-Level API)</h3>
 <div class="paragraph">
 <p>我们之前学习的<strong>转换算子</strong>是无法访问事件的时间戳信息和水印信息的。而这在一些应用场景下，极为重要。例如MapFunction这样的map转换算子就无法访问时间戳或者当前事件的事件时间。</p>
 </div>
@@ -2842,7 +3128,7 @@ OutputSelector[IN]
 </ul>
 </div>
 <div class="sect3">
-<h4 id="_6_2_1_timerservice_and_timers">6.2.1 TimerService and Timers</h4>
+<h4 id="_6_2_1_timerservice_and_timers">7.2.1. 6.2.1 TimerService and Timers</h4>
 <div class="paragraph">
 <p>Context和OnTimerContext所持有的TimerService对象拥有以下方法:</p>
 </div>
@@ -2953,7 +3239,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_6_2_2_emitting_to_side_outputs侧输出">6.2.2 Emitting to Side Outputs(侧输出)</h4>
+<h4 id="_6_2_2_emitting_to_side_outputs侧输出">7.2.2. 6.2.2 Emitting to Side Outputs(侧输出)</h4>
 <div class="paragraph">
 <p>大部分的DataStream API的算子的输出是单一输出，也就是某种数据类型的流。除了split算子，可以将一条流分成多条流，这些流的数据类型也都相同。process function的side outputs功能可以产生多条流，并且这些流的数据类型可以不一样。一个side output可以定义为OutputTag[X]对象，X是输出流的数据类型。process function可以通过Context对象发射一个事件到一个或者多个side outputs。</p>
 </div>
@@ -2998,7 +3284,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_6_2_3_coprocessfunction">6.2.3 CoProcessFunction</h4>
+<h4 id="_6_2_3_coprocessfunction">7.2.3. 6.2.3 CoProcessFunction</h4>
 <div class="paragraph">
 <p>对于两条输入流，DataStream API提供了<code>CoProcessFunction</code>这样的low-level操作。<code>CoProcessFunction</code>提供了操作每一个输入流的方法: <code>processElement1()</code>和<code>processElement2()</code>。类似于<code>ProcessFunction</code>，这两种方法都通过<code>Context</code>对象来调用。这个<code>Context</code>对象可以访问事件数据，定时器时间戳，TimerService，以及side outputs。<code>CoProcessFunction</code>也提供了<code>onTimer()</code>回调函数。下面的例子展示了如何使用<code>CoProcessFunction</code>来合并两条流。</p>
 </div>
@@ -3075,9 +3361,9 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect2">
-<h3 id="_6_3_window_operators窗口操作符">6.3 Window Operators(窗口操作符)</h3>
+<h3 id="_6_3_window_operators窗口操作符">7.3. 6.3 Window Operators(窗口操作符)</h3>
 <div class="sect3">
-<h4 id="_6_3_1_define_window_operators定义窗口操作符">6.3.1 define window operators(定义窗口操作符)</h4>
+<h4 id="_6_3_1_define_window_operators定义窗口操作符">7.3.1. 6.3.1 define window operators(定义窗口操作符)</h4>
 <div class="paragraph">
 <p>window算子可以在keyed stream或者nokeyed stream上面使用。</p>
 </div>
@@ -3111,7 +3397,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_6_3_2_内置的window_assigner窗口分配器">6.3.2 内置的window assigner(窗口分配器)</h4>
+<h4 id="_6_3_2_内置的window_assigner窗口分配器">7.3.2. 6.3.2 内置的window assigner(窗口分配器)</h4>
 <div class="sect4">
 <h5 id="_6_3_2_1_tumbling_windows滚动窗口">6.3.2.1 tumbling windows(滚动窗口)</h5>
 <div class="listingblock">
@@ -3181,7 +3467,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect3">
-<h4 id="_6_3_3_applying_functions_on_windows在窗口上应用函数">6.3.3 Applying Functions on Windows(在窗口上应用函数)</h4>
+<h4 id="_6_3_3_applying_functions_on_windows在窗口上应用函数">7.3.3. 6.3.3 Applying Functions on Windows(在窗口上应用函数)</h4>
 <div class="paragraph">
 <p>window functions定义了窗口中数据的计算逻辑。有两种计算逻辑：</p>
 </div>
@@ -3408,7 +3694,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="sect1">
-<h2 id="_第七章_有状态的计算">第七章 有状态的计算</h2>
+<h2 id="_第七章_有状态的计算">8. 第七章 有状态的计算</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>流式计算分为无状态和有状态两种情况。无状态的计算观察每个独立事件，并根据最后一个事件输出结果。例如，流处理应用程序从传感器接收温度读数，并在温度超过90度时发出警告。有状态的计算则会基于多个事件输出结果。以下是一些例子。</p>
@@ -3441,7 +3727,7 @@ OutputSelector[IN]
 <p>尽管无状态的计算很重要，但是流处理对有状态的计算更感兴趣。事实上，正确地实现有状态的计算比实现无状态的计算难得多。旧的流处理系统并不支持有状态的计算，而新一代的流处理系统则将状态及其正确性视为重中之重。</p>
 </div>
 <div class="sect2">
-<h3 id="_7_1_一致性">7.1 一致性</h3>
+<h3 id="_7_1_一致性">8.1. 7.1 一致性</h3>
 <div class="paragraph">
 <p>当在分布式系统中引入状态时，自然也引入了一致性问题。一致性实际上是"正确性级别"的另一种说法，即在成功处理故障并恢复之后得到的结果，与没有发生任何故障时得到的结果相比，前者有多正确? 举例来说，假设要对最近一小时登录的用户计数。在系统经历故障之后，计数结果是多少? 在流处理中，一致性分为3个级别。</p>
 </div>
@@ -3485,7 +3771,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_7_2_检查点_保证exactly_once">7.2 检查点: 保证exactly-once</h3>
+<h3 id="_7_2_检查点_保证exactly_once">8.2. 7.2 检查点: 保证exactly-once</h3>
 <div class="paragraph">
 <p>Flink如何保证exactly-once呢? 它使用一种被称为"检查点"的特性，在出现故障时将系统重置回正确状态。下面通过简单的类比来解释检查点的作用。</p>
 </div>
@@ -3610,12 +3896,12 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_7_3_stateful_operators_and_applications">7.3 Stateful Operators and Applications</h3>
+<h3 id="_7_3_stateful_operators_and_applications">8.3. 7.3 Stateful Operators and Applications</h3>
 <div class="paragraph">
 <p>Flink内置的很多算子，数据源source，数据存储sink都是有状态的，流中的数据都是buffer records，会保存一定的元素或者元数据。例如: ProcessWindowFunction会缓存输入流的数据，ProcessFunction会保存设置的定时器信息等等。</p>
 </div>
 <div class="sect3">
-<h4 id="_7_3_1_实现stateful_functions">7.3.1 实现stateful functions</h4>
+<h4 id="_7_3_1_实现stateful_functions">8.3.1. 7.3.1 实现stateful functions</h4>
 <div class="paragraph">
 <p>函数一般有两种类型的状态：</p>
 </div>
@@ -3774,7 +4060,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_7_4_选择一个状态后端state_backend">7.4 选择一个状态后端(state backend)</h3>
+<h3 id="_7_4_选择一个状态后端state_backend">8.4. 7.4 选择一个状态后端(state backend)</h3>
 <div class="ulist">
 <ul>
 <li>
@@ -3812,13 +4098,13 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect1">
-<h2 id="_第八章_dataflow模型">第八章 Dataflow模型</h2>
+<h2 id="_第八章_dataflow模型">9. 第八章 Dataflow模型</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>一种能平衡准确性，延迟程度，处理成本的大规模无边界乱序数据处理实践方法</p>
 </div>
 <div class="sect2">
-<h3 id="_8_0_摘要">8.0 摘要</h3>
+<h3 id="_8_0_摘要">9.1. 8.0 摘要</h3>
 <div class="paragraph">
 <p>在日常商业运营中，无边界、乱序、大规模数据集越来越普遍了。(例如，网站日志，手机应用统计，传感器网络)。同时，对这些数据的消费需求也越来越复杂。比如说按事件发生时间序列处理数据，按数据本身的特征进行窗口计算等等。同时人们也越来越苛求立刻得到数据分析结果。然而，实践表明，我们永远无法同时优化数据处理的准确性、延迟程度和处理成本等各个维度。因此，数据工作者面临如何协调这些几乎相互冲突的数据处理技术指标的窘境，设计出来各种纷繁的数据处理系统和实践方法。</p>
 </div>
@@ -3827,7 +4113,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_8_1_简介">8.1 简介</h3>
+<h3 id="_8_1_简介">9.2. 8.1 简介</h3>
 <div class="paragraph">
 <p>现代数据处理是一个复杂而又令人兴奋的领域。MapReduce和它的衍生系统(如Hadoop, Pig, Hive, Spark等)解决了处理数据的"量"上的问题。流处理SQL上社区也做了很多的工作(如查询系统，窗口，数据流，时间维度，语义模型)。在低延时处理上Spark Streaming, MillWheel, Storm等做了很多尝试。数据工作者现在拥有了很多强有力的工具把大规模无序的数据加工成结构化的数据，而结构化的数据拥有远大于原始数据的价值。但是我们仍然认为现存的模型和方法在处理一些常见的场景时有心无力。</p>
 </div>
@@ -3910,13 +4196,13 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <p>最后，不足为奇地，这个模型没有任何魔术效果。那些现有的强一致性批处理系统，微批处理系统，流处理系统，Lambda系统所无法计算的东西仍然无法解决。CPU, RAM, Disk的内在约束依然存在。我们所提供的是一个能够简单地定义表达并行计算的通用框架。这种表达的方式和底层的执行引擎无关，同时针对任何特定的问题域，提供了根据手上数据和资源的情况来精确地调整延时程度和准确性的能力。从这一点上来说，这个模型的目标是简化大规模数据处理管道的构建。</p>
 </div>
 <div class="sect3">
-<h4 id="_8_1_1_无边界有边界与流处理批处理">8.1.1   无边界、有边界与流处理、批处理</h4>
+<h4 id="_8_1_1_无边界有边界与流处理批处理">9.2.1. 8.1.1   无边界、有边界与流处理、批处理</h4>
 <div class="paragraph">
 <p>(本论文中)当描述无限/有限数据集时，我们更愿意使用有边界/无边界这组词汇，而不是流/批。因为流/批可能意味着使用某种特定的执行引擎。在现实中，无边界数据集可以用批处理系统反复调度来处理，而良好设计的流处理系统也可以完美地处理有边界数据集。从这个模型的角度来看，区分流/批的意义是不大的，因此我们保留这组词汇(流、批)用来专指执行引擎。</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_8_1_2_窗口">8.1.2 窗口</h4>
+<h4 id="_8_1_2_窗口">9.2.2. 8.1.2 窗口</h4>
 <div class="paragraph">
 <p>窗口操作把一个数据集切分为有限的数据片以便于聚合处理。当面对无边界的数据时，有些操作需要窗口(以定义大多数聚合操作需要的边界：汇总，外链接，以时间区域定义的操作；如最近5分钟xx等)。另一些则不需要(如过滤，映射，内链接等)。对有边界的数据，窗口是可选的，不过很多情况下仍然是一种有效的语义概念(如回填一大批的更新数据到之前读取无边界数据源处理过的数据, 译者注：类似于Lambda架构)。窗口基本上都是基于时间的；不过也有些系统支持基于记录数的窗口。这种窗口可以认为是基于一个逻辑上的时间域，该时间域中的元素包含顺序递增的逻辑时间戳。窗口可以是对齐的，也就是说窗口应用于所有落在窗口时间范围内的数据。也可以是非对齐的，也就是应用于部分特定的数据子集(如按某个键值筛选的数据子集)。图一列出了处理无边界数据时常见的三种窗口。</p>
 </div>
@@ -3936,7 +4222,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_8_1_3_时间域">8.1.3 时间域</h4>
+<h4 id="_8_1_3_时间域">9.2.3. 8.1.3 时间域</h4>
 <div class="paragraph">
 <p>当处理包含事件发生时间的数据时，有两个时间域需要考虑。尽管已经有很多文献提到(特别是时间管理，语义模型，窗口，乱序处理，标记，心跳，水位标记，帧)，这里仍然重复一下，因为这个概念清晰之后2.3节会更易于理解。这两个时间域是：</p>
 </div>
@@ -3973,12 +4259,12 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_8_2_dataflow模型">8.2 DataFlow模型</h3>
+<h3 id="_8_2_dataflow模型">9.3. 8.2 DataFlow模型</h3>
 <div class="paragraph">
 <p>在这一个小节中，我们将定义正式的系统模型。我们还会解释为什么它的语义足够泛化，能涵盖标准的批处理，微批次处理，流处理，以及混合了流批语义的Lambda架构。代码示例是基于Dataflow的Java SDK的一个简化版本，是从FlumeJava API演化而来。</p>
 </div>
 <div class="sect3">
-<h4 id="_8_2_1_核心编程模型">8.2.1 核心编程模型</h4>
+<h4 id="_8_2_1_核心编程模型">9.3.1. 8.2.1 核心编程模型</h4>
 <div class="paragraph">
 <p>我们先从经典的批处理模型开始来考虑我们的核心编程模型。Dataflow SDK把所有的数据抽象为键值对，对键值对有两个核心的数据转换操作：</p>
 </div>
@@ -4011,7 +4297,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_8_2_2_窗口">8.2.2 窗口</h4>
+<h4 id="_8_2_2_窗口">9.3.2. 8.2.2 窗口</h4>
 <div class="paragraph">
 <p>支持聚合操作的系统经常把GroupByKey操作重新定义成为GroupByKeyAndWindow操作。我们在这一点上的主要贡献是支持非对齐窗口。这个贡献包含两个关键性的洞见：第一是从模型简化的角度上，把所有的窗口策略都当做非对齐窗口，而底层实现来负责把对齐窗口作为一个特例进行优化。第二点是窗口操作可以被分隔为两个互相相关的操作：</p>
 </div>
@@ -4103,7 +4389,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_8_2_3_触发器和增量处理">8.2.3 触发器和增量处理</h4>
+<h4 id="_8_2_3_触发器和增量处理">9.3.3. 8.2.3 触发器和增量处理</h4>
 <div class="paragraph">
 <p>构建非对齐的事件发生时间窗口是一个进步，不过我们还有两个问题需要解决</p>
 </div>
@@ -4342,15 +4628,15 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_8_3_实现和设计">8.3 实现和设计</h3>
+<h3 id="_8_3_实现和设计">9.4. 8.3 实现和设计</h3>
 <div class="sect3">
-<h4 id="_8_3_1_实现">8.3.1 实现</h4>
+<h4 id="_8_3_1_实现">9.4.1. 8.3.1 实现</h4>
 <div class="paragraph">
 <p>我们已经用FlumeJava实现了这个模型，使用MillWheel作为底层的流执行引擎；在本文写作的时候，针对公有云服务Cloud Dataflow的重新实现也接近完成。由于这些系统要么是谷歌的内部系统，要么是共有云服务，因此为简洁起见，实现的细节我们略掉了。可以提及的让人感兴趣的一点是，核心的窗口机制代码，触发机制代码是非常通用的，绝大部分都同时适用于批处理引擎实现和流处理引擎实现。这个实现本身也值得在将来进行更进一步的分析。</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_8_3_2_设计原则">8.3.2 设计原则</h4>
+<h4 id="_8_3_2_设计原则">9.4.2. 8.3.2 设计原则</h4>
 <div class="paragraph">
 <p>尽管我们很多的设计其实是受到3.3节所描述的真实业务场景启发，我们在设计中也遵从了一系列的核心原则。这些原则我们认为是这个模型必须要遵循的。</p>
 </div>
@@ -4378,7 +4664,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_8_3_3_业务场景">8.3.3 业务场景</h4>
+<h4 id="_8_3_3_业务场景">9.4.3. 8.3.3 业务场景</h4>
 <div class="paragraph">
 <p>在我们设计Dataflow模型的过程中，我们考虑了FlumeJava和MillWheel系统在这些年遇到的各种真实场景。那些良好工作的设计，我们保留到了模型中，而那些工作不那么良好的设计激励我们采用新的方法重新设计。下面我们简单介绍一些影响过我们设计的场景。</p>
 </div>
@@ -4430,7 +4716,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_8_4_总结">8.4 总结</h3>
+<h3 id="_8_4_总结">9.5. 8.4 总结</h3>
 <div class="paragraph">
 <p>数据处理的未来是无边界数据处理。 尽管有边界数据的处理永远都有着重要地位并且有用武之地，但是语义上它会被无边界数据处理模型所涵盖。一方面，无边界数据处理技术发展上步履蹒跚，另一方面对于数据进行处理并消费的要求在不断提高，比如说，需要对按事件发生时间对数据处理，或者支持非对齐窗口等。要发展能够支撑未来业务需要的数据处理系统，当前存在的系统和模型是一个非常好的基础，但我们坚持相信如果要完善地解决用户对无边界数据处理的需求，我们必须根本地改变我们的思维。</p>
 </div>
@@ -4441,7 +4727,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect1">
-<h2 id="_第九章_flink_cep简介">第九章 Flink CEP简介</h2>
+<h2 id="_第九章_flink_cep简介">10. 第九章 Flink CEP简介</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p><strong>什么是复杂事件CEP？</strong></p>
@@ -4762,12 +5048,12 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect1">
-<h2 id="_第十章_尚硅谷大数据技术之电商用户行为分析">第十章 尚硅谷大数据技术之电商用户行为分析</h2>
+<h2 id="_第十章_尚硅谷大数据技术之电商用户行为分析">11. 第十章 尚硅谷大数据技术之电商用户行为分析</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_10_1_项目整体介绍">10.1 项目整体介绍</h3>
+<h3 id="_10_1_项目整体介绍">11.1. 10.1 项目整体介绍</h3>
 <div class="sect3">
-<h4 id="_10_1_1_电商的用户行为">10.1.1 电商的用户行为</h4>
+<h4 id="_10_1_1_电商的用户行为">11.1.1. 10.1.1 电商的用户行为</h4>
 <div class="paragraph">
 <p>电商平台中的用户行为频繁且较复杂，系统上线运行一段时间后，可以收集到大量的用户行为数据，进而利用大数据技术进行深入挖掘和分析，得到感兴趣的商业指标并增强对风险的控制。</p>
 </div>
@@ -4776,7 +5062,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_10_1_2_项目主要模块">10.1.2 项目主要模块</h4>
+<h4 id="_10_1_2_项目主要模块">11.1.2. 10.1.2 项目主要模块</h4>
 <div class="paragraph">
 <p>基于对电商用户行为数据的基本分类，我们可以发现主要有以下三个分析方向：</p>
 </div>
@@ -4825,7 +5111,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_10_1_3_数据源解析">10.1.3 数据源解析</h4>
+<h4 id="_10_1_3_数据源解析">11.1.3. 10.1.3 数据源解析</h4>
 <div class="paragraph">
 <p>我们准备了一份淘宝用户行为数据集，保存为csv文件。本数据集包含了淘宝上某一天随机一百万用户的所有行为（包括点击、购买、收藏、喜欢）。数据集的每一行表示一条用户行为，由用户ID、商品ID、商品类目ID、行为类型和时间戳组成，并以逗号分隔。关于数据集中每一列的详细描述如下：</p>
 </div>
@@ -4920,7 +5206,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_10_2_实时热门商品统计">10.2 实时热门商品统计</h3>
+<h3 id="_10_2_实时热门商品统计">11.2. 10.2 实时热门商品统计</h3>
 <div class="paragraph">
 <p>首先要实现的是实时热门商品统计，我们将会基于UserBehavior数据集来进行分析。</p>
 </div>
@@ -5120,7 +5406,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <p>项目主体用Scala编写，采用IDEA作为开发环境进行项目编写，采用maven作为项目构建和管理工具。首先我们需要搭建项目框架。</p>
 </div>
 <div class="sect3">
-<h4 id="_10_2_1_创建maven项目">10.2.1 创建Maven项目</h4>
+<h4 id="_10_2_1_创建maven项目">11.2.1. 10.2.1 创建Maven项目</h4>
 <div class="sect4">
 <h5 id="_10_2_1_1_项目框架搭建">10.2.1.1 项目框架搭建</h5>
 <div class="paragraph">
@@ -5245,7 +5531,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_10_2_2_模块代码实现">10.2.2 模块代码实现</h4>
+<h4 id="_10_2_2_模块代码实现">11.2.2. 10.2.2 模块代码实现</h4>
 <div class="paragraph">
 <p>我们将实现一个“实时热门商品”的需求，可以将“实时热门商品”翻译成程序员更好理解的需求：每隔5分钟输出最近一小时内点击量最多的前N个商品。将这个需求进行分解我们大概要做这么几件事情：
 抽取出业务时间戳，告诉Flink框架基于业务时间做窗口
@@ -5255,7 +5541,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_10_2_2_1_程序主体">10.2.2.1 程序主体</h4>
+<h4 id="_10_2_2_1_程序主体">11.2.3. 10.2.2.1 程序主体</h4>
 <div class="paragraph">
 <p>在src/main/scala下创建HotItems.scala文件，新建一个单例对象。定义样例类UserBehavior和ItemViewCount，在main函数中创建StreamExecutionEnvironment 并做配置，然后从UserBehavior.csv文件中读取数据，并包装成UserBehavior类型。代码如下：</p>
 </div>
@@ -5325,7 +5611,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_10_2_2_2_过滤出点击事件">10.2.2.2 过滤出点击事件</h4>
+<h4 id="_10_2_2_2_过滤出点击事件">11.2.4. 10.2.2.2 过滤出点击事件</h4>
 <div class="paragraph">
 <p>在开始窗口操作之前，先回顾下需求"每隔5分钟输出过去一小时内点击量最多的前N个商品"。由于原始数据中存在点击、购买、收藏、喜欢各种行为的数据，但是我们只需要统计点击量，所以先使用filter将点击行为数据过滤出来。</p>
 </div>
@@ -5336,7 +5622,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_10_2_2_3_设置滑动窗口统计点击量">10.2.2.3 设置滑动窗口，统计点击量</h4>
+<h4 id="_10_2_2_3_设置滑动窗口统计点击量">11.2.5. 10.2.2.3 设置滑动窗口，统计点击量</h4>
 <div class="paragraph">
 <p>由于要每隔5分钟统计一次最近一小时每个商品的点击量，所以窗口大小是一小时，每隔5分钟滑动一次。即分别要统计[09:00, 10:00), [09:05, 10:05), [09:10, 10:10)…等窗口的商品点击量。是一个常见的滑动窗口需求（Sliding Window）。</p>
 </div>
@@ -5659,7 +5945,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_10_3_实时流量统计">10.3 实时流量统计</h3>
+<h3 id="_10_3_实时流量统计">11.3. 10.3 实时流量统计</h3>
 <div class="ulist">
 <ul>
 <li>
@@ -5691,7 +5977,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </ul>
 </div>
 <div class="sect3">
-<h4 id="_10_3_1_模块创建和数据准备">10.3.1 模块创建和数据准备</h4>
+<h4 id="_10_3_1_模块创建和数据准备">11.3.1. 10.3.1 模块创建和数据准备</h4>
 <div class="paragraph">
 <p>在UserBehaviorAnalysis下新建一个maven module作为子项目，命名为NetworkTrafficAnalysis。在这个子模块中，我们同样并没有引入更多的依赖，所以也不需要改动pom文件。</p>
 </div>
@@ -5700,7 +5986,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_10_3_2_代码实现">10.3.2 代码实现</h4>
+<h4 id="_10_3_2_代码实现">11.3.2. 10.3.2 代码实现</h4>
 <div class="paragraph">
 <p>我们现在要实现的模块是 “实时流量统计”。对于一个电商平台而言，用户登录的入口流量、不同页面的访问流量都是值得分析的重要数据，而这些数据，可以简单地从web服务器的日志中提取出来。我们在这里实现最基本的“页面浏览数”的统计，也就是读取服务器日志中的每一行log，统计在一段时间内用户访问url的次数。</p>
 </div>
@@ -5829,7 +6115,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_10_4_恶意登录监控">10.4 恶意登录监控</h3>
+<h3 id="_10_4_恶意登录监控">11.4. 10.4 恶意登录监控</h3>
 <div class="ulist">
 <ul>
 <li>
@@ -5861,7 +6147,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </ul>
 </div>
 <div class="sect3">
-<h4 id="_10_4_1_模块创建和数据准备">10.4.1 模块创建和数据准备</h4>
+<h4 id="_10_4_1_模块创建和数据准备">11.4.1. 10.4.1 模块创建和数据准备</h4>
 <div class="paragraph">
 <p>继续在UserBehaviorAnalysis下新建一个maven module作为子项目，命名为LoginFailDetect。在这个子模块中，我们将会用到flink的CEP库来实现事件流的模式匹配，所以需要在pom文件中引入CEP的相关依赖：</p>
 </div>
@@ -5884,7 +6170,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_10_4_2_代码实现">10.4.2 代码实现</h4>
+<h4 id="_10_4_2_代码实现">11.4.2. 10.4.2 代码实现</h4>
 <div class="paragraph">
 <p>对于网站而言，用户登录并不是频繁的业务操作。如果一个用户短时间内频繁登录失败，就有可能是出现了程序的恶意攻击，比如密码暴力破解。因此我们考虑，应该对用户的登录失败动作进行统计，具体来说，如果同一用户（可以是不同IP）在2秒之内连续两次登录失败，就认为存在恶意登录的风险，输出相关的信息进行报警提示。这是电商网站、也是几乎所有网站风控的基本一环。</p>
 </div>
@@ -6025,7 +6311,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_10_5_订单支付实时监控">10.5 订单支付实时监控</h3>
+<h3 id="_10_5_订单支付实时监控">11.5. 10.5 订单支付实时监控</h3>
 <div class="ulist">
 <ul>
 <li>
@@ -6054,7 +6340,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </ul>
 </div>
 <div class="sect3">
-<h4 id="_10_5_1_模块创建和数据准备">10.5.1 模块创建和数据准备</h4>
+<h4 id="_10_5_1_模块创建和数据准备">11.5.1. 10.5.1 模块创建和数据准备</h4>
 <div class="paragraph">
 <p>同样地，在UserBehaviorAnalysis下新建一个maven module作为子项目，命名为OrderTimeoutDetect。在这个子模块中，我们同样将会用到flink的CEP库来实现事件流的模式匹配，所以需要在pom文件中引入CEP的相关依赖：</p>
 </div>
@@ -6077,7 +6363,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_10_5_2_代码实现">10.5.2 代码实现</h4>
+<h4 id="_10_5_2_代码实现">11.5.2. 10.5.2 代码实现</h4>
 <div class="paragraph">
 <p>在电商平台中，最终创造收入和利润的是用户下单购买的环节；更具体一点，是用户真正完成支付动作的时候。用户下单的行为可以表明用户对商品的需求，但在现实中，并不是每次下单都会被用户立刻支付。当拖延一段时间后，用户支付的意愿会降低。所以为了让用户更有紧迫感从而提高支付转化率，同时也为了防范订单支付环节的安全风险，电商网站往往会对订单状态进行监控，设置一个失效时间（比如15分钟），如果下单后一段时间仍未支付，订单就会被取消。</p>
 </div>
@@ -6169,7 +6455,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_10_5_3_使用process_function实现订单超时需求">10.5.3 使用Process Function实现订单超时需求</h4>
+<h4 id="_10_5_3_使用process_function实现订单超时需求">11.5.3. 10.5.3 使用Process Function实现订单超时需求</h4>
 <div class="listingblock">
 <div class="title">OrderTimeoutWithoutCep.scala</div>
 <div class="content">
@@ -6251,7 +6537,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_10_6_实现两条流的join">10.6 实现两条流的join</h3>
+<h3 id="_10_6_实现两条流的join">11.6. 10.6 实现两条流的join</h3>
 <div class="imageblock">
 <div class="content">
 <img src="images/twostreamsjoin.png" alt="twostreamsjoin">
@@ -6391,7 +6677,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2019-06-19 12:51:04 +0800
+Last updated 2019-08-18 22:11:14 +0800
 </div>
 </div>
 <style>
