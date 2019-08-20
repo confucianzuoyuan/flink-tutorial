@@ -11,7 +11,8 @@ image::dot-example.png[]
 [source,scala]
 ----
 // 获取执行环境
-val env: ExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+val env: ExecutionEnvironment = StreamExecutionEnvironment
+  .getExecutionEnvironment
 // 设置流的时间为Event Time
 env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 // 设置并行度为1，如果不设置，那么默认为当前机器的cpu的数量
@@ -25,7 +26,11 @@ env.setParallelism(1)
 [source,scala]
 ----
 // 传感器id，时间戳，温度
-case class SensorReading(id: String, timestamp: Long, temperature: Double)
+case class SensorReading(
+  id: String,
+  timestamp: Long,
+  temperature: Double
+)
 
 val stream = env
   .fromCollection(List(
@@ -71,16 +76,6 @@ import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunctio
 import org.apache.flink.streaming.api.functions.source.SourceFunction.SourceContext
 
 import scala.util.Random
-
-/**
-  * Flink SourceFunction to generate SensorReadings with random temperature values.
-  *
-  * Each parallel instance of the source simulates 10 sensors which emit one sensor
-  * reading every 100 ms.
-  *
-  * Note: This is a simple data-generating source function that does not checkpoint its state.
-  * In case of a failure, the source does not replay any data.
-  */
 
 // 传感器id，时间戳，温度
 case class SensorReading(id: String, timestamp: Long, temperature: Double)
@@ -157,7 +152,7 @@ val sensorData: DataStream[SensorReading] = env
 
 image::map.png[]
 
-我们需要实现接口``MapFunction``
+我们需要实现接口**MapFunction**
 
 ----
 // T: the type of input elements
@@ -186,9 +181,30 @@ val readings: DataStream[SensorReading] = ...
 val sensorIds: DataStream[String] = readings.map(r => r.id)
 ----
 
-==== 4.3.2 flatMap
+==== flatMap
 
-flatMap的函数签名：``def flatMap[A,B](as: List[A])(f: A => List[B]): List[B]``, 例如: ``flatMap(List(1,2,3))(i => List(i,i))``结果是``List(1,1,2,2,3,3)``, ``List("a b", "c d").flatMap(line => line.split(" "))``结果是``List(a, b, c, d)``。
+flatMap的函数签名：
+
+[source,scala]
+----
+def flatMap[A,B](as: List[A])(f: A => List[B]): List[B]
+----
+
+, 例如: 
+
+[source,scala]
+----
+flatMap(List(1,2,3))(i => List(i,i))
+----
+
+结果是List(1,1,2,2,3,3), 
+
+[source,scala]
+----
+List("a b", "c d").flatMap(line => line.split(" "))
+----
+
+结果是List(a, b, c, d)。
 
 我们需要实现``FlatMapFunction``接口
 
@@ -220,7 +236,7 @@ val words: DataStream[String] = sentences
   .flatMap(id => id.split(" "))
 ----
 
-==== 4.3.3 Filter
+==== Filter
 
 我们需要实现接口``FilterFunction``
 
@@ -241,9 +257,9 @@ val filteredSensors = readings
 
 image::filter.png[]
 
-=== 4.4 KeyedStream Transformations(键控流转换算子)
+=== KeyedStream Transformations(键控流转换算子)
 
-==== 4.4.1 keyBy
+==== keyBy
 
 分流算子, 流的类型改变了
 
@@ -263,7 +279,7 @@ stream.keyBy("word")
 stream.keyBy(0)
 ----
 
-==== 4.4.2 Rolling Aggregations
+==== Rolling Aggregations
 
 针对KeyedStream的每一条流做聚合
 
@@ -283,7 +299,7 @@ val resultStream: DataStream[(Int, Int, Int)] = inputStream
   .sum(1)   // sum the second field of the tuple in place
 ----
 
-==== 4.4.3 Reduce
+==== Reduce
 
 我们需要实现``ReduceFunction``接口
 
@@ -293,7 +309,7 @@ ReduceFunction[T]
     > reduce(T, T): T
 ----
 
-流的类型转换, ``KeyedStream -> DataStream``：一个分组数据流的聚合操作，合并当前的元素和上次聚合的结果，产生一个新的值，返回的流中包含每一次聚合的结果，而不是只返回最后一次聚合的最终结果。
+流的类型转换, KeyedStream -> DataStream：一个分组数据流的聚合操作，合并当前的元素和上次聚合的结果，产生一个新的值，返回的流中包含每一次聚合的结果，而不是只返回最后一次聚合的最终结果。
 
 [source,scala]
 ----
@@ -305,11 +321,11 @@ val resultStream: DataStream[(String, List[String])] = inputStream
   .reduce((x, y) => (x._1, x._2 ::: y._2))
 ----
 
-The lambda reduce function forwards the first tuple field (the key field) and concatenates the List[String] values of the second tuple field.
+reduce匿名函数将连续两个tuple的第一个字段(key字段)继续发送出去，然后将两个tuple的第二个字段List[String]连接。
 
-=== 4.5 Multistream Transformations(多流转换算子)
+=== Multistream Transformations(多流转换算子)
 
-==== 4.5.1 Union
+==== Union
 
 image::union.png[]
 
@@ -324,11 +340,11 @@ val allCities: DataStream[SensorRreading] = parisStream
   .union(tokyoStream, rioStream)
 ----
 
-==== 4.5.2 Connect, Comap and Coflatmap
+==== Connect, Comap and Coflatmap
 
 联合两条流的事件是非常常见的流处理需求。例如监控一片森林然后发出高危的火警警报。报警的Application接收两条流，一条是温度传感器传回来的数据，一条是烟雾传感器传回来的数据。当两条流都超过各自的阈值时，报警。
 
-DataStream.connect()方法就实现了这个功能。流的类型转换: ``DataStream -> ConnectedStreams``。
+DataStream.connect()方法就实现了这个功能。流的类型转换: DataStream -> ConnectedStreams。
 
 [source,scala]
 ----
@@ -383,7 +399,7 @@ val keyedConnect2: ConnectedStreams[(Int, Long), (Int, String)] = one.keyBy(0)
   .connect(two.keyBy(0))
 ----
 
-Regardless of whether you keyBy() ConnectedStreams or you connect() two KeyedStreams, the connect() transformation will route all events from both streams with the same key to the same operator instance. Note that the keys of both streams should refer to the same class of entities, just like a join predicate in a SQL query. An operator that is applied on a connected and keyed stream has access to keyed state.
+无论使用keyBy()算子操作ConnectedStreams还是使用connect()算子连接两条KeyedStreams，connect()算子会将两条流的含有相同Key的所有事件都发送到相同的算子。两条流的key必须是一样的类型和值，就像SQL中的JOIN。select * from A join B on A.id=B.id。connect()算子操作以后的Keyed Streams可以访问keyed state状态。
 
 *broadcast*
 
@@ -398,15 +414,17 @@ val keyedConnect: ConnectedStreams[(Int, Long), (Int, String)] = first
   .connect(second.broadcast())
 ----
 
-The example shows how to connect a (nonkeyed) DataStream with a broadcasted stream.
+上面的例子显示了如何将一条为分流的数据流和一条广播流进行连接。
 
-All events of the broadcasted stream are replicated and sent to all parallel operator instances of the subsequent processing function. The events of the nonbroadcasted stream are simply forwarded. Hence, the elements of both input streams can be jointly processed.
+被广播的流中的所有事件都将被复制并发送到接下来的Process Function的所有的并行算子实例中去，未被广播的流直接向前发送。
 
 一条流如果broadcast, 将会广播到所有的分布式节点，如果不广播，将会向前发送，并不会广播。
 
+----
 详细请参考: https://www.ververica.com/blog/a-practical-guide-to-broadcast-state-in-apache-flink
+----
 
-==== 4.5.3 Split and Select
+==== Split and Select
 
 Split是Union的反函数。
 
@@ -418,7 +436,7 @@ OutputSelector[IN]
 
 image::split.png[]
 
-流的类型转换: ``DataStream -> SplitStream``
+流的类型转换: DataStream -> SplitStream
 
 [source,scala]
 ----
@@ -433,12 +451,13 @@ val all: DataStream[(Int, String)] = splitted.select("small", "large")
 ----
 
 Connect与Union区别：
-1 Union之前两个流的类型必须是一样，Connect可以不一样，在之后的CoMapFunction中再去调整成为一样的。
-2 Connect只能操作两个流，Union可以操作多个。
 
-=== 4.6 支持的数据类型
+* Union之前两个流的类型必须是一样，Connect可以不一样，在之后的CoMapFunction中再去调整成为一样的。
+* Connect只能操作两个流，Union可以操作多个。
 
-*Primitives(基础数据类型)*
+=== 支持的数据类型
+
+==== Primitives(基础数据类型)
 
 所有的基础数据类型都支持，Int, Double, Long, String, ...
 
@@ -448,7 +467,7 @@ val numbers: DataStream[Long] = env.fromElements(1L, 2L, 3L, 4L)
 numbers.map( n => n + 1 )
 ----
 
-*Tuples*
+==== Tuples
 
 [source,scala]
 ----
@@ -461,7 +480,7 @@ env.fromElements(
 persons.filter(p => p._2 > 18)
 ----
 
-*Scala case classes*
+==== Scala case classes
 
 [source,scala]
 ----
@@ -475,13 +494,13 @@ val persons: DataStream[Person] = env.fromElements(
 persons.filter(p => p.age > 18)
 ----
 
-*others*
+==== others
 
 * Hadoop Writable types
 * Java's POJOs, ArrayList, HashMap, Enum
 * ...
 
-=== 4.7 keyBy相关用法
+=== keyBy相关用法
 
 [source,scala]
 ----
@@ -541,9 +560,9 @@ val input: DataStream[(Int, Int)] = ...
 val keyedStream = input.keyBy(value => math.max(value._1, value._2))
 ----
 
-=== 4.8 实现UDF函数，更细粒度的控制流
+=== 实现UDF函数，更细粒度的控制流
 
-==== 4.8.1 Function Classes
+==== Function Classes
 
 Flink暴露了所有udf函数的接口(实现方式为接口或者抽象类)。例如MapFunction, FilterFunction, ProcessFunction等等。
 
@@ -587,7 +606,7 @@ class KeywordFilter(keyWord: String) extends FilterFunction[String] {
 }
 ----
 
-==== 4.8.2 Lambda Functions
+==== Lambda Functions
 
 [source,scala]
 ----
@@ -595,7 +614,7 @@ val tweets: DataStream[String] = ...
 val flinkTweets = tweets.filter(_.contains("flink"))
 ----
 
-==== 4.8.3 Rich Functions
+==== Rich Functions
 
 * RichMapFunction
 * RichFlatMapFunction
@@ -633,7 +652,7 @@ class MyFlatMap extends RichFlatMapFunction[Int, (Int, Int)] {
 }
 ----
 
-=== 4.9 Sink
+=== Sink
 
 Flink没有类似于Spark中foreach方法，让用户进行迭代的操作。所有对外的输出操作都要利用Sink完成。最后通过类似如下方式完成整个任务最终输出操作。
 
@@ -644,7 +663,7 @@ stream.addSink(new MySink(xxxx))
 
 官方提供了一部分的框架的sink。除此以外，需要用户自定义实现sink。   
 
-==== 4.9.1 Elasticsearch
+==== Elasticsearch
 
 [source,xml]
 ----
@@ -711,7 +730,7 @@ object StreamingJob {
 }
 ----
 
-=== 4.10 Distribution Transformations(分布式转换算子)
+=== Distribution Transformations(分布式转换算子)
 
 *Random*
 
