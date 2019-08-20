@@ -1,4 +1,4 @@
-== 有状态的计算 
+== 有状态的计算
 
 流式计算分为无状态和有状态两种情况。无状态的计算观察每个独立事件，并根据最后一个事件输出结果。例如，流处理应用程序从传感器接收温度读数，并在温度超过90度时发出警告。有状态的计算则会基于多个事件输出结果。以下是一些例子。
 
@@ -24,8 +24,8 @@ image::statevsunstate.png[]
 
 曾经，at-least-once非常流行。第一代流处理器(如Storm和Samza)刚问世时只保证at-least-once，原因有二。
 
-(1) 保证exactly-once的系统实现起来更复杂。这在基础架构层(决定什么代表正确，以及exactly-once的范围是什么)和实现层都很有挑战性。
-(2) 流处理系统的早期用户愿意接受框架的局限性，并在应用层想办法弥补(例如使应用程序具有幂等性，或者用批量计算层再做一遍计算)。
+* 保证exactly-once的系统实现起来更复杂。这在基础架构层(决定什么代表正确，以及exactly-once的范围是什么)和实现层都很有挑战性。
+* 流处理系统的早期用户愿意接受框架的局限性，并在应用层想办法弥补(例如使应用程序具有幂等性，或者用批量计算层再做一遍计算)。
 
 最先保证exactly-once的系统(Storm Trident和Spark Streaming)在性能和表现力这两个方面付出了很大的代价。为了保证exactly-once，这些系统无法单独地对每条记录运用应用逻辑，而是同时处理多条(一批)记录，保证对每一批的处理要么全部成功，要么全部失败。这就导致在得到结果前，必须等待一批记录处理结束。因此，用户经常不得不使用两个流处理框架(一个用来保证exactly-once，另一个用来对每个元素做低延迟处理)，结果使基础设施更加复杂。曾经，用户不得不在保证exactly-once与获得低延迟和效率之间权衡利弊。Flink避免了这种权衡。
 
@@ -105,18 +105,18 @@ Flink检查点算法的正式名称是异步屏障快照(asynchronous barrier sn
 
 NOTE: 检查点是Flink最有价值的创新之一，因为它使Flink可以保证exactly-once，并且不需要牺牲性能。
 
-=== 7.3 Stateful Operators and Applications
+=== Stateful Operators and Applications
 
 Flink内置的很多算子，数据源source，数据存储sink都是有状态的，流中的数据都是buffer records，会保存一定的元素或者元数据。例如: ProcessWindowFunction会缓存输入流的数据，ProcessFunction会保存设置的定时器信息等等。
 
-==== 7.3.1 实现stateful functions
+==== 实现stateful functions
 
 函数一般有两种类型的状态：
 
 * keyed state
 * operator state
 
-===== 7.3.1.1 在RuntimeContext中声明Keyed State
+===== 在RuntimeContext中声明Keyed State
 
 * keyed state很类似于一个分布式的key-value map数据结构
 * keyed state只能用于KeyedStream(keyBy算子)
@@ -170,8 +170,10 @@ class TemperatureAlertFunction(val threshold: Double) extends RichFlatMapFunctio
 }
 ----
 
-* 通过RuntimeContext注册StateDescriptor。StateDescriptor以状态state的名字和存储的数据类型为参数。
+* 通过RuntimeContext注册StateDescriptor。StateDescriptor以状态state的名字和存储的数据类型为参数。数据类型必须指定，因为Flink需要选择合适的序列化器。
 * 在open()方法中创建state变量。注意复习之前的RichFunction相关知识。
+
+当一个函数注册了StateDescriptor描述符，Flink会检查状态后端是否已经存在这个状态。这种情况通常出现在应用挂掉要从检查点或者保存点恢复的时候。在这两种情况下，Flink会将注册的状态连接到已经存在的状态。如果不存在状态，则初始化一个空的状态。
 
 使用FlatMap with keyed ValueState的快捷方式flatMapWithState实现以上需求。还记得之前的例子mapWithState吗？
 
@@ -195,11 +197,318 @@ val alerts: DataStream[(String, Double, Double)] = keyedSensorData
   }
 ----
 
-=== 7.4 选择一个状态后端(state backend)
+=== 使用ListCheckpointed接口来实现操作符的列表状态(List State)
 
-* MemoryStateBackend stores state as regular objects on the heap of the TaskManager JVM process.
-* FsStateBackend stores the local state on the TaskManager’s JVM heap, just like MemoryStateBackend. However, instead of checkpointing the state to the JobManager’s volatile memory, FsStateBackend writes the state to a remote and persistent file system.
-* RocksDBStateBackend stores all state into local RocksDB instances.
+operator state会在operator的每一个并行实例中去维护。一个操作符并行实例上的所有事件都可以访问同一个状态。Flink支持三种操作符状态：list state, list union state, broadcast state。
+
+一个函数可以实现ListCheckpointed接口来处理操作符list state。ListCheckpointed接口无法处理ValueState和ListState，因为这些状态是注册在状态后端的。操作符状态类似于成员变量，和状态后端的交互通过ListCheckpointed接口的回调函数实现。接口提供了两个方法：
+
+[source,scala]
+----
+// 返回函数状态的快照，返回值为列表
+snapshotState(checkpointId: Long, timestamp: Long): java.util.List[T]
+// 从列表恢复函数状态
+restoreState(java.util.List[T] state): Unit
+----
+
+当Flink触发stateful functon的一次checkpoint时，snapshotState()方法会被调用。方法接收两个参数，checkpointId为唯一的单调递增的检查点Id，timestamp为当master机器开始做检查点操作时的墙上时钟。方法必须返回序列化好的状态对象的列表。
+
+当宕机程序从检查点或者保存点恢复时会调用restoreState()方法。restoreState使用snapshotState保存的列表来恢复。
+
+下面的例子展示了如何实现ListCheckpointed接口。业务场景为：一个对每一个并行实例的超过阈值的温度的计数程序。
+
+[source,scala]
+----
+class HighTempCounter(val threshold: Double)
+    extends RichFlatMapFunction[SensorReading, (Int, Long)]
+    with ListCheckpointed[java.lang.Long] {
+
+  // index of the subtask
+  private lazy val subtaskIdx = getRuntimeContext
+    .getIndexOfThisSubtask
+  // local count variable
+  private var highTempCnt = 0L
+
+  override def flatMap(
+      in: SensorReading, 
+      out: Collector[(Int, Long)]): Unit = {
+    if (in.temperature > threshold) {
+      // increment counter if threshold is exceeded
+      highTempCnt += 1
+      // emit update with subtask index and counter
+      out.collect((subtaskIdx, highTempCnt))
+    }
+  }
+
+  override def restoreState(
+      state: util.List[java.lang.Long]): Unit = {
+    highTempCnt = 0
+    // restore state by adding all longs of the list
+    for (cnt <- state.asScala) {
+      highTempCnt += cnt
+    }
+  }
+
+  override def snapshotState(
+      chkpntId: Long, 
+      ts: Long): java.util.List[java.lang.Long] = {
+    // snapshot state as list with a single count
+    java.util.Collections.singletonList(highTempCnt)
+  }
+}
+----
+
+The function in the above example counts per parallel instance how many temperature measurements exceeded a configured threshold. The function uses operator state and has a single state variable for each parallel operator instance that is checkpointed and restored using the methods of the ListCheckpointed interface. Note that the ListCheckpointed interface is implemented in Java and expects a java.util.List instead of a Scala native list.
+
+Looking at the example, you might wonder why operator state is handled as a list of state objects. As discussed in “Scaling Stateful Operators”, the list structure supports changing the parallelism of functions with operator state. In order to increase or decrease the parallelism of a function with operator state, the operator state needs to be redistributed to a larger or smaller number of task instances. This requires splitting or merging of state objects. Since the logic for splitting and merging of state is custom for every stateful function, this cannot be automatically done for arbitrary types of state.
+
+By providing a list of state objects, functions with operator state can implement this logic using the snapshotState() and restoreState() methods. The snapshotState() method splits the operator state into multiple parts and the restoreState() method assembles the operator state from possibly multiple parts. When the state of a function is restored, the parts of the state are distributed among all parallel instances of the function and handed to the restoreState() method. If there are more parallel subtasks than state objects, some subtasks are started with no state, and the restoreState() method is called with an empty list.
+
+Looking again at the HighTempCounter function in Example 7-4, we see that each parallel instance of the operator exposes its state as a list with a single entry. If we increased the parallelism of this operator, some of the new subtasks would be initialized with an empty state, and start counting from zero. In order to achieve better state distribution behavior when the HighTempCounter function is rescaled, we can implement the snapshotState() method so that it splits its count into multiple partial counts as shown in Example 7-5.
+
+[source,scala]
+----
+override def snapshotState(
+    chkpntId: Long, 
+    ts: Long): java.util.List[java.lang.Long] = {
+  // split count into ten partial counts
+  val div = highTempCnt / 10
+  val mod = (highTempCnt % 10).toInt
+  // return count as ten parts
+  (List.fill(mod)(new java.lang.Long(div + 1)) ++
+    List.fill(10 - mod)(new java.lang.Long(div))).asJava
+}
+----
+
+=== 使用连接的广播状态(using connected broadcast state)
+
+一个常见的需求就是流应用需要将同样的事件分发到操作符的所有的并行实例中，而这样的分发操作还得是可恢复的。
+
+我们举个例子：一条流是一个规则(比如5秒钟内连续两个超过阈值的温度)，另一条流是待匹配的流。也就是说，规则流和事件流。所以每一个操作符的并行实例都需要把规则流保存在操作符状态中。也就是说，规则流需要被广播到所有的并行实例中去。
+
+在Flink中，这样的状态叫做广播状态(broadcast state)。广播状态和DataStream或者KeyedStream都可以做连接操作。
+
+下面的例子实现了一个温度报警应用，应用有可以动态设定的阈值，动态设定通过广播流来实现。
+
+[source,scala]
+----
+val sensorData: DataStream[SensorReading] = ???
+val thresholds: DataStream[ThresholdUpdate] = ???
+val keyedSensorData: KeyedStream[SensorReading, String] = sensorData.keyBy(_.id)
+
+// the descriptor of the broadcast state
+val broadcastStateDescriptor =
+  new MapStateDescriptor[String, Double](
+    "thresholds", classOf[String], classOf[Double])
+
+val broadcastThresholds: BroadcastStream[ThresholdUpdate] = thresholds
+  .broadcast(broadcastStateDescriptor)
+
+// connect keyed sensor stream and broadcasted rules stream
+val alerts: DataStream[(String, Double, Double)] = keyedSensorData
+  .connect(broadcastThresholds)
+  .process(new UpdatableTemperatureAlertFunction())
+----
+
+带有广播状态的函数在应用到两条流上时分三个步骤：
+
+* 调用DataStream.broadcast()来创建BroadcastStream，定义一个或者多个MapStateDescriptor对象。
+* 将BroadcastStream和DataStream/KeyedStream做connect操作。
+* 在connected streams上调用KeyedBroadcastProcessFunction/BroadcastProcessFunction。
+
+下面的例子实现了动态设定温度阈值的功能。
+
+[source,scala]
+----
+class UpdatableTemperatureAlertFunction()
+    extends KeyedBroadcastProcessFunction
+      [String, SensorReading, ThresholdUpdate, (String, Double, Double)] {
+
+  // the descriptor of the broadcast state
+  private lazy val thresholdStateDescriptor =
+    new MapStateDescriptor[String, Double](
+      "thresholds", classOf[String], classOf[Double])
+
+  // the keyed state handle
+  private var lastTempState: ValueState[Double] = _
+
+  override def open(parameters: Configuration): Unit = {
+    // create keyed state descriptor
+    val lastTempDescriptor = new ValueStateDescriptor[Double](
+      "lastTemp", classOf[Double])
+    // obtain the keyed state handle
+    lastTempState = getRuntimeContext.getState[Double](lastTempDescriptor)
+  }
+
+  override def processBroadcastElement(
+      update: ThresholdUpdate,
+      ctx: KeyedBroadcastProcessFunction
+        [String, SensorReading, ThresholdUpdate, (String, Double, Double)]#Context,
+      out: Collector[(String, Double, Double)]): Unit = {
+    // get broadcasted state handle
+    val thresholds = ctx.getBroadcastState(thresholdStateDescriptor)
+
+    if (update.threshold != 0.0d) {
+      // configure a new threshold for the sensor
+      thresholds.put(update.id, update.threshold)
+    } else {
+      // remove threshold for the sensor
+      thresholds.remove(update.id)
+    }
+  }
+
+  override def processElement(
+      reading: SensorReading,
+      readOnlyCtx: KeyedBroadcastProcessFunction
+        [String, SensorReading, ThresholdUpdate, 
+        (String, Double, Double)]#ReadOnlyContext,
+      out: Collector[(String, Double, Double)]): Unit = {
+    // get read-only broadcast state
+    val thresholds = readOnlyCtx.getBroadcastState(thresholdStateDescriptor)
+    // check if we have a threshold
+    if (thresholds.contains(reading.id)) {
+      // get threshold for sensor
+      val sensorThreshold: Double = thresholds.get(reading.id)
+
+      // fetch the last temperature from state
+      val lastTemp = lastTempState.value()
+      // check if we need to emit an alert
+      val tempDiff = (reading.temperature - lastTemp).abs
+      if (tempDiff > sensorThreshold) {
+        // temperature increased by more than the threshold
+        out.collect((reading.id, reading.temperature, tempDiff))
+      }
+    }
+
+    // update lastTemp state
+    this.lastTempState.update(reading.temperature)
+  }
+}
+----
+
+=== 状态存储，恢复和清理
+
+==== 配置检查点
+
+10秒钟保存一次检查点。
+
+[source,scala]
+----
+val env = StreamExecutionEnvironment.getExecutionEnvironment
+
+// set checkpointing interval to 10 seconds (10000 milliseconds)
+env.enableCheckpointing(10000L)
+----
+
+==== 指定唯一的操作符标识符(operator identifiers)
+
+每一个操作符都可以指定唯一的标识符。标识符将会作为操作符的元数据和状态数据一起保存到savepoint中去。当应用从保存点恢复时，标识符可以用来在savepoint中查找标识符对应的操作符的状态数据。标识符必须是唯一的，否则应用不知道从哪一个标识符恢复。
+
+强烈建议为应用的每一个操作符定义唯一标识符。例子：
+
+[source,scala]
+----
+val alerts: DataStream[(String, Double, Double)] = keyedSensorData
+  .flatMap(new TemperatureAlertFunction(1.1))  
+  .uid("TempAlert")
+----
+
+==== 指定操作符的最大并行度
+
+操作符的最大并行度定义了操作符的keyed state可以被分到多少个key groups中。
+
+[source,scala]
+----
+val env = StreamExecutionEnvironment.getExecutionEnvironment
+
+// set the maximum parallelism for this application
+env.setMaxParallelism(512)
+
+val alerts: DataStream[(String, Double, Double)] = keyedSensorData
+  .flatMap(new TemperatureAlertFunction(1.1))
+  // set the maximum parallelism for this operator and
+  // override the application-wide value
+  .setMaxParallelism(1024)
+----
+
+示意图：
+
+==== 防止状态泄露
+
+流应用通常需要运行几个月或者几年。如果state数据不断增长的话，会爆炸。所以控制state数据的大小十分重要。而Flink并不会清理state和gc。所以所有的stateful operator都需要控制他们各自的状态数据大小，保证不爆炸。
+
+例如我们之前讲过增量聚合函数ReduceFunction/AggregateFunction，就可以提前聚合而不给state太多压力。
+
+我们来看一个例子，我们实现了一个KeyedProcessFunction，用来计算连续两次的温度的差值，如果差值超过阈值，报警。
+
+我们之前实现过这个需求，但没有清理掉状态数据。比如一小时内不再产生温度数据的传感器对应的状态数据就可以清理掉了。
+
+[source,scala]
+----
+class SelfCleaningTemperatureAlertFunction(val threshold: Double)
+    extends KeyedProcessFunction[String, SensorReading, (String, Double, Double)] {
+
+  // the keyed state handle for the last temperature
+  private var lastTempState: ValueState[Double] = _
+  // the keyed state handle for the last registered timer
+  private var lastTimerState: ValueState[Long] = _
+
+  override def open(parameters: Configuration): Unit = {
+    // register state for last temperature
+    val lastTempDesc = new ValueStateDescriptor[Double]("lastTemp", classOf[Double])
+    lastTempState = getRuntimeContext.getState[Double](lastTempDescriptor)
+    // register state for last timer
+    val lastTimerDesc = new ValueStateDescriptor[Long]("lastTimer", classOf[Long])
+    lastTimerState = getRuntimeContext.getState(timestampDescriptor)
+  }
+
+  override def processElement(
+      reading: SensorReading,
+      ctx: KeyedProcessFunction
+        [String, SensorReading, (String, Double, Double)]#Context,
+      out: Collector[(String, Double, Double)]): Unit = {
+
+    // compute timestamp of new clean up timer as record timestamp + one hour
+    val newTimer = ctx.timestamp() + (3600 * 1000)
+    // get timestamp of current timer
+    val curTimer = lastTimerState.value()
+    // delete previous timer and register new timer
+    ctx.timerService().deleteEventTimeTimer(curTimer)
+    ctx.timerService().registerEventTimeTimer(newTimer)
+    // update timer timestamp state
+    lastTimerState.update(newTimer)
+
+    // fetch the last temperature from state
+    val lastTemp = lastTempState.value()
+    // check if we need to emit an alert
+    val tempDiff = (reading.temperature - lastTemp).abs
+    if (tempDiff > threshold) {
+      // temperature increased by more than the threshold
+      out.collect((reading.id, reading.temperature, tempDiff))
+    }
+
+    // update lastTemp state
+    this.lastTempState.update(reading.temperature)
+  }
+
+  override def onTimer(
+      timestamp: Long,
+      ctx: KeyedProcessFunction
+        [String, SensorReading, (String, Double, Double)]#OnTimerContext,
+      out: Collector[(String, Double, Double)]): Unit = {
+
+    // clear all state for the key
+    lastTempState.clear()
+    lastTimerState.clear()
+  }
+}
+----
+
+==== 选择一个状态后端
+
+* MemoryStateBackend将状态当作Java的对象(没有序列化操作)存储在TaskManager JVM进程的堆上。
+* FsStateBackend将状态存储在本地的文件系统或者远程的文件系统如HDFS。
+* RocksDBStateBackend将状态存储在RocksDB \footnote{Facebook开源的KV数据库} 中。
 
 [source,scala]
 ----
@@ -207,16 +516,9 @@ val env = StreamExecutionEnvironment.getExecutionEnvironment
 
 val checkpointPath: String = ???
 // configure path for checkpoints on the remote filesystem
-val backend = new RocksDBStateBackend(checkpointPath)
+// env.setStateBackend(new FsStateBackend("file:///tmp/checkpoints"))
 
+val backend = new RocksDBStateBackend(checkpointPath)
 // configure the state backend
 env.setStateBackend(backend)
-----
-
-[source,scala]
-----
-// set up checkpointing
-env.setStateBackend(new FsStateBackend("file:///tmp/checkpoints"))
-env.enableCheckpointing(1000)
-env.setRestartStrategy(RestartStrategies.fixedDelayRestart(60, Time.of(10, TimeUnit.SECONDS)))
 ----

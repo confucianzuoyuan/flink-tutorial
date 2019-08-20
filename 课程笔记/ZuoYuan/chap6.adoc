@@ -206,7 +206,7 @@ Context和OnTimerContext所持有的TimerService对象拥有以下方法:
 
 当定时器timer触发时，执行回调函数onTimer()。
 
-NOTE:定时器timer只能在keyed streams上面使用。
+NOTE: 定时器timer只能在keyed streams上面使用。
 
 举个例子说明KeyedProcessFunction如何操作KeyedStream。
 

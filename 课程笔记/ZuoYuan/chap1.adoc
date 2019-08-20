@@ -101,7 +101,7 @@ Flink的一个优势是，它拥有诸多重要的流式计算功能。其他项
 
 *Spark Streaming* vs *Flink*
 
-1. 两者最重要的区别(流和微批)
+*两者最重要的区别(流和微批)*
 
 (1). Micro Batching 模式(spark)
 
@@ -119,7 +119,7 @@ image::sparkstreamingvsflink2.png[]
 
 从上图可以看到输入的数据过来一条处理一条, 然后输出, 几乎不存在延迟, 很明显Native Streaming模式占据了流计算领域"低延时"的核心竞争力, 当然Native Streaming模式的实现框架是一个历史先河，第一个实现Native Streaming模式的流计算框架是第一个吃螃蟹的人，需要面临更多的挑战，后续章节我们会慢慢介绍。当然Native Streaming模式的框架实现上面很容易实现Micro-Batching和Batching模式的计算，Apache Flink就是Native Streaming计算模式的流批统一的计算引擎。
 
-2. 数据模型
+*数据模型*
 
 image::shujumoxing1.jpg[]
 
@@ -139,7 +139,7 @@ Flink采用Dataflow模型，和Lambda模式不同。Dataflow是纯粹的节点�
 
 image::lambdaarch.png[]
 
-3. 运行时架构
+*运行时架构*
 
 *Spark运行时架构*
 
