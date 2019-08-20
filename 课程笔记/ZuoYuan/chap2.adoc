@@ -42,7 +42,7 @@ quickstart/
 ----
 package com.atguigu
 
-import org.apache.flink.streaming.api.scala._ // 隐式类型转换
+import org.apache.flink.streaming.api.scala._ // 导入隐式类型转换
 import org.apache.flink.streaming.api.windowing.time.Time
 
 object StreamingJob {
