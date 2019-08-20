@@ -1,6 +1,6 @@
-== 第五章 Time与Window
+== Time与Window
 
-=== 5.1 Time
+=== Time
 在Flink的流式处理中，会涉及到时间的不同概念，如下图所示：
 
 image::event_ingestion_processing_time.png[]
@@ -38,15 +38,15 @@ object AverageSensorReadings {
 
 如果想设置为Processing Time，将TimeCharacteristic.EventTime替换为TimeCharacteristic.ProcessingTime即可。
 
-=== 5.2 Window
+=== Window
 
-==== 5.2.1 Window概述
+==== Window概述
 
 Streaming流式计算是一种被设计用于处理无限数据集的数据处理引擎，而无限数据集是指一种不断增长的本质上无限的数据集，而Window是一种切割无限数据为有限块进行处理的手段。
 
 Window是无限数据流处理的核心，Window将一个无限的Stream拆分成有限大小的”Buckets”桶，我们可以在这些桶上做计算操作。
 
-==== 5.2.2 Window类型
+==== Window类型
 
 Window可以分成两类：
 
@@ -92,7 +92,7 @@ session窗口分配器通过session活动来对元素进行分组，session窗�
 
 image::session-windows.png[]
 
-=== 5.3 Window API
+=== Window API
 
 *TimeWindow*
 
