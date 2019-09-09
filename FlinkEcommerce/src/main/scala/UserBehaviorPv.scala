@@ -18,6 +18,7 @@ object UserBehaviorPv {
       })
       .assignAscendingTimestamps(_.timestamp * 1000)
       .filter(_.behavior.equals("pv"))
+      .map(_ => 1)
       .timeWindowAll(Time.seconds(60 * 60))
       .sum(0)
       .print()
