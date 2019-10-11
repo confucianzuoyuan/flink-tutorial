@@ -4,8 +4,6 @@ import org.apache.flink.streaming.api.functions.co.RichCoFlatMapFunction
 import org.apache.flink.streaming.api.scala.{StreamExecutionEnvironment, _}
 import org.apache.flink.util.Collector
 
-case class OrderEvent(orderId: String, eventType: String, eventTime: String)
-
 case class PayEvent(orderId: String, eventType: String, eventTime: String)
 
 

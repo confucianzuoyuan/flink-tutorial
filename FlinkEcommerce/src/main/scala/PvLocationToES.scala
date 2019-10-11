@@ -7,18 +7,16 @@ import org.apache.flink.streaming.api.scala._
 import java.util.Locale
 
 import org.apache.flink.api.common.functions.RuntimeContext
-import org.apache.flink.api.java.tuple.Tuple
-import org.apache.flink.api.java.tuple.Tuple1
 import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor
-import org.apache.flink.streaming.api.scala.function.WindowFunction
 import org.apache.flink.streaming.api.windowing.time.Time
-import org.apache.flink.streaming.api.windowing.windows.TimeWindow
 import org.apache.flink.streaming.connectors.elasticsearch.{ElasticsearchSinkFunction, RequestIndexer}
 import org.apache.flink.streaming.connectors.elasticsearch6.ElasticsearchSink
 import org.apache.flink.util.Collector
 import org.apache.http.HttpHost
 import org.elasticsearch.action.index.IndexRequest
 import org.elasticsearch.client.Requests
+import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction
+import org.apache.flink.streaming.api.functions.source.SourceFunction.SourceContext
 
 /**
   *
@@ -74,13 +72,12 @@ object PvLocationToES {
   val timeFormatter: DateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withLocale(Locale.US).withZoneUTC
 
   def main(args: Array[String]): Unit = {
-    val resourcesPath = getClass.getResource("/pvlocation.csv")
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
     val stream = env
-      .readTextFile(resourcesPath.getPath)
+      .addSource(new SensorSource)
       .map(line => {
         val linearray = line.split(",")
         val ts: Long = DateTime.parse(linearray(0), timeFormatter).getMillis
@@ -90,21 +87,26 @@ object PvLocationToES {
         new LogTimeAssigner
       )
       .filter(l => isInNYC(l.Longitude, l.Latitude))
-      // 将每一个行程映射到一个单元格里面，方便统计
+//      // 将每一个行程映射到一个单元格里面，方便统计
       .map(l => mapToGridCell(l.Longitude, l.Latitude))
-      .keyBy(0)
+//        .print()
+      .keyBy(k => k)
       .timeWindow(Time.minutes(15), Time.minutes(5))
-      .apply(new PvCounter())
+//      .apply(new PvCounter())
+      .apply{ (key: (Int, String), window, vals, out: Collector[(Int, Long, String, Int)]) =>
+        out.collect( (key._1, window.getEnd, key._2, vals.size) )
+      }
+//        .print()
       .map(r => (
-        getGridCellCenterLon(r.cellId.toInt),
-        getGridCellCenterLat(r.cellId.toInt),
-        r.windowTime,
-        r.cnt
+        getGridCellCenterLon(r._1.toInt),
+        getGridCellCenterLat(r._1.toInt),
+        r._2,
+        r._4.toLong
       ))
 
     val httpHosts = new java.util.ArrayList[HttpHost]
     httpHosts.add(new HttpHost("127.0.0.1", 9200, "http"))
-
+//
     val esSinkBuilder = new ElasticsearchSink.Builder[(Float, Float, Long, Long)](
       httpHosts,
       new ElasticsearchSinkFunction[(Float, Float, Long, Long)] {
@@ -125,7 +127,8 @@ object PvLocationToES {
         }
       }
     )
-
+//
+//    stream.addSink(esSinkBuilder.build)
     stream.addSink(esSinkBuilder.build)
 
     env.execute
@@ -133,10 +136,10 @@ object PvLocationToES {
 
   def isInNYC(lon: Float, lat: Float): Boolean = !(lon > LON_EAST || lon < LON_WEST) && !(lat > LAT_NORTH || lat < LAT_SOUTH)
 
-  def mapToGridCell(lon: Float, lat: Float): Int = {
+  def mapToGridCell(lon: Float, lat: Float): (Int, String) = {
     val xIndex = Math.floor((Math.abs(LON_WEST) - Math.abs(lon)) / DELTA_LON).toInt
     val yIndex = Math.floor((LAT_NORTH - lat) / DELTA_LAT).toInt
-    xIndex + (yIndex * NUMBER_OF_GRID_X)
+    (xIndex + (yIndex * NUMBER_OF_GRID_X),"dummy")
   }
 
   def getGridCellCenterLon(gridCellId: Int): Float = {
@@ -151,24 +154,41 @@ object PvLocationToES {
   }
 
   class LogTimeAssigner
-    extends BoundedOutOfOrdernessTimestampExtractor[PvLocation](Time.seconds(10)) {
+    extends BoundedOutOfOrdernessTimestampExtractor[PvLocation](Time.seconds(0)) {
 
     // 抽取时间戳
     override def extractTimestamp(r: PvLocation): Long = r.timestamp
   }
 
-  class PvCounter extends WindowFunction[Int, PvAgg, Tuple, TimeWindow] {
-    override def apply(key: Tuple, window: TimeWindow, aggregateResult: Iterable[Int], out: Collector[PvAgg]) : Unit = {
-      val cellId = key.asInstanceOf[Tuple1[Long]].f0
-      val windowTime = window.getEnd
+  class SensorSource extends RichParallelSourceFunction[String] {
 
-      var cnt = 0
-      // 单元格在窗口中出现的次数
-      for (c <- aggregateResult) {
-        cnt += 1
-      }
+    var running: Boolean = true
 
-      out.collect(PvAgg(cellId.toString.toLong, windowTime, cnt))
+    /** run() continuously emits SensorReadings by emitting them through the SourceContext. */
+    // run()函数连续的发送SensorReading数据，使用SourceContext
+    // 需要override
+    override def run(srcCtx: SourceContext[String]): Unit = {
+
+      // emit data until being canceled
+      // 无限循环，产生数据流
+
+        import scala.io.Source
+
+        val filename = getClass.getResource("/pvlocation.csv").getPath
+        for (line <- Source.fromFile(filename).getLines) {
+          srcCtx.collect(line)
+          Thread.sleep(10)
+        }
+
+        // wait for 100 ms
+
     }
+
+    /** Cancels this SourceFunction. */
+    // override cancel函数
+    override def cancel(): Unit = {
+      running = false
+    }
+
   }
 }
