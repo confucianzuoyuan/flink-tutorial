@@ -609,6 +609,19 @@ object HotItems {
 
 实际生产环境中，我们的数据流往往是从Kafka获取到的。如果要让代码更贴近生产实际，我们只需将source更换为Kafka即可：
 
+*注意：这里Kafka的版本要用最新版的！*
+
+Kafka依赖添加：
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-connector-kafka_${scala.binary.version}</artifactId>
+    <version>${flink.version}</version>
+</dependency>
+----
+
 [source,scala]
 ----
 val properties = new Properties()

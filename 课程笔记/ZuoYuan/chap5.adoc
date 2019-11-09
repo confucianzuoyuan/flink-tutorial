@@ -110,7 +110,7 @@ val minTempPerWindow: DataStream[(String, Double)] = sensorData
   // 按照传感器id分流
   .keyBy(_._1)
   .timeWindow(Time.seconds(15))
-  .reduce((r1, r2) => (r1._1, r1._2.min(r2._2))
+  .reduce((r1, r2) => (r1._1, r1._2.min(r2._2)))
 ----
 
 时间间隔可以通过Time.milliseconds(x)，Time.seconds(x)，Time.minutes(x)等其中的一个来指定。
@@ -128,7 +128,7 @@ val minTempPerWindow: DataStream[(String, Double)] = sensorData
   // 按照传感器id分流
   .keyBy(_._1)
   .timeWindow(Time.seconds(15), Time.seconds(5))
-  .reduce((r1, r2) => (r1._1, r1._2.min(r2._2))
+  .reduce((r1, r2) => (r1._1, r1._2.min(r2._2)))
 ----
 
 时间间隔可以通过Time.milliseconds(x)，Time.seconds(x)，Time.minutes(x)等其中的一个来指定。
