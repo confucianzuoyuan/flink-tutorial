@@ -4118,7 +4118,7 @@ OutputSelector[IN]
   <span class="tok-c1">// 按照传感器id分流</span>
   <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">)</span>
   <span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">15</span><span class="tok-o">))</span>
-  <span class="tok-o">.</span><span class="tok-n">reduce</span><span class="tok-o">((</span><span class="tok-n">r1</span><span class="tok-o">,</span> <span class="tok-n">r2</span><span class="tok-o">)</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span><span class="tok-n">r1</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-n">r1</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">.</span><span class="tok-n">min</span><span class="tok-o">(</span><span class="tok-n">r2</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">))</span></code></pre>
+  <span class="tok-o">.</span><span class="tok-n">reduce</span><span class="tok-o">((</span><span class="tok-n">r1</span><span class="tok-o">,</span> <span class="tok-n">r2</span><span class="tok-o">)</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span><span class="tok-n">r1</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-n">r1</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">.</span><span class="tok-n">min</span><span class="tok-o">(</span><span class="tok-n">r2</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">)))</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4140,7 +4140,7 @@ OutputSelector[IN]
   <span class="tok-c1">// 按照传感器id分流</span>
   <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">)</span>
   <span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">15</span><span class="tok-o">),</span> <span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">5</span><span class="tok-o">))</span>
-  <span class="tok-o">.</span><span class="tok-n">reduce</span><span class="tok-o">((</span><span class="tok-n">r1</span><span class="tok-o">,</span> <span class="tok-n">r2</span><span class="tok-o">)</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span><span class="tok-n">r1</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-n">r1</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">.</span><span class="tok-n">min</span><span class="tok-o">(</span><span class="tok-n">r2</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">))</span></code></pre>
+  <span class="tok-o">.</span><span class="tok-n">reduce</span><span class="tok-o">((</span><span class="tok-n">r1</span><span class="tok-o">,</span> <span class="tok-n">r2</span><span class="tok-o">)</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span><span class="tok-n">r1</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-n">r1</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">.</span><span class="tok-n">min</span><span class="tok-o">(</span><span class="tok-n">r2</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">)))</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -8252,6 +8252,21 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <div class="paragraph">
 <p>实际生产环境中，我们的数据流往往是从Kafka获取到的。如果要让代码更贴近生产实际，我们只需将source更换为Kafka即可：</p>
 </div>
+<div class="paragraph">
+<p><strong>注意：这里Kafka的版本要用最新版的！</strong></p>
+</div>
+<div class="paragraph">
+<p>Kafka依赖添加：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="xml"><span></span><span class="tok-nt">&lt;dependency&gt;</span>
+    <span class="tok-nt">&lt;groupId&gt;</span>org.apache.flink<span class="tok-nt">&lt;/groupId&gt;</span>
+    <span class="tok-nt">&lt;artifactId&gt;</span>flink-connector-kafka_${scala.binary.version}<span class="tok-nt">&lt;/artifactId&gt;</span>
+    <span class="tok-nt">&lt;version&gt;</span>${flink.version}<span class="tok-nt">&lt;/version&gt;</span>
+<span class="tok-nt">&lt;/dependency&gt;</span></code></pre>
+</div>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">properties</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">Properties</span><span class="tok-o">()</span>
@@ -9672,7 +9687,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2019-08-20 19:19:44 +0800
+Last updated 2019-09-04 15:05:37 +0800
 </div>
 </div>
 <style>
