@@ -644,6 +644,17 @@ val stream = env
 
 kafka生产者程序
 
+添加依赖
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.apache.kafka</groupId>
+    <artifactId>kafka_2.11</artifactId>
+    <version>2.2.0</version>
+</dependency>
+----
+
 [source,scala]
 ----
 import java.util.Properties
