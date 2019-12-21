@@ -4222,7 +4222,7 @@ OutputSelector[IN]
 </div>
 </div>
 <div class="paragraph">
-<p>当Flink接收到每一条数据时，都会产生一条Watermark，这条Watermark就等于当前所有到达数据中的maxEventTime - 延迟时长，也就是说，Watermark是由数据携带的，一旦数据携带的Watermark比当前未触发的窗口的停止时间要晚，那么就会触发相应窗口的执行。由于Watermark是由数据携带的，因此，如果运行过程中无法获取新的数据，那么没有被触发的窗口将永远都不被触发。</p>
+<p>Watermark就等于当前所有到达数据中的maxEventTime - 延迟时长，也就是说，Watermark是由数据携带的，一旦数据携带的Watermark比当前未触发的窗口的停止时间要晚，那么就会触发相应窗口的执行。由于Watermark是由数据携带的，因此，如果运行过程中无法获取新的数据，那么没有被触发的窗口将永远都不被触发。</p>
 </div>
 <div class="paragraph">
 <p>上图中，我们设置的允许最大延迟到达时间为2s，所以时间戳为7s的事件对应的Watermark是5s，时间戳为12s的事件的Watermark是10s，如果我们的窗口1是1s～5s，窗口2是6s～10s，那么时间戳为7s的事件到达时的Watermarker恰好触发窗口1，时间戳为12s的事件到达时的Watermark恰好触发窗口2。</p>
@@ -4652,7 +4652,7 @@ OutputSelector[IN]
 
     <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">timerTimestamp</span> <span class="tok-o">&gt;</span> <span class="tok-n">curTimerTimestamp</span><span class="tok-o">)</span> <span class="tok-o">{</span>
       <span class="tok-c1">// remove current timer and register new timer</span>
-      <span class="tok-n">ctx</span><span class="tok-o">.</span><span class="tok-n">timerService</span><span class="tok-o">().</span><span class="tok-n">deleteEventTimeTimer</span><span class="tok-o">(</span><span class="tok-n">curTimerTimestamp</span><span class="tok-o">)</span>
+      <span class="tok-n">ctx</span><span class="tok-o">.</span><span class="tok-n">timerService</span><span class="tok-o">().</span><span class="tok-n">deleteProcessingTimeTimer</span><span class="tok-o">(</span><span class="tok-n">curTimerTimestamp</span><span class="tok-o">)</span>
       <span class="tok-n">ctx</span><span class="tok-o">.</span><span class="tok-n">timerService</span><span class="tok-o">().</span><span class="tok-n">registerProcessingTimeTimer</span><span class="tok-o">(</span><span class="tok-n">timerTimestamp</span><span class="tok-o">)</span>
       <span class="tok-n">disableTimer</span><span class="tok-o">.</span><span class="tok-n">update</span><span class="tok-o">(</span><span class="tok-n">timerTimestamp</span><span class="tok-o">)</span>
     <span class="tok-o">}</span>
@@ -8290,6 +8290,18 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 <div class="paragraph">
 <p>kafka生产者程序</p>
+</div>
+<div class="paragraph">
+<p>添加依赖</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="xml"><span></span><span class="tok-nt">&lt;dependency&gt;</span>
+    <span class="tok-nt">&lt;groupId&gt;</span>org.apache.kafka<span class="tok-nt">&lt;/groupId&gt;</span>
+    <span class="tok-nt">&lt;artifactId&gt;</span>kafka_2.11<span class="tok-nt">&lt;/artifactId&gt;</span>
+    <span class="tok-nt">&lt;version&gt;</span>2.2.0<span class="tok-nt">&lt;/version&gt;</span>
+<span class="tok-nt">&lt;/dependency&gt;</span></code></pre>
+</div>
 </div>
 <div class="listingblock">
 <div class="content">

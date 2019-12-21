@@ -40,7 +40,7 @@ image::inorderdata.png[]
 
 image::outorderdata.png[]
 
-当Flink接收到每一条数据时，都会产生一条Watermark，这条Watermark就等于当前所有到达数据中的maxEventTime - 延迟时长，也就是说，Watermark是由数据携带的，一旦数据携带的Watermark比当前未触发的窗口的停止时间要晚，那么就会触发相应窗口的执行。由于Watermark是由数据携带的，因此，如果运行过程中无法获取新的数据，那么没有被触发的窗口将永远都不被触发。
+Watermark就等于当前所有到达数据中的maxEventTime - 延迟时长，也就是说，Watermark是由数据携带的，一旦数据携带的Watermark比当前未触发的窗口的停止时间要晚，那么就会触发相应窗口的执行。由于Watermark是由数据携带的，因此，如果运行过程中无法获取新的数据，那么没有被触发的窗口将永远都不被触发。
 
 上图中，我们设置的允许最大延迟到达时间为2s，所以时间戳为7s的事件对应的Watermark是5s，时间戳为12s的事件的Watermark是10s，如果我们的窗口1是1s～5s，窗口2是6s～10s，那么时间戳为7s的事件到达时的Watermarker恰好触发窗口1，时间戳为12s的事件到达时的Watermark恰好触发窗口2。
  
@@ -372,7 +372,7 @@ class ReadingFilter extends CoProcessFunction[SensorReading, (String, Long), Sen
 
     if (timerTimestamp > curTimerTimestamp) {
       // remove current timer and register new timer
-      ctx.timerService().deleteEventTimeTimer(curTimerTimestamp)
+      ctx.timerService().deleteProcessingTimeTimer(curTimerTimestamp)
       ctx.timerService().registerProcessingTimeTimer(timerTimestamp)
       disableTimer.update(timerTimestamp)
     }
