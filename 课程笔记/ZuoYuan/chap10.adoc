@@ -915,11 +915,6 @@ object UvWithBloomFilter {
                            timestamp: Long,
                            window: TimeWindow,
                            ctx: TriggerContext): TriggerResult = {
-//      if (timestamp >= window.getEnd) {
-//        val jedis = new Jedis("localhost", 6379)
-//        val count = jedis.hget("UvCountHashTable", window.getEnd.toString).toLong
-//        println(count, window.getEnd.toString)
-//      }
       TriggerResult.FIRE_AND_PURGE
     }
   }

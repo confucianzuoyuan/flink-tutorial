@@ -8606,11 +8606,6 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
                            <span class="tok-n">timestamp</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span>
                            <span class="tok-n">window</span><span class="tok-k">:</span> <span class="tok-kt">TimeWindow</span><span class="tok-o">,</span>
                            <span class="tok-n">ctx</span><span class="tok-k">:</span> <span class="tok-kt">TriggerContext</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">TriggerResult</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-<span class="tok-c1">//      if (timestamp &gt;= window.getEnd) {</span>
-<span class="tok-c1">//        val jedis = new Jedis(&quot;localhost&quot;, 6379)</span>
-<span class="tok-c1">//        val count = jedis.hget(&quot;UvCountHashTable&quot;, window.getEnd.toString).toLong</span>
-<span class="tok-c1">//        println(count, window.getEnd.toString)</span>
-<span class="tok-c1">//      }</span>
       <span class="tok-nc">TriggerResult</span><span class="tok-o">.</span><span class="tok-nc">FIRE_AND_PURGE</span>
     <span class="tok-o">}</span>
   <span class="tok-o">}</span>
