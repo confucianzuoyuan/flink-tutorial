@@ -608,11 +608,15 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_状态后端state_backends">5.9.3. 状态后端（State Backends）</a></li>
 <li><a href="#_调整有状态算子的并行度">5.9.4. 调整有状态算子的并行度</a></li>
-<li><a href="#_一致的检查点checkpoints">5.9.5. 一致的检查点（Checkpoints）</a></li>
-<li><a href="#_从一致检查点中恢复状态">5.9.6. 从一致检查点中恢复状态</a></li>
-<li><a href="#_flink的检查点算法">5.9.7. Flink的检查点算法</a></li>
-<li><a href="#_检查点的性能影响">5.9.8. 检查点的性能影响</a></li>
-<li><a href="#_保存点savepoints">5.9.9. 保存点（Savepoints）</a>
+</ul>
+</li>
+<li><a href="#_检查点保存点和状态恢复">5.10. 检查点，保存点和状态恢复</a>
+<ul class="sectlevel3">
+<li><a href="#_一致的检查点checkpoints">5.10.1. 一致的检查点（Checkpoints）</a></li>
+<li><a href="#_从一致检查点中恢复状态">5.10.2. 从一致检查点中恢复状态</a></li>
+<li><a href="#_flink的检查点算法">5.10.3. Flink的检查点算法</a></li>
+<li><a href="#_检查点的性能影响">5.10.4. 检查点的性能影响</a></li>
+<li><a href="#_保存点savepoints">5.10.5. 保存点（Savepoints）</a>
 <ul class="sectlevel4">
 <li><a href="#_使用保存点">使用保存点</a></li>
 <li><a href="#_从保存点启动应用程序">从保存点启动应用程序</a></li>
@@ -836,10 +840,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_代码实现">12.3.2. 代码实现</a></li>
 </ul>
 </li>
-<li><a href="#_恶意登录监控">12.4. 恶意登录监控</a>
+<li><a href="#_uv统计的布隆过滤器实现">12.4. Uv统计的布隆过滤器实现</a></li>
+<li><a href="#_app分渠道数据统计">12.5. APP分渠道数据统计</a></li>
+<li><a href="#_恶意登录监控">12.6. 恶意登录监控</a>
 <ul class="sectlevel3">
-<li><a href="#_模块创建和数据准备_2">12.4.1. 模块创建和数据准备</a></li>
-<li><a href="#_代码实现_2">12.4.2. 代码实现</a>
+<li><a href="#_模块创建和数据准备_2">12.6.1. 模块创建和数据准备</a></li>
+<li><a href="#_代码实现_2">12.6.2. 代码实现</a>
 <ul class="sectlevel4">
 <li><a href="#_状态编程">状态编程</a></li>
 <li><a href="#_cep编程">CEP编程</a></li>
@@ -847,14 +853,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
-<li><a href="#_订单支付实时监控">12.5. 订单支付实时监控</a>
+<li><a href="#_订单支付实时监控">12.7. 订单支付实时监控</a>
 <ul class="sectlevel3">
-<li><a href="#_模块创建和数据准备_3">12.5.1. 模块创建和数据准备</a></li>
-<li><a href="#_代码实现_3">12.5.2. 代码实现</a></li>
-<li><a href="#_使用process_function实现订单超时需求">12.5.3. 使用Process Function实现订单超时需求</a></li>
+<li><a href="#_模块创建和数据准备_3">12.7.1. 模块创建和数据准备</a></li>
+<li><a href="#_代码实现_3">12.7.2. 代码实现</a></li>
+<li><a href="#_使用process_function实现订单超时需求">12.7.3. 使用Process Function实现订单超时需求</a></li>
 </ul>
 </li>
-<li><a href="#_实现两条流的join">12.6. 实现两条流的join</a></li>
+<li><a href="#_实现两条流的join">12.8. 实现两条流的join</a></li>
 </ul>
 </li>
 <li><a href="#_dataflow模型">13. Dataflow模型</a>
@@ -2758,18 +2764,18 @@ Flink限制通过DataStream API访问时间戳和watermark。函数不能读取�
 <img src="images/spaf_0316.png" alt="spaf 0316">
 </div>
 </div>
-<div class="paragraph">
-<p>\section{检查点，保存点和状态恢复}</p>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_检查点保存点和状态恢复">5.10. 检查点，保存点和状态恢复</h3>
 <div class="paragraph">
 <p>Flink是一个分布式数据处理系统，因此必须有一套机制处理各种故障，比如被杀掉的进程，故障的机器和中断的网络连接。任务都是在本地维护状态的，所以Flink必须确保状态不会丢失，并且在发生故障时能够保持一致。</p>
 </div>
 <div class="paragraph">
 <p>在本节中，我们将介绍Flink的检查点（checkpoint）和恢复机制，这保证了“精确一次”（exactly-once）的状态一致性。我们还会讨论Flink独特的保存点（savepoint）功能，这是一个“瑞士军刀”式的工具，可以解决许多操作数据流时面对的问题。</p>
 </div>
-</div>
 <div class="sect3">
-<h4 id="_一致的检查点checkpoints">5.9.5. 一致的检查点（Checkpoints）</h4>
+<h4 id="_一致的检查点checkpoints">5.10.1. 一致的检查点（Checkpoints）</h4>
 <div class="paragraph">
 <p>Flink的恢复机制的核心，就是应用状态的一致检查点。有状态流应用的一致检查点，其实就是所有任务状态在某个时间点的一份拷贝，而这个时间点应该是所有任务都恰好处理完一个相同的输入数据的时候。这个过程可以通过一致检查点的一个简单算法步骤来解释。这个算法的步骤是：</p>
 </div>
@@ -2805,7 +2811,7 @@ Flink限制通过DataStream API访问时间戳和watermark。函数不能读取�
 </div>
 </div>
 <div class="sect3">
-<h4 id="_从一致检查点中恢复状态">5.9.6. 从一致检查点中恢复状态</h4>
+<h4 id="_从一致检查点中恢复状态">5.10.2. 从一致检查点中恢复状态</h4>
 <div class="paragraph">
 <p>在执行流应用程序期间，Flink会定期检查状态的一致检查点。如果发生故障，Flink将会使用最近的检查点来一致恢复应用程序的状态，并重新启动处理流程。图3-18显示了恢复过程。</p>
 </div>
@@ -2841,7 +2847,7 @@ Flink限制通过DataStream API访问时间戳和watermark。函数不能读取�
 </div>
 </div>
 <div class="sect3">
-<h4 id="_flink的检查点算法">5.9.7. Flink的检查点算法</h4>
+<h4 id="_flink的检查点算法">5.10.3. Flink的检查点算法</h4>
 <div class="paragraph">
 <p>Flink的恢复机制，基于它的一致性检查点。前面我们已经了解了从流应用中创建检查点的简单方法——先暂停应用，保存检查点，然后再恢复应用程序，这种方法很好理解，但它的理念是“停止一切”，这对于即使是中等延迟要求的应用程序而言也是不实用的。所以Flink没有这么简单粗暴，而是基于Chandy-Lamport算法实现了分布式快照的检查点保存。该算法并不会暂停整个应用程序，而是将检查点的保存与数据处理分离，这样就可以实现在其它任务做检查点状态保存状态时，让某些任务继续进行而不受影响。接下来我们将解释此算法的工作原理。</p>
 </div>
@@ -2906,7 +2912,7 @@ Flink限制通过DataStream API访问时间戳和watermark。函数不能读取�
 </div>
 </div>
 <div class="sect3">
-<h4 id="_检查点的性能影响">5.9.8. 检查点的性能影响</h4>
+<h4 id="_检查点的性能影响">5.10.4. 检查点的性能影响</h4>
 <div class="paragraph">
 <p>Flink的检查点算法可以在不停止整个应用程序的情况下，生成一致的分布式检查点。但是，它可能会增加应用程序的处理延迟。Flink对此有一些调整措施，可以在某些场景下显得对性能的影响没那么大。</p>
 </div>
@@ -2918,7 +2924,7 @@ Flink限制通过DataStream API访问时间戳和watermark。函数不能读取�
 </div>
 </div>
 <div class="sect3">
-<h4 id="_保存点savepoints">5.9.9. 保存点（Savepoints）</h4>
+<h4 id="_保存点savepoints">5.10.5. 保存点（Savepoints）</h4>
 <div class="paragraph">
 <p>Flink的恢复算法是基于状态检查点的。Flink根据可配置的策略，定期保存并自动丢弃检查点。检查点的目的是确保在发生故障时可以重新启动应用程序，所以当应用程序被显式地撤销（cancel）时，检查点会被删除掉。除此之外，应用程序状态的一致性快照还可用于除故障恢复之外的更多功能。</p>
 </div>
@@ -8505,7 +8511,211 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_恶意登录监控">12.4. 恶意登录监控</h3>
+<h3 id="_uv统计的布隆过滤器实现">12.4. Uv统计的布隆过滤器实现</h3>
+<div class="paragraph">
+<p>完整代码如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">package</span> <span class="tok-nn">com.atguigu</span>
+
+<span class="tok-k">import</span> <span class="tok-nn">com.atguigu.UserBehavior.UserAction</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.TimeCharacteristic</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala._</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala.function.ProcessWindowFunction</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.windowing.time.Time</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.windowing.triggers.</span><span class="tok-o">{</span><span class="tok-nc">Trigger</span><span class="tok-o">,</span> <span class="tok-nc">TriggerResult</span><span class="tok-o">}</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.windowing.triggers.Trigger.TriggerContext</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.windowing.windows.TimeWindow</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.util.Collector</span>
+<span class="tok-k">import</span> <span class="tok-nn">redis.clients.jedis.Jedis</span>
+
+<span class="tok-k">object</span> <span class="tok-nc">UvWithBloomFilter</span> <span class="tok-o">{</span>
+  <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
+    <span class="tok-k">val</span> <span class="tok-n">stream</span> <span class="tok-k">=</span> <span class="tok-n">env</span>
+      <span class="tok-o">.</span><span class="tok-n">readTextFile</span><span class="tok-o">(</span><span class="tok-s">&quot;/Users/yuanzuo/Desktop/Flink0715Tutorial/src/main/resources/UserBehavior.csv&quot;</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">line</span> <span class="tok-k">=&gt;</span> <span class="tok-o">{</span>
+        <span class="tok-k">val</span> <span class="tok-n">arr</span> <span class="tok-k">=</span> <span class="tok-n">line</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot;,&quot;</span><span class="tok-o">)</span>
+        <span class="tok-nc">UserAction</span><span class="tok-o">(</span><span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">),</span> <span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">),</span> <span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">2</span><span class="tok-o">),</span> <span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">3</span><span class="tok-o">),</span> <span class="tok-n">arr</span><span class="tok-o">(</span><span class="tok-mi">4</span><span class="tok-o">).</span><span class="tok-n">toLong</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span><span class="tok-o">)</span>
+      <span class="tok-o">})</span>
+      <span class="tok-o">.</span><span class="tok-n">assignAscendingTimestamps</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">ts</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">behavior</span> <span class="tok-o">==</span> <span class="tok-s">&quot;pv&quot;</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">r</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span><span class="tok-s">&quot;dummyKey&quot;</span><span class="tok-o">,</span> <span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">userId</span><span class="tok-o">))</span>
+      <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">minutes</span><span class="tok-o">(</span><span class="tok-mi">60</span><span class="tok-o">),</span> <span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">minutes</span><span class="tok-o">(</span><span class="tok-mi">5</span><span class="tok-o">))</span>
+      <span class="tok-o">.</span><span class="tok-n">trigger</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">MyTrigger123</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">process</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">MyProcess</span><span class="tok-o">)</span>
+
+    <span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">()</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span><span class="tok-o">()</span>
+  <span class="tok-o">}</span>
+
+  <span class="tok-k">class</span> <span class="tok-nc">MyProcess</span> <span class="tok-k">extends</span> <span class="tok-nc">ProcessWindowFunction</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">String</span><span class="tok-o">)</span>, <span class="tok-o">(</span><span class="tok-kt">Long</span>, <span class="tok-kt">Long</span><span class="tok-o">)</span>, <span class="tok-kt">String</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+    <span class="tok-k">lazy</span> <span class="tok-k">val</span> <span class="tok-n">jedis</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">Jedis</span><span class="tok-o">(</span><span class="tok-s">&quot;localhost&quot;</span><span class="tok-o">,</span> <span class="tok-mi">6379</span><span class="tok-o">)</span>
+    <span class="tok-k">lazy</span> <span class="tok-k">val</span> <span class="tok-n">bloom</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">Bloom</span><span class="tok-o">(</span><span class="tok-mi">1</span> <span class="tok-o">&lt;&lt;</span> <span class="tok-mi">29</span><span class="tok-o">)</span>
+
+    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">process</span><span class="tok-o">(</span><span class="tok-n">key</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span>
+                         <span class="tok-n">context</span><span class="tok-k">:</span> <span class="tok-kt">Context</span><span class="tok-o">,</span>
+                         <span class="tok-n">vals</span><span class="tok-k">:</span> <span class="tok-kt">Iterable</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">String</span><span class="tok-o">)],</span>
+                         <span class="tok-n">out</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[(</span><span class="tok-kt">Long</span>, <span class="tok-kt">Long</span><span class="tok-o">)])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+      <span class="tok-k">val</span> <span class="tok-n">storeKey</span> <span class="tok-k">=</span> <span class="tok-n">context</span><span class="tok-o">.</span><span class="tok-n">window</span><span class="tok-o">.</span><span class="tok-n">getEnd</span><span class="tok-o">.</span><span class="tok-n">toString</span>
+      <span class="tok-k">var</span> <span class="tok-n">count</span> <span class="tok-k">=</span> <span class="tok-mi">0L</span>
+
+      <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">jedis</span><span class="tok-o">.</span><span class="tok-n">hget</span><span class="tok-o">(</span><span class="tok-s">&quot;UvCountHashTable&quot;</span><span class="tok-o">,</span> <span class="tok-n">storeKey</span><span class="tok-o">)</span> <span class="tok-o">!=</span> <span class="tok-kc">null</span><span class="tok-o">)</span> <span class="tok-o">{</span>
+        <span class="tok-n">count</span> <span class="tok-k">=</span> <span class="tok-n">jedis</span><span class="tok-o">.</span><span class="tok-n">hget</span><span class="tok-o">(</span><span class="tok-s">&quot;UvCountHashTable&quot;</span><span class="tok-o">,</span> <span class="tok-n">storeKey</span><span class="tok-o">).</span><span class="tok-n">toLong</span>
+      <span class="tok-o">}</span>
+
+      <span class="tok-k">val</span> <span class="tok-n">userId</span> <span class="tok-k">=</span> <span class="tok-n">vals</span><span class="tok-o">.</span><span class="tok-n">last</span><span class="tok-o">.</span><span class="tok-n">_2</span>
+      <span class="tok-k">val</span> <span class="tok-n">offset</span> <span class="tok-k">=</span> <span class="tok-n">bloom</span><span class="tok-o">.</span><span class="tok-n">hash</span><span class="tok-o">(</span><span class="tok-n">userId</span><span class="tok-o">,</span> <span class="tok-mi">61</span><span class="tok-o">)</span>
+
+      <span class="tok-k">val</span> <span class="tok-n">isExist</span> <span class="tok-k">=</span> <span class="tok-n">jedis</span><span class="tok-o">.</span><span class="tok-n">getbit</span><span class="tok-o">(</span><span class="tok-n">storeKey</span><span class="tok-o">,</span> <span class="tok-n">offset</span><span class="tok-o">)</span>
+      <span class="tok-k">if</span> <span class="tok-o">(!</span><span class="tok-n">isExist</span><span class="tok-o">)</span> <span class="tok-o">{</span>
+        <span class="tok-n">jedis</span><span class="tok-o">.</span><span class="tok-n">setbit</span><span class="tok-o">(</span><span class="tok-n">storeKey</span><span class="tok-o">,</span> <span class="tok-n">offset</span><span class="tok-o">,</span> <span class="tok-kc">true</span><span class="tok-o">)</span>
+        <span class="tok-n">jedis</span><span class="tok-o">.</span><span class="tok-n">hset</span><span class="tok-o">(</span><span class="tok-s">&quot;UvCountHashTable&quot;</span><span class="tok-o">,</span> <span class="tok-n">storeKey</span><span class="tok-o">,</span> <span class="tok-o">(</span><span class="tok-n">count</span> <span class="tok-o">+</span> <span class="tok-mi">1</span><span class="tok-o">).</span><span class="tok-n">toString</span><span class="tok-o">)</span>
+      <span class="tok-o">}</span>
+
+
+
+<span class="tok-c1">//      out.collect((count, storeKey.toLong))</span>
+
+    <span class="tok-o">}</span>
+  <span class="tok-o">}</span>
+
+  <span class="tok-k">class</span> <span class="tok-nc">MyTrigger123</span> <span class="tok-k">extends</span> <span class="tok-nc">Trigger</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">String</span><span class="tok-o">)</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">onEventTime</span><span class="tok-o">(</span><span class="tok-n">time</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span>
+                             <span class="tok-n">window</span><span class="tok-k">:</span> <span class="tok-kt">TimeWindow</span><span class="tok-o">,</span>
+                             <span class="tok-n">ctx</span><span class="tok-k">:</span> <span class="tok-kt">TriggerContext</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">TriggerResult</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+      <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">ctx</span><span class="tok-o">.</span><span class="tok-n">getCurrentWatermark</span> <span class="tok-o">&gt;=</span> <span class="tok-n">window</span><span class="tok-o">.</span><span class="tok-n">getEnd</span><span class="tok-o">)</span> <span class="tok-o">{</span>
+        <span class="tok-k">val</span> <span class="tok-n">jedis</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">Jedis</span><span class="tok-o">(</span><span class="tok-s">&quot;localhost&quot;</span><span class="tok-o">,</span> <span class="tok-mi">6379</span><span class="tok-o">)</span>
+        <span class="tok-k">val</span> <span class="tok-n">key</span> <span class="tok-k">=</span> <span class="tok-n">window</span><span class="tok-o">.</span><span class="tok-n">getEnd</span><span class="tok-o">.</span><span class="tok-n">toString</span>
+        <span class="tok-nc">TriggerResult</span><span class="tok-o">.</span><span class="tok-nc">FIRE_AND_PURGE</span>
+        <span class="tok-n">println</span><span class="tok-o">(</span><span class="tok-n">key</span><span class="tok-o">,</span> <span class="tok-n">jedis</span><span class="tok-o">.</span><span class="tok-n">hget</span><span class="tok-o">(</span><span class="tok-s">&quot;UvCountHashTable&quot;</span><span class="tok-o">,</span> <span class="tok-n">key</span><span class="tok-o">))</span>
+      <span class="tok-o">}</span>
+      <span class="tok-nc">TriggerResult</span><span class="tok-o">.</span><span class="tok-nc">CONTINUE</span>
+    <span class="tok-o">}</span>
+    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">onProcessingTime</span><span class="tok-o">(</span><span class="tok-n">time</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span>
+                                  <span class="tok-n">window</span><span class="tok-k">:</span> <span class="tok-kt">TimeWindow</span><span class="tok-o">,</span>
+                                  <span class="tok-n">ctx</span><span class="tok-k">:</span> <span class="tok-kt">TriggerContext</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">TriggerResult</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+      <span class="tok-nc">TriggerResult</span><span class="tok-o">.</span><span class="tok-nc">CONTINUE</span>
+    <span class="tok-o">}</span>
+    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">clear</span><span class="tok-o">(</span><span class="tok-n">window</span><span class="tok-k">:</span> <span class="tok-kt">TimeWindow</span><span class="tok-o">,</span> <span class="tok-n">ctx</span><span class="tok-k">:</span> <span class="tok-kt">Trigger.TriggerContext</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{}</span>
+    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">onElement</span><span class="tok-o">(</span><span class="tok-n">element</span><span class="tok-k">:</span> <span class="tok-o">(</span><span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-kt">String</span><span class="tok-o">),</span>
+                           <span class="tok-n">timestamp</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span>
+                           <span class="tok-n">window</span><span class="tok-k">:</span> <span class="tok-kt">TimeWindow</span><span class="tok-o">,</span>
+                           <span class="tok-n">ctx</span><span class="tok-k">:</span> <span class="tok-kt">TriggerContext</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">TriggerResult</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+<span class="tok-c1">//      if (timestamp &gt;= window.getEnd) {</span>
+<span class="tok-c1">//        val jedis = new Jedis(&quot;localhost&quot;, 6379)</span>
+<span class="tok-c1">//        val count = jedis.hget(&quot;UvCountHashTable&quot;, window.getEnd.toString).toLong</span>
+<span class="tok-c1">//        println(count, window.getEnd.toString)</span>
+<span class="tok-c1">//      }</span>
+      <span class="tok-nc">TriggerResult</span><span class="tok-o">.</span><span class="tok-nc">FIRE_AND_PURGE</span>
+    <span class="tok-o">}</span>
+  <span class="tok-o">}</span>
+
+  <span class="tok-k">class</span> <span class="tok-nc">Bloom</span><span class="tok-o">(</span><span class="tok-n">size</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span> <span class="tok-k">extends</span> <span class="tok-nc">Serializable</span> <span class="tok-o">{</span>
+    <span class="tok-k">private</span> <span class="tok-k">val</span> <span class="tok-n">cap</span> <span class="tok-k">=</span> <span class="tok-n">size</span>
+
+    <span class="tok-k">def</span> <span class="tok-n">hash</span><span class="tok-o">(</span><span class="tok-n">value</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">seed</span><span class="tok-k">:</span> <span class="tok-kt">Int</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+      <span class="tok-k">var</span> <span class="tok-n">result</span> <span class="tok-k">=</span> <span class="tok-mi">0</span>
+      <span class="tok-k">for</span> <span class="tok-o">(</span><span class="tok-n">i</span> <span class="tok-k">&lt;-</span> <span class="tok-mi">0</span> <span class="tok-n">until</span> <span class="tok-n">value</span><span class="tok-o">.</span><span class="tok-n">length</span><span class="tok-o">)</span> <span class="tok-o">{</span>
+        <span class="tok-n">result</span> <span class="tok-k">=</span> <span class="tok-n">result</span> <span class="tok-o">*</span> <span class="tok-n">seed</span> <span class="tok-o">+</span> <span class="tok-n">value</span><span class="tok-o">.</span><span class="tok-n">charAt</span><span class="tok-o">(</span><span class="tok-n">i</span><span class="tok-o">)</span>
+      <span class="tok-o">}</span>
+      <span class="tok-o">(</span><span class="tok-n">cap</span> <span class="tok-o">-</span> <span class="tok-mi">1</span><span class="tok-o">)</span> <span class="tok-o">&amp;</span> <span class="tok-n">result</span>
+    <span class="tok-o">}</span>
+  <span class="tok-o">}</span>
+<span class="tok-o">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_app分渠道数据统计">12.5. APP分渠道数据统计</h3>
+<div class="paragraph">
+<p>完整代码如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">package</span> <span class="tok-nn">com.atguigu</span>
+
+<span class="tok-k">import</span> <span class="tok-nn">java.util.</span><span class="tok-o">{</span><span class="tok-nc">Calendar</span><span class="tok-o">,</span> <span class="tok-nc">UUID</span><span class="tok-o">}</span>
+
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.TimeCharacteristic</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.functions.source.SourceFunction.SourceContext</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala._</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala.function.ProcessWindowFunction</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.windowing.time.Time</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.windowing.windows.TimeWindow</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.util.Collector</span>
+
+<span class="tok-k">import</span> <span class="tok-nn">scala.util.Random</span>
+
+<span class="tok-k">object</span> <span class="tok-nc">AppMarketingByChannel</span> <span class="tok-o">{</span>
+  <span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">MarketingUserBehavior</span><span class="tok-o">(</span><span class="tok-n">userId</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span>
+                                   <span class="tok-n">behavior</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span>
+                                   <span class="tok-n">channel</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span>
+                                   <span class="tok-n">ts</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span>
+
+  <span class="tok-k">class</span> <span class="tok-nc">SimulatedEventSource</span> <span class="tok-k">extends</span> <span class="tok-nc">RichParallelSourceFunction</span><span class="tok-o">[</span><span class="tok-kt">MarketingUserBehavior</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+    <span class="tok-k">var</span> <span class="tok-n">running</span> <span class="tok-k">=</span> <span class="tok-kc">true</span>
+
+    <span class="tok-k">val</span> <span class="tok-n">channelSet</span> <span class="tok-k">=</span> <span class="tok-nc">Seq</span><span class="tok-o">(</span><span class="tok-s">&quot;AppStore&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;XiaomiStore&quot;</span><span class="tok-o">)</span>
+    <span class="tok-k">val</span> <span class="tok-n">behaviorTypes</span> <span class="tok-k">=</span> <span class="tok-nc">Seq</span><span class="tok-o">(</span><span class="tok-s">&quot;BROWSE&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;CLICK&quot;</span><span class="tok-o">)</span>
+    <span class="tok-k">val</span> <span class="tok-n">rand</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">Random</span>
+
+    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">run</span><span class="tok-o">(</span><span class="tok-n">ctx</span><span class="tok-k">:</span> <span class="tok-kt">SourceContext</span><span class="tok-o">[</span><span class="tok-kt">MarketingUserBehavior</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+      <span class="tok-k">while</span> <span class="tok-o">(</span><span class="tok-n">running</span><span class="tok-o">)</span> <span class="tok-o">{</span>
+        <span class="tok-k">val</span> <span class="tok-n">userId</span> <span class="tok-k">=</span> <span class="tok-nc">UUID</span><span class="tok-o">.</span><span class="tok-n">randomUUID</span><span class="tok-o">().</span><span class="tok-n">toString</span>
+        <span class="tok-k">val</span> <span class="tok-n">behaviorType</span> <span class="tok-k">=</span> <span class="tok-n">behaviorTypes</span><span class="tok-o">(</span><span class="tok-n">rand</span><span class="tok-o">.</span><span class="tok-n">nextInt</span><span class="tok-o">(</span><span class="tok-n">behaviorTypes</span><span class="tok-o">.</span><span class="tok-n">size</span><span class="tok-o">))</span>
+        <span class="tok-k">val</span> <span class="tok-n">channel</span> <span class="tok-k">=</span> <span class="tok-n">channelSet</span><span class="tok-o">(</span><span class="tok-n">rand</span><span class="tok-o">.</span><span class="tok-n">nextInt</span><span class="tok-o">(</span><span class="tok-n">channelSet</span><span class="tok-o">.</span><span class="tok-n">size</span><span class="tok-o">))</span>
+        <span class="tok-k">val</span> <span class="tok-n">ts</span> <span class="tok-k">=</span> <span class="tok-nc">Calendar</span><span class="tok-o">.</span><span class="tok-n">getInstance</span><span class="tok-o">().</span><span class="tok-n">getTimeInMillis</span>
+
+        <span class="tok-n">ctx</span><span class="tok-o">.</span><span class="tok-n">collect</span><span class="tok-o">(</span><span class="tok-nc">MarketingUserBehavior</span><span class="tok-o">(</span><span class="tok-n">userId</span><span class="tok-o">,</span> <span class="tok-n">behaviorType</span><span class="tok-o">,</span> <span class="tok-n">channel</span><span class="tok-o">,</span> <span class="tok-n">ts</span><span class="tok-o">))</span>
+
+        <span class="tok-nc">Thread</span><span class="tok-o">.</span><span class="tok-n">sleep</span><span class="tok-o">(</span><span class="tok-mi">10</span><span class="tok-o">)</span>
+      <span class="tok-o">}</span>
+    <span class="tok-o">}</span>
+
+    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">cancel</span><span class="tok-o">()</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-n">running</span> <span class="tok-k">=</span> <span class="tok-kc">false</span>
+  <span class="tok-o">}</span>
+
+  <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
+    <span class="tok-k">val</span> <span class="tok-n">stream</span> <span class="tok-k">=</span> <span class="tok-n">env</span>
+      <span class="tok-o">.</span><span class="tok-n">addSource</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">SimulatedEventSource</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">assignAscendingTimestamps</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">ts</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">behavior</span> <span class="tok-o">!=</span> <span class="tok-s">&quot;UNINSTALL&quot;</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">r</span> <span class="tok-k">=&gt;</span> <span class="tok-o">{</span>
+        <span class="tok-o">((</span><span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">channel</span><span class="tok-o">,</span> <span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">behavior</span><span class="tok-o">),</span> <span class="tok-mi">1L</span><span class="tok-o">)</span>
+      <span class="tok-o">})</span>
+      <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">5</span><span class="tok-o">),</span> <span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">))</span>
+      <span class="tok-o">.</span><span class="tok-n">process</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">MarketingCountByChannel</span><span class="tok-o">)</span>
+    <span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">()</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span><span class="tok-o">()</span>
+  <span class="tok-o">}</span>
+
+  <span class="tok-k">class</span> <span class="tok-nc">MarketingCountByChannel</span> <span class="tok-k">extends</span> <span class="tok-nc">ProcessWindowFunction</span><span class="tok-o">[((</span><span class="tok-kt">String</span>, <span class="tok-kt">String</span><span class="tok-o">)</span>, <span class="tok-kt">Long</span><span class="tok-o">)</span>,<span class="tok-o">(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Long</span><span class="tok-o">)</span>, <span class="tok-o">(</span><span class="tok-kt">String</span>, <span class="tok-kt">String</span><span class="tok-o">)</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">process</span><span class="tok-o">(</span><span class="tok-n">key</span><span class="tok-k">:</span>  <span class="tok-o">(</span><span class="tok-kt">String</span><span class="tok-o">,</span><span class="tok-kt">String</span><span class="tok-o">),</span>
+                         <span class="tok-n">context</span><span class="tok-k">:</span> <span class="tok-kt">Context</span><span class="tok-o">,</span>
+                         <span class="tok-n">elements</span><span class="tok-k">:</span> <span class="tok-kt">Iterable</span><span class="tok-o">[((</span><span class="tok-kt">String</span>, <span class="tok-kt">String</span><span class="tok-o">)</span>, <span class="tok-kt">Long</span><span class="tok-o">)],</span>
+                         <span class="tok-n">out</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Long</span><span class="tok-o">)])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+<span class="tok-c1">//      val t = (&quot;a&quot;,)</span>
+
+      <span class="tok-n">out</span><span class="tok-o">.</span><span class="tok-n">collect</span><span class="tok-o">((</span><span class="tok-n">key</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-n">elements</span><span class="tok-o">.</span><span class="tok-n">size</span><span class="tok-o">,</span> <span class="tok-n">context</span><span class="tok-o">.</span><span class="tok-n">window</span><span class="tok-o">.</span><span class="tok-n">getEnd</span><span class="tok-o">))</span>
+
+    <span class="tok-o">}</span>
+  <span class="tok-o">}</span>
+<span class="tok-o">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_恶意登录监控">12.6. 恶意登录监控</h3>
 <div class="ulist">
 <ul>
 <li>
@@ -8537,7 +8747,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </ul>
 </div>
 <div class="sect3">
-<h4 id="_模块创建和数据准备_2">12.4.1. 模块创建和数据准备</h4>
+<h4 id="_模块创建和数据准备_2">12.6.1. 模块创建和数据准备</h4>
 <div class="paragraph">
 <p>继续在UserBehaviorAnalysis下新建一个maven module作为子项目，命名为LoginFailDetect。在这个子模块中，我们将会用到flink的CEP库来实现事件流的模式匹配，所以需要在pom文件中引入CEP的相关依赖：</p>
 </div>
@@ -8560,7 +8770,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_代码实现_2">12.4.2. 代码实现</h4>
+<h4 id="_代码实现_2">12.6.2. 代码实现</h4>
 <div class="paragraph">
 <p>对于网站而言，用户登录并不是频繁的业务操作。如果一个用户短时间内频繁登录失败，就有可能是出现了程序的恶意攻击，比如密码暴力破解。因此我们考虑，应该对用户的登录失败动作进行统计，具体来说，如果同一用户（可以是不同IP）在2秒之内连续两次登录失败，就认为存在恶意登录的风险，输出相关的信息进行报警提示。这是电商网站、也是几乎所有网站风控的基本一环。</p>
 </div>
@@ -8701,7 +8911,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_订单支付实时监控">12.5. 订单支付实时监控</h3>
+<h3 id="_订单支付实时监控">12.7. 订单支付实时监控</h3>
 <div class="ulist">
 <ul>
 <li>
@@ -8730,7 +8940,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </ul>
 </div>
 <div class="sect3">
-<h4 id="_模块创建和数据准备_3">12.5.1. 模块创建和数据准备</h4>
+<h4 id="_模块创建和数据准备_3">12.7.1. 模块创建和数据准备</h4>
 <div class="paragraph">
 <p>同样地，在UserBehaviorAnalysis下新建一个maven module作为子项目，命名为OrderTimeoutDetect。在这个子模块中，我们同样将会用到flink的CEP库来实现事件流的模式匹配，所以需要在pom文件中引入CEP的相关依赖：</p>
 </div>
@@ -8753,7 +8963,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_代码实现_3">12.5.2. 代码实现</h4>
+<h4 id="_代码实现_3">12.7.2. 代码实现</h4>
 <div class="paragraph">
 <p>在电商平台中，最终创造收入和利润的是用户下单购买的环节；更具体一点，是用户真正完成支付动作的时候。用户下单的行为可以表明用户对商品的需求，但在现实中，并不是每次下单都会被用户立刻支付。当拖延一段时间后，用户支付的意愿会降低。所以为了让用户更有紧迫感从而提高支付转化率，同时也为了防范订单支付环节的安全风险，电商网站往往会对订单状态进行监控，设置一个失效时间（比如15分钟），如果下单后一段时间仍未支付，订单就会被取消。</p>
 </div>
@@ -8845,7 +9055,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_使用process_function实现订单超时需求">12.5.3. 使用Process Function实现订单超时需求</h4>
+<h4 id="_使用process_function实现订单超时需求">12.7.3. 使用Process Function实现订单超时需求</h4>
 <div class="listingblock">
 <div class="title">OrderTimeoutWithoutCep.scala</div>
 <div class="content">
@@ -8927,7 +9137,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_实现两条流的join">12.6. 实现两条流的join</h3>
+<h3 id="_实现两条流的join">12.8. 实现两条流的join</h3>
 <div class="imageblock">
 <div class="content">
 <img src="images/twostreamsjoin.png" alt="twostreamsjoin">

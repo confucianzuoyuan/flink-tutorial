@@ -820,6 +820,206 @@ object TrafficAnalysis {
 }
 ----
 
+=== Uv统计的布隆过滤器实现
+
+完整代码如下：
+
+[source, scala]
+----
+package com.atguigu
+
+import com.atguigu.UserBehavior.UserAction
+import org.apache.flink.streaming.api.TimeCharacteristic
+import org.apache.flink.streaming.api.scala._
+import org.apache.flink.streaming.api.scala.function.ProcessWindowFunction
+import org.apache.flink.streaming.api.windowing.time.Time
+import org.apache.flink.streaming.api.windowing.triggers.{Trigger, TriggerResult}
+import org.apache.flink.streaming.api.windowing.triggers.Trigger.TriggerContext
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow
+import org.apache.flink.util.Collector
+import redis.clients.jedis.Jedis
+
+object UvWithBloomFilter {
+  def main(args: Array[String]): Unit = {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setParallelism(1)
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+    val stream = env
+      .readTextFile("/Users/yuanzuo/Desktop/Flink0715Tutorial/src/main/resources/UserBehavior.csv")
+      .map(line => {
+        val arr = line.split(",")
+        UserAction(arr(0), arr(1), arr(2), arr(3), arr(4).toLong * 1000)
+      })
+      .assignAscendingTimestamps(_.ts)
+      .filter(_.behavior == "pv")
+      .map(r => ("dummyKey", r.userId))
+      .keyBy(_._1)
+      .timeWindow(Time.minutes(60), Time.minutes(5))
+      .trigger(new MyTrigger123)
+      .process(new MyProcess)
+
+    stream.print()
+    env.execute()
+  }
+
+  class MyProcess extends ProcessWindowFunction[(String, String), (Long, Long), String, TimeWindow] {
+    lazy val jedis = new Jedis("localhost", 6379)
+    lazy val bloom = new Bloom(1 << 29)
+
+    override def process(key: String,
+                         context: Context,
+                         vals: Iterable[(String, String)],
+                         out: Collector[(Long, Long)]): Unit = {
+      val storeKey = context.window.getEnd.toString
+      var count = 0L
+
+      if (jedis.hget("UvCountHashTable", storeKey) != null) {
+        count = jedis.hget("UvCountHashTable", storeKey).toLong
+      }
+
+      val userId = vals.last._2
+      val offset = bloom.hash(userId, 61)
+
+      val isExist = jedis.getbit(storeKey, offset)
+      if (!isExist) {
+        jedis.setbit(storeKey, offset, true)
+        jedis.hset("UvCountHashTable", storeKey, (count + 1).toString)
+      }
+
+
+
+//      out.collect((count, storeKey.toLong))
+
+    }
+  }
+
+  class MyTrigger123 extends Trigger[(String, String), TimeWindow] {
+    override def onEventTime(time: Long,
+                             window: TimeWindow,
+                             ctx: TriggerContext): TriggerResult = {
+      if (ctx.getCurrentWatermark >= window.getEnd) {
+        val jedis = new Jedis("localhost", 6379)
+        val key = window.getEnd.toString
+        TriggerResult.FIRE_AND_PURGE
+        println(key, jedis.hget("UvCountHashTable", key))
+      }
+      TriggerResult.CONTINUE
+    }
+    override def onProcessingTime(time: Long,
+                                  window: TimeWindow,
+                                  ctx: TriggerContext): TriggerResult = {
+      TriggerResult.CONTINUE
+    }
+    override def clear(window: TimeWindow, ctx: Trigger.TriggerContext): Unit = {}
+    override def onElement(element: (String, String),
+                           timestamp: Long,
+                           window: TimeWindow,
+                           ctx: TriggerContext): TriggerResult = {
+//      if (timestamp >= window.getEnd) {
+//        val jedis = new Jedis("localhost", 6379)
+//        val count = jedis.hget("UvCountHashTable", window.getEnd.toString).toLong
+//        println(count, window.getEnd.toString)
+//      }
+      TriggerResult.FIRE_AND_PURGE
+    }
+  }
+
+  class Bloom(size: Long) extends Serializable {
+    private val cap = size
+
+    def hash(value: String, seed: Int): Long = {
+      var result = 0
+      for (i <- 0 until value.length) {
+        result = result * seed + value.charAt(i)
+      }
+      (cap - 1) & result
+    }
+  }
+}
+----
+
+=== APP分渠道数据统计
+
+完整代码如下：
+
+[source, scala]
+----
+package com.atguigu
+
+import java.util.{Calendar, UUID}
+
+import org.apache.flink.streaming.api.TimeCharacteristic
+import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction
+import org.apache.flink.streaming.api.functions.source.SourceFunction.SourceContext
+import org.apache.flink.streaming.api.scala._
+import org.apache.flink.streaming.api.scala.function.ProcessWindowFunction
+import org.apache.flink.streaming.api.windowing.time.Time
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow
+import org.apache.flink.util.Collector
+
+import scala.util.Random
+
+object AppMarketingByChannel {
+  case class MarketingUserBehavior(userId: String,
+                                   behavior: String,
+                                   channel: String,
+                                   ts: Long)
+
+  class SimulatedEventSource extends RichParallelSourceFunction[MarketingUserBehavior] {
+    var running = true
+
+    val channelSet = Seq("AppStore", "XiaomiStore")
+    val behaviorTypes = Seq("BROWSE", "CLICK")
+    val rand = new Random
+
+    override def run(ctx: SourceContext[MarketingUserBehavior]): Unit = {
+      while (running) {
+        val userId = UUID.randomUUID().toString
+        val behaviorType = behaviorTypes(rand.nextInt(behaviorTypes.size))
+        val channel = channelSet(rand.nextInt(channelSet.size))
+        val ts = Calendar.getInstance().getTimeInMillis
+
+        ctx.collect(MarketingUserBehavior(userId, behaviorType, channel, ts))
+
+        Thread.sleep(10)
+      }
+    }
+
+    override def cancel(): Unit = running = false
+  }
+
+  def main(args: Array[String]): Unit = {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setParallelism(1)
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+    val stream = env
+      .addSource(new SimulatedEventSource)
+      .assignAscendingTimestamps(_.ts)
+      .filter(_.behavior != "UNINSTALL")
+      .map(r => {
+        ((r.channel, r.behavior), 1L)
+      })
+      .keyBy(_._1)
+      .timeWindow(Time.seconds(5), Time.seconds(1))
+      .process(new MarketingCountByChannel)
+    stream.print()
+    env.execute()
+  }
+
+  class MarketingCountByChannel extends ProcessWindowFunction[((String, String), Long),(String, Long, Long), (String, String), TimeWindow] {
+    override def process(key:  (String,String),
+                         context: Context,
+                         elements: Iterable[((String, String), Long)],
+                         out: Collector[(String, Long, Long)]): Unit = {
+//      val t = ("a",)
+
+      out.collect((key._1, elements.size, context.window.getEnd))
+
+    }
+  }
+}
+----
+
 === 恶意登录监控
 
 * 基本需求
