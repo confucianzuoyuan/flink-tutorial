@@ -842,10 +842,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_uv统计的布隆过滤器实现">12.4. Uv统计的布隆过滤器实现</a></li>
 <li><a href="#_app分渠道数据统计">12.5. APP分渠道数据统计</a></li>
-<li><a href="#_恶意登录监控">12.6. 恶意登录监控</a>
+<li><a href="#_app不分渠道数据统计">12.6. APP不分渠道数据统计</a></li>
+<li><a href="#_恶意登录监控">12.7. 恶意登录监控</a>
 <ul class="sectlevel3">
-<li><a href="#_模块创建和数据准备_2">12.6.1. 模块创建和数据准备</a></li>
-<li><a href="#_代码实现_2">12.6.2. 代码实现</a>
+<li><a href="#_模块创建和数据准备_2">12.7.1. 模块创建和数据准备</a></li>
+<li><a href="#_代码实现_2">12.7.2. 代码实现</a>
 <ul class="sectlevel4">
 <li><a href="#_状态编程">状态编程</a></li>
 <li><a href="#_cep编程">CEP编程</a></li>
@@ -853,14 +854,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
-<li><a href="#_订单支付实时监控">12.7. 订单支付实时监控</a>
+<li><a href="#_订单支付实时监控">12.8. 订单支付实时监控</a>
 <ul class="sectlevel3">
-<li><a href="#_模块创建和数据准备_3">12.7.1. 模块创建和数据准备</a></li>
-<li><a href="#_代码实现_3">12.7.2. 代码实现</a></li>
-<li><a href="#_使用process_function实现订单超时需求">12.7.3. 使用Process Function实现订单超时需求</a></li>
+<li><a href="#_模块创建和数据准备_3">12.8.1. 模块创建和数据准备</a></li>
+<li><a href="#_代码实现_3">12.8.2. 代码实现</a></li>
+<li><a href="#_使用process_function实现订单超时需求">12.8.3. 使用Process Function实现订单超时需求</a></li>
 </ul>
 </li>
-<li><a href="#_实现两条流的join">12.8. 实现两条流的join</a></li>
+<li><a href="#_实现两条流的join">12.9. 实现两条流的join</a></li>
 </ul>
 </li>
 <li><a href="#_dataflow模型">13. Dataflow模型</a>
@@ -8710,7 +8711,56 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_恶意登录监控">12.6. 恶意登录监控</h3>
+<h3 id="_app不分渠道数据统计">12.6. APP不分渠道数据统计</h3>
+<div class="paragraph">
+<p>完整代码如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">package</span> <span class="tok-nn">com.atguigu</span>
+
+<span class="tok-k">import</span> <span class="tok-nn">com.atguigu.AppMarketingByChannel.SimulatedEventSource</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.TimeCharacteristic</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala._</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala.function.ProcessWindowFunction</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.windowing.time.Time</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.windowing.windows.TimeWindow</span>
+<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.util.Collector</span>
+
+<span class="tok-k">object</span> <span class="tok-nc">AppMarketingStatistics</span> <span class="tok-o">{</span>
+  <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
+    <span class="tok-k">val</span> <span class="tok-n">stream</span> <span class="tok-k">=</span> <span class="tok-n">env</span>
+      <span class="tok-o">.</span><span class="tok-n">addSource</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">SimulatedEventSource</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">assignAscendingTimestamps</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">ts</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">behavior</span> <span class="tok-o">!=</span> <span class="tok-s">&quot;UNINSTALL&quot;</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">r</span> <span class="tok-k">=&gt;</span> <span class="tok-o">{</span>
+        <span class="tok-o">(</span><span class="tok-s">&quot;dummyKey&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1L</span><span class="tok-o">)</span>
+      <span class="tok-o">})</span>
+      <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">)</span>
+      <span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">5</span><span class="tok-o">),</span> <span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">))</span>
+      <span class="tok-o">.</span><span class="tok-n">process</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">MarketingCountTotal</span><span class="tok-o">)</span>
+    <span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">()</span>
+    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span><span class="tok-o">()</span>
+  <span class="tok-o">}</span>
+
+  <span class="tok-k">class</span> <span class="tok-nc">MarketingCountTotal</span> <span class="tok-k">extends</span> <span class="tok-nc">ProcessWindowFunction</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span><span class="tok-o">)</span>,
+  <span class="tok-o">(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Long</span><span class="tok-o">)</span>, <span class="tok-kt">String</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">process</span><span class="tok-o">(</span><span class="tok-n">key</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span>
+                         <span class="tok-n">context</span><span class="tok-k">:</span> <span class="tok-kt">Context</span><span class="tok-o">,</span>
+                         <span class="tok-n">elements</span><span class="tok-k">:</span> <span class="tok-kt">Iterable</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span><span class="tok-o">)],</span>
+                         <span class="tok-n">out</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Long</span><span class="tok-o">)])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+      <span class="tok-n">out</span><span class="tok-o">.</span><span class="tok-n">collect</span><span class="tok-o">((</span><span class="tok-n">key</span><span class="tok-o">,</span> <span class="tok-n">elements</span><span class="tok-o">.</span><span class="tok-n">size</span><span class="tok-o">,</span> <span class="tok-n">context</span><span class="tok-o">.</span><span class="tok-n">window</span><span class="tok-o">.</span><span class="tok-n">getEnd</span><span class="tok-o">))</span>
+    <span class="tok-o">}</span>
+  <span class="tok-o">}</span>
+<span class="tok-o">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_恶意登录监控">12.7. 恶意登录监控</h3>
 <div class="ulist">
 <ul>
 <li>
@@ -8742,7 +8792,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </ul>
 </div>
 <div class="sect3">
-<h4 id="_模块创建和数据准备_2">12.6.1. 模块创建和数据准备</h4>
+<h4 id="_模块创建和数据准备_2">12.7.1. 模块创建和数据准备</h4>
 <div class="paragraph">
 <p>继续在UserBehaviorAnalysis下新建一个maven module作为子项目，命名为LoginFailDetect。在这个子模块中，我们将会用到flink的CEP库来实现事件流的模式匹配，所以需要在pom文件中引入CEP的相关依赖：</p>
 </div>
@@ -8765,7 +8815,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_代码实现_2">12.6.2. 代码实现</h4>
+<h4 id="_代码实现_2">12.7.2. 代码实现</h4>
 <div class="paragraph">
 <p>对于网站而言，用户登录并不是频繁的业务操作。如果一个用户短时间内频繁登录失败，就有可能是出现了程序的恶意攻击，比如密码暴力破解。因此我们考虑，应该对用户的登录失败动作进行统计，具体来说，如果同一用户（可以是不同IP）在2秒之内连续两次登录失败，就认为存在恶意登录的风险，输出相关的信息进行报警提示。这是电商网站、也是几乎所有网站风控的基本一环。</p>
 </div>
@@ -8906,7 +8956,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_订单支付实时监控">12.7. 订单支付实时监控</h3>
+<h3 id="_订单支付实时监控">12.8. 订单支付实时监控</h3>
 <div class="ulist">
 <ul>
 <li>
@@ -8935,7 +8985,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </ul>
 </div>
 <div class="sect3">
-<h4 id="_模块创建和数据准备_3">12.7.1. 模块创建和数据准备</h4>
+<h4 id="_模块创建和数据准备_3">12.8.1. 模块创建和数据准备</h4>
 <div class="paragraph">
 <p>同样地，在UserBehaviorAnalysis下新建一个maven module作为子项目，命名为OrderTimeoutDetect。在这个子模块中，我们同样将会用到flink的CEP库来实现事件流的模式匹配，所以需要在pom文件中引入CEP的相关依赖：</p>
 </div>
@@ -8958,7 +9008,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_代码实现_3">12.7.2. 代码实现</h4>
+<h4 id="_代码实现_3">12.8.2. 代码实现</h4>
 <div class="paragraph">
 <p>在电商平台中，最终创造收入和利润的是用户下单购买的环节；更具体一点，是用户真正完成支付动作的时候。用户下单的行为可以表明用户对商品的需求，但在现实中，并不是每次下单都会被用户立刻支付。当拖延一段时间后，用户支付的意愿会降低。所以为了让用户更有紧迫感从而提高支付转化率，同时也为了防范订单支付环节的安全风险，电商网站往往会对订单状态进行监控，设置一个失效时间（比如15分钟），如果下单后一段时间仍未支付，订单就会被取消。</p>
 </div>
@@ -9050,7 +9100,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_使用process_function实现订单超时需求">12.7.3. 使用Process Function实现订单超时需求</h4>
+<h4 id="_使用process_function实现订单超时需求">12.8.3. 使用Process Function实现订单超时需求</h4>
 <div class="listingblock">
 <div class="title">OrderTimeoutWithoutCep.scala</div>
 <div class="content">
@@ -9132,7 +9182,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_实现两条流的join">12.8. 实现两条流的join</h3>
+<h3 id="_实现两条流的join">12.9. 实现两条流的join</h3>
 <div class="imageblock">
 <div class="content">
 <img src="images/twostreamsjoin.png" alt="twostreamsjoin">
