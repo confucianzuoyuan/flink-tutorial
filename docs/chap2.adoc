@@ -1,0 +1,133 @@
+== Flink快速上手
+
+=== 使用Maven搭建工程
+
+*IDE推荐使用Idea*
+
+我们使用Flink官方提供的flink-quickstart-scala原型来创建我们的工程，因为Flink官方提供的pom.xml经过了精心配置，可以打包出很小的Jar包。
+
+image::quickstart1.png[]
+
+image::quickstart2.png[]
+
+image::quickstart3.png[]
+
+image::quickstart4.png[]
+
+image::quickstart5.png[]
+
+image::quickstart6.png[]
+
+image::quickstart7.png[]
+
+[source,shell]
+----
+$ tree quickstart/
+quickstart/
+├── pom.xml
+└── src
+    └── main
+        ├── resources
+        │   └── log4j.properties
+        └── scala
+            └── org
+                └── myorg
+                    └── quickstart
+                        ├── BatchJob.scala
+                        └── StreamingJob.scala
+----
+
+.StreamingJob.scala
+[source, scala]
+----
+package com.atguigu
+
+import org.apache.flink.streaming.api.scala._ // 导入隐式类型转换
+import org.apache.flink.streaming.api.windowing.time.Time
+
+object StreamingJob {
+
+  /** Main program method */
+  def main(args: Array[String]) : Unit = {
+
+    // get the execution environment
+    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+
+    // get input data by connecting to the socket
+    val text: DataStream[String] = env.socketTextStream("localhost", 9999, '\n')
+
+    // parse the data, group it, window it, and aggregate the counts
+    val windowCounts = text
+      .flatMap { w => w.split("\\s") } // <1>
+      .map { w => WordWithCount(w, 1) }
+      .keyBy("word")
+      .timeWindow(Time.seconds(5))
+      .sum("count")
+
+    // print the results with a single thread, rather than in parallel
+    windowCounts.print().setParallelism(1)
+
+    env.execute("Socket Window WordCount")
+  }
+
+  /** Data type for words with count */
+  case class WordWithCount(word: String, count: Long)
+}
+----
+<1> flatMap的函数签名：``def flatMap[A,B](as: List[A])(f: A => List[B]): List[B]``, 例如: ``flatMap(List(1,2,3))(i => List(i,i))``结果是``List(1,1,2,2,3,3)``, ``List("a b", "c d").flatMap(line => line.split(" "))``结果是``List(a, b, c, d)``。
+
+新建一个Terminal终端，然后运行以下:
+
+[source, shell]
+----
+$ nc -lk 9999
+----
+
+查看结果，在flink文件夹中的log文件夹里，后缀名为``.out``, 和在idea里面执行的样子不一样，不会打印到控制台。 
+
+=== Flink部署
+
+==== 下载Hadoop Free版本的Flink
+
+:download-link: https://www.apache.org/dyn/closer.lua/flink/flink-1.7.2/flink-1.7.2-bin-scala_2.11.tgz[下载链接]
+
+{download-link}
+
+==== 解压缩
+
+[source,shell]
+----
+$ tar xvfz flink-1.7.2-bin-scala_2.11.tgz
+----
+
+==== 启动Flink集群
+
+[source,shell]
+----
+$ cd flink-1.7.2
+$ ./bin/start-cluster.sh
+----
+
+==== 在浏览器中打开Flink的Web UI
+
+http://localhost:8081
+
+==== 打包编写好的StreamingJob程序
+
+在Idea中使用maven package功能打包。
+
+==== 提交打包好的程序
+
+[source,shell]
+----
+$ ./bin/flink run xxxx.jar
+----
+
+==== 在Flink Web UI查看Dashboard中job的执行状态
+
+==== 停止Flink集群
+
+[source,shell]
+----
+$ ./bin/stop-cluster.sh
+----

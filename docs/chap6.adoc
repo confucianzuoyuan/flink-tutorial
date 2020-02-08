@@ -1,0 +1,1114 @@
+== Event Time与Window
+
+=== Configure Time Characteristic
+
+==== Event Time的引入
+
+在Flink的流式处理中，绝大部分的业务都会使用Event Time，一般只在Event Time无法使用时，才会被迫使用Processing Time或者Ingestion Time。
+如果要使用Event Time，那么需要引入Event Time的时间属性，引入方式如下所示：
+
+[source,scala]
+----
+val env = StreamExecutionEnvironment.getExecutionEnvironment
+ 
+// 从调用时刻开始给env创建的每一个stream追加时间特征
+env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+----
+
+==== Watermark
+
+===== 基本概念
+
+我们知道，流处理从事件产生，到流经source，再到operator，中间是有一个过程和时间的，虽然大部分情况下，流到operator的数据都是按照事件产生的时间顺序来的，但是也不排除由于网络、分布式等原因，导致乱序的产生，所谓乱序，就是指Flink接收到的事件的先后顺序不是严格按照事件的Event Time顺序排列的。
+
+image::stream_watermark_in_order.png[]
+
+image::stream_watermark_out_of_order.png[]
+
+那么此时出现一个问题，一旦出现乱序，如果只根据Event Time决定Window的运行，我们不能明确数据是否全部到位，但又不能无限期的等下去，此时必须要有个机制来保证一个特定的时间后，必须触发Window去进行计算了，这个特别的机制，就是Watermark。
+
+* Watermark是一种衡量Event Time进展的机制，它是数据本身的一个隐藏属性，数据本身携带着对应的Watermark。
+* Watermark是用于处理乱序事件的，而正确的处理乱序事件，通常用Watermark机制结合Window来实现。
+* 数据流中的Watermark用于表示timestamp小于Watermark的数据，都已经到达了，因此，Window的执行也是由Watermark触发的。
+* Watermark可以理解成一个延迟触发机制，我们可以设置Watermark的延时时长t，每次系统会校验已经到达的数据中最大的maxEventTime，然后认定Event Time小于maxEventTime - t的所有数据都已经到达，如果有窗口的停止时间等于maxEventTime – t，那么这个窗口被触发执行。
+
+有序流的Watermarker如下图所示：(Watermark的延时时长设置为0)
+
+image::inorderdata.png[]
+
+乱序流的Watermarker如下图所示：(Watermark的延时时长设置为2)
+
+image::outorderdata.png[]
+
+Watermark就等于当前所有到达数据中的maxEventTime - 延迟时长，也就是说，Watermark是由数据携带的，一旦数据携带的Watermark比当前未触发的窗口的停止时间要晚，那么就会触发相应窗口的执行。由于Watermark是由数据携带的，因此，如果运行过程中无法获取新的数据，那么没有被触发的窗口将永远都不被触发。
+
+上图中，我们设置的允许最大延迟到达时间为2s，所以时间戳为7s的事件对应的Watermark是5s，时间戳为12s的事件的Watermark是10s，如果我们的窗口1是1s～5s，窗口2是6s～10s，那么时间戳为7s的事件到达时的Watermarker恰好触发窗口1，时间戳为12s的事件到达时的Watermark恰好触发窗口2。
+ 
+Watermark就是触发前一窗口的"关窗时间"，一旦触发关门那么以当前时刻为准在窗口范围内的所有数据都会收入窗中。
+
+只要没有达到水位那么不管现实中的时间推进了多久都不会触发关窗。
+
+==== Watermark的引入
+
+Event Time的使用一定要**指定数据源中的时间戳**。否则程序无法知道事件的事件时间是什么(数据源里的数据没有时间戳的话，就只能使用Processing Time了)。
+
+Flink暴露了TimestampAssigner接口供我们实现，使我们可以自定义如何从事件数据中抽取时间戳。
+
+[source,scala]
+----
+val env = StreamExecutionEnvironment.getExecutionEnvironment
+ 
+// 从调用时刻开始给env创建的每一个stream追加时间特征
+env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+
+val readings: DataStream[SensorReading] = env
+  .addSource(new SensorSource)
+  .assignTimestampsAndWatermarks(new MyAssigner())
+----
+
+MyAssigner有两种类型
+
+* AssignerWithPeriodicWatermarks
+* AssignerWithPunctuatedWatermarks
+
+以上两个接口都继承自TimestampAssigner。
+
+*Assigner with periodic watermarks*
+
+周期性的生成水印：系统会周期性的将水印插入到流中（水印也是一种特殊的事件!）。默认周期是200毫秒。可以使用ExecutionConfig.setAutoWatermarkInterval()方法进行设置。
+
+[source,scala]
+----
+val env = StreamExecutionEnvironment.getExecutionEnvironment
+env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+// 每隔5秒产生一个水印
+env.getConfig.setAutoWatermarkInterval(5000)
+----
+
+产生水印的逻辑：每隔5秒钟，Flink会调用AssignerWithPeriodicWatermarks的getCurrentWatermark()方法。如果方法返回一个时间戳大于之前水印的时间戳，新的水印会被插入到流中。这个检查保证了水印是单调递增的。如果方法返回的时间戳小于等于之前水印的时间戳，则不会产生新的水印。
+
+例子，自定义一个周期性的时间戳抽取
+
+[source,scala]
+----
+class PeriodicAssigner extends AssignerWithPeriodicWatermarks[SensorReading] {
+  val bound: Long = 60 * 1000 // 延时为1分钟
+  var maxTs: Long = Long.MinValue // 观察到的最大时间戳
+
+  override def getCurrentWatermark: Watermark = {
+    new Watermark(maxTs - bound)
+  }
+
+  override def extractTimestamp(r: SensorReading, previousTS: Long) = {
+    maxTs = maxTs.max(r.timestamp)
+    r.timestamp
+  }
+}
+----
+
+如果我们事先得知数据流的时间戳是单调递增的，也就是说没有乱序。我们可以使用assignAscendingTimestamps，方法会直接使用数据的时间戳生成水印。
+
+[source,scala]
+----
+val stream: DataStream[SensorReading] = ...
+val withTimestampsAndWatermarks = stream
+  .assignAscendingTimestamps(e => e.timestamp)
+----
+
+----
+E(1), W(1), E(2), W(2), ...
+----
+
+如果我们能大致估算出数据流中的事件的最大延迟时间，可以使用如下代码
+
+[source,scala]
+----
+val stream: DataStream[SensorReading] = ...
+val withTimestampsAndWatermarks = stream.assignTimestampsAndWatermarks(
+  new SensorTimeAssigner 
+)
+
+class SensorTimeAssigner
+  extends BoundedOutOfOrdernessTimestampExtractor[SensorReading](Time.seconds(5)) {
+
+  // 抽取时间戳
+  override def extractTimestamp(r: SensorReading): Long = r.timestamp
+}
+----
+
+----
+E(10), W(0), E(8), E(7), E(11), W(1), ...
+----
+
+*Assigner with punctuated watermarks*
+
+直接上代码，只给sensor_1的传感器的数据流插入水印
+
+[source,scala]
+----
+class PunctuatedAssigner extends AssignerWithPunctuatedWatermarks[SensorReading] {
+  val bound: Long = 60 * 1000
+
+  override def checkAndGetNextWatermark(r: SensorReading, extractedTS: Long): Watermark = {
+    if (r.id == "sensor_1") {
+      new Watermark(extractedTS - bound)
+    } else {
+      null
+    }
+  }
+
+  override def extractTimestamp(r: SensorReading, previousTS: Long): Long = {
+    r.timestamp
+  }
+}
+----
+
+在Flink中，水印由应用程序开发人员生成，这通常需要对相应的领域有一定的了解。完美的水印永远不会错：时间戳小于水印标记时间的事件不会再出现。在特殊情况下(例如非乱序事件流)，最近一次事件的时间戳就可能是完美的水印。启发式水印则相反，它只估计时间，因此有可能出错，即迟到的事件(其时间戳小于水印标记时间)晚于水印出现。针对启发式水印，Flink提供了处理迟到元素的机制。
+
+设定水印通常需要用到领域知识。举例来说，如果知道事件的迟到时间不会超过5秒，就可以将水印标记时间设为收到的最大时间戳减去5秒。另一种做法是，采用一个Flink作业监控事件流，学习事件的迟到规律，并以此构建水印生成模型。
+
+如果水印迟到得太久，收到结果的速度可能就会很慢，解决办法是在水印到达之前输出近似结果(Flink可以实现)。如果水印到达得太早，则可能收到错误结果，不过Flink处理迟到数据的机制可以解决这个问题。上述问题看起来很复杂，但是恰恰符合现实世界的规律——大部分真实的事件流都是乱序的，并且通常无法了解它们的乱序程度(因为理论上不能预见未来)。水印是唯一让我们直面乱序事件流并保证正确性的机制; 否则只能选择忽视事实，假装错误的结果是正确的。
+
+=== Process Function(Low-Level API)
+
+我们之前学习的转换算子是无法访问事件的时间戳信息和水印信息的。而这在一些应用场景下，极为重要。例如MapFunction这样的map转换算子就无法访问时间戳或者当前事件的事件时间。
+
+基于此，DataStream API提供了一系列的Low-Level转换算子。可以访问时间戳、水印以及注册定时事件。还可以输出特定的一些事件，例如超时事件等。Process Function用来构建事件驱动的应用以及实现自定义的业务逻辑(使用之前的window函数和转换算子无法实现)。例如，Flink-SQL就是使用Process Function实现的。
+
+Flink提供了8个Process Function：
+
+* ProcessFunction
+* KeyedProcessFunction
+* CoProcessFunction
+* ProcessJoinFunction
+* BroadcastProcessFunction
+* KeyedBroadcastProcessFunction
+* ProcessWindowFunction
+* ProcessAllWindowFunction
+
+重点介绍KeyedProcessFunction
+
+KeyedProcessFunction用来操作KeyedStream。KeyedProcessFunction会处理流的每一个元素，输出为0个、1个或者多个元素。所有的Process Function都继承自RichFunction接口，所以都有open()、close()和getRuntimeContext()等方法。而KeyedProcessFunction[KEY, IN, OUT]还额外提供了两个方法:
+
+* processElement(v: IN, ctx: Context, out: Collector[OUT]), 流中的每一个元素都会调用这个方法，调用结果将会放在Collector数据类型中输出。Context可以访问元素的时间戳，元素的key，以及TimerService时间服务。Context还可以将结果输出到别的流(side outputs)。
+* onTimer(timestamp: Long, ctx: OnTimerContext, out: Collector[OUT])是一个回调函数。当之前注册的定时器触发时调用。参数timestamp为定时器所设定的触发的时间戳。Collector为输出结果的集合。OnTimerContext和processElement的Context参数一样，提供了上下文的一些信息，例如firing trigger的时间信息(事件时间或者处理时间)。
+
+==== TimerService and Timers
+
+Context和OnTimerContext所持有的TimerService对象拥有以下方法:
+
+* currentProcessingTime(): Long 返回当前处理时间
+* currentWatermark(): Long 返回当前水印的时间戳
+* registerProcessingTimeTimer(timestamp: Long): Unit 会注册当前key的processing time的timer。当processing time到达定时时间时，触发timer。
+* registerEventTimeTimer(timestamp: Long): Unit 会注册当前key的event time timer。当水印大于等于定时器注册的时间时，触发定时器执行回调函数。
+* deleteProcessingTimeTimer(timestamp: Long): Unit 删除之前注册处理时间定时器。如果没有这个时间戳的定时器，则不执行。
+* deleteEventTimeTimer(timestamp: Long): Unit 删除之前注册的事件时间定时器，如果没有此时间戳的定时器，则不执行。
+
+当定时器timer触发时，执行回调函数onTimer()。
+
+NOTE: 定时器timer只能在keyed streams上面使用。
+
+举个例子说明KeyedProcessFunction如何操作KeyedStream。
+
+需求：监控温度传感器的温度值，如果温度值在一秒钟之内(processing time)连续上升，报警。
+
+[source,scala]
+----
+val warnings = readings
+  // key by sensor id
+  .keyBy(_.id)
+  // apply ProcessFunction to monitor temperatures
+  .process(new TempIncreaseAlertFunction)
+----
+
+看一下TempIncreaseAlertFunction如何实现, 程序中使用了ValueState这样一个状态变量, 后面会详细讲解。
+
+[source,scala]
+----
+class TempIncreaseAlertFunction extends KeyedProcessFunction[String, SensorReading, String] {
+  // 保存上一个传感器温度值
+  lazy val lastTemp: ValueState[Double] = getRuntimeContext.getState(
+    new ValueStateDescriptor[Double]("lastTemp", Types.of[Double])
+  )
+
+  // 保存注册的定时器的时间戳
+  lazy val currentTimer: ValueState[Long] = getRuntimeContext.getState(
+    new ValueStateDescriptor[Long]("timer", Types.of[Long])
+  )
+
+  override def processElement(r: SensorReading,
+                              ctx: KeyedProcessFunction[String, SensorReading, String]#Context,
+                              out: Collector[String]): Unit = {
+    // get previous temperature
+    // 取出上一次的温度
+    val prevTemp = lastTemp.value()
+    // update last temperature
+    // 将当前温度更新到上一次的温度这个变量中
+    lastTemp.update(r.temperature)
+
+    val curTimerTimestamp = currentTimer.value()
+    if (prevTemp == 0.0 || r.temperature < prevTemp) {
+      // temperature decreased; delete current timer
+      // 温度下降或者是第一个温度值，删除定时器
+      ctx.timerService().deleteProcessingTimeTimer(curTimerTimestamp)
+      // 清空状态变量
+      currentTimer.clear()
+    } else if (r.temperature > prevTemp && curTimerTimestamp == 0) {
+      // temperature increased and we have not set a timer yet
+      // set processing time timer for now + 1 second
+      // 温度上升且我们并没有设置定时器
+      val timerTs = ctx.timerService().currentProcessingTime() + 1000
+      ctx.timerService().registerProcessingTimeTimer(timerTs)
+      // remember current timer
+      currentTimer.update(timerTs)
+    }
+  }
+
+  override def onTimer(ts: Long,
+                       ctx: KeyedProcessFunction[String, SensorReading, String]#OnTimerContext,
+                       out: Collector[String]): Unit = {
+    out.collect("传感器id为: " + ctx.getCurrentKey + "的传感器温度值已经连续1s上升了。")
+    currentTimer.clear()
+  }
+}
+----
+
+==== Emitting to Side Outputs(侧输出)
+
+大部分的DataStream API的算子的输出是单一输出，也就是某种数据类型的流。除了split算子，可以将一条流分成多条流，这些流的数据类型也都相同。process function的side outputs功能可以产生多条流，并且这些流的数据类型可以不一样。一个side output可以定义为OutputTag[X]对象，X是输出流的数据类型。process function可以通过Context对象发射一个事件到一个或者多个side outputs。
+
+例子
+
+[source,scala]
+----
+val monitoredReadings: DataStream[SensorReading] = readings
+  .process(new FreezingMonitor)
+
+monitoredReadings
+  .getSideOutput(new OutputTag[String]("freezing-alarms"))
+  .print()
+
+readings.print()
+----
+
+接下来我们实现FreezingMonitor函数，用来监控传感器温度值，将温度值低于32F的温度输出到side output。
+
+[source,scala]
+----
+class FreezingMonitor extends ProcessFunction[SensorReading, SensorReading] {
+  // define a side output tag
+  // 定义一个侧输出标签
+  lazy val freezingAlarmOutput: OutputTag[String] =
+    new OutputTag[String]("freezing-alarms")
+
+  override def processElement(r: SensorReading,
+                              ctx: ProcessFunction[SensorReading, SensorReading]#Context,
+                              out: Collector[SensorReading]): Unit = {
+    // emit freezing alarm if temperature is below 32F
+    if (r.temperature < 32.0) {
+      ctx.output(freezingAlarmOutput, s"Freezing Alarm for ${r.id}")
+    }
+    // forward all readings to the regular output
+    out.collect(r)
+  }
+}
+----
+
+==== CoProcessFunction
+
+对于两条输入流，DataStream API提供了CoProcessFunction这样的low-level操作。CoProcessFunction提供了操作每一个输入流的方法: processElement1()和processElement2()。类似于ProcessFunction，这两种方法都通过Context对象来调用。这个Context对象可以访问事件数据，定时器时间戳，TimerService，以及side outputs。CoProcessFunction也提供了onTimer()回调函数。下面的例子展示了如何使用CoProcessFunction来合并两条流。
+
+[source,scala]
+----
+// ingest sensor stream
+val readings: DataStream[SensorReading] = ...
+
+// filter switches enable forwarding of readings
+val filterSwitches: DataStream[(String, Long)] = env
+  .fromCollection(Seq(
+    ("sensor_2", 10 * 1000L),
+    ("sensor_7", 60 * 1000L)
+  ))
+
+val forwardedReadings = readings
+  // connect readings and switches
+  .connect(filterSwitches)
+  // key by sensor ids
+  .keyBy(_.id, _._1)
+  // apply filtering CoProcessFunction
+  .process(new ReadingFilter)
+----
+
+[source,scala]
+----
+class ReadingFilter extends CoProcessFunction[SensorReading, (String, Long), SensorReading] {
+  // switch to enable forwarding
+  // 传送数据的开关
+  lazy val forwardingEnabled: ValueState[Boolean] = getRuntimeContext.getState(
+    new ValueStateDescriptor[Boolean]("filterSwitch", Types.of[Boolean]))
+
+  // hold timestamp of currently active disable timer
+  lazy val disableTimer: ValueState[Long] = getRuntimeContext.getState(new ValueStateDescriptor[Long]("timer", Types.of[Long]))
+
+  override def processElement1(reading: SensorReading,
+                               ctx: CoProcessFunction[SensorReading, (String, Long), SensorReading]#Context,
+                               out: Collector[SensorReading]): Unit = {
+    // check if we may forward the reading
+    // 决定我们是否要将数据继续传下去
+    if (forwardingEnabled.value()) {
+      out.collect(reading)
+    }
+  }
+
+  override def processElement2(switch: (String, Long),
+                               ctx: CoProcessFunction[SensorReading, (String, Long), SensorReading]#Context,
+                               out: Collector[SensorReading]): Unit = {
+    // enable reading forwarding
+    // 允许继续传输数据
+    forwardingEnabled.update(true)
+    // set disable forward timer
+    val timerTimestamp = ctx.timerService().currentProcessingTime() + switch._2
+    val curTimerTimestamp = disableTimer.value()
+
+    if (timerTimestamp > curTimerTimestamp) {
+      // remove current timer and register new timer
+      ctx.timerService().deleteProcessingTimeTimer(curTimerTimestamp)
+      ctx.timerService().registerProcessingTimeTimer(timerTimestamp)
+      disableTimer.update(timerTimestamp)
+    }
+  }
+
+  override def onTimer(ts: Long,
+                       ctx: CoProcessFunction[SensorReading, (String, Long), SensorReading]#OnTimerContext,
+                       out: Collector[SensorReading]): Unit = {
+     // remove all state; forward switch will be false by default
+     forwardingEnabled.clear()
+     disableTimer.clear()
+  }
+}
+----
+
+=== Window Operators(窗口操作符)
+
+==== define window operators(定义窗口操作符)
+
+window算子可以在keyed stream或者nokeyed stream上面使用。
+
+创建一个window算子，需要指定两个部分：
+
+1. window assigner定义了流的元素如何分配到window中。window assigner将会产生一条WindowedStream(或者AllWindowedStream，如果是nonkeyed DataStream的话)
+
+2. window function用来处理WindowedStream(AllWindowedStream)中的元素。
+
+例子：
+
+[source,scala]
+----
+stream
+  .keyBy(...)
+  .window(...)  // 指定window assigner
+  .reduce/aggregate/process(...) // 指定window function
+
+stream
+  .windowAll(...) // 指定window assigner
+  .reduce/aggregate/process(...) // 指定window function
+----
+
+==== 内置的window assigner(窗口分配器)
+
+===== tumbling windows(滚动窗口)
+
+[source,scala]
+----
+val sensorData: DataStream[SensorReading] = ...
+
+val avgTemp = sensorData
+  .keyBy(_.id)
+  // group readings in 1s event-time windows
+  .window(TumblingEventTimeWindows.of(Time.seconds(1)))
+  .process(new TemperatureAverager)
+
+val avgTemp = sensorData
+  .keyBy(_.id)
+  // group readings in 1s processing-time windows
+  .window(TumblingProcessingTimeWindows.of(Time.seconds(1)))
+  .process(new TemperatureAverager)
+
+// 其实就是之前的
+// shortcut for window.(TumblingEventTimeWindows.of(size))
+val avgTemp = sensorData
+  .keyBy(_.id)
+  .timeWindow(Time.seconds(1))
+  .process(new TemperatureAverager)
+----
+
+如果滚动窗口的时间长度为1小时，那么默认设定的窗口为：[00:00, 01:00), [01:00, 02:00), ...
+
+===== sliding window(滑动窗口)
+
+[source,scala]
+----
+val slidingAvgTemp = sensorData
+  .keyBy(_.id)
+  .window(SlidingEventTimeWindows.of(Time.hours(1), Time.minutes(15)))
+  .process(new TemperatureAverager)
+
+val slidingAvgTemp = sensorData
+  .keyBy(_.id)
+  .window(SlidingProcessingTimeWindows.of(Time.hours(1), Time.minutes(15)))
+  .process(new TemperatureAverager)
+
+val slidingAvgTemp = sensorData
+  .keyBy(_.id)
+  .timeWindow(Time.hours(1), Time.minutes(15))
+  .process(new TemperatureAverager)
+----
+
+===== session windows(会话窗口)
+
+[source,scala]
+----
+val sessionWindows = sensorData
+  .keyBy(_.id)
+  .window(EventTimeSessionWindows.withGap(Time.minutes(15)))
+  .process(...)
+
+val sessionWindows = sensorData
+  .keyBy(_.id)
+  .window(ProcessingTimeSessionWindows.withGap(Time.minutes(15)))
+  .process(...)
+----
+
+==== Applying Functions on Windows(在窗口上应用函数)
+
+window functions定义了窗口中数据的计算逻辑。有两种计算逻辑：
+
+1. 增量聚合函数(Incremental aggregation functions)：当一个事件被添加到窗口时，触发函数计算，并且更新window的状态(单个值)。最终聚合的结果将作为输出。ReduceFunction和AggregateFunction是增量聚合函数。
+
+2. 全窗口函数(Full window functions)：这个函数将会收集窗口中所有的元素，可以做一些复杂计算。ProcessWindowFunction是window function。
+
+===== ReduceFunction
+
+例子: 计算每个传感器15s窗口中的温度最小值
+
+[source,scala]
+----
+val minTempPerWindow: DataStream[(String, Double)] = sensorData
+  .map(r => (r.id, r.temperature))
+  .keyBy(_._1)
+  .timeWindow(Time.seconds(15))
+  .reduce((r1, r2) => (r1._1, r1._2.min(r2._2)))
+----
+
+===== AggregateFunction
+
+先来看接口定义
+
+[source,java]
+----
+public interface AggregateFunction<IN, ACC, OUT> extends Function, Serializable {
+
+  // create a new accumulator to start a new aggregate
+  ACC createAccumulator();
+
+  // add an input element to the accumulator and return the accumulator
+  ACC add(IN value, ACC accumulator);
+
+  // compute the result from the accumulator and return it.
+  OUT getResult(ACC accumulator);
+
+  // merge two accumulators and return the result.
+  ACC merge(ACC a, ACC b);
+}
+----
+
+IN是输入元素的类型，ACC是累加器的类型，OUT是输出元素的类型。
+
+例子
+
+[source,scala]
+----
+val avgTempPerWindow: DataStream[(String, Double)] = sensorData
+  .map(r => (r.id, r.temperature))
+  .keyBy(_._1)
+  .timeWindow(Timeseconds(15))
+  .aggregate(new AvgTempFunction)
+
+// An AggregateFunction to compute the average temperature per sensor.
+// The accumulator holds the sum of temperatures and an event count.
+class AvgTempFunction extends AggregateFunction[(String, Double), (String, Double, Int), (String, Double)] {
+
+  override def createAccumulator() = {
+    ("", 0.0, 0)
+  }
+
+  override def add(in: (String, Double), acc: (String, Double, Int)) = {
+    (in._1, in._2 + acc._2, 1 + acc._3)
+  }
+
+  override def getResult(acc: (String, Double, Int)) = {
+    (acc._1, acc._2 / acc._3)
+  }
+
+  override def merge(acc1: (String, Double, Int), acc2: (String, Double, Int)) = {
+    (acc1._1, acc1._2 + acc2._2, acc1._3 + acc2._3)
+  }
+}
+----
+
+===== ProcessWindowFunction
+
+一些业务场景，我们需要收集窗口内所有的数据进行计算，例如计算窗口数据的中位数，或者计算窗口数据中出现频率最高的值。这样的需求，使用ReduceFunction和AggregateFunction就无法实现了。这个时候就需要ProcessWindowFunction了。
+
+先来看接口定义
+
+[source,java]
+----
+public abstract class ProcessWindowFunction<IN, OUT, KEY, W extends Window> extends AbstractRichFunction {
+  
+  // Evaluates the window
+  void process(KEY key, Context ctx, Iterable<IN> vals, Collector<OUT> out) throws Exception;
+
+  // Deletes any custom per-window state when the window is purged
+  public void clear(Context ctx) throws Exception {}
+
+  // The context holding window metadata
+  public abstract class Context implements Serializable {
+    // Returns the metadata of the window
+    public abstract W window();
+
+    // Returns the current processing time
+    public abstract long currentProcessingTime();
+
+    // Returns the current event-time watermark
+    public abstract long currentWatermark();
+
+    // State accessor for per-window state
+    public abstract KeyedStateStore windowState();
+
+    // State accessor for per-key global state
+    public abstract KeyedStateStore globalState();
+
+    // Emits a record to the side output identified by the OutputTag.
+    public abstract <X> void output(OutputTag<X> outputTag, X value);
+  }
+}
+----
+
+process()方法接受的参数为：window的key，Iterable迭代器包含窗口的所有元素，Collector用于输出结果流。Context参数和别的process方法一样。而ProcessWindowFunction的Context对象还可以访问window的元数据(窗口开始和结束时间)，当前处理时间和水印，per-window state和per-key global state，side outputs。
+
+* per-window state: 用于保存一些信息，这些信息可以被process()访问，只要process所处理的元素属于这个窗口。
+* per-key global state: 同一个key，也就是在一条KeyedStream上，不同的window可以访问per-key global state保存的值。
+
+例子：计算5s滚动窗口中的最低和最高的温度。输出的元素包含了(流的Key, 最低温度, 最高温度, 窗口结束时间)。
+
+[source,scala]
+----
+val minMaxTempPerWindow: DataStream[MinMaxTemp] = sensorData
+  .keyBy(_.id)
+  .timeWindow(Time.seconds(5))
+  .process(new HighAndLowTempProcessFunction)
+
+case class MinMaxTemp(id: String, min: Double, max: Double, endTs: Long)
+
+class HighAndLowTempProcessFunction extends ProcessWindowFunction[SensorReading, MinMaxTemp, String, TimeWindow] {
+  override def process(key: String,
+                       ctx: Context,
+                       vals: Iterable[SensorReading],
+                       out: Collector[MinMaxTemp]): Unit = {
+    val temps = vals.map(_.temperature)
+    val windowEnd = ctx.window.getEnd
+
+    out.collect(MinMaxTemp(key, temps.min, temps.max, windowEnd))
+  }
+}
+----
+
+我们还可以将ReduceFunction/AggregateFunction和ProcessWindowFunction结合起来使用。ReduceFunction/AggregateFunction做增量聚合，ProcessWindowFunction提供更多的对数据流的访问权限。如果只使用ProcessWindowFunction(底层的实现为将事件都保存在ListState中)，将会非常占用空间。分配到某个窗口的元素将被提前聚合，而当窗口的trigger触发时，也就是窗口收集完数据关闭时，将会把聚合结果发送到ProcessWindowFunction中，这时Iterable参数将会只有一个值，就是前面聚合的值。
+
+例子
+
+[source,scala]
+----
+input
+  .keyBy(...)
+  .timeWindow(...)
+  .reduce(
+    incrAggregator: ReduceFunction[IN],
+    function: ProcessWindowFunction[IN, OUT, K, W])
+
+input
+  .keyBy(...)
+  .timeWindow(...)
+  .aggregate(
+    incrAggregator: AggregateFunction[IN, ACC, V],
+    windowFunction: ProcessWindowFunction[V, OUT, K, W])
+----
+
+我们把之前的需求重新使用以上两种方法实现一下。
+
+[source,scala]
+----
+case class MinMaxTemp(id: String, min: Double, max: Double, endTs: Long)
+
+val minMaxTempPerWindow2: DataStream[MinMaxTemp] = sensorData
+  .map(r => (r.id, r.temperature, r.temperature))
+  .keyBy(_._1)
+  .timeWindow(Time.seconds(5))
+  .reduce(
+    (r1: (String, Double, Double), r2: (String, Double, Double)) => {
+      (r1._1, r1._2.min(r2._2), r1._3.max(r2._3))
+    },
+    new AssignWindowEndProcessFunction()
+  )
+
+class AssignWindowEndProcessFunction extends ProcessWindowFunction[(String, Double, Double), MinMaxTemp, String, TimeWindow] {
+  override def process(key: String,
+                       ctx: Context,
+                       minMaxIt: Iterable[(String, Double, Double)],
+                       out: Collector[MinMaxTemp]): Unit = {
+    val minMax = minMaxIt.head
+    val windowEnd = ctx.window.getEnd
+    out.collect(MinMaxTemp(key, minMax._2, minMax._3, windowEnd))
+  }
+}
+----
+
+=== 自定义窗口操作符(windows operators)
+
+Flink内置的window operators分配器已经已经足够应付大多数应用场景。尽管如此，如果我们需要实现一些复杂的窗口逻辑，例如：可以发射早到的事件或者碰到迟到的事件就更新窗口的结果，或者窗口的开始和结束决定于特定事件的接收。
+
+DataStream API暴露了接口和方法来自定义窗口操作符。
+
+* 自定义窗口分配器
+* 自定义窗口计算触发器(trigger)
+* 自定义窗口数据清理功能(evictor)
+
+当一个事件来到窗口操作符，首先将会传给WindowAssigner来处理。WindowAssigner决定了事件将被分配到哪些窗口。如果窗口不存在，WindowAssigner将会创建一个新的窗口。
+
+如果一个window operator接受了一个增量聚合函数作为参数，例如ReduceFunction或者AggregateFunction，新到的元素将会立即被聚合，而聚合结果result将存储在window中。如果window operator没有使用增量聚合函数，那么新元素将被添加到ListState中，ListState中保存了所有分配给窗口的元素。
+
+新元素被添加到窗口时，这个新元素同时也被传给了window的trigger。trigger定义了window何时准备好求值，何时window被清空。trigger可以基于window被分配的元素和注册的定时器来对窗口的所有元素求值或者在特定事件清空window中所有的元素。
+
+当window operator只接收一个增量聚合函数作为参数时：
+
+当window operator只接收一个全窗口函数作为参数时：
+
+当window operator接收一个增量聚合函数和一个全窗口函数作为参数时：
+
+evictor是一个可选的组件，可以被注入到ProcessWindowFunction之前或者之后调用。evictor可以清除掉window中收集的元素。由于evictor需要迭代所有的元素，所以evictor只能使用在没有增量聚合函数作为参数的情况下。
+
+下面的代码说明了如果使用自定义的trigger和evictor定义一个window operator：
+
+[source,scala]
+----
+stream
+  .keyBy(...)
+  .window(...)
+ [.trigger(...)]
+ [.evictor(...)]
+  .reduce/aggregate/process(...)
+----
+
+注意：每个WindowAssigner都有一个默认的trigger。
+
+=== 窗口生命周期
+
+当WindowAssigner分配某个窗口的第一个元素时，这个窗口才会被创建。所以不存在没有元素的窗口。
+
+一个窗口包含了如下状态：
+
+* Window content
+** 分配到这个窗口的元素
+** 增量聚合的结果(如果window operator接收了ReduceFunction或者AggregateFunction作为参数)。
+* Window object
+** WindowAssigner返回0个，1个或者多个window object。
+** window operator根据返回的window object来聚合元素。
+** 每一个window object包含一个windowEnd时间戳，来区别于其他窗口。
+* 触发器的定时器：一个触发器可以注册定时事件，到了定时的时间可以执行相应的回调函数，例如：对窗口进行求值或者清空窗口。
+* 触发器中的自定义状态：触发器可以定义和使用自定义的、per-window或者per-key状态。这个状态完全被触发器所控制。而不是被window operator控制。
+
+当窗口结束时间来到，window operator将删掉这个窗口。窗口结束时间是由window object的end timestamp所定义的。无论是使用processing time还是event time，窗口结束时间是什么类型可以调用WindowAssigner.isEventTime()方法获得。
+
+=== 窗口分配器(window assigners)
+
+WindowAssigner将会把元素分配到0个，1个或者多个窗口中去。我们看一下WindowAssigner接口：
+
+[source,java]
+----
+public abstract class WindowAssigner<T, W extends Window>
+    implements Serializable {
+
+  public abstract Collection<W> assignWindows(
+    T element,
+    long timestamp,
+    WindowAssignerContext context);
+
+  public abstract Trigger<T, W> getDefaultTriger(
+    StreamExecutionEnvironment env);
+
+  public abstract TypeSerializer<W> getWindowSerializer(
+    ExecutionConfig executionConfig);
+
+  public abstract boolean isEventTime();
+
+  public abstract static class WindowAssignerContext {
+    public abstract long getCurrentProcessingTime();
+  }
+}
+----
+
+WindowAssigner有两个泛型参数：
+
+* T: 事件的数据类型
+* W: 窗口的类型
+
+下面的代码创建了一个自定义窗口分配器，是一个30秒的滚动事件时间窗口。
+
+[source,scala]
+----
+class ThirtySecondsWindows
+    extends WindowAssigner[Object, TimeWindow] {
+
+  val windowSize: Long = 30 * 1000L
+
+  override def assignWindows(
+    o: Object,
+    ts: Long,
+    ctx: WindowAssigner.WindowAssignerContext): java.util.List[TimeWindow] = {
+
+    val startTime = ts - (ts % windowSize)
+    val endTime = startTime + windowSize
+    Collections.singletonList(new TimeWindow(startTime, endTime))
+  }
+
+  override def getDefaultTrigger(
+    env: environment.StreamExecutionEnvironment): Trigger[Object, TimeWindow] = {
+      EventTimeTrigger.create()
+  }
+
+  override def getWindowSerializer(
+    executionConfig: ExecutionConfig): TypeSerializer[TimeWindow] = {
+    new TimeWindow.Serializer
+  }
+
+  override def isEventTime = true
+}
+----
+
+=== 触发器(Triggers)
+
+触发器定义了window何时会被求值以及何时发送求值结果。触发器可以到了特定的时间触发也可以碰到特定的事件触发。例如：观察到事件数量符合一定条件或者观察到了特定的事件。
+
+默认的触发器将会在两种情况下触发
+
+* 处理时间：机器时间到达处理时间
+* 事件时间：水位线超过了窗口的结束时间
+
+触发器可以访问流的时间属性以及定时器，还可以对state状态编程。所以触发器和process function一样强大。例如我们可以实现一个触发逻辑：当窗口接收到一定数量的元素时，触发器触发。再比如当窗口接收到一个特定元素时，触发器触发。还有就是当窗口接收到的元素里面包含特定模式(5秒钟内接收到了两个同样类型的事件)，触发器也可以触发。在一个事件时间的窗口中，一个自定义的触发器可以提前(在水位线没过窗口结束时间之前)计算和发射计算结果。这是一个常见的低延迟计算策略，尽管计算不完全，但不像默认的那样需要等待水位线没过窗口结束时间。
+
+每次调用触发器都会产生一个TriggerResult来决定窗口接下来发生什么。TriggerResult可以取以下结果：
+
+* CONTINUE：什么都不做
+* FIRE：如果window operator有ProcessWindowFunction这个参数，将会调用这个ProcessWindowFunction。如果窗口仅有增量聚合函数(ReduceFunction或者AggregateFunction)作为参数，那么当前的聚合结果将会被发送。窗口的state不变。
+* PURGE：窗口所有内容包括窗口的元数据都将被丢弃。
+* FIRE_AND_PURGE：先对窗口进行求值，再将窗口中的内容丢弃。
+
+TriggerResult可能的取值使得我们可以实现很复杂的窗口逻辑。一个自定义触发器可以触发多次，可以计算或者更新结果，可以在发送结果之前清空窗口。
+
+接下来我们看一下Trigger API：
+
+[source,java]
+----
+public abstract class Trigger<T, W extends Window>
+    implements Serializable {
+
+  TriggerResult onElement(
+    long timestamp,
+    W window,
+    TriggerContext ctx);
+
+  public abstract TriggerResult onProcessingTime(
+    long timestamp,
+    W window,
+    TriggerContext ctx);
+
+  public abstract TriggerResult onEventTime(
+    long timestamp,
+    W window,
+    TriggerContext ctx);
+  
+  public boolean canMerge();
+
+  public void onMerge(W window, OnMergeContext ctx);
+
+  public abstract void clear(W window, TriggerContext ctx);
+}
+
+public interface TriggerContext {
+
+  long getCurrentProcessingTime();
+
+  long getCurrentWatermark();
+
+  void registerProcessingTimeTimer(long time);
+
+  void registerEventTimeTimer(long time);
+
+  void registerEventTimeTimer(long time);
+
+  void deleteProcessingTimeTimer(long time);
+
+  void deleteEventTimeTimer(long time);
+
+  <S extends State> S getPartitionedState(
+    StateDescriptor<S, ?> stateDescriptor);
+}
+
+public interface OnMergeContext extends TriggerContext {
+
+  void mergePartitionedState(
+    StateDescriptor<S, ?> stateDescriptor
+  );
+}
+----
+
+这里要注意两个地方：清空state和merging合并触发器。
+
+当在触发器中使用per-window state时，这里我们需要保证当窗口被删除时state也要被删除，否则随着时间的推移，window operator将会积累越来越多的数据，最终可能使应用崩溃。
+
+当窗口被删除时，为了清空所有状态，触发器的clear()方法需要需要删掉所有的自定义per-window state，以及使用TriggerContext对象将处理时间和事件时间的定时器都删除。
+
+下面的例子展示了一个触发器在窗口结束时间之前触发。当第一个事件被分配到窗口时，这个触发器注册了一个定时器，定时时间为水位线之前一秒钟。当定时事件执行，将会注册一个新的定时事件，这样，这个触发器每秒钟最多触发一次。
+
+[source,scala]
+----
+class OneSecondIntervalTrigger
+    extends Trigger[SensorReading, TimeWindow] {
+
+  override def onElement(
+    r: SensorReading,
+    timestamp: Long,
+    window: TimeWindow,
+    ctx: Trigger.TriggerContext
+  ): TriggerResult = {
+    val firstSeen: ValueState[Boolean] = ctx
+      .getPartitionedState(
+        new ValueStateDescriptor[Boolean](
+          "firstSeen", classOf[Boolean]
+        )
+      )
+
+    if (!firstSeen.value()) {
+      val t = ctx.getCurrentWatermark + (1000 - (ctx.getCurrentWatermark % 1000))
+      ctx.registerEventTimeTimer(t)
+      ctx.registerEventTimeTimer(window.getEnd)
+      firstSeen.update(true)
+    }
+
+    TriggerResult.CONTINUE
+  }
+
+  override def onEventTime(
+    timestamp: Long,
+    window: TimeWindow,
+    ctx: Trigger.TriggerContext
+  ): TriggerResult = {
+    if (timestamp == window.getEnd) {
+      TriggerResult.FIRE_AND_PURGE
+    } else {
+      val t = ctx.getCurrentWatermark + (1000 - (ctx.getCurrentWatermark % 1000))
+      if (t < window.getEnd) {
+        ctx.registerEventTimeTimer(t)
+      }
+      TriggerResult.FIRE
+    }
+  }
+
+  override def onProcessingTime(
+    timestamp: Long,
+    window: TimeWindow,
+    ctx: Trigger.TriggerContext
+  ): TriggerResult = {
+    TriggerResult.CONTINUE
+  }
+
+  override def clear(
+    window: TimeWindow,
+    ctx: Trigger.TriggerContext
+  ): Unit = {
+    val firstSeen: ValueState[Boolean] = ctx
+      .getPartitionedState(
+        new ValueStateDescriptor[Boolean](
+          "firstSeen", classOf[Boolean]
+        )
+      )
+    firstSeen.clear()
+  }
+}
+----
+
+=== EVICTORS
+
+evictor可以在window function求值之前或者之后移除窗口中的元素。
+
+我们看一下Evictor的接口定义：
+
+[source,java]
+----
+public interface Evictor<T, W extends Window>
+    extends Serializable {
+  void evictBefore(
+    Iterable<TimestampedValue<T>> elements,
+    int size,
+    W window,
+    EvictorContext evictorContext);
+
+  void evictAfter(
+    Iterable<TimestampedValue<T>> elements,
+    int size,
+    W window,
+    EvictorContext evictorContext);
+
+  interface EvictorContext {
+
+    long getCurrentProcessingTime();
+
+    long getCurrentWatermark();
+  }
+}
+----
+
+evictBefore()和evictAfter()分别在window function计算之前或者之后调用。Iterable迭代器包含了窗口所有的元素，size为窗口中元素的数量，window object和EvictorContext可以访问当前处理时间和水位线。可以对Iterator调用remove()方法来移除窗口中的元素。
+
+
+evictor也经常被用在GlobalWindow上，用来清楚部分元素，而不是将窗口中的元素全部清空。
+
+=== 处理迟到的元素(Handling Late Data)
+
+水位线可以用来平衡计算的完整性和延迟两方面。除非我们选择一种非常保守的水位线策略(最大延时设置的非常大，以至于包含了所有的元素，但结果是非常大的延迟)，否则我们总需要处理迟到的元素。
+
+迟到的元素是指当这个元素来到时，这个元素所对应的窗口已经计算完毕了(也就是说水位线已经没过窗口结束时间了)。这说明迟到这个特性只针对事件时间。
+
+DataStream API提供了三种策略来处理迟到元素
+
+* 直接抛弃迟到的元素
+* 将迟到的元素发送到另一条流中去
+* 可以更新窗口已经计算完的结果，并发出计算结果。
+
+==== 抛弃迟到元素
+
+抛弃迟到的元素是event time window operator的默认行为。也就是说一个迟到的元素不会创建一个新的窗口。
+
+process function可以通过比较迟到元素的时间戳和当前水位线的大小来很轻易的过滤掉迟到元素。
+
+==== 重定向迟到元素
+
+迟到的元素也可以使用侧输出(side output)特性被重定向到另外的一条流中去。迟到元素所组成的侧输出流可以继续处理或者sink到持久化设施中去。
+
+例子
+
+[source,scala]
+----
+val readings: DataStream[SensorReading] = ???
+
+val countPer10Secs: DataStream[(String, Long, Int)] = readings
+  .keyBy(_.id)
+  .timeWindow(Time.seconds(10))
+  .sideOutputLateData(new OutputTag[SensorReading]("late-readings"))
+  .process(new CountFunction())
+
+val lateStream: DataStream[SensorReading] = countPer10Secs
+  .getSideOutput(new OutputTag[SensorReading]("late-readings"))
+----
+
+下面这个例子展示了ProcessFunction如何过滤掉迟到的元素然后将迟到的元素发送到侧输出流中去。
+
+[source,scala]
+----
+val readings: DataStream[SensorReading] = ???
+val filteredReadings: DataStream[SensorReading] = readings
+  .process(new LateReadingsFilter)
+
+// retrieve late readings
+val lateReadings: DataStream[SensorReading] = filteredReadings
+  .getSideOutput(new OutputTag[SensorReading]("late-readings"))
+
+
+/** A ProcessFunction that filters out late sensor readings and 
+  * re-directs them to a side output */
+class LateReadingsFilter 
+    extends ProcessFunction[SensorReading, SensorReading] {
+
+  val lateReadingsOut = new OutputTag[SensorReading]("late-readings")
+
+  override def processElement(
+      r: SensorReading,
+      ctx: ProcessFunction[SensorReading, SensorReading]#Context,
+      out: Collector[SensorReading]): Unit = {
+
+    // compare record timestamp with current watermark
+    if (r.timestamp < ctx.timerService().currentWatermark()) {
+      // this is a late reading => redirect it to the side output
+      ctx.output(lateReadingsOut, r)
+    } else {
+      out.collect(r)
+    }
+  }
+}
+----
+
+==== 使用迟到元素更新窗口计算结果(Updating Results by Including Late Events)
+
+由于存在迟到的元素，所以已经计算出的窗口结果是不准确和不完全的。我们可以使用迟到元素更新已经计算完的窗口结果。
+
+如果我们要求一个operator支持重新计算和更新已经发出的结果，就需要在第一次发出结果以后也要保存之前所有的状态。但显然我们不能一直保存所有的状态，肯定会在某一个时间点将状态清空，而一旦状态被清空，结果就再也不能重新计算或者更新了。而迟到的元素只能被抛弃或者发送到侧输出流。
+
+window operator API提供了方法来明确声明我们要等待迟到元素。当使用event-time window，我们可以指定一个时间段叫做allowed lateness。window operator如果设置了allowed lateness，这个window operator在水位线没过窗口结束时间时也将不会删除窗口和窗口中的状态。窗口会在一段时间内(allowed lateness设置的)保留所有的元素。
+
+当迟到元素在allowed lateness时间内到达时，这个迟到元素会被实时处理并发送到触发器(trigger)。当水位线没过了窗口结束时间+allowed lateness时间时，窗口会被删除，并且所有后来的迟到的元素都会被丢弃。
+
+Allowed lateness可以使用allowedLateness()方法来指定，如下所示：
+
+[source,scala]
+----
+val readings: DataStream[SensorReading] = ???
+
+val countPer10Secs: DataStream[(String, Long, Int, String)] = readings
+  .keyBy(_.id)
+  .timeWindow(Time.seconds(10))
+  // process late readings for 5 additional seconds
+  .allowedLateness(Time.seconds(5))
+  // count readings and update results if late readings arrive
+  .process(new UpdatingWindowCountFunction)
+
+  /** A counting WindowProcessFunction that distinguishes between 
+  * first results and updates. */
+class UpdatingWindowCountFunction
+    extends ProcessWindowFunction[
+            SensorReading, (String, Long, Int, String), String, TimeWindow] {
+
+  override def process(
+      id: String,
+      ctx: Context,
+      elements: Iterable[SensorReading],
+      out: Collector[(String, Long, Int, String)]): Unit = {
+
+    // count the number of readings
+    val cnt = elements.count(_ => true)
+
+    // state to check if this is the first evaluation of the window or not
+    val isUpdate = ctx.windowState.getState(
+      new ValueStateDescriptor[Boolean]("isUpdate", Types.of[Boolean]))
+
+    if (!isUpdate.value()) {
+      // first evaluation, emit first result
+      out.collect((id, ctx.window.getEnd, cnt, "first"))
+      isUpdate.update(true)
+    } else {
+      // not the first evaluation, emit an update
+      out.collect((id, ctx.window.getEnd, cnt, "update"))
+    }
+  }
+}
+----

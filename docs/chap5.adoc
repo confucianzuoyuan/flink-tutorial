@@ -1,0 +1,134 @@
+== Time与Window
+
+=== Time
+在Flink的流式处理中，会涉及到时间的不同概念，如下图所示：
+
+image::event_ingestion_processing_time.png[]
+
+* *Event Time*：是事件创建的时间。它通常由事件中的时间戳描述，例如采集的日志数据中，每一条日志都会记录自己的生成时间，Flink通过时间戳分配器访问事件时间戳。
+* *Ingestion Time*：是数据进入Flink的时间。
+* *Processing Time*：是每一个执行基于时间操作的算子的本地系统时间，与机器相关，默认的时间属性就是Processing Time。
+
+*著名的星球大战的例子*
+
+image::starwars.png[]
+
+例如，一条日志进入Flink的时间为``2017-11-12 10:00:00.123``，到达Window的系统时间为``2017-11-12 10:00:01.234``，日志的内容如下:
+
+----
+2017-11-02 18:37:15.624 INFO Fail over to rm2
+----
+
+对于业务来说，要统计1min内的故障日志个数，哪个时间是最有意义的？—— Event Time，因为我们要根据日志的生成时间进行统计。
+
+设置时间：
+
+[source,scala]
+----
+object AverageSensorReadings {
+    def main(args: Array[String]) {
+        val env = StreamExecutionEnvironment.getExecutionEnvironment
+
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+
+        val sensorData: DataStream[SensorReading] = env.addSource(...)
+    }
+}
+----
+
+如果想设置为Processing Time，将TimeCharacteristic.EventTime替换为TimeCharacteristic.ProcessingTime即可。
+
+=== Window
+
+==== Window概述
+
+Streaming流式计算是一种被设计用于处理无限数据集的数据处理引擎，而无限数据集是指一种不断增长的本质上无限的数据集，而Window是一种切割无限数据为有限块进行处理的手段。
+
+Window是无限数据流处理的核心，Window将一个无限的Stream拆分成有限大小的”Buckets”桶，我们可以在这些桶上做计算操作。
+
+==== Window类型
+
+Window可以分成两类：
+
+* *CountWindow*：按照指定的数据条数生成一个Window，与时间无关。
+
+* *TimeWindow*：按照时间生成Window。
+
+对于TimeWindow，可以根据窗口实现原理的不同分成三类：滚动窗口(Tumbling Window)、滑动窗口(Sliding Window)和会话窗口(Session Window)。
+
+*滚动窗口(Tumbling Windows)*
+
+将数据依据固定的窗口长度对数据进行切片。
+
+特点：时间对齐，窗口长度固定，没有重叠。
+
+滚动窗口分配器将每个元素分配到一个指定窗口大小的窗口中，滚动窗口有一个固定的大小，并且不会出现重叠。例如：如果你指定了一个5分钟大小的滚动窗口，窗口的创建如下图所示：
+
+image::tumbling-windows.png[]
+
+适用场景：适合做BI统计等(做每个时间段的聚合计算)。
+
+*滑动窗口(Sliding Windows)*
+
+滑动窗口是固定窗口的更广义的一种形式，滑动窗口由固定的窗口长度和滑动间隔组成。
+
+特点：时间对齐，窗口长度固定，有重叠。
+
+滑动窗口分配器将元素分配到固定长度的窗口中，与滚动窗口类似，窗口的大小由窗口大小参数来配置，另一个窗口滑动参数控制滑动窗口开始的频率。因此，滑动窗口如果滑动参数小于窗口大小的话，窗口是可以重叠的，在这种情况下元素会被分配到多个窗口中。
+
+例如，你有10分钟的窗口和5分钟的滑动，那么每个窗口中5分钟的窗口里包含着上个10分钟产生的数据，如下图所示：
+
+image::sliding-windows.png[]
+
+适用场景：对最近一个时间段内的统计(求某接口最近5min的失败率来决定是否要报警)。
+
+*会话窗口(Session Windows)*
+
+由一系列事件组合一个指定时间长度的timeout间隙组成，类似于web应用的session，也就是一段时间没有接收到新数据就会生成新的窗口。
+
+特点：时间无对齐。
+
+session窗口分配器通过session活动来对元素进行分组，session窗口跟滚动窗口和滑动窗口相比，不会有重叠和固定的开始时间和结束时间的情况，相反，当它在一个固定的时间周期内不再收到元素，即非活动间隔产生，那个这个窗口就会关闭。一个session窗口通过一个session间隔来配置，这个session间隔定义了非活跃周期的长度，当这个非活跃周期产生，那么当前的session将关闭并且后续的元素将被分配到新的session窗口中去。
+
+image::session-windows.png[]
+
+=== Window API
+
+*TimeWindow*
+
+TimeWindow是将指定时间范围内的所有数据组成一个Window，一次对一个Window里面的所有数据进行计算。
+
+*滚动窗口*
+
+Flink默认的时间窗口根据**Processing Time**进行窗口的划分，将Flink获取到的数据根据进入Flink的时间划分到不同的窗口中。
+
+[source,scala]
+----
+// 每个传感器每个滚动窗口(15s)的最小温度值
+val minTempPerWindow: DataStream[(String, Double)] = sensorData
+  .map(r => (r.id, r.temperature))
+  // 按照传感器id分流
+  .keyBy(_._1)
+  .timeWindow(Time.seconds(15))
+  .reduce((r1, r2) => (r1._1, r1._2.min(r2._2)))
+----
+
+时间间隔可以通过Time.milliseconds(x)，Time.seconds(x)，Time.minutes(x)等其中的一个来指定。
+
+*滑动窗口*
+
+滑动窗口和滚动窗口的函数名是完全一致的，只是在传参数时需要传入两个参数，一个是window_size，一个是sliding_size。
+
+下面代码中的sliding_size设置为了5s，也就是说，窗口每5s就计算一次，每一次计算的window范围是15s内的所有元素。
+
+[source,scala]
+----
+val minTempPerWindow: DataStream[(String, Double)] = sensorData
+  .map(r => (r.id, r.temperature))
+  // 按照传感器id分流
+  .keyBy(_._1)
+  .timeWindow(Time.seconds(15), Time.seconds(5))
+  .reduce((r1, r2) => (r1._1, r1._2.min(r2._2)))
+----
+
+时间间隔可以通过Time.milliseconds(x)，Time.seconds(x)，Time.minutes(x)等其中的一个来指定。
