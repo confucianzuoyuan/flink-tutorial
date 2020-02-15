@@ -1,81 +1,5 @@
 == Flink运行架构
 
-=== 任务调度原理
-
-image::processes.png[]
-
-客户端不是运行时和程序执行的一部分，但它用于准备并发送Dataflow（JobGraph）给Master（JobManager），然后，客户端断开连接或者维持连接以等待接收计算结果。
-
-当Flink集群启动后，首先会启动一个JobManger和一个或多个的TaskManager。由Client提交任务给JobManager，JobManager再调度任务到各个TaskManager去执行，然后TaskManager将心跳和统计信息汇报给JobManager。TaskManager之间以流的形式进行数据的传输。上述三者均为独立的JVM进程。
-
-Client为提交Job的客户端，可以运行在任何机器上(与JobManager环境连通即可)。提交Job后，Client可以结束进程(Streaming的任务)，也可以不结束并等待结果返回。
-
-JobManager主要负责调度Job并协调Task做Checkpoint。从Client处接收到Job和JAR包等资源后，会生成优化后的执行计划，并以Task为单元调度到各个TaskManager去执行。
-
-TaskManager在启动的时候就设置好了槽位数(Slot)，每个Slot能启动一个Task，Task为线程。从JobManager处接收需要部署的Task，部署启动后，与自己的上游建立Netty footnote:[Java异步IO库] 连接，接收数据并处理。
-
-*关于执行图*
-
-Flink中的执行图可以分成四层：
-
-image::dot-example1.png[]
-
-*StreamGraph*：是根据用户通过Stream API编写的代码生成的最初的图。用来表示程序的拓扑结构。
-
-*JobGraph*：StreamGraph经过优化后生成了JobGraph，提交给JobManager的数据结构。主要的优化为，将多个符合条件的节点chain在一起作为一个节点，这样可以减少数据在节点之间流动所需要的序列化/反序列化/传输消耗。
-
-*ExecutionGraph*：JobManager根据JobGraph生成ExecutionGraph。ExecutionGraph是JobGraph的并行化版本，是调度层最核心的数据结构。
-
-*物理执行图*：JobManager根据ExecutionGraph对Job进行调度后，在各个TaskManager上部署Task后形成的"图"，并不是一个具体的数据结构。
-
-image::jobgraph.png[]
-
-=== Worker与Slots
-
-每一个Worker(TaskManager)是一个JVM进程，它可能会在独立的线程上执行一个或多个SubTask。为了控制一个Worker能接收多少个Task，Worker通过Task Slot来进行控制(一个Worker至少有一个Task Slot)。
-
-每个Task Slot表示TaskManager拥有资源的一个固定大小的子集。假如一个TaskManager有三个Slot，那么它会将其管理的内存分成三份给各个Slot。资源Slot化意味着一个SubTask将不需要跟来自其他Job的SubTask竞争被管理的内存，取而代之的是它将拥有一定数量的内存储备。需要注意的是，这里不会涉及到CPU的隔离，Slot目前仅仅用来隔离Task的受管理的内存。
-
-通过调整Task Slot的数量，允许用户定义SubTask之间如何互相隔离。如果一个TaskManager一个Slot，那将意味着每个Task Group运行在独立的JVM中(该JVM可能是通过一个特定的容器启动的)，而一个TaskManager多个Slot意味着更多的SubTask可以共享同一个JVM。而在同一个JVM进程中的Task将共享TCP连接(基于IO多路复用)和心跳消息。它们也可能共享数据集和数据结构，因此这减少了每个Task的负载。
-
-image::tasks_slots.png[]
-
-Task Slot是静态的概念，是指TaskManager具有的并发执行能力，可以通过参数taskmanager.numberOfTaskSlots进行配置，而并行度parallelism是动态概念，即TaskManager运行程序时实际使用的并发能力，可以通过参数parallelism.default进行配置。
-
-也就是说，假设一共有3个TaskManager，每一个TaskManager中的分配3个Task Slot，也就是每个TaskManager可以接收3个Task，一共9个Task Slot，如果我们设置parallelism.default=1，即运行程序默认的并行度为1，9个TaskSlot只用了1个，有8个空闲，因此，设置合适的并行度才能提高效率。
-
-image::slots_parallelism.png[]
-
-=== 程序与数据流
-
-image::program_dataflow.png[]
-
-所有的Flink程序都是由三部分组成的：Source、Transformation和Sink。
-
-Source负责读取数据源，Transformation利用各种算子进行处理加工，Sink负责输出。
-
-在运行时，Flink上运行的程序会被映射成Streaming Dataflows，它包含了这三部分。每一个Dataflow以一个或多个sources开始以一个或多个sinks结束。dataflow类似于任意的有向无环图(DAG)。在大部分情况下，程序中的transformations跟dataflow中的operator是一一对应的关系，但有时候，一个transformation可能对应多个operator。
-
-=== 并行数据流
-
-Flink程序的执行具有并行、分布式的特性。在执行过程中，一个stream包含一个或多个stream partition，而每一个operator包含一个或多个operator subtask，这些operator subtasks在不同的线程、不同的物理机或不同的容器中彼此互不依赖的执行。
-
-一个特定operator的subtask的个数被称之为其parallelism(并行度)。一个stream的并行度总是等同于其producing operator的并行度。一个程序中，不同的operator可能具有不同的并行度。
-
-image::parallel_dataflow.png[]
-
-Stream在operator之间传输数据的形式可以是one-to-one(forwarding)的模式也可以是redistributing的模式，具体是哪一种形式，取决于operator的种类。
-
-*One-to-One*：stream(比如在source和map operator之间)维护着分区以及元素的顺序。那意味着map operator的subtask看到的元素的个数以及顺序跟source operator的subtask生产的元素的个数、顺序相同，map、fliter、flatMap等算子都是one-to-one的对应关系。类似于spark中的窄依赖。
-
-*Redistributing*：stream（map()跟keyBy/window之间或者keyBy/window跟sink之间）的分区会发生改变。每一个operator subtask依据所选择的transformation发送数据到不同的目标subtask。例如，keyBy()基于hashCode重分区、broadcast和rebalance会随机重新分区，这些算子都会引起redistributing过程，而redistributing过程就类似于Spark中的shuffle过程。类似于spark中的宽依赖。
-
-=== task与operator chains
-
-相同并行度的one to one操作，Flink这样相连的operator链接在一起形成一个task，原来的operator成为里面的subtask。将operators链接成task是非常有效的优化：它能减少线程之间的切换和基于缓存区的数据交换，在减少时延的同时提升吞吐量。链接的行为可以在编程API中进行指定。
-
-image::operatorschains.png[]
-
 === 系统架构
 
 Flink是一个用于有状态的并行数据流处理的分布式系统。它由多个进程构成，这些进程一般会分布运行在不同的机器上。对于分布式系统来说，面对的常见问题有：集群中资源的分配和管理、进程协调调度、持久化和高可用的数据存储，以及故障恢复。
@@ -123,7 +47,7 @@ TaskManager在同一个JVM中以多线程的方式执行任务。线程较进程
 
 ==== 高可用配置
 
-流式应用程序一般被设计为7 x 24 小时运行。所以很重要的一点是：即使出现了进程挂掉的情况，应用仍需要继续保持运行。为了从故障恢复，系统首先需要重启进程、然后重启应用并恢复它的状态。接下来，我们就来了解Flink如何重启失败的进程。
+流式应用程序一般被设计为7 x 24小时运行。所以很重要的一点是：即使出现了进程挂掉的情况，应用仍需要继续保持运行。为了从故障恢复，系统首先需要重启进程、然后重启应用并恢复它的状态。接下来，我们就来了解Flink如何重启失败的进程。
 
 *TaskManager故障*
 
