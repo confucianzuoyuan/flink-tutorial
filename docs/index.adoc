@@ -8,8 +8,6 @@ v1.0, 2019-06-01
 :imagesdir: images
 :sectnums:
 
-image::atguigu.jpg[atguigu, 300, 200]
-
 include::chap1.adoc[]
 
 include::chap2.adoc[]

@@ -216,7 +216,7 @@ Flink提供了8个Process Function：
 * ProcessWindowFunction
 * ProcessAllWindowFunction
 
-重点介绍KeyedProcessFunction
+我们这里详细介绍一下KeyedProcessFunction。
 
 KeyedProcessFunction用来操作KeyedStream。KeyedProcessFunction会处理流的每一个元素，输出为0个、1个或者多个元素。所有的Process Function都继承自RichFunction接口，所以都有open()、close()和getRuntimeContext()等方法。而KeyedProcessFunction[KEY, IN, OUT]还额外提供了两个方法:
 
@@ -227,20 +227,22 @@ KeyedProcessFunction用来操作KeyedStream。KeyedProcessFunction会处理流�
 
 Context和OnTimerContext所持有的TimerService对象拥有以下方法:
 
-* currentProcessingTime(): Long 返回当前处理时间
-* currentWatermark(): Long 返回当前水位线的时间戳
-* registerProcessingTimeTimer(timestamp: Long): Unit 会注册当前key的processing time的timer。当processing time到达定时时间时，触发timer。
-* registerEventTimeTimer(timestamp: Long): Unit 会注册当前key的event time timer。当水位线大于等于定时器注册的时间时，触发定时器执行回调函数。
-* deleteProcessingTimeTimer(timestamp: Long): Unit 删除之前注册处理时间定时器。如果没有这个时间戳的定时器，则不执行。
-* deleteEventTimeTimer(timestamp: Long): Unit 删除之前注册的事件时间定时器，如果没有此时间戳的定时器，则不执行。
+* ``currentProcessingTime(): Long`` 返回当前处理时间
+* ``currentWatermark(): Long`` 返回当前水位线的时间戳
+* ``registerProcessingTimeTimer(timestamp: Long): Unit`` 会注册当前key的processing time的timer。当processing time到达定时时间时，触发timer。
+* ``registerEventTimeTimer(timestamp: Long): Unit`` 会注册当前key的event time timer。当水位线大于等于定时器注册的时间时，触发定时器执行回调函数。
+* ``deleteProcessingTimeTimer(timestamp: Long): Unit`` 删除之前注册处理时间定时器。如果没有这个时间戳的定时器，则不执行。
+* ``deleteEventTimeTimer(timestamp: Long): Unit`` 删除之前注册的事件时间定时器，如果没有此时间戳的定时器，则不执行。
 
-当定时器timer触发时，执行回调函数onTimer()。
+当定时器timer触发时，执行回调函数onTimer()。processElement()方法和onTimer()方法是同步（不是异步）方法，这样可以避免并发访问和操作状态。
 
-NOTE: 定时器timer只能在keyed streams上面使用。
+NOTE: 定时器timer只能在KeyedStream上面使用。
+
+针对每一个key和timestamp，只能注册一个定期器。也就是说，每一个key可以注册多个定时器，但在每一个时间戳只能注册一个定时器。KeyedProcessFunction默认将所有定时器的时间戳放在一个优先队列中。在Flink做检查点操作时，定时器也会被保存到状态后端中。
 
 举个例子说明KeyedProcessFunction如何操作KeyedStream。
 
-需求：监控温度传感器的温度值，如果温度值在一秒钟之内(processing time)连续上升，报警。
+下面的程序展示了如何监控温度传感器的温度值，如果温度值在一秒钟之内(processing time)连续上升，报警。
 
 [source,scala]
 ----
@@ -304,14 +306,14 @@ class TempIncreaseAlertFunction extends KeyedProcessFunction[String, SensorReadi
 }
 ----
 
-==== Emitting to Side Outputs(侧输出)
+==== 将事件发送到侧输出(Emitting to Side Outputs)
 
 大部分的DataStream API的算子的输出是单一输出，也就是某种数据类型的流。除了split算子，可以将一条流分成多条流，这些流的数据类型也都相同。process function的side outputs功能可以产生多条流，并且这些流的数据类型可以不一样。一个side output可以定义为OutputTag[X]对象，X是输出流的数据类型。process function可以通过Context对象发射一个事件到一个或者多个side outputs。
 
 例子
 
 [source,scala]
-.Example6_6.scala
+.Example 6-6
 ----
 val monitoredReadings: DataStream[SensorReading] = readings
   .process(new FreezingMonitor)
@@ -326,7 +328,7 @@ readings.print()
 接下来我们实现FreezingMonitor函数，用来监控传感器温度值，将温度值低于32F的温度输出到side output。
 
 [source,scala]
-.Example6_7.scala
+.Example 6-7
 ----
 class FreezingMonitor extends ProcessFunction[SensorReading, SensorReading] {
   // define a side output tag
@@ -352,7 +354,7 @@ class FreezingMonitor extends ProcessFunction[SensorReading, SensorReading] {
 对于两条输入流，DataStream API提供了CoProcessFunction这样的low-level操作。CoProcessFunction提供了操作每一个输入流的方法: processElement1()和processElement2()。类似于ProcessFunction，这两种方法都通过Context对象来调用。这个Context对象可以访问事件数据，定时器时间戳，TimerService，以及side outputs。CoProcessFunction也提供了onTimer()回调函数。下面的例子展示了如何使用CoProcessFunction来合并两条流。
 
 [source,scala]
-.Example6_8.scala
+.Example 6-8
 ----
 // ingest sensor stream
 val readings: DataStream[SensorReading] = ...
@@ -374,7 +376,7 @@ val forwardedReadings = readings
 ----
 
 [source,scala]
-.Example6_9.scala
+.Example 6-9
 ----
 class ReadingFilter extends CoProcessFunction[SensorReading, (String, Long), SensorReading] {
   // switch to enable forwarding
@@ -425,17 +427,21 @@ class ReadingFilter extends CoProcessFunction[SensorReading, (String, Long), Sen
 
 === 窗口操作符(Window Operators)
 
+窗口操作是流处理程序中很常见的操作。窗口操作允许我们在无限流上的一段有界区间上面做聚合之类的操作。而我们使用基于时间的逻辑来定义区间。窗口操作符提供了一种将数据放进一个桶，并根据桶中的数据做计算的方法。例如，我们可以将事件放进5分钟的滚动窗口中，然后计数。
+
+NOTE: 无限流转化成有限数据的方法：使用窗口。
+
 ==== 定义窗口操作符
 
-window算子可以在keyed stream或者nokeyed stream上面使用。
+Window算子可以在keyed stream或者nokeyed stream上面使用。
 
-创建一个window算子，需要指定两个部分：
+创建一个Window算子，需要指定两个部分：
 
-1. window assigner定义了流的元素如何分配到window中。window assigner将会产生一条WindowedStream(或者AllWindowedStream，如果是nonkeyed DataStream的话)
+1. ``window assigner``定义了流的元素如何分配到window中。window assigner将会产生一条WindowedStream(或者AllWindowedStream，如果是nonkeyed DataStream的话)
 
 2. window function用来处理WindowedStream(AllWindowedStream)中的元素。
 
-例子：
+下面的代码说明了如何使用窗口操作符。
 
 [source,scala]
 ----
@@ -449,7 +455,20 @@ stream
   .reduce/aggregate/process(...) // 指定window function
 ----
 
-==== 内置的窗口分配器(window assigner)
+NOTE: 我们的学习重点是Keyed WindowedStream。
+
+==== 内置的窗口分配器(built-in window assigner)
+
+窗口分配器将会根据事件的事件时间或者处理时间来将事件分配到对应的窗口中去。窗口包含开始时间和结束时间这两个时间戳。
+
+所有的窗口分配器都包含一个默认的触发器：
+
+* 对于事件时间：当水位线超过窗口结束时间，触发窗口的求值操作。
+* 对于处理时间：当机器时间超过窗口结束时间，触发窗口的求值操作。
+
+NOTE: 需要注意的是：当处于某个窗口的第一个事件到达的时候，这个窗口才会被创建。Flink不会对空窗口求值。
+
+Flink创建的窗口类型是``TimeWindow``，包含开始时间和结束时间，区间是左闭右开的，也就是说包含开始时间戳，不包含结束时间戳。
 
 *滚动窗口(tumbling windows)*
 
@@ -479,7 +498,13 @@ val avgTemp = sensorData
   .process(new TemperatureAverager)
 ----
 
+默认情况下，滚动窗口会和``1970- 01-01-00:00:00.000``对齐，例如一个1小时的滚动窗口将会定义以下开始时间的窗口：00:00:00，01:00:00，02:00:00，等等。
+
 *滑动窗口(sliding window)*
+
+对于滑动窗口，我们需要指定窗口的大小和滑动的步长。当滑动步长小于窗口大小时，窗口将会出现重叠，而元素会被分配到不止一个窗口中去。当滑动步长大于窗口大小时，一些元素可能不会被分配到任何窗口中去，会被直接丢弃。
+
+下面的代码定义了窗口大小为1小时，滑动步长为15分钟的窗口。每一个元素将被分配到4个窗口中去。
 
 image::spaf_0602.png[caption="图6-2"]
 
@@ -503,6 +528,8 @@ val slidingAvgTemp = sensorData
 
 *会话窗口(session windows)*
 
+会话窗口不可能重叠，并且会话窗口的大小也不是固定的。不活跃的时间长度定义了会话窗口的界限。不活跃的时间是指这段时间没有元素到达。下图展示了元素如何被分配到会话窗口。
+
 image::spaf_0603.png[caption="图6-3"]
 
 [source,scala]
@@ -518,6 +545,8 @@ val sessionWindows = sensorData
   .process(...)
 ----
 
+由于会话窗口的开始时间和结束时间取决于接收到的元素，所以窗口分配器无法立即将所有的元素分配到正确的窗口中去。相反，会话窗口分配器最开始时先将每一个元素分配到它自己独有的窗口中去，窗口开始时间是这个元素的时间戳，窗口大小是session gap的大小。接下来，会话窗口分配器会将出现重叠的窗口合并成一个窗口。
+
 ==== 调用窗口计算函数
 
 window functions定义了窗口中数据的计算逻辑。有两种计算逻辑：
@@ -531,7 +560,7 @@ window functions定义了窗口中数据的计算逻辑。有两种计算逻辑�
 例子: 计算每个传感器15s窗口中的温度最小值
 
 [source,scala]
-.Example6_10
+.Example 6-10
 ----
 val minTempPerWindow: DataStream[(String, Double)] = sensorData
   .map(r => (r.id, r.temperature))
@@ -567,7 +596,7 @@ IN是输入元素的类型，ACC是累加器的类型，OUT是输出元素的类
 例子
 
 [source,scala]
-.Example6_11
+.Example 6-11
 ----
 val avgTempPerWindow: DataStream[(String, Double)] = sensorData
   .map(r => (r.id, r.temperature))
@@ -644,7 +673,7 @@ process()方法接受的参数为：window的key，Iterable迭代器包含窗口
 例子：计算5s滚动窗口中的最低和最高的温度。输出的元素包含了(流的Key, 最低温度, 最高温度, 窗口结束时间)。
 
 [source,scala]
-.Example6_12
+.Example 6-12
 ----
 val minMaxTempPerWindow: DataStream[MinMaxTemp] = sensorData
   .keyBy(_.id)
@@ -690,7 +719,7 @@ input
 我们把之前的需求重新使用以上两种方法实现一下。
 
 [source,scala]
-.Example6_13
+.Example 6-13
 ----
 case class MinMaxTemp(id: String, min: Double, max: Double, endTs: Long)
 

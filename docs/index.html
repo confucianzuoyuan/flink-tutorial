@@ -624,9 +624,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_实现udf函数更细粒度的控制流">5.12. 实现UDF函数，更细粒度的控制流</a>
 <ul class="sectlevel3">
-<li><a href="#_function_classes">5.12.1. Function Classes</a></li>
-<li><a href="#_lambda_functions">5.12.2. Lambda Functions</a></li>
-<li><a href="#_rich_functions">5.12.3. Rich Functions</a></li>
+<li><a href="#_函数类function_classes">5.12.1. 函数类(Function Classes)</a></li>
+<li><a href="#_匿名函数lambda_functions">5.12.2. 匿名函数(Lambda Functions)</a></li>
+<li><a href="#_富函数rich_functions">5.12.3. 富函数(Rich Functions)</a></li>
 </ul>
 </li>
 </ul>
@@ -643,14 +643,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_process_functionlow_level_api">6.2. Process Function(Low-Level API)</a>
 <ul class="sectlevel3">
 <li><a href="#_timerservice_and_timers">6.2.1. TimerService and Timers</a></li>
-<li><a href="#_emitting_to_side_outputs侧输出">6.2.2. Emitting to Side Outputs(侧输出)</a></li>
+<li><a href="#_将事件发送到侧输出emitting_to_side_outputs">6.2.2. 将事件发送到侧输出(Emitting to Side Outputs)</a></li>
 <li><a href="#_coprocessfunction">6.2.3. CoProcessFunction</a></li>
 </ul>
 </li>
 <li><a href="#_窗口操作符window_operators">6.3. 窗口操作符(Window Operators)</a>
 <ul class="sectlevel3">
 <li><a href="#_定义窗口操作符">6.3.1. 定义窗口操作符</a></li>
-<li><a href="#_内置的窗口分配器window_assigner">6.3.2. 内置的窗口分配器(window assigner)</a></li>
+<li><a href="#_内置的窗口分配器built_in_window_assigner">6.3.2. 内置的窗口分配器(built-in window assigner)</a></li>
 <li><a href="#_调用窗口计算函数">6.3.3. 调用窗口计算函数</a></li>
 <li><a href="#_自定义窗口操作符windows_operators">6.3.4. 自定义窗口操作符(windows operators)</a></li>
 </ul>
@@ -729,35 +729,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_flink_cep简介">9. Flink CEP简介</a></li>
 <li><a href="#_尚硅谷大数据技术之电商用户行为分析">10. 尚硅谷大数据技术之电商用户行为分析</a>
 <ul class="sectlevel2">
-<li><a href="#_项目整体介绍">10.1. 项目整体介绍</a>
+<li><a href="#_数据集解析">10.1. 数据集解析</a>
 <ul class="sectlevel3">
-<li><a href="#_电商的用户行为">10.1.1. 电商的用户行为</a></li>
-<li><a href="#_项目主要模块">10.1.2. 项目主要模块</a></li>
-<li><a href="#_数据源解析">10.1.3. 数据源解析</a></li>
+<li><a href="#_淘宝数据集解析">10.1.1. 淘宝数据集解析</a></li>
+<li><a href="#_apache服务器日志数据集解析">10.1.2. Apache服务器日志数据集解析</a></li>
 </ul>
 </li>
-<li><a href="#_实时热门商品统计">10.2. 实时热门商品统计</a>
-<ul class="sectlevel3">
-<li><a href="#_创建maven项目">10.2.1. 创建Maven项目</a>
-<ul class="sectlevel4">
-<li><a href="#_项目框架搭建">项目框架搭建</a></li>
-<li><a href="#_声明项目中工具的版本信息">声明项目中工具的版本信息</a></li>
-<li><a href="#_添加项目依赖">添加项目依赖</a></li>
-<li><a href="#_数据准备">数据准备</a></li>
-</ul>
-</li>
-<li><a href="#_模块代码实现">10.2.2. 模块代码实现</a></li>
-<li><a href="#_程序主体">10.2.3. 程序主体</a></li>
-<li><a href="#_过滤出点击事件">10.2.4. 过滤出点击事件</a></li>
-<li><a href="#_设置滑动窗口统计点击量">10.2.5. 设置滑动窗口，统计点击量</a>
-<ul class="sectlevel4">
-<li><a href="#_计算最热门top_n商品">计算最热门Top N商品</a></li>
-<li><a href="#_完整代码">完整代码</a></li>
-<li><a href="#_更换kafka作为数据源">更换Kafka作为数据源</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li><a href="#_实时热门商品统计">10.2. 实时热门商品统计</a></li>
 <li><a href="#_实时流量统计">10.3. 实时流量统计</a>
 <ul class="sectlevel3">
 <li><a href="#_模块创建和数据准备">10.3.1. 模块创建和数据准备</a></li>
@@ -1428,7 +1406,7 @@ Socket，文件，Kafka Topic或传感器数据接口中提取数据。数据出
 <p><strong>状态管理</strong></p>
 </div>
 <div class="paragraph">
-<p>系统需要搞笑的管理状态，并保证针对状态的并发更新，不会产生竞争条件（race condition）。</p>
+<p>系统需要高效的管理状态，并保证针对状态的并发更新，不会产生竞争条件（race condition）。</p>
 </div>
 <div class="paragraph">
 <p><strong>状态分区</strong></p>
@@ -3675,10 +3653,7 @@ keyBy()方法不同于分布式转换算子。所有的分布式转换算子将�
 <div class="sect3">
 <h4 id="_为数据类型创建类型信息">5.10.2. 为数据类型创建类型信息</h4>
 <div class="paragraph">
-<p>Flink类型系统的核心类是<code>TypeInformation</code>。它为系统在产生序列化器和比较操作符时，提供了必要的类型信息。例如，如果我们想使用某个key来做联结查询或者分组操作，`TypeInformation`可以让Flink做更严格的类型检查。</p>
-</div>
-<div class="paragraph">
-<p>When an application is submitted for execution, Flink’s type system tries to automatically derive the TypeInformation for every data type that is processed by the framework. A so-called type extractor analyzes the generic types and return types of all functions to obtain the respective TypeInformation objects. Hence, you might use Flink for a while without ever needing to worry about TypeInformation for your data types. However, sometimes the type extractor fails or you might want to define your own types and tell Flink how to handle them efficiently. In such cases, you need to generate a TypeInformation for a specific data type.</p>
+<p>Flink类型系统的核心类是<code>TypeInformation</code>。它为系统在产生序列化器和比较操作符时，提供了必要的类型信息。例如，如果我们想使用某个key来做联结查询或者分组操作，<code>TypeInformation</code>可以让Flink做更严格的类型检查。</p>
 </div>
 <div class="paragraph">
 <p>Flink针对Java和Scala分别提供了类来产生类型信息。在Java中，类是<code>org.apache.flink.api.common.typeinfo.Types</code>，举个例子：</p>
@@ -3838,7 +3813,7 @@ keyBy()方法不同于分布式转换算子。所有的分布式转换算子将�
 <div class="sect2">
 <h3 id="_实现udf函数更细粒度的控制流">5.12. 实现UDF函数，更细粒度的控制流</h3>
 <div class="sect3">
-<h4 id="_function_classes">5.12.1. Function Classes</h4>
+<h4 id="_函数类function_classes">5.12.1. 函数类(Function Classes)</h4>
 <div class="paragraph">
 <p>Flink暴露了所有udf函数的接口(实现方式为接口或者抽象类)。例如MapFunction, FilterFunction, ProcessFunction等等。</p>
 </div>
@@ -3887,7 +3862,10 @@ keyBy()方法不同于分布式转换算子。所有的分布式转换算子将�
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lambda_functions">5.12.2. Lambda Functions</h4>
+<h4 id="_匿名函数lambda_functions">5.12.2. 匿名函数(Lambda Functions)</h4>
+<div class="paragraph">
+<p>匿名函数可以实现一些简单的逻辑，但无法实现一些高级功能，例如访问状态等等。</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">tweets</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
@@ -3896,7 +3874,13 @@ keyBy()方法不同于分布式转换算子。所有的分布式转换算子将�
 </div>
 </div>
 <div class="sect3">
-<h4 id="_rich_functions">5.12.3. Rich Functions</h4>
+<h4 id="_富函数rich_functions">5.12.3. 富函数(Rich Functions)</h4>
+<div class="paragraph">
+<p>我们经常会有这样的需求：在函数处理数据之前，需要做一些初始化的工作；或者需要在处理数据时可以获得函数执行上下文的一些信息；以及在处理完数据时做一些清理工作。而DataStream API就提供了这样的机制。</p>
+</div>
+<div class="paragraph">
+<p>DataStream API提供的所有转换操作函数，都拥有它们的“富”版本，并且我们在使用常规函数或者匿名函数的地方来使用富函数。例如下面就是富函数的一些例子，可以看出，只需要在常规函数的前面加上<code>Rich</code>前缀就是富函数了。</p>
+</div>
 <div class="ulist">
 <ul>
 <li>
@@ -3914,25 +3898,23 @@ keyBy()方法不同于分布式转换算子。所有的分布式转换算子将�
 </ul>
 </div>
 <div class="paragraph">
-<p>所有Flink提供的Function都有Rich版本，提供了更丰富的功能。</p>
-</div>
-<div class="paragraph">
-<p>Rich Function有一个生命周期的概念</p>
+<p>当我们使用富函数时，我们可以实现两个额外的方法：</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>open()方法是rich function的初始化方法，当一个算子例如map或者filter被调用之前open()会被调用。</p>
+<p>open()方法是rich function的初始化方法，当一个算子例如map或者filter被调用之前open()会被调用。open()函数通常用来做一些只需要做一次即可的初始化工作。</p>
 </li>
 <li>
-<p>close()方法是生命周期中的最后一个调用的方法，做一些清理工作。</p>
-</li>
-<li>
-<p>getRuntimeContext()方法提供了函数的RuntimeContext的一些信息，例如函数执行的并行度，任务的名字，以及state状态</p>
+<p>close()方法是生命周期中的最后一个调用的方法，通常用来做一些清理工作。</p>
 </li>
 </ul>
 </div>
+<div class="paragraph">
+<p>另外，getRuntimeContext()方法提供了函数的RuntimeContext的一些信息，例如函数执行的并行度，当前子任务的索引，当前子任务的名字。同时还它还包含了访问<strong>分区状态</strong>的方法。下面看一个例子：</p>
+</div>
 <div class="listingblock">
+<div class="title">Example5_3</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">class</span> <span class="tok-nc">MyFlatMap</span> <span class="tok-k">extends</span> <span class="tok-nc">RichFlatMapFunction</span><span class="tok-o">[</span><span class="tok-kt">Int</span>, <span class="tok-o">(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-o">{</span>
   <span class="tok-k">var</span> <span class="tok-n">subTaskIndex</span> <span class="tok-k">=</span> <span class="tok-mi">0</span>
@@ -4325,7 +4307,7 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
 </ul>
 </div>
 <div class="paragraph">
-<p>重点介绍KeyedProcessFunction</p>
+<p>我们这里详细介绍一下KeyedProcessFunction。</p>
 </div>
 <div class="paragraph">
 <p>KeyedProcessFunction用来操作KeyedStream。KeyedProcessFunction会处理流的每一个元素，输出为0个、1个或者多个元素。所有的Process Function都继承自RichFunction接口，所以都有open()、close()和getRuntimeContext()等方法。而KeyedProcessFunction[KEY, IN, OUT]还额外提供了两个方法:</p>
@@ -4348,27 +4330,27 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
 <div class="ulist">
 <ul>
 <li>
-<p>currentProcessingTime(): Long 返回当前处理时间</p>
+<p><code>currentProcessingTime(): Long</code> 返回当前处理时间</p>
 </li>
 <li>
-<p>currentWatermark(): Long 返回当前水位线的时间戳</p>
+<p><code>currentWatermark(): Long</code> 返回当前水位线的时间戳</p>
 </li>
 <li>
-<p>registerProcessingTimeTimer(timestamp: Long): Unit 会注册当前key的processing time的timer。当processing time到达定时时间时，触发timer。</p>
+<p><code>registerProcessingTimeTimer(timestamp: Long): Unit</code> 会注册当前key的processing time的timer。当processing time到达定时时间时，触发timer。</p>
 </li>
 <li>
-<p>registerEventTimeTimer(timestamp: Long): Unit 会注册当前key的event time timer。当水位线大于等于定时器注册的时间时，触发定时器执行回调函数。</p>
+<p><code>registerEventTimeTimer(timestamp: Long): Unit</code> 会注册当前key的event time timer。当水位线大于等于定时器注册的时间时，触发定时器执行回调函数。</p>
 </li>
 <li>
-<p>deleteProcessingTimeTimer(timestamp: Long): Unit 删除之前注册处理时间定时器。如果没有这个时间戳的定时器，则不执行。</p>
+<p><code>deleteProcessingTimeTimer(timestamp: Long): Unit</code> 删除之前注册处理时间定时器。如果没有这个时间戳的定时器，则不执行。</p>
 </li>
 <li>
-<p>deleteEventTimeTimer(timestamp: Long): Unit 删除之前注册的事件时间定时器，如果没有此时间戳的定时器，则不执行。</p>
+<p><code>deleteEventTimeTimer(timestamp: Long): Unit</code> 删除之前注册的事件时间定时器，如果没有此时间戳的定时器，则不执行。</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>当定时器timer触发时，执行回调函数onTimer()。</p>
+<p>当定时器timer触发时，执行回调函数onTimer()。processElement()方法和onTimer()方法是同步（不是异步）方法，这样可以避免并发访问和操作状态。</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -4377,16 +4359,19 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-定时器timer只能在keyed streams上面使用。
+定时器timer只能在KeyedStream上面使用。
 </td>
 </tr>
 </table>
 </div>
 <div class="paragraph">
+<p>针对每一个key和timestamp，只能注册一个定期器。也就是说，每一个key可以注册多个定时器，但在每一个时间戳只能注册一个定时器。KeyedProcessFunction默认将所有定时器的时间戳放在一个优先队列中。在Flink做检查点操作时，定时器也会被保存到状态后端中。</p>
+</div>
+<div class="paragraph">
 <p>举个例子说明KeyedProcessFunction如何操作KeyedStream。</p>
 </div>
 <div class="paragraph">
-<p>需求：监控温度传感器的温度值，如果温度值在一秒钟之内(processing time)连续上升，报警。</p>
+<p>下面的程序展示了如何监控温度传感器的温度值，如果温度值在一秒钟之内(processing time)连续上升，报警。</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -4453,7 +4438,7 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
 </div>
 </div>
 <div class="sect3">
-<h4 id="_emitting_to_side_outputs侧输出">6.2.2. Emitting to Side Outputs(侧输出)</h4>
+<h4 id="_将事件发送到侧输出emitting_to_side_outputs">6.2.2. 将事件发送到侧输出(Emitting to Side Outputs)</h4>
 <div class="paragraph">
 <p>大部分的DataStream API的算子的输出是单一输出，也就是某种数据类型的流。除了split算子，可以将一条流分成多条流，这些流的数据类型也都相同。process function的side outputs功能可以产生多条流，并且这些流的数据类型可以不一样。一个side output可以定义为OutputTag[X]对象，X是输出流的数据类型。process function可以通过Context对象发射一个事件到一个或者多个side outputs。</p>
 </div>
@@ -4461,7 +4446,7 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
 <p>例子</p>
 </div>
 <div class="listingblock">
-<div class="title">Example6_6.scala</div>
+<div class="title">Example 6-6</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">monitoredReadings</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">readings</span>
   <span class="tok-o">.</span><span class="tok-n">process</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">FreezingMonitor</span><span class="tok-o">)</span>
@@ -4477,7 +4462,7 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
 <p>接下来我们实现FreezingMonitor函数，用来监控传感器温度值，将温度值低于32F的温度输出到side output。</p>
 </div>
 <div class="listingblock">
-<div class="title">Example6_7.scala</div>
+<div class="title">Example 6-7</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">class</span> <span class="tok-nc">FreezingMonitor</span> <span class="tok-k">extends</span> <span class="tok-nc">ProcessFunction</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span>, <span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-o">{</span>
   <span class="tok-c1">// define a side output tag</span>
@@ -4505,7 +4490,7 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
 <p>对于两条输入流，DataStream API提供了CoProcessFunction这样的low-level操作。CoProcessFunction提供了操作每一个输入流的方法: processElement1()和processElement2()。类似于ProcessFunction，这两种方法都通过Context对象来调用。这个Context对象可以访问事件数据，定时器时间戳，TimerService，以及side outputs。CoProcessFunction也提供了onTimer()回调函数。下面的例子展示了如何使用CoProcessFunction来合并两条流。</p>
 </div>
 <div class="listingblock">
-<div class="title">Example6_8.scala</div>
+<div class="title">Example 6-8</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">// ingest sensor stream</span>
 <span class="tok-k">val</span> <span class="tok-n">readings</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
@@ -4527,7 +4512,7 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
 </div>
 </div>
 <div class="listingblock">
-<div class="title">Example6_9.scala</div>
+<div class="title">Example 6-9</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">class</span> <span class="tok-nc">ReadingFilter</span> <span class="tok-k">extends</span> <span class="tok-nc">CoProcessFunction</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span>, <span class="tok-o">(</span><span class="tok-kt">String</span>, <span class="tok-kt">Long</span><span class="tok-o">)</span>, <span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-o">{</span>
   <span class="tok-c1">// switch to enable forwarding</span>
@@ -4580,18 +4565,33 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
 </div>
 <div class="sect2">
 <h3 id="_窗口操作符window_operators">6.3. 窗口操作符(Window Operators)</h3>
+<div class="paragraph">
+<p>窗口操作是流处理程序中很常见的操作。窗口操作允许我们在无限流上的一段有界区间上面做聚合之类的操作。而我们使用基于时间的逻辑来定义区间。窗口操作符提供了一种将数据放进一个桶，并根据桶中的数据做计算的方法。例如，我们可以将事件放进5分钟的滚动窗口中，然后计数。</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+无限流转化成有限数据的方法：使用窗口。
+</td>
+</tr>
+</table>
+</div>
 <div class="sect3">
 <h4 id="_定义窗口操作符">6.3.1. 定义窗口操作符</h4>
 <div class="paragraph">
-<p>window算子可以在keyed stream或者nokeyed stream上面使用。</p>
+<p>Window算子可以在keyed stream或者nokeyed stream上面使用。</p>
 </div>
 <div class="paragraph">
-<p>创建一个window算子，需要指定两个部分：</p>
+<p>创建一个Window算子，需要指定两个部分：</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>window assigner定义了流的元素如何分配到window中。window assigner将会产生一条WindowedStream(或者AllWindowedStream，如果是nonkeyed DataStream的话)</p>
+<p><code>window assigner</code>定义了流的元素如何分配到window中。window assigner将会产生一条WindowedStream(或者AllWindowedStream，如果是nonkeyed DataStream的话)</p>
 </li>
 <li>
 <p>window function用来处理WindowedStream(AllWindowedStream)中的元素。</p>
@@ -4599,7 +4599,7 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
 </ol>
 </div>
 <div class="paragraph">
-<p>例子：</p>
+<p>下面的代码说明了如何使用窗口操作符。</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -4613,9 +4613,52 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
   <span class="tok-o">.</span><span class="tok-n">reduce</span><span class="tok-o">/</span><span class="tok-n">aggregate</span><span class="tok-o">/</span><span class="tok-n">process</span><span class="tok-o">(...)</span> <span class="tok-c1">// 指定window function</span></code></pre>
 </div>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+我们的学习重点是Keyed WindowedStream。
+</td>
+</tr>
+</table>
+</div>
 </div>
 <div class="sect3">
-<h4 id="_内置的窗口分配器window_assigner">6.3.2. 内置的窗口分配器(window assigner)</h4>
+<h4 id="_内置的窗口分配器built_in_window_assigner">6.3.2. 内置的窗口分配器(built-in window assigner)</h4>
+<div class="paragraph">
+<p>窗口分配器将会根据事件的事件时间或者处理时间来将事件分配到对应的窗口中去。窗口包含开始时间和结束时间这两个时间戳。</p>
+</div>
+<div class="paragraph">
+<p>所有的窗口分配器都包含一个默认的触发器：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>对于事件时间：当水位线超过窗口结束时间，触发窗口的求值操作。</p>
+</li>
+<li>
+<p>对于处理时间：当机器时间超过窗口结束时间，触发窗口的求值操作。</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+需要注意的是：当处于某个窗口的第一个事件到达的时候，这个窗口才会被创建。Flink不会对空窗口求值。
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Flink创建的窗口类型是<code>TimeWindow</code>，包含开始时间和结束时间，区间是左闭右开的，也就是说包含开始时间戳，不包含结束时间戳。</p>
+</div>
 <div class="paragraph">
 <p><strong>滚动窗口(tumbling windows)</strong></p>
 </div>
@@ -4649,7 +4692,16 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
 </div>
 </div>
 <div class="paragraph">
+<p>默认情况下，滚动窗口会和<code>1970- 01-01-00:00:00.000</code>对齐，例如一个1小时的滚动窗口将会定义以下开始时间的窗口：00:00:00，01:00:00，02:00:00，等等。</p>
+</div>
+<div class="paragraph">
 <p><strong>滑动窗口(sliding window)</strong></p>
+</div>
+<div class="paragraph">
+<p>对于滑动窗口，我们需要指定窗口的大小和滑动的步长。当滑动步长小于窗口大小时，窗口将会出现重叠，而元素会被分配到不止一个窗口中去。当滑动步长大于窗口大小时，一些元素可能不会被分配到任何窗口中去，会被直接丢弃。</p>
+</div>
+<div class="paragraph">
+<p>下面的代码定义了窗口大小为1小时，滑动步长为15分钟的窗口。每一个元素将被分配到4个窗口中去。</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -4677,6 +4729,9 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
 <div class="paragraph">
 <p><strong>会话窗口(session windows)</strong></p>
 </div>
+<div class="paragraph">
+<p>会话窗口不可能重叠，并且会话窗口的大小也不是固定的。不活跃的时间长度定义了会话窗口的界限。不活跃的时间是指这段时间没有元素到达。下图展示了元素如何被分配到会话窗口。</p>
+</div>
 <div class="imageblock">
 <div class="content">
 <img src="images/spaf_0603.png" alt="spaf 0603">
@@ -4694,6 +4749,9 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
   <span class="tok-o">.</span><span class="tok-n">window</span><span class="tok-o">(</span><span class="tok-nc">ProcessingTimeSessionWindows</span><span class="tok-o">.</span><span class="tok-n">withGap</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">minutes</span><span class="tok-o">(</span><span class="tok-mi">15</span><span class="tok-o">)))</span>
   <span class="tok-o">.</span><span class="tok-n">process</span><span class="tok-o">(...)</span></code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>由于会话窗口的开始时间和结束时间取决于接收到的元素，所以窗口分配器无法立即将所有的元素分配到正确的窗口中去。相反，会话窗口分配器最开始时先将每一个元素分配到它自己独有的窗口中去，窗口开始时间是这个元素的时间戳，窗口大小是session gap的大小。接下来，会话窗口分配器会将出现重叠的窗口合并成一个窗口。</p>
 </div>
 </div>
 <div class="sect3">
@@ -4718,7 +4776,7 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
 <p>例子: 计算每个传感器15s窗口中的温度最小值</p>
 </div>
 <div class="listingblock">
-<div class="title">Example6_10</div>
+<div class="title">Example 6-10</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">minTempPerWindow</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Double</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">sensorData</span>
   <span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">r</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span><span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">id</span><span class="tok-o">,</span> <span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">temperature</span><span class="tok-o">))</span>
@@ -4758,7 +4816,7 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
 <p>例子</p>
 </div>
 <div class="listingblock">
-<div class="title">Example6_11</div>
+<div class="title">Example 6-11</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">avgTempPerWindow</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Double</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">sensorData</span>
   <span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">r</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span><span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">id</span><span class="tok-o">,</span> <span class="tok-n">r</span><span class="tok-o">.</span><span class="tok-n">temperature</span><span class="tok-o">))</span>
@@ -4847,7 +4905,7 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
 <p>例子：计算5s滚动窗口中的最低和最高的温度。输出的元素包含了(流的Key, 最低温度, 最高温度, 窗口结束时间)。</p>
 </div>
 <div class="listingblock">
-<div class="title">Example6_12</div>
+<div class="title">Example 6-12</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">minMaxTempPerWindow</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">MinMaxTemp</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">sensorData</span>
   <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">id</span><span class="tok-o">)</span>
@@ -4896,7 +4954,7 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
 <p>我们把之前的需求重新使用以上两种方法实现一下。</p>
 </div>
 <div class="listingblock">
-<div class="title">Example6_13</div>
+<div class="title">Example 6-13</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">MinMaxTemp</span><span class="tok-o">(</span><span class="tok-n">id</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">min</span><span class="tok-k">:</span> <span class="tok-kt">Double</span><span class="tok-o">,</span> <span class="tok-n">max</span><span class="tok-k">:</span> <span class="tok-kt">Double</span><span class="tok-o">,</span> <span class="tok-n">endTs</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span>
 
@@ -7341,67 +7399,9 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <h2 id="_尚硅谷大数据技术之电商用户行为分析">10. 尚硅谷大数据技术之电商用户行为分析</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_项目整体介绍">10.1. 项目整体介绍</h3>
+<h3 id="_数据集解析">10.1. 数据集解析</h3>
 <div class="sect3">
-<h4 id="_电商的用户行为">10.1.1. 电商的用户行为</h4>
-<div class="paragraph">
-<p>电商平台中的用户行为频繁且较复杂，系统上线运行一段时间后，可以收集到大量的用户行为数据，进而利用大数据技术进行深入挖掘和分析，得到感兴趣的商业指标并增强对风险的控制。</p>
-</div>
-<div class="paragraph">
-<p>电商用户行为数据多样，整体可以分为用户行为习惯数据和业务行为数据两大类。用户的行为习惯数据包括了用户的登录方式、上线的时间点及时长、点击和浏览页面、页面停留时间以及页面跳转等等，我们可以从中进行流量统计和热门商品的统计，也可以深入挖掘用户的特征；这些数据往往可以从web服务器日志中直接读取到。而业务行为数据就是用户在电商平台中针对每个业务（通常是某个具体商品）所作的操作，我们一般会在业务系统中相应的位置埋点，然后收集日志进行分析。业务行为数据又可以简单分为两类：一类是能够明显地表现出用户兴趣的行为，比如对商品的收藏、喜欢、评分和评价，我们可以从中对数据进行深入分析，得到用户画像，进而对用户给出个性化的推荐商品列表，这个过程往往会用到机器学习相关的算法；另一类则是常规的业务操作，但需要着重关注一些异常状况以做好风控，比如登录和订单支付。</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_项目主要模块">10.1.2. 项目主要模块</h4>
-<div class="paragraph">
-<p>基于对电商用户行为数据的基本分类，我们可以发现主要有以下三个分析方向：</p>
-</div>
-<div class="paragraph">
-<p><strong>热门统计</strong></p>
-</div>
-<div class="paragraph">
-<p>利用用户的点击浏览行为，进行流量统计、近期热门商品统计等。</p>
-</div>
-<div class="paragraph">
-<p><strong>偏好统计</strong></p>
-</div>
-<div class="paragraph">
-<p>利用用户的偏好行为，比如收藏、喜欢、评分等，进行用户画像分析，给出个性化的商品推荐列表。</p>
-</div>
-<div class="paragraph">
-<p><strong>风险控制</strong></p>
-</div>
-<div class="paragraph">
-<p>利用用户的常规业务行为，比如登录、下单、支付等，分析数据，对异常情况进行报警提示。</p>
-</div>
-<div class="paragraph">
-<p>例如订单失效监控，恶意登录(短时间内频繁登录失败)监控。</p>
-</div>
-<div class="paragraph">
-<p>本项目限于数据，我们只实现热门统计和风险控制中的部分内容，将包括以下四大模块：</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>实时热门商品统计</p>
-</li>
-<li>
-<p>实时流量统计</p>
-</li>
-<li>
-<p>恶意登录监控</p>
-</li>
-<li>
-<p>订单支付失效监控。</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>由于对实时性要求较高，我们会用Flink作为数据处理的框架。在项目中，我们将综合运用flink的各种API，基于EventTime去处理基本的业务需求，并且灵活地使用底层的processFunction，基于状态编程和CEP去处理更加复杂的情形。</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_数据源解析">10.1.3. 数据源解析</h4>
+<h4 id="_淘宝数据集解析">10.1.1. 淘宝数据集解析</h4>
 <div class="paragraph">
 <p>我们准备了一份淘宝用户行为数据集，保存为csv文件。本数据集包含了淘宝上某一天随机一百万用户的所有行为（包括点击、购买、收藏、喜欢）。数据集的每一行表示一条用户行为，由用户ID、商品ID、商品类目ID、行为类型和时间戳组成，并以逗号分隔。关于数据集中每一列的详细描述如下：</p>
 </div>
@@ -7446,8 +7446,11 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </tr>
 </tbody>
 </table>
+</div>
+<div class="sect3">
+<h4 id="_apache服务器日志数据集解析">10.1.2. Apache服务器日志数据集解析</h4>
 <div class="paragraph">
-<p>另外，我们还可以拿到web服务器的日志数据，这里以apache服务器的一份log为例，每一行日志记录了访问者的IP、userId、访问时间、访问方法以及访问的url，具体描述如下：</p>
+<p>这里以apache服务器的一份log为例，每一行日志记录了访问者的IP、userId、访问时间、访问方法以及访问的url，具体描述如下：</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -7490,9 +7493,6 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </tr>
 </tbody>
 </table>
-<div class="paragraph">
-<p>由于行为数据有限，在实时热门商品统计模块中可以使用UserBehavior数据集，而对于恶意登录监控和订单支付失效监控，我们只以示例数据来做演示。</p>
-</div>
 </div>
 </div>
 <div class="sect2">
@@ -7500,346 +7500,57 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <div class="paragraph">
 <p>首先要实现的是实时热门商品统计，我们将会基于UserBehavior数据集来进行分析。</p>
 </div>
+<div class="paragraph">
+<p><strong>基本需求</strong></p>
+</div>
 <div class="ulist">
 <ul>
 <li>
-<p>基本需求</p>
-<div class="ulist">
-<ul>
-<li>
-<p>统计近1小时内的热门商品，每5分钟更新一次</p>
+<p>每隔5分钟输出最近一小时内点击量最多的前N个商品</p>
 </li>
 <li>
-<p>热门度用浏览次数("pv")来衡量</p>
+<p>点击量用浏览次数("pv")来衡量</p>
 </li>
 </ul>
 </div>
-</li>
-<li>
-<p>解决思路</p>
-<div class="ulist">
-<ul>
+<div class="paragraph">
+<p><strong>解决思路</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
 <li>
 <p>在所有用户行为数据中，过滤出浏览("pv")行为进行统计</p>
 </li>
 <li>
 <p>构建滑动窗口，窗口长度为1小时，滑动距离为5分钟</p>
 </li>
-</ul>
-</div>
-</li>
-</ul>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/电商用户行为数据分析1.png" alt="电商用户行为数据分析1">
-</div>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/电商用户行为数据分析2.png" alt="电商用户行为数据分析2">
-</div>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/电商用户行为数据分析3.png" alt="电商用户行为数据分析3">
-</div>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/电商用户行为数据分析4.png" alt="电商用户行为数据分析4">
-</div>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/电商用户行为数据分析5.png" alt="电商用户行为数据分析5">
-</div>
-</div>
-<div class="ulist">
-<ul>
 <li>
-<p>窗口聚合策略——每出现一条记录就加一</p>
+<p>窗口计算使用增量聚合函数和全窗口聚合函数相结合的方法</p>
 </li>
-</ul>
+<li>
+<p>使用窗口结束时间作为key，对DataStream进行keyBy()操作</p>
+</li>
+<li>
+<p>将KeyedStream中的元素存储到ListState中，当水位线超过窗口结束时间时，排序输出</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>数据准备</strong></p>
+</div>
+<div class="paragraph">
+<p>将数据文件UserBehavior.csv复制到资源文件目录src/main/resources下。</p>
+</div>
+<div class="paragraph">
+<p><strong>程序主体</strong></p>
 </div>
 <div class="listingblock">
+<div class="title">HotItems.scala</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">class</span> <span class="tok-nc">CountAgg</span> <span class="tok-k">extends</span> <span class="tok-nc">AggregateFunction</span><span class="tok-o">[</span><span class="tok-kt">UserBehavior</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Long</span><span class="tok-o">]</span> <span class="tok-o">{</span>
-  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">createAccumulator</span><span class="tok-o">()</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-mi">0L</span>
-  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">add</span><span class="tok-o">(</span><span class="tok-n">userBehavior</span><span class="tok-k">:</span> <span class="tok-kt">UserBehavior</span><span class="tok-o">,</span> <span class="tok-n">acc</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-n">acc</span> <span class="tok-o">+</span> <span class="tok-mi">1</span>
-  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">getResult</span><span class="tok-o">(</span><span class="tok-n">acc</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-n">acc</span>
-  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">merge</span><span class="tok-o">(</span><span class="tok-n">acc1</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">acc2</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-n">acc1</span> <span class="tok-o">+</span> <span class="tok-n">acc2</span>
-<span class="tok-o">}</span></code></pre>
-</div>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>累加规则——窗口内碰到一条数据就加一(add方法)</p>
-</li>
-<li>
-<p>实现 AggregateFunction 接口</p>
-<div class="ulist">
-<ul>
-<li>
-<p><code>interface AggregateFunction&lt;IN, ACC, OUT&gt;</code></p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>定义输出结构 —— ItemViewCount(itemId, windowEnd, count)</p>
-</li>
-<li>
-<p>实现<code>WindowFunction</code>接口</p>
-<div class="ulist">
-<ul>
-<li>
-<p><code>trait WindowFunction[IN, OUT, KEY, W &lt;: Window]</code></p>
-<div class="ulist">
-<ul>
-<li>
-<p>IN: 输入为累加器的类型，Long</p>
-</li>
-<li>
-<p>OUT: 窗口累加以后输出的类型为 ItemViewCount(itemId: Long, windowEnd: Long, count: Long), windowEnd为窗口的结束 时间，也是窗口的唯一标识</p>
-</li>
-<li>
-<p>KEY: Tuple泛型，在这里是 itemId，窗口根据itemId聚合</p>
-</li>
-<li>
-<p>W: 聚合的窗口，w.getEnd 就能拿到窗口的结束时间</p>
-</li>
-<li>
-<p><code>override def apply</code></p>
-</li>
-</ul>
-</div>
-</li>
-</ul>
-</div>
-</li>
-</ul>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">apply</span><span class="tok-o">(</span><span class="tok-n">key</span><span class="tok-k">:</span> <span class="tok-kt">Tuple</span><span class="tok-o">,</span> <span class="tok-n">window</span><span class="tok-k">:</span> <span class="tok-kt">TimeWindow</span><span class="tok-o">,</span> <span class="tok-n">aggregateResult</span><span class="tok-k">:</span> <span class="tok-kt">Iterable</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">],</span> <span class="tok-n">collector</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[</span><span class="tok-kt">ItemViewCount</span><span class="tok-o">])</span> <span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-  <span class="tok-k">val</span> <span class="tok-n">itemId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-n">key</span><span class="tok-o">.</span><span class="tok-n">asInstanceOf</span><span class="tok-o">[</span><span class="tok-kt">Tuple1</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">]].</span><span class="tok-n">f0</span>
-  <span class="tok-k">val</span> <span class="tok-n">count</span> <span class="tok-k">=</span> <span class="tok-n">aggregateResult</span><span class="tok-o">.</span><span class="tok-n">iterator</span><span class="tok-o">.</span><span class="tok-n">next</span>
-  <span class="tok-n">collector</span><span class="tok-o">.</span><span class="tok-n">collect</span><span class="tok-o">(</span><span class="tok-nc">ItemViewCount</span><span class="tok-o">(</span><span class="tok-n">itemId</span><span class="tok-o">,</span> <span class="tok-n">window</span><span class="tok-o">.</span><span class="tok-n">getEnd</span><span class="tok-o">,</span> <span class="tok-n">count</span><span class="tok-o">))</span>
-<span class="tok-o">}</span></code></pre>
-</div>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/电商用户行为数据分析6.png" alt="电商用户行为数据分析6">
-</div>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/电商用户行为数据分析7.png" alt="电商用户行为数据分析7">
-</div>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/电商用户行为数据分析8.png" alt="电商用户行为数据分析8">
-</div>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>最终排序输出 —— keyedProcessFunction</p>
-<div class="ulist">
-<ul>
-<li>
-<p>针对有状态流的底层API</p>
-</li>
-<li>
-<p>KeyedProcessFunction会对分流后的每一条流进行处理</p>
-</li>
-<li>
-<p>以windowEnd作为 key，保证分流以后每一条流的数据都在一个时间窗口内</p>
-</li>
-<li>
-<p>从 ListState 中读取当前流的状态，存储数据进行排序输出</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>用ProcessFunction来定义KeyedStream的处理逻辑</p>
-</li>
-<li>
-<p>分流之后，每个KeyedStream都有其自己的生命周期</p>
-<div class="ulist">
-<ul>
-<li>
-<p>open: 初始化，在这里可以获取当前流的状态</p>
-</li>
-<li>
-<p>processElement: 处理流中每一个元素时调用</p>
-</li>
-<li>
-<p>onTimer: 定时调用，注册定时器Timer并触发之后的回调操作</p>
-</li>
-</ul>
-</div>
-</li>
-</ul>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/电商用户行为数据分析9.png" alt="电商用户行为数据分析9">
-</div>
-</div>
-<div class="paragraph">
-<p>项目主体用Scala编写，采用IDEA作为开发环境进行项目编写，采用maven作为项目构建和管理工具。首先我们需要搭建项目框架。</p>
-</div>
-<div class="sect3">
-<h4 id="_创建maven项目">10.2.1. 创建Maven项目</h4>
-<div class="sect4">
-<h5 id="_项目框架搭建">项目框架搭建</h5>
-<div class="paragraph">
-<p>打开IDEA，创建一个maven项目，命名为UserBehaviorAnalysis。由于包含了多个模块，我们可以以UserBehaviorAnalysis作为父项目，并在其下建一个名为HotItemsAnalysis的子项目，用于实时统计热门top N商品。</p>
-</div>
-<div class="paragraph">
-<p>在UserBehaviorAnalysis下新建一个maven module作为子项目，命名为HotItemsAnalysis。</p>
-</div>
-<div class="paragraph">
-<p>父项目只是为了规范化项目结构，方便依赖管理，本身是不需要代码实现的，所以UserBehaviorAnalysis下的src文件夹可以删掉。</p>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_声明项目中工具的版本信息">声明项目中工具的版本信息</h5>
-<div class="paragraph">
-<p>我们整个项目需要的工具的不同版本可能会对程序运行造成影响，所以应该在最外层的UserBehaviorAnalysis中声明所有子模块共用的版本信息。</p>
-</div>
-<div class="paragraph">
-<p>在pom.xml中加入以下配置：</p>
-</div>
-<div class="listingblock">
-<div class="title">UserBehaviorAnalysis/pom.xml</div>
-<div class="content">
-<pre class="pygments highlight"><code data-lang="xml"><span></span><span class="tok-nt">&lt;properties&gt;</span>
-    <span class="tok-nt">&lt;flink.version&gt;</span>1.7.2<span class="tok-nt">&lt;/flink.version&gt;</span>
-    <span class="tok-nt">&lt;scala.binary.version&gt;</span>2.11<span class="tok-nt">&lt;/scala.binary.version&gt;</span>
-    <span class="tok-nt">&lt;kafka.version&gt;</span>2.2.0<span class="tok-nt">&lt;/kafka.version&gt;</span>
-<span class="tok-nt">&lt;/properties&gt;</span></code></pre>
-</div>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_添加项目依赖">添加项目依赖</h5>
-<div class="paragraph">
-<p>对于整个项目而言，所有模块都会用到flink相关的组件，所以我们在UserBehaviorAnalysis中引入公有依赖：</p>
-</div>
-<div class="listingblock">
-<div class="title">UserBehaviorAnalysis/pom.xml</div>
-<div class="content">
-<pre class="pygments highlight"><code data-lang="xml"><span></span><span class="tok-nt">&lt;dependencies&gt;</span>
-    <span class="tok-nt">&lt;dependency&gt;</span>
-        <span class="tok-nt">&lt;groupId&gt;</span>org.apache.flink<span class="tok-nt">&lt;/groupId&gt;</span>
-        <span class="tok-nt">&lt;artifactId&gt;</span>flink-scala_${scala.binary.version}<span class="tok-nt">&lt;/artifactId&gt;</span>
-        <span class="tok-nt">&lt;version&gt;</span>${flink.version}<span class="tok-nt">&lt;/version&gt;</span>
-    <span class="tok-nt">&lt;/dependency&gt;</span>
-    <span class="tok-nt">&lt;dependency&gt;</span>
-        <span class="tok-nt">&lt;groupId&gt;</span>org.apache.flink<span class="tok-nt">&lt;/groupId&gt;</span>
-        <span class="tok-nt">&lt;artifactId&gt;</span>flink-streaming-scala_${scala.binary.version}<span class="tok-nt">&lt;/artifactId&gt;</span>
-        <span class="tok-nt">&lt;version&gt;</span>${flink.version}<span class="tok-nt">&lt;/version&gt;</span>
-    <span class="tok-nt">&lt;/dependency&gt;</span>
-    <span class="tok-nt">&lt;dependency&gt;</span>
-        <span class="tok-nt">&lt;groupId&gt;</span>org.apache.kafka<span class="tok-nt">&lt;/groupId&gt;</span>
-        <span class="tok-nt">&lt;artifactId&gt;</span>kafka_${scala.binary.version}<span class="tok-nt">&lt;/artifactId&gt;</span>
-        <span class="tok-nt">&lt;version&gt;</span>${kafka.version}<span class="tok-nt">&lt;/version&gt;</span>
-    <span class="tok-nt">&lt;/dependency&gt;</span>
-    <span class="tok-nt">&lt;dependency&gt;</span>
-        <span class="tok-nt">&lt;groupId&gt;</span>org.apache.flink<span class="tok-nt">&lt;/groupId&gt;</span>
-        <span class="tok-nt">&lt;artifactId&gt;</span>flink-connector-kafka_${scala.binary.version}<span class="tok-nt">&lt;/artifactId&gt;</span>
-        <span class="tok-nt">&lt;version&gt;</span>${flink.version}<span class="tok-nt">&lt;/version&gt;</span>
-    <span class="tok-nt">&lt;/dependency&gt;</span>
-<span class="tok-nt">&lt;/dependencies&gt;</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>同样，对于maven项目的构建，可以引入公有的插件：</p>
-</div>
-<div class="listingblock">
-<div class="title">UserBehaviorAnalysis/pom.xml</div>
-<div class="content">
-<pre class="pygments highlight"><code data-lang="xml"><span></span><span class="tok-nt">&lt;build&gt;</span>
-    <span class="tok-nt">&lt;plugins&gt;</span>
-        <span class="tok-c">&lt;!-- 该插件用于将Scala代码编译成class文件 --&gt;</span>
-        <span class="tok-nt">&lt;plugin&gt;</span>
-            <span class="tok-nt">&lt;groupId&gt;</span>net.alchim31.maven<span class="tok-nt">&lt;/groupId&gt;</span>
-            <span class="tok-nt">&lt;artifactId&gt;</span>scala-maven-plugin<span class="tok-nt">&lt;/artifactId&gt;</span>
-            <span class="tok-nt">&lt;version&gt;</span>3.4.6<span class="tok-nt">&lt;/version&gt;</span>
-            <span class="tok-nt">&lt;executions&gt;</span>
-                <span class="tok-nt">&lt;execution&gt;</span>
-                    <span class="tok-c">&lt;!-- 声明绑定到maven的compile阶段 --&gt;</span>
-                    <span class="tok-nt">&lt;goals&gt;</span>
-                        <span class="tok-nt">&lt;goal&gt;</span>testCompile<span class="tok-nt">&lt;/goal&gt;</span>
-                    <span class="tok-nt">&lt;/goals&gt;</span>
-                <span class="tok-nt">&lt;/execution&gt;</span>
-            <span class="tok-nt">&lt;/executions&gt;</span>
-        <span class="tok-nt">&lt;/plugin&gt;</span>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">// 把数据需要ETL成UserBehavior类型</span>
+<span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">UserBehavior</span><span class="tok-o">(</span><span class="tok-n">userId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">itemId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">categoryId</span><span class="tok-k">:</span> <span class="tok-kt">Int</span><span class="tok-o">,</span> <span class="tok-n">behavior</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">timestamp</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span>
 
-        <span class="tok-nt">&lt;plugin&gt;</span>
-            <span class="tok-nt">&lt;groupId&gt;</span>org.apache.maven.plugins<span class="tok-nt">&lt;/groupId&gt;</span>
-            <span class="tok-nt">&lt;artifactId&gt;</span>maven-assembly-plugin<span class="tok-nt">&lt;/artifactId&gt;</span>
-            <span class="tok-nt">&lt;version&gt;</span>3.0.0<span class="tok-nt">&lt;/version&gt;</span>
-            <span class="tok-nt">&lt;configuration&gt;</span>
-                <span class="tok-nt">&lt;descriptorRefs&gt;</span>
-                    <span class="tok-nt">&lt;descriptorRef&gt;</span>
-                        jar-with-dependencies
-                    <span class="tok-nt">&lt;/descriptorRef&gt;</span>
-                <span class="tok-nt">&lt;/descriptorRefs&gt;</span>
-            <span class="tok-nt">&lt;/configuration&gt;</span>
-            <span class="tok-nt">&lt;executions&gt;</span>
-                <span class="tok-nt">&lt;execution&gt;</span>
-                    <span class="tok-nt">&lt;id&gt;</span>make-assembly<span class="tok-nt">&lt;/id&gt;</span>
-                    <span class="tok-nt">&lt;phase&gt;</span>package<span class="tok-nt">&lt;/phase&gt;</span>
-                    <span class="tok-nt">&lt;goals&gt;</span>
-                        <span class="tok-nt">&lt;goal&gt;</span>single<span class="tok-nt">&lt;/goal&gt;</span>
-                    <span class="tok-nt">&lt;/goals&gt;</span>
-                <span class="tok-nt">&lt;/execution&gt;</span>
-            <span class="tok-nt">&lt;/executions&gt;</span>
-        <span class="tok-nt">&lt;/plugin&gt;</span>
-    <span class="tok-nt">&lt;/plugins&gt;</span>
-<span class="tok-nt">&lt;/build&gt;</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>在HotItemsAnalysis子模块中，我们并没有引入更多的依赖，所以不需要改动pom文件。</p>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_数据准备">数据准备</h5>
-<div class="paragraph">
-<p>在src/main/目录下，可以看到已有的默认源文件目录是java，我们可以将其改名为scala。将数据文件UserBehavior.csv复制到资源文件目录src/main/resources下，我们将从这里读取数据。
-至此，我们的准备工作都已完成，接下来可以写代码了。</p>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_模块代码实现">10.2.2. 模块代码实现</h4>
-<div class="paragraph">
-<p>我们将实现一个“实时热门商品”的需求，可以将“实时热门商品”翻译成程序员更好理解的需求：每隔5分钟输出最近一小时内点击量最多的前N个商品。将这个需求进行分解我们大概要做这么几件事情：
-抽取出业务时间戳，告诉Flink框架基于业务时间做窗口
-过滤出点击行为数据
-按一小时的窗口大小，每5分钟统计一次，做滑动窗口聚合（Sliding Window）
-按每个窗口聚合，输出每个窗口中点击量前N名的商品</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_程序主体">10.2.3. 程序主体</h4>
-<div class="paragraph">
-<p>在src/main/scala下创建HotItems.scala文件，新建一个单例对象。定义样例类UserBehavior和ItemViewCount，在main函数中创建StreamExecutionEnvironment 并做配置，然后从UserBehavior.csv文件中读取数据，并包装成UserBehavior类型。代码如下：</p>
-</div>
-<div class="listingblock">
-<div class="title">HotItemsAnalysis/src/main/scala/HotItems.scala</div>
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">UserBehavior</span><span class="tok-o">(</span><span class="tok-n">userId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">itemId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">categoryId</span><span class="tok-k">:</span> <span class="tok-kt">Int</span><span class="tok-o">,</span> <span class="tok-n">behavior</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">timestamp</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span>
-
+<span class="tok-c1">// 全窗口聚合函数输出的数据类型</span>
 <span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">ItemViewCount</span><span class="tok-o">(</span><span class="tok-n">itemId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">windowEnd</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">count</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span>
 
 <span class="tok-k">object</span> <span class="tok-nc">HotItems</span> <span class="tok-o">{</span>
@@ -7851,33 +7562,35 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
     <span class="tok-c1">// 为了打印到控制台的结果不乱序，我们配置全局的并发为1，这里改变并发对结果正确性没有影响</span>
     <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
     <span class="tok-k">val</span> <span class="tok-n">stream</span> <span class="tok-k">=</span> <span class="tok-n">env</span>
-      <span class="tok-c1">// 以window下为例，需替换成自己的路径</span>
+      <span class="tok-c1">// 以window下为例，需替换成数据集的绝对路径</span>
       <span class="tok-o">.</span><span class="tok-n">readTextFile</span><span class="tok-o">(</span><span class="tok-s">&quot;YOUR_PATH\\resources\\UserBehavior.csv&quot;</span><span class="tok-o">)</span>
       <span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">line</span> <span class="tok-k">=&gt;</span> <span class="tok-o">{</span>
         <span class="tok-k">val</span> <span class="tok-n">linearray</span> <span class="tok-k">=</span> <span class="tok-n">line</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot;,&quot;</span><span class="tok-o">)</span>
         <span class="tok-nc">UserBehavior</span><span class="tok-o">(</span><span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">).</span><span class="tok-n">toLong</span><span class="tok-o">,</span> <span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">).</span><span class="tok-n">toLong</span><span class="tok-o">,</span> <span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">2</span><span class="tok-o">).</span><span class="tok-n">toInt</span><span class="tok-o">,</span> <span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">3</span><span class="tok-o">),</span> <span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">4</span><span class="tok-o">).</span><span class="tok-n">toLong</span><span class="tok-o">)</span>
       <span class="tok-o">})</span>
-      <span class="tok-c1">// 指定时间戳和watermark</span>
+      <span class="tok-c1">// 过滤出点击事件</span>
+      <span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">behavior</span> <span class="tok-o">==</span> <span class="tok-s">&quot;pv&quot;</span><span class="tok-o">)</span>
+      <span class="tok-c1">// 指定时间戳和Watermark，这里我们已经知道了数据集的时间戳是单调递增的了。</span>
       <span class="tok-o">.</span><span class="tok-n">assignAscendingTimestamps</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">timestamp</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span><span class="tok-o">)</span>
+      <span class="tok-c1">// 根据商品Id分流</span>
+      <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">itemId</span><span class="tok-o">)</span>
+      <span class="tok-c1">// 开窗操作</span>
+      <span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">minutes</span><span class="tok-o">(</span><span class="tok-mi">60</span><span class="tok-o">),</span> <span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">minutes</span><span class="tok-o">(</span><span class="tok-mi">5</span><span class="tok-o">))</span>
+      <span class="tok-c1">// 窗口计算操作</span>
+      <span class="tok-o">.</span><span class="tok-n">aggregate</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">CountAgg</span><span class="tok-o">(),</span> <span class="tok-k">new</span> <span class="tok-nc">WindowResultFunction</span><span class="tok-o">())</span>
+      <span class="tok-c1">// 根据窗口结束时间分流</span>
+      <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">windowEnd</span><span class="tok-o">)</span>
+      <span class="tok-c1">// 求点击量前3名的商品</span>
+      <span class="tok-o">.</span><span class="tok-n">process</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">TopNHotItems</span><span class="tok-o">(</span><span class="tok-mi">3</span><span class="tok-o">))</span>
 
+    <span class="tok-c1">// 打印结果</span>
+    <span class="tok-n">stream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">()</span>
+
+    <span class="tok-c1">// 别忘了执行</span>
     <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span><span class="tok-o">(</span><span class="tok-s">&quot;Hot Items Job&quot;</span><span class="tok-o">)</span>
   <span class="tok-o">}</span>
 <span class="tok-o">}</span></code></pre>
 </div>
-</div>
-<div class="paragraph">
-<p>这里注意，我们需要统计业务时间上的每小时的点击量，所以要基于EventTime来处理。那么如果让Flink按照我们想要的业务时间来处理呢？这里主要有两件事情要做。</p>
-</div>
-<div class="paragraph">
-<p>第一件是告诉Flink我们现在按照EventTime模式进行处理，Flink默认使用ProcessingTime处理，所以我们要显式设置如下：</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>第二件事情是指定如何获得业务时间，以及生成Watermark。Watermark是用来追踪业务事件的概念，可以理解成EventTime世界中的时钟，用来指示当前处理到什么时刻的数据了。由于我们的数据源的数据已经经过整理，没有乱序，即事件的时间戳是单调递增的，所以可以将每条数据的业务时间就当做Watermark。这里我们用assignAscendingTimestamps来实现时间戳的抽取和Watermark的生成。</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -7891,40 +7604,8 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </tr>
 </table>
 </div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-o">.</span><span class="tok-n">assignAscendingTimestamps</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">timestamp</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span><span class="tok-o">)</span></code></pre>
-</div>
-</div>
 <div class="paragraph">
-<p>这样我们就得到了一个带有时间标记的数据流了，后面就能做一些窗口的操作。</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_过滤出点击事件">10.2.4. 过滤出点击事件</h4>
-<div class="paragraph">
-<p>在开始窗口操作之前，先回顾下需求"每隔5分钟输出过去一小时内点击量最多的前N个商品"。由于原始数据中存在点击、购买、收藏、喜欢各种行为的数据，但是我们只需要统计点击量，所以先使用filter将点击行为数据过滤出来。</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">behavior</span> <span class="tok-o">==</span> <span class="tok-s">&quot;pv&quot;</span><span class="tok-o">)</span></code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_设置滑动窗口统计点击量">10.2.5. 设置滑动窗口，统计点击量</h4>
-<div class="paragraph">
-<p>由于要每隔5分钟统计一次最近一小时每个商品的点击量，所以窗口大小是一小时，每隔5分钟滑动一次。即分别要统计[09:00, 10:00), [09:05, 10:05), [09:10, 10:10)…等窗口的商品点击量。是一个常见的滑动窗口需求（Sliding Window）。</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-s">&quot;itemId&quot;</span><span class="tok-o">)</span>
-<span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">minutes</span><span class="tok-o">(</span><span class="tok-mi">60</span><span class="tok-o">),</span> <span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">minutes</span><span class="tok-o">(</span><span class="tok-mi">5</span><span class="tok-o">))</span>
-<span class="tok-o">.</span><span class="tok-n">aggregate</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">CountAgg</span><span class="tok-o">(),</span> <span class="tok-k">new</span> <span class="tok-nc">WindowResultFunction</span><span class="tok-o">());</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>我们使用<code>.keyBy("itemId")</code>对商品进行分组，使用<code>.timeWindow(Time size, Time slide)</code>对每个商品做滑动窗口（1小时窗口，5分钟滑动一次）。然后我们使用<code>.aggregate(AggregateFunction af, WindowFunction wf)</code>做增量的聚合操作，它能使用<code>AggregateFunction</code>提前聚合掉数据，减少<code>state</code>的存储压力。较之<code>.apply(WindowFunction wf)</code>会将窗口中的数据都存储下来，最后一起计算要高效地多。这里的<code>CountAgg</code>实现了<code>AggregateFunction</code>接口，功能是统计窗口中的条数，即遇到一条数据就加一。</p>
+<p><strong>增量聚合函数逻辑编写</strong></p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -7938,13 +7619,10 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="paragraph">
-<p>聚合操作<code>.aggregate(AggregateFunction af, WindowFunction wf)</code>的第二个参数<code>WindowFunction</code>将每个<code>key</code>每个窗口聚合后的结果带上其他信息进行输出。我们这里实现的<code>WindowResultFunction</code>将&lt;主键商品ID，窗口，点击量&gt;封装成了<code>ItemViewCount</code>进行输出。</p>
+<p><strong>全窗口聚合函数逻辑编写</strong></p>
 </div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">// 商品点击量(窗口操作的输出类型)</span>
-<span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">ItemViewCount</span><span class="tok-o">(</span><span class="tok-n">itemId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">windowEnd</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">count</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span></code></pre>
-</div>
+<div class="paragraph">
+<p>其实就是将增量聚合的结果包上一层窗口信息和key的信息。</p>
 </div>
 <div class="paragraph">
 <p>代码如下：</p>
@@ -7952,11 +7630,12 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-c1">// 用于输出窗口的结果</span>
-<span class="tok-k">class</span> <span class="tok-nc">WindowResultFunction</span> <span class="tok-k">extends</span> <span class="tok-nc">WindowFunction</span><span class="tok-o">[</span><span class="tok-kt">Long</span>, <span class="tok-kt">ItemViewCount</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-o">{</span>
-  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">apply</span><span class="tok-o">(</span><span class="tok-n">key</span><span class="tok-k">:</span> <span class="tok-kt">Tuple</span><span class="tok-o">,</span> <span class="tok-n">window</span><span class="tok-k">:</span> <span class="tok-kt">TimeWindow</span><span class="tok-o">,</span> <span class="tok-n">aggregateResult</span><span class="tok-k">:</span> <span class="tok-kt">Iterable</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">],</span> <span class="tok-n">collector</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[</span><span class="tok-kt">ItemViewCount</span><span class="tok-o">])</span> <span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-    <span class="tok-k">val</span> <span class="tok-n">itemId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-n">key</span><span class="tok-o">.</span><span class="tok-n">asInstanceOf</span><span class="tok-o">[</span><span class="tok-kt">Tuple1</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">]].</span><span class="tok-n">f0</span>
-    <span class="tok-k">val</span> <span class="tok-n">count</span> <span class="tok-k">=</span> <span class="tok-n">aggregateResult</span><span class="tok-o">.</span><span class="tok-n">iterator</span><span class="tok-o">.</span><span class="tok-n">next</span>
-    <span class="tok-n">collector</span><span class="tok-o">.</span><span class="tok-n">collect</span><span class="tok-o">(</span><span class="tok-nc">ItemViewCount</span><span class="tok-o">(</span><span class="tok-n">itemId</span><span class="tok-o">,</span> <span class="tok-n">window</span><span class="tok-o">.</span><span class="tok-n">getEnd</span><span class="tok-o">,</span> <span class="tok-n">count</span><span class="tok-o">))</span>
+<span class="tok-k">class</span> <span class="tok-nc">WindowResultFunction</span> <span class="tok-k">extends</span> <span class="tok-nc">ProcessWindowFunction</span><span class="tok-o">[</span><span class="tok-kt">Long</span>, <span class="tok-kt">ItemViewCount</span>, <span class="tok-kt">String</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+  <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">process</span><span class="tok-o">(</span><span class="tok-n">key</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span>
+                        <span class="tok-n">context</span><span class="tok-k">:</span> <span class="tok-kt">Context</span><span class="tok-o">,</span>
+                        <span class="tok-n">elements</span><span class="tok-k">:</span> <span class="tok-kt">Iterable</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">],</span>
+                        <span class="tok-n">out</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[</span><span class="tok-kt">ItemViewCount</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+    <span class="tok-n">out</span><span class="tok-o">.</span><span class="tok-n">collect</span><span class="tok-o">(</span><span class="tok-nc">ItemViewCount</span><span class="tok-o">(</span><span class="tok-n">key</span><span class="tok-o">,</span> <span class="tok-n">context</span><span class="tok-o">.</span><span class="tok-n">window</span><span class="tok-o">.</span><span class="tok-n">getEnd</span><span class="tok-o">,</span> <span class="tok-n">elements</span><span class="tok-o">.</span><span class="tok-n">iterator</span><span class="tok-o">.</span><span class="tok-n">next</span><span class="tok-o">()))</span>
   <span class="tok-o">}</span>
 <span class="tok-o">}</span></code></pre>
 </div>
@@ -7964,235 +7643,94 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <div class="paragraph">
 <p>现在我们就得到了每个商品在每个窗口的点击量的数据流。</p>
 </div>
-<div class="sect4">
-<h5 id="_计算最热门top_n商品">计算最热门Top N商品</h5>
 <div class="paragraph">
-<p>为了统计每个窗口下最热门的商品，我们需要再次按窗口进行分组，这里根据ItemViewCount中的windowEnd进行keyBy()操作。然后使用ProcessFunction实现一个自定义的TopN函数TopNHotItems来计算点击量排名前3名的商品，并将排名结果格式化成字符串，便于后续输出。</p>
+<p><strong>计算最热门TopN商品</strong></p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-s">&quot;windowEnd&quot;</span><span class="tok-o">)</span>
-<span class="tok-o">.</span><span class="tok-n">process</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">TopNHotItems</span><span class="tok-o">(</span><span class="tok-mi">3</span><span class="tok-o">))</span> <span class="tok-c1">// 求点击量前3名的商品</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>ProcessFunction是Flink提供的一个low-level API，用于实现更高级的功能。它主要提供了定时器timer的功能（支持EventTime或ProcessingTime）。本案例中我们将利用timer来判断何时收齐了某个window下所有商品的点击量数据。由于Watermark的进度是全局的，在processElement方法中，每当收到一条数据ItemViewCount，我们就注册一个windowEnd+1的定时器（Flink框架会自动忽略同一时间的重复注册）。windowEnd+1的定时器被触发时，意味着收到了windowEnd+1的Watermark，即收齐了该windowEnd下的所有商品窗口统计值。我们在onTimer()中处理将收集的所有商品及点击量进行排序，选出TopN，并将排名信息格式化成字符串后进行输出。</p>
-</div>
-<div class="paragraph">
-<p>这里我们还使用了ListState&lt;ItemViewCount&gt;来存储收到的每条ItemViewCount消息，保证在发生故障时，状态数据的不丢失和一致性。ListState是Flink提供的类似Java List接口的State API，它集成了框架的checkpoint机制，自动做到了exactly-once的语义保证。</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span>  <span class="tok-c1">// 求某个窗口中前 N 名的热门点击商品，key 为窗口时间戳，输出为 TopN 的结果字符串</span>
-  <span class="tok-k">class</span> <span class="tok-nc">TopNHotItems</span><span class="tok-o">(</span><span class="tok-n">topSize</span><span class="tok-k">:</span> <span class="tok-kt">Int</span><span class="tok-o">)</span> <span class="tok-k">extends</span> <span class="tok-nc">KeyedProcessFunction</span><span class="tok-o">[</span><span class="tok-kt">Tuple</span>, <span class="tok-kt">ItemViewCount</span>, <span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-o">{</span>
-    <span class="tok-k">private</span> <span class="tok-k">var</span> <span class="tok-n">itemState</span> <span class="tok-k">:</span> <span class="tok-kt">ListState</span><span class="tok-o">[</span><span class="tok-kt">ItemViewCount</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-k">_</span>
+<pre class="pygments highlight"><code data-lang="scala"><span></span>  <span class="tok-k">class</span> <span class="tok-nc">TopNHotItems</span><span class="tok-o">(</span><span class="tok-n">topSize</span><span class="tok-k">:</span> <span class="tok-kt">Int</span><span class="tok-o">)</span> <span class="tok-k">extends</span> <span class="tok-nc">KeyedProcessFunction</span><span class="tok-o">[</span><span class="tok-kt">Long</span>, <span class="tok-kt">ItemViewCount</span>, <span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-o">{</span>
+    <span class="tok-c1">// 惰性赋值一个状态变量</span>
+    <span class="tok-k">lazy</span> <span class="tok-k">val</span> <span class="tok-n">itemState</span> <span class="tok-k">=</span> <span class="tok-n">getRuntimeContext</span><span class="tok-o">.</span><span class="tok-n">getListState</span><span class="tok-o">(</span>
+      <span class="tok-k">new</span> <span class="tok-nc">ListStateDescriptor</span><span class="tok-o">[</span><span class="tok-kt">ItemViewCount</span><span class="tok-o">](</span><span class="tok-s">&quot;items&quot;</span><span class="tok-o">,</span> <span class="tok-nc">Types</span><span class="tok-o">.</span><span class="tok-n">of</span><span class="tok-o">[</span><span class="tok-kt">ItemViewCount</span><span class="tok-o">])</span>
+    <span class="tok-o">)</span>
 
-    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">open</span><span class="tok-o">(</span><span class="tok-n">parameters</span><span class="tok-k">:</span> <span class="tok-kt">Configuration</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-      <span class="tok-k">super</span><span class="tok-o">.</span><span class="tok-n">open</span><span class="tok-o">(</span><span class="tok-n">parameters</span><span class="tok-o">)</span>
-      <span class="tok-c1">// 命名状态变量的名字和状态变量的类型</span>
-      <span class="tok-k">val</span> <span class="tok-n">itemsStateDesc</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">ListStateDescriptor</span><span class="tok-o">[</span><span class="tok-kt">ItemViewCount</span><span class="tok-o">](</span><span class="tok-s">&quot;itemState-state&quot;</span><span class="tok-o">,</span> <span class="tok-n">classOf</span><span class="tok-o">[</span><span class="tok-kt">ItemViewCount</span><span class="tok-o">])</span>
-      <span class="tok-c1">// 定义状态变量</span>
-      <span class="tok-n">itemState</span> <span class="tok-k">=</span> <span class="tok-n">getRuntimeContext</span><span class="tok-o">.</span><span class="tok-n">getListState</span><span class="tok-o">(</span><span class="tok-n">itemsStateDesc</span><span class="tok-o">)</span>
+    <span class="tok-c1">// 来一条数据都会调用一次</span>
+    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">processElement</span><span class="tok-o">(</span><span class="tok-n">value</span><span class="tok-k">:</span> <span class="tok-kt">ItemViewCount</span><span class="tok-o">,</span>
+                                <span class="tok-n">ctx</span><span class="tok-k">:</span> <span class="tok-kt">KeyedProcessFunction</span><span class="tok-o">[</span><span class="tok-kt">Long</span>, <span class="tok-kt">ItemViewCount</span>, <span class="tok-kt">String</span><span class="tok-o">]</span><span class="tok-k">#</span><span class="tok-nc">Context</span><span class="tok-o">,</span>
+                                <span class="tok-n">out</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
+      <span class="tok-n">itemState</span><span class="tok-o">.</span><span class="tok-n">add</span><span class="tok-o">(</span><span class="tok-n">value</span><span class="tok-o">)</span>
+      <span class="tok-n">ctx</span><span class="tok-o">.</span><span class="tok-n">timerService</span><span class="tok-o">().</span><span class="tok-n">registerEventTimeTimer</span><span class="tok-o">(</span><span class="tok-n">value</span><span class="tok-o">.</span><span class="tok-n">windowEnd</span> <span class="tok-o">+</span> <span class="tok-mi">1</span><span class="tok-o">)</span>
     <span class="tok-o">}</span>
 
-    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">processElement</span><span class="tok-o">(</span><span class="tok-n">input</span><span class="tok-k">:</span> <span class="tok-kt">ItemViewCount</span><span class="tok-o">,</span> <span class="tok-n">context</span><span class="tok-k">:</span> <span class="tok-kt">KeyedProcessFunction</span><span class="tok-o">[</span><span class="tok-kt">Tuple</span>, <span class="tok-kt">ItemViewCount</span>, <span class="tok-kt">String</span><span class="tok-o">]</span><span class="tok-k">#</span><span class="tok-nc">Context</span><span class="tok-o">,</span> <span class="tok-n">collector</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-      <span class="tok-c1">// 每条数据都保存到状态中</span>
-      <span class="tok-n">itemState</span><span class="tok-o">.</span><span class="tok-n">add</span><span class="tok-o">(</span><span class="tok-n">input</span><span class="tok-o">)</span>
-      <span class="tok-c1">// 注册 windowEnd+1 的 EventTime Timer, 当触发时，说明收齐了属于windowEnd窗口的所有商品数据</span>
-      <span class="tok-c1">// 也就是当程序看到windowend + 1的水位线watermark时，触发onTimer回调函数</span>
-      <span class="tok-n">context</span><span class="tok-o">.</span><span class="tok-n">timerService</span><span class="tok-o">.</span><span class="tok-n">registerEventTimeTimer</span><span class="tok-o">(</span><span class="tok-n">input</span><span class="tok-o">.</span><span class="tok-n">windowEnd</span> <span class="tok-o">+</span> <span class="tok-mi">1</span><span class="tok-o">)</span>
-    <span class="tok-o">}</span>
-
-    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">onTimer</span><span class="tok-o">(</span><span class="tok-n">timestamp</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">ctx</span><span class="tok-k">:</span> <span class="tok-kt">KeyedProcessFunction</span><span class="tok-o">[</span><span class="tok-kt">Tuple</span>, <span class="tok-kt">ItemViewCount</span>, <span class="tok-kt">String</span><span class="tok-o">]</span><span class="tok-k">#</span><span class="tok-nc">OnTimerContext</span><span class="tok-o">,</span> <span class="tok-n">out</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-      <span class="tok-c1">// 获取收到的所有商品点击量</span>
+    <span class="tok-c1">// 定时器事件</span>
+    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">onTimer</span><span class="tok-o">(</span><span class="tok-n">ts</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span>
+                         <span class="tok-n">ctx</span><span class="tok-k">:</span> <span class="tok-kt">KeyedProcessFunction</span><span class="tok-o">[</span><span class="tok-kt">Long</span>, <span class="tok-kt">ItemViewCount</span>, <span class="tok-kt">String</span><span class="tok-o">]</span><span class="tok-k">#</span><span class="tok-nc">OnTimerContext</span><span class="tok-o">,</span>
+                         <span class="tok-n">out</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
       <span class="tok-k">val</span> <span class="tok-n">allItems</span><span class="tok-k">:</span> <span class="tok-kt">ListBuffer</span><span class="tok-o">[</span><span class="tok-kt">ItemViewCount</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-nc">ListBuffer</span><span class="tok-o">()</span>
+      <span class="tok-c1">// 导入一些隐式类型转换</span>
       <span class="tok-k">import</span> <span class="tok-nn">scala.collection.JavaConversions._</span>
       <span class="tok-k">for</span> <span class="tok-o">(</span><span class="tok-n">item</span> <span class="tok-k">&lt;-</span> <span class="tok-n">itemState</span><span class="tok-o">.</span><span class="tok-n">get</span><span class="tok-o">)</span> <span class="tok-o">{</span>
         <span class="tok-n">allItems</span> <span class="tok-o">+=</span> <span class="tok-n">item</span>
       <span class="tok-o">}</span>
-      <span class="tok-c1">// 提前清除状态中的数据，释放空间</span>
+
+      <span class="tok-c1">// 清空状态变量，释放空间</span>
       <span class="tok-n">itemState</span><span class="tok-o">.</span><span class="tok-n">clear</span><span class="tok-o">()</span>
-      <span class="tok-c1">// 按照点击量从大到小排序</span>
-      <span class="tok-k">val</span> <span class="tok-n">sortedItems</span> <span class="tok-k">=</span> <span class="tok-n">allItems</span><span class="tok-o">.</span><span class="tok-n">sortBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">count</span><span class="tok-o">)(</span><span class="tok-nc">Ordering</span><span class="tok-o">.</span><span class="tok-nc">Long</span><span class="tok-o">.</span><span class="tok-n">reverse</span><span class="tok-o">).</span><span class="tok-n">take</span><span class="tok-o">(</span><span class="tok-n">topSize</span><span class="tok-o">)</span>
-      <span class="tok-c1">// 将排名信息格式化成 String, 便于打印</span>
-      <span class="tok-k">val</span> <span class="tok-n">result</span><span class="tok-k">:</span> <span class="tok-kt">StringBuilder</span> <span class="tok-o">=</span> <span class="tok-k">new</span> <span class="tok-nc">StringBuilder</span>
+
+      <span class="tok-c1">// 降序排列</span>
+      <span class="tok-k">val</span> <span class="tok-n">sortedItems</span> <span class="tok-k">=</span> <span class="tok-n">allItems</span><span class="tok-o">.</span><span class="tok-n">sortBy</span><span class="tok-o">(-</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">count</span><span class="tok-o">).</span><span class="tok-n">take</span><span class="tok-o">(</span><span class="tok-n">topSize</span><span class="tok-o">)</span>
+      <span class="tok-k">val</span> <span class="tok-n">result</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">StringBuilder</span>
       <span class="tok-n">result</span><span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;====================================\n&quot;</span><span class="tok-o">)</span>
-      <span class="tok-n">result</span><span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;时间: &quot;</span><span class="tok-o">).</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">Timestamp</span><span class="tok-o">(</span><span class="tok-n">timestamp</span> <span class="tok-o">-</span> <span class="tok-mi">1</span><span class="tok-o">)).</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;\n&quot;</span><span class="tok-o">)</span>
-
-      <span class="tok-k">for</span><span class="tok-o">(</span><span class="tok-n">i</span> <span class="tok-k">&lt;-</span> <span class="tok-n">sortedItems</span><span class="tok-o">.</span><span class="tok-n">indices</span><span class="tok-o">){</span>
-        <span class="tok-k">val</span> <span class="tok-n">currentItem</span><span class="tok-k">:</span> <span class="tok-kt">ItemViewCount</span> <span class="tok-o">=</span> <span class="tok-n">sortedItems</span><span class="tok-o">(</span><span class="tok-n">i</span><span class="tok-o">)</span>
-        <span class="tok-c1">// e.g.  No1：  商品ID=12224  浏览量=2413</span>
-        <span class="tok-n">result</span><span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;No&quot;</span><span class="tok-o">).</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-n">i</span><span class="tok-o">+</span><span class="tok-mi">1</span><span class="tok-o">).</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;:&quot;</span><span class="tok-o">)</span>
-              <span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;  商品ID=&quot;</span><span class="tok-o">).</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-n">currentItem</span><span class="tok-o">.</span><span class="tok-n">itemId</span><span class="tok-o">)</span>
-              <span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;  浏览量=&quot;</span><span class="tok-o">).</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-n">currentItem</span><span class="tok-o">.</span><span class="tok-n">count</span><span class="tok-o">).</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;\n&quot;</span><span class="tok-o">)</span>
-      <span class="tok-o">}</span>
-      <span class="tok-n">result</span><span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;====================================\n\n&quot;</span><span class="tok-o">)</span>
-      <span class="tok-c1">// 控制输出频率，模拟实时滚动结果</span>
-      <span class="tok-nc">Thread</span><span class="tok-o">.</span><span class="tok-n">sleep</span><span class="tok-o">(</span><span class="tok-mi">1000</span><span class="tok-o">)</span>
-      <span class="tok-n">out</span><span class="tok-o">.</span><span class="tok-n">collect</span><span class="tok-o">(</span><span class="tok-n">result</span><span class="tok-o">.</span><span class="tok-n">toString</span><span class="tok-o">)</span>
-    <span class="tok-o">}</span>
-  <span class="tok-o">}</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>最后我们可以在main函数中将结果打印输出到控制台，方便实时观测：</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">()</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>至此整个程序代码全部完成，我们直接运行main函数，就可以在控制台看到不断输出的各个时间点统计出的热门商品。</p>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_完整代码">完整代码</h5>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">import</span> <span class="tok-nn">java.sql.Timestamp</span>
-<span class="tok-k">import</span> <span class="tok-nn">java.util.</span><span class="tok-o">{</span><span class="tok-nc">ArrayList</span><span class="tok-o">,</span> <span class="tok-nc">Comparator</span><span class="tok-o">,</span> <span class="tok-nc">List</span><span class="tok-o">}</span>
-
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.TimeCharacteristic</span>
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala.StreamExecutionEnvironment</span>
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala._</span>
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.windowing.time.Time</span>
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.common.functions.AggregateFunction</span>
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.scala.function.WindowFunction</span>
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.windowing.windows.TimeWindow</span>
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.java.tuple.Tuple</span>
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.java.tuple.Tuple1</span>
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.util.Collector</span>
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.functions.KeyedProcessFunction</span>
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.common.state.ListState</span>
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.common.state.ListStateDescriptor</span>
-<span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.configuration.Configuration</span>
-
-<span class="tok-k">import</span> <span class="tok-nn">scala.collection.mutable.ListBuffer</span>
-
-<span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">UserBehavior</span><span class="tok-o">(</span><span class="tok-n">userId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">itemId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">categoryId</span><span class="tok-k">:</span> <span class="tok-kt">Int</span><span class="tok-o">,</span> <span class="tok-n">behavior</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">timestamp</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span>
-
-<span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">ItemViewCount</span><span class="tok-o">(</span><span class="tok-n">itemId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">windowEnd</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">count</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span>
-
-<span class="tok-k">object</span> <span class="tok-nc">HotItems</span> <span class="tok-o">{</span>
-
-  <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-    <span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
-    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
-    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
-    <span class="tok-k">val</span> <span class="tok-n">stream</span> <span class="tok-k">=</span> <span class="tok-n">env</span>
-      <span class="tok-o">.</span><span class="tok-n">readTextFile</span><span class="tok-o">(</span><span class="tok-s">&quot;YOUR_PATH\\resources\\UserBehavior.csv&quot;</span><span class="tok-o">)</span>
-      <span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">line</span> <span class="tok-k">=&gt;</span> <span class="tok-o">{</span>
-        <span class="tok-k">val</span> <span class="tok-n">linearray</span> <span class="tok-k">=</span> <span class="tok-n">line</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot;,&quot;</span><span class="tok-o">)</span>
-        <span class="tok-nc">UserBehavior</span><span class="tok-o">(</span><span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">).</span><span class="tok-n">toLong</span><span class="tok-o">,</span> <span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">).</span><span class="tok-n">toLong</span><span class="tok-o">,</span> <span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">2</span><span class="tok-o">).</span><span class="tok-n">toInt</span><span class="tok-o">,</span> <span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">3</span><span class="tok-o">),</span> <span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">4</span><span class="tok-o">).</span><span class="tok-n">toLong</span><span class="tok-o">)</span>
-      <span class="tok-o">})</span>
-      <span class="tok-o">.</span><span class="tok-n">assignAscendingTimestamps</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">timestamp</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span><span class="tok-o">)</span>
-      <span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">behavior</span><span class="tok-o">==</span><span class="tok-s">&quot;pv&quot;</span><span class="tok-o">)</span>
-      <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-s">&quot;itemId&quot;</span><span class="tok-o">)</span>
-      <span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">minutes</span><span class="tok-o">(</span><span class="tok-mi">60</span><span class="tok-o">),</span> <span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">minutes</span><span class="tok-o">(</span><span class="tok-mi">5</span><span class="tok-o">))</span>
-      <span class="tok-o">.</span><span class="tok-n">aggregate</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">CountAgg</span><span class="tok-o">(),</span> <span class="tok-k">new</span> <span class="tok-nc">WindowResultFunction</span><span class="tok-o">())</span>
-      <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
-      <span class="tok-o">.</span><span class="tok-n">process</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">TopNHotItems</span><span class="tok-o">(</span><span class="tok-mi">3</span><span class="tok-o">))</span>
-      <span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">()</span>
-
-    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span><span class="tok-o">(</span><span class="tok-s">&quot;Hot Items Job&quot;</span><span class="tok-o">)</span>
-  <span class="tok-o">}</span>
-
-  <span class="tok-c1">// COUNT 统计的聚合函数实现，每出现一条记录加一</span>
-  <span class="tok-k">class</span> <span class="tok-nc">CountAgg</span> <span class="tok-k">extends</span> <span class="tok-nc">AggregateFunction</span><span class="tok-o">[</span><span class="tok-kt">UserBehavior</span>, <span class="tok-kt">Long</span>, <span class="tok-kt">Long</span><span class="tok-o">]</span> <span class="tok-o">{</span>
-    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">createAccumulator</span><span class="tok-o">()</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-mi">0L</span>
-    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">add</span><span class="tok-o">(</span><span class="tok-n">userBehavior</span><span class="tok-k">:</span> <span class="tok-kt">UserBehavior</span><span class="tok-o">,</span> <span class="tok-n">acc</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-n">acc</span> <span class="tok-o">+</span> <span class="tok-mi">1</span>
-    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">getResult</span><span class="tok-o">(</span><span class="tok-n">acc</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-n">acc</span>
-    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">merge</span><span class="tok-o">(</span><span class="tok-n">acc1</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">acc2</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-n">acc1</span> <span class="tok-o">+</span> <span class="tok-n">acc2</span>
-  <span class="tok-o">}</span>
-  <span class="tok-c1">// 用于输出窗口的结果</span>
-  <span class="tok-k">class</span> <span class="tok-nc">WindowResultFunction</span> <span class="tok-k">extends</span> <span class="tok-nc">WindowFunction</span><span class="tok-o">[</span><span class="tok-kt">Long</span>, <span class="tok-kt">ItemViewCount</span>, <span class="tok-kt">Tuple</span>, <span class="tok-kt">TimeWindow</span><span class="tok-o">]</span> <span class="tok-o">{</span>
-    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">apply</span><span class="tok-o">(</span><span class="tok-n">key</span><span class="tok-k">:</span> <span class="tok-kt">Tuple</span><span class="tok-o">,</span> <span class="tok-n">window</span><span class="tok-k">:</span> <span class="tok-kt">TimeWindow</span><span class="tok-o">,</span> <span class="tok-n">aggregateResult</span><span class="tok-k">:</span> <span class="tok-kt">Iterable</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">],</span> <span class="tok-n">collector</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[</span><span class="tok-kt">ItemViewCount</span><span class="tok-o">])</span> <span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-      <span class="tok-k">val</span> <span class="tok-n">itemId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span> <span class="tok-o">=</span> <span class="tok-n">key</span><span class="tok-o">.</span><span class="tok-n">asInstanceOf</span><span class="tok-o">[</span><span class="tok-kt">Tuple1</span><span class="tok-o">[</span><span class="tok-kt">Long</span><span class="tok-o">]].</span><span class="tok-n">f0</span>
-      <span class="tok-k">val</span> <span class="tok-n">count</span> <span class="tok-k">=</span> <span class="tok-n">aggregateResult</span><span class="tok-o">.</span><span class="tok-n">iterator</span><span class="tok-o">.</span><span class="tok-n">next</span>
-      <span class="tok-n">collector</span><span class="tok-o">.</span><span class="tok-n">collect</span><span class="tok-o">(</span><span class="tok-nc">ItemViewCount</span><span class="tok-o">(</span><span class="tok-n">itemId</span><span class="tok-o">,</span> <span class="tok-n">window</span><span class="tok-o">.</span><span class="tok-n">getEnd</span><span class="tok-o">,</span> <span class="tok-n">count</span><span class="tok-o">))</span>
-    <span class="tok-o">}</span>
-  <span class="tok-o">}</span>
-
-<span class="tok-c1">// 求某个窗口中前 N 名的热门点击商品，key 为窗口时间戳，输出为 TopN 的结果字符串</span>
-  <span class="tok-k">class</span> <span class="tok-nc">TopNHotItems</span><span class="tok-o">(</span><span class="tok-n">topSize</span><span class="tok-k">:</span> <span class="tok-kt">Int</span><span class="tok-o">)</span> <span class="tok-k">extends</span> <span class="tok-nc">KeyedProcessFunction</span><span class="tok-o">[</span><span class="tok-kt">Tuple</span>, <span class="tok-kt">ItemViewCount</span>, <span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-o">{</span>
-    <span class="tok-k">private</span> <span class="tok-k">var</span> <span class="tok-n">itemState</span> <span class="tok-k">:</span> <span class="tok-kt">ListState</span><span class="tok-o">[</span><span class="tok-kt">ItemViewCount</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-k">_</span>
-
-    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">open</span><span class="tok-o">(</span><span class="tok-n">parameters</span><span class="tok-k">:</span> <span class="tok-kt">Configuration</span><span class="tok-o">)</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-      <span class="tok-k">super</span><span class="tok-o">.</span><span class="tok-n">open</span><span class="tok-o">(</span><span class="tok-n">parameters</span><span class="tok-o">)</span>
-      <span class="tok-c1">// 命名状态变量的名字和状态变量的类型</span>
-      <span class="tok-k">val</span> <span class="tok-n">itemsStateDesc</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">ListStateDescriptor</span><span class="tok-o">[</span><span class="tok-kt">ItemViewCount</span><span class="tok-o">](</span><span class="tok-s">&quot;itemState-state&quot;</span><span class="tok-o">,</span> <span class="tok-n">classOf</span><span class="tok-o">[</span><span class="tok-kt">ItemViewCount</span><span class="tok-o">])</span>
-      <span class="tok-c1">// 从运行时上下文中获取状态并赋值</span>
-      <span class="tok-n">itemState</span> <span class="tok-k">=</span> <span class="tok-n">getRuntimeContext</span><span class="tok-o">.</span><span class="tok-n">getListState</span><span class="tok-o">(</span><span class="tok-n">itemsStateDesc</span><span class="tok-o">)</span>
-    <span class="tok-o">}</span>
-
-    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">processElement</span><span class="tok-o">(</span><span class="tok-n">input</span><span class="tok-k">:</span> <span class="tok-kt">ItemViewCount</span><span class="tok-o">,</span> <span class="tok-n">context</span><span class="tok-k">:</span> <span class="tok-kt">KeyedProcessFunction</span><span class="tok-o">[</span><span class="tok-kt">Tuple</span>, <span class="tok-kt">ItemViewCount</span>, <span class="tok-kt">String</span><span class="tok-o">]</span><span class="tok-k">#</span><span class="tok-nc">Context</span><span class="tok-o">,</span> <span class="tok-n">collector</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-      <span class="tok-c1">// 每条数据都保存到状态中</span>
-      <span class="tok-n">itemState</span><span class="tok-o">.</span><span class="tok-n">add</span><span class="tok-o">(</span><span class="tok-n">input</span><span class="tok-o">)</span>
-      <span class="tok-c1">// 注册 windowEnd+1 的 EventTime Timer, 当触发时，说明收齐了属于windowEnd窗口的所有商品数据</span>
-      <span class="tok-c1">// 也就是当程序看到windowend + 1的水位线watermark时，触发onTimer回调函数</span>
-      <span class="tok-n">context</span><span class="tok-o">.</span><span class="tok-n">timerService</span><span class="tok-o">.</span><span class="tok-n">registerEventTimeTimer</span><span class="tok-o">(</span><span class="tok-n">input</span><span class="tok-o">.</span><span class="tok-n">windowEnd</span> <span class="tok-o">+</span> <span class="tok-mi">1</span><span class="tok-o">)</span>
-    <span class="tok-o">}</span>
-
-    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">onTimer</span><span class="tok-o">(</span><span class="tok-n">timestamp</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">ctx</span><span class="tok-k">:</span> <span class="tok-kt">KeyedProcessFunction</span><span class="tok-o">[</span><span class="tok-kt">Tuple</span>, <span class="tok-kt">ItemViewCount</span>, <span class="tok-kt">String</span><span class="tok-o">]</span><span class="tok-k">#</span><span class="tok-nc">OnTimerContext</span><span class="tok-o">,</span> <span class="tok-n">out</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-      <span class="tok-c1">// 获取收到的所有商品点击量</span>
-      <span class="tok-k">val</span> <span class="tok-n">allItems</span><span class="tok-k">:</span> <span class="tok-kt">ListBuffer</span><span class="tok-o">[</span><span class="tok-kt">ItemViewCount</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-nc">ListBuffer</span><span class="tok-o">()</span>
-      <span class="tok-k">import</span> <span class="tok-nn">scala.collection.JavaConversions._</span>
-      <span class="tok-k">for</span> <span class="tok-o">(</span><span class="tok-n">item</span> <span class="tok-k">&lt;-</span> <span class="tok-n">itemState</span><span class="tok-o">.</span><span class="tok-n">get</span><span class="tok-o">)</span> <span class="tok-o">{</span>
-        <span class="tok-n">allItems</span> <span class="tok-o">+=</span> <span class="tok-n">item</span>
-      <span class="tok-o">}</span>
-      <span class="tok-c1">// 提前清除状态中的数据，释放空间</span>
-      <span class="tok-n">itemState</span><span class="tok-o">.</span><span class="tok-n">clear</span><span class="tok-o">()</span>
-      <span class="tok-c1">// 按照点击量从大到小排序</span>
-      <span class="tok-k">val</span> <span class="tok-n">sortedItems</span> <span class="tok-k">=</span> <span class="tok-n">allItems</span><span class="tok-o">.</span><span class="tok-n">sortBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">count</span><span class="tok-o">)(</span><span class="tok-nc">Ordering</span><span class="tok-o">.</span><span class="tok-nc">Long</span><span class="tok-o">.</span><span class="tok-n">reverse</span><span class="tok-o">).</span><span class="tok-n">take</span><span class="tok-o">(</span><span class="tok-n">topSize</span><span class="tok-o">)</span>
-      <span class="tok-c1">// 将排名信息格式化成 String, 便于打印</span>
-      <span class="tok-k">val</span> <span class="tok-n">result</span><span class="tok-k">:</span> <span class="tok-kt">StringBuilder</span> <span class="tok-o">=</span> <span class="tok-k">new</span> <span class="tok-nc">StringBuilder</span>
-      <span class="tok-n">result</span><span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;====================================\n&quot;</span><span class="tok-o">)</span>
-      <span class="tok-n">result</span><span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;时间: &quot;</span><span class="tok-o">).</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">Timestamp</span><span class="tok-o">(</span><span class="tok-n">timestamp</span> <span class="tok-o">-</span> <span class="tok-mi">1</span><span class="tok-o">)).</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;\n&quot;</span><span class="tok-o">)</span>
-
-      <span class="tok-k">for</span><span class="tok-o">(</span><span class="tok-n">i</span> <span class="tok-k">&lt;-</span> <span class="tok-n">sortedItems</span><span class="tok-o">.</span><span class="tok-n">indices</span><span class="tok-o">){</span>
-        <span class="tok-k">val</span> <span class="tok-n">currentItem</span><span class="tok-k">:</span> <span class="tok-kt">ItemViewCount</span> <span class="tok-o">=</span> <span class="tok-n">sortedItems</span><span class="tok-o">(</span><span class="tok-n">i</span><span class="tok-o">)</span>
-
-        <span class="tok-c1">// e.g. No1：商品ID=12224 浏览量=2413</span>
-        <span class="tok-n">result</span>
-          <span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;No&quot;</span><span class="tok-o">)</span>
+      <span class="tok-n">result</span><span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;时间: &quot;</span><span class="tok-o">).</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">Timestamp</span><span class="tok-o">(</span><span class="tok-n">ts</span> <span class="tok-o">-</span> <span class="tok-mi">1</span><span class="tok-o">)).</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;\n&quot;</span><span class="tok-o">)</span>
+      <span class="tok-k">for</span> <span class="tok-o">(</span><span class="tok-n">i</span> <span class="tok-k">&lt;-</span> <span class="tok-n">sortedItems</span><span class="tok-o">.</span><span class="tok-n">indices</span><span class="tok-o">)</span> <span class="tok-o">{</span>
+        <span class="tok-k">val</span> <span class="tok-n">currentItem</span> <span class="tok-k">=</span> <span class="tok-n">sortedItems</span><span class="tok-o">(</span><span class="tok-n">i</span><span class="tok-o">)</span>
+        <span class="tok-n">result</span><span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;No&quot;</span><span class="tok-o">)</span>
           <span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-n">i</span><span class="tok-o">+</span><span class="tok-mi">1</span><span class="tok-o">)</span>
           <span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;:&quot;</span><span class="tok-o">)</span>
           <span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;  商品ID=&quot;</span><span class="tok-o">)</span>
           <span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-n">currentItem</span><span class="tok-o">.</span><span class="tok-n">itemId</span><span class="tok-o">)</span>
           <span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;  浏览量=&quot;</span><span class="tok-o">)</span>
-          <span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-n">currentItem</span><span class="tok-o">.</span><span class="tok-n">count</span><span class="tok-o">).</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;\n&quot;</span><span class="tok-o">)</span>
+          <span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-n">currentItem</span><span class="tok-o">.</span><span class="tok-n">count</span><span class="tok-o">)</span>
+          <span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;\n&quot;</span><span class="tok-o">)</span>
       <span class="tok-o">}</span>
-
       <span class="tok-n">result</span><span class="tok-o">.</span><span class="tok-n">append</span><span class="tok-o">(</span><span class="tok-s">&quot;====================================\n\n&quot;</span><span class="tok-o">)</span>
-      <span class="tok-c1">// 控制输出频率，模拟实时滚动结果</span>
       <span class="tok-nc">Thread</span><span class="tok-o">.</span><span class="tok-n">sleep</span><span class="tok-o">(</span><span class="tok-mi">1000</span><span class="tok-o">)</span>
-      <span class="tok-n">out</span><span class="tok-o">.</span><span class="tok-n">collect</span><span class="tok-o">(</span><span class="tok-n">result</span><span class="tok-o">.</span><span class="tok-n">toString</span><span class="tok-o">)</span>
+      <span class="tok-n">out</span><span class="tok-o">.</span><span class="tok-n">collect</span><span class="tok-o">(</span><span class="tok-n">result</span><span class="tok-o">.</span><span class="tok-n">toString</span><span class="tok-o">())</span>
     <span class="tok-o">}</span>
-  <span class="tok-o">}</span>
-<span class="tok-o">}</span></code></pre>
+  <span class="tok-o">}</span></code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p><strong>更换Kafka作为数据源</strong></p>
 </div>
-<div class="sect4">
-<h5 id="_更换kafka作为数据源">更换Kafka作为数据源</h5>
 <div class="paragraph">
 <p>实际生产环境中，我们的数据流往往是从Kafka获取到的。如果要让代码更贴近生产实际，我们只需将source更换为Kafka即可：</p>
 </div>
-<div class="paragraph">
-<p><strong>注意：这里Kafka的版本要用最新版的！</strong></p>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+注意：这里Kafka的版本要用2.2！
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
-<p>Kafka依赖添加：</p>
+<p>添加依赖：</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="xml"><span></span><span class="tok-nt">&lt;dependency&gt;</span>
-    <span class="tok-nt">&lt;groupId&gt;</span>org.apache.flink<span class="tok-nt">&lt;/groupId&gt;</span>
-    <span class="tok-nt">&lt;artifactId&gt;</span>flink-connector-kafka_${scala.binary.version}<span class="tok-nt">&lt;/artifactId&gt;</span>
-    <span class="tok-nt">&lt;version&gt;</span>${flink.version}<span class="tok-nt">&lt;/version&gt;</span>
+  <span class="tok-nt">&lt;groupId&gt;</span>org.apache.flink<span class="tok-nt">&lt;/groupId&gt;</span>
+  <span class="tok-nt">&lt;artifactId&gt;</span>flink-connector-kafka_${scala.binary.version}<span class="tok-nt">&lt;/artifactId&gt;</span>
+  <span class="tok-nt">&lt;version&gt;</span>${flink.version}<span class="tok-nt">&lt;/version&gt;</span>
 <span class="tok-nt">&lt;/dependency&gt;</span></code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>编写代码：</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -8216,7 +7754,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <p>当然，根据实际的需要，我们还可以将Sink指定为Kafka、ES、Redis或其它存储，这里就不一一展开实现了。</p>
 </div>
 <div class="paragraph">
-<p>kafka生产者程序</p>
+<p><strong>kafka生产者程序</strong></p>
 </div>
 <div class="paragraph">
 <p>添加依赖</p>
@@ -8229,6 +7767,9 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
     <span class="tok-nt">&lt;version&gt;</span>2.2.0<span class="tok-nt">&lt;/version&gt;</span>
 <span class="tok-nt">&lt;/dependency&gt;</span></code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>编写代码：</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -8247,8 +7788,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
     <span class="tok-n">props</span><span class="tok-o">.</span><span class="tok-n">put</span><span class="tok-o">(</span><span class="tok-s">&quot;key.serializer&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;org.apache.kafka.common.serialization.StringSerializer&quot;</span><span class="tok-o">)</span>
     <span class="tok-n">props</span><span class="tok-o">.</span><span class="tok-n">put</span><span class="tok-o">(</span><span class="tok-s">&quot;value.serializer&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;org.apache.kafka.common.serialization.StringSerializer&quot;</span><span class="tok-o">)</span>
     <span class="tok-k">val</span> <span class="tok-n">producer</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">KafkaProducer</span><span class="tok-o">[</span><span class="tok-kt">String</span>, <span class="tok-kt">String</span><span class="tok-o">](</span><span class="tok-n">props</span><span class="tok-o">)</span>
-    <span class="tok-k">val</span> <span class="tok-n">resourcesPath</span> <span class="tok-k">=</span> <span class="tok-n">getClass</span><span class="tok-o">.</span><span class="tok-n">getResource</span><span class="tok-o">(</span><span class="tok-s">&quot;/UserBehavior.csv&quot;</span><span class="tok-o">)</span>
-    <span class="tok-k">val</span> <span class="tok-n">bufferedSource</span> <span class="tok-k">=</span> <span class="tok-n">io</span><span class="tok-o">.</span><span class="tok-nc">Source</span><span class="tok-o">.</span><span class="tok-n">fromFile</span><span class="tok-o">(</span><span class="tok-n">resourcesPath</span><span class="tok-o">.</span><span class="tok-n">getPath</span><span class="tok-o">)</span>
+    <span class="tok-k">val</span> <span class="tok-n">bufferedSource</span> <span class="tok-k">=</span> <span class="tok-n">io</span><span class="tok-o">.</span><span class="tok-nc">Source</span><span class="tok-o">.</span><span class="tok-n">fromFile</span><span class="tok-o">(</span><span class="tok-s">&quot;UserBehavior.csv文件的绝对路径&quot;</span><span class="tok-o">)</span>
     <span class="tok-k">for</span> <span class="tok-o">(</span><span class="tok-n">line</span> <span class="tok-k">&lt;-</span> <span class="tok-n">bufferedSource</span><span class="tok-o">.</span><span class="tok-n">getLines</span><span class="tok-o">)</span> <span class="tok-o">{</span>
       <span class="tok-k">val</span> <span class="tok-n">record</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">ProducerRecord</span><span class="tok-o">[</span><span class="tok-kt">String</span>, <span class="tok-kt">String</span><span class="tok-o">](</span><span class="tok-n">topic</span><span class="tok-o">,</span> <span class="tok-n">line</span><span class="tok-o">)</span>
       <span class="tok-n">producer</span><span class="tok-o">.</span><span class="tok-n">send</span><span class="tok-o">(</span><span class="tok-n">record</span><span class="tok-o">)</span>
@@ -8256,8 +7796,6 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
     <span class="tok-n">producer</span><span class="tok-o">.</span><span class="tok-n">close</span><span class="tok-o">()</span>
   <span class="tok-o">}</span>
 <span class="tok-o">}</span></code></pre>
-</div>
-</div>
 </div>
 </div>
 </div>
