@@ -666,26 +666,24 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_有状态的计算">7. 有状态的计算</a>
 <ul class="sectlevel2">
-<li><a href="#_一致性">7.1. 一致性</a></li>
-<li><a href="#_检查点_保证exactly_once">7.2. 检查点: 保证exactly-once</a></li>
-<li><a href="#_stateful_operators_and_applications">7.3. Stateful Operators and Applications</a>
+<li><a href="#_实现有状态的用户自定义函数">7.1. 实现有状态的用户自定义函数</a>
 <ul class="sectlevel3">
-<li><a href="#_实现stateful_functions">7.3.1. 实现stateful functions</a>
-<ul class="sectlevel4">
-<li><a href="#_在runtimecontext中声明keyed_state">在RuntimeContext中声明Keyed State</a></li>
+<li><a href="#_在runtimecontext中定义键控状态keyed_state">7.1.1. 在RuntimeContext中定义键控状态(keyed state)</a></li>
+<li><a href="#_使用listcheckpointed接口来实现操作符的列表状态list_state">7.1.2. 使用ListCheckpointed接口来实现操作符的列表状态(List State)</a></li>
+<li><a href="#_使用连接的广播状态using_connected_broadcast_state">7.1.3. 使用连接的广播状态(using connected broadcast state)</a></li>
 </ul>
 </li>
+<li><a href="#_配置检查点">7.2. 配置检查点</a></li>
+<li><a href="#_保证有状态应用的可维护性">7.3. 保证有状态应用的可维护性</a>
+<ul class="sectlevel3">
+<li><a href="#_指定唯一的操作符标识符operator_identifiers">7.3.1. 指定唯一的操作符标识符(operator identifiers)</a></li>
+<li><a href="#_指定操作符的最大并行度">7.3.2. 指定操作符的最大并行度</a></li>
 </ul>
 </li>
-<li><a href="#_使用listcheckpointed接口来实现操作符的列表状态list_state">7.4. 使用ListCheckpointed接口来实现操作符的列表状态(List State)</a></li>
-<li><a href="#_使用连接的广播状态using_connected_broadcast_state">7.5. 使用连接的广播状态(using connected broadcast state)</a></li>
-<li><a href="#_状态存储恢复和清理">7.6. 状态存储，恢复和清理</a>
+<li><a href="#_有状态应用的性能和健壮性">7.4. 有状态应用的性能和健壮性</a>
 <ul class="sectlevel3">
-<li><a href="#_配置检查点">7.6.1. 配置检查点</a></li>
-<li><a href="#_指定唯一的操作符标识符operator_identifiers">7.6.2. 指定唯一的操作符标识符(operator identifiers)</a></li>
-<li><a href="#_指定操作符的最大并行度">7.6.3. 指定操作符的最大并行度</a></li>
-<li><a href="#_防止状态泄露">7.6.4. 防止状态泄露</a></li>
-<li><a href="#_选择一个状态后端">7.6.5. 选择一个状态后端</a></li>
+<li><a href="#_选择一个状态后端">7.4.1. 选择一个状态后端</a></li>
+<li><a href="#_防止状态泄露">7.4.2. 防止状态泄露</a></li>
 </ul>
 </li>
 </ul>
@@ -698,7 +696,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_事务性写入">8.1.2. 事务性写入</a></li>
 </ul>
 </li>
-<li><a href="#_flink提供的连接器">8.2. Flink提供的连接器}</a>
+<li><a href="#_flink提供的连接器">8.2. Flink提供的连接器</a>
 <ul class="sectlevel3">
 <li><a href="#_apache_kafka_source连接器">8.2.1. Apache Kafka Source连接器</a></li>
 <li><a href="#_apache_kafka_sink连接器">8.2.2. Apache Kafka Sink连接器</a></li>
@@ -716,55 +714,71 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_实现自定义sink函数">8.4. 实现自定义sink函数</a>
 <ul class="sectlevel3">
 <li><a href="#_幂等sink连接器">8.4.1. 幂等sink连接器</a></li>
-<li><a href="#_事务性sink连接器">8.4.2. 事务性sink连接器</a>
-<ul class="sectlevel4">
-<li><a href="#_genericwriteaheadsink">GENERICWRITEAHEADSINK</a></li>
-<li><a href="#_twophasecommitsinkfunction">TWOPHASECOMMITSINKFUNCTION</a></li>
+<li><a href="#_事务性sink连接器">8.4.2. 事务性sink连接器</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-</li>
-<li><a href="#_flink_cep简介">9. Flink CEP简介</a></li>
-<li><a href="#_尚硅谷大数据技术之电商用户行为分析">10. 尚硅谷大数据技术之电商用户行为分析</a>
+<li><a href="#_flink部署与运维">9. Flink部署与运维</a>
 <ul class="sectlevel2">
-<li><a href="#_数据集解析">10.1. 数据集解析</a>
+<li><a href="#_部署方式">9.1. 部署方式</a>
 <ul class="sectlevel3">
-<li><a href="#_淘宝数据集解析">10.1.1. 淘宝数据集解析</a></li>
-<li><a href="#_apache服务器日志数据集解析">10.1.2. Apache服务器日志数据集解析</a></li>
+<li><a href="#_standalone集群">9.1.1. standalone集群</a></li>
+<li><a href="#_apache_hadoop_yarn">9.1.2. Apache Hadoop Yarn</a></li>
 </ul>
 </li>
-<li><a href="#_实时热门商品统计">10.2. 实时热门商品统计</a></li>
-<li><a href="#_实时流量统计">10.3. 实时流量统计</a></li>
-<li><a href="#_uv统计的布隆过滤器实现">10.4. Uv统计的布隆过滤器实现</a></li>
-<li><a href="#_app分渠道数据统计">10.5. APP分渠道数据统计</a></li>
-<li><a href="#_app不分渠道数据统计">10.6. APP不分渠道数据统计</a></li>
-<li><a href="#_恶意登陆实现">10.7. 恶意登陆实现</a></li>
-<li><a href="#_订单支付实时监控">10.8. 订单支付实时监控</a>
+<li><a href="#_高可用配置ha">9.2. 高可用配置(HA)</a>
 <ul class="sectlevel3">
-<li><a href="#_使用flink_cep来实现">10.8.1. 使用Flink CEP来实现</a></li>
-<li><a href="#_使用process_function实现订单超时需求">10.8.2. 使用Process Function实现订单超时需求</a></li>
+<li><a href="#_standalone集群高可用配置">9.2.1. standalone集群高可用配置</a></li>
+<li><a href="#_yarn集群高可用配置">9.2.2. yarn集群高可用配置</a></li>
 </ul>
 </li>
-<li><a href="#_实现两条流的join">10.9. 实现两条流的Join</a></li>
+<li><a href="#_与hadoop集成">9.3. 与Hadoop集成</a></li>
+<li><a href="#_保存点操作">9.4. 保存点操作</a></li>
+<li><a href="#_取消一个应用">9.5. 取消一个应用</a></li>
+<li><a href="#_从保存点启动应用程序_2">9.6. 从保存点启动应用程序</a></li>
+<li><a href="#_扩容改变并行度操作">9.7. 扩容，改变并行度操作</a></li>
 </ul>
 </li>
-<li><a href="#_常见面试题解答">11. 常见面试题解答</a>
+<li><a href="#_flink_cep简介">10. Flink CEP简介</a></li>
+<li><a href="#_尚硅谷大数据技术之电商用户行为分析">11. 尚硅谷大数据技术之电商用户行为分析</a>
 <ul class="sectlevel2">
-<li><a href="#_面试题一">11.1. 面试题一</a></li>
-<li><a href="#_面试题二">11.2. 面试题二</a></li>
-<li><a href="#_面试题三">11.3. 面试题三</a></li>
-<li><a href="#_面试题四">11.4. 面试题四</a></li>
-<li><a href="#_面试题五">11.5. 面试题五</a></li>
-<li><a href="#_面试题六">11.6. 面试题六</a></li>
-<li><a href="#_面试题七">11.7. 面试题七</a></li>
-<li><a href="#_面试题八">11.8. 面试题八</a></li>
-<li><a href="#_面试题九">11.9. 面试题九</a></li>
-<li><a href="#_面试题十">11.10. 面试题十</a></li>
-<li><a href="#_面试题十一">11.11. 面试题十一</a></li>
-<li><a href="#_面试题十二">11.12. 面试题十二</a></li>
-<li><a href="#_面试题十三">11.13. 面试题十三</a></li>
+<li><a href="#_数据集解析">11.1. 数据集解析</a>
+<ul class="sectlevel3">
+<li><a href="#_淘宝数据集解析">11.1.1. 淘宝数据集解析</a></li>
+<li><a href="#_apache服务器日志数据集解析">11.1.2. Apache服务器日志数据集解析</a></li>
+</ul>
+</li>
+<li><a href="#_实时热门商品统计">11.2. 实时热门商品统计</a></li>
+<li><a href="#_实时流量统计">11.3. 实时流量统计</a></li>
+<li><a href="#_uv统计的布隆过滤器实现">11.4. Uv统计的布隆过滤器实现</a></li>
+<li><a href="#_app分渠道数据统计">11.5. APP分渠道数据统计</a></li>
+<li><a href="#_app不分渠道数据统计">11.6. APP不分渠道数据统计</a></li>
+<li><a href="#_恶意登陆实现">11.7. 恶意登陆实现</a></li>
+<li><a href="#_订单支付实时监控">11.8. 订单支付实时监控</a>
+<ul class="sectlevel3">
+<li><a href="#_使用flink_cep来实现">11.8.1. 使用Flink CEP来实现</a></li>
+<li><a href="#_使用process_function实现订单超时需求">11.8.2. 使用Process Function实现订单超时需求</a></li>
+</ul>
+</li>
+<li><a href="#_实现两条流的join">11.9. 实现两条流的Join</a></li>
+</ul>
+</li>
+<li><a href="#_常见面试题解答">12. 常见面试题解答</a>
+<ul class="sectlevel2">
+<li><a href="#_面试题一">12.1. 面试题一</a></li>
+<li><a href="#_面试题二">12.2. 面试题二</a></li>
+<li><a href="#_面试题三">12.3. 面试题三</a></li>
+<li><a href="#_面试题四">12.4. 面试题四</a></li>
+<li><a href="#_面试题五">12.5. 面试题五</a></li>
+<li><a href="#_面试题六">12.6. 面试题六</a></li>
+<li><a href="#_面试题七">12.7. 面试题七</a></li>
+<li><a href="#_面试题八">12.8. 面试题八</a></li>
+<li><a href="#_面试题九">12.9. 面试题九</a></li>
+<li><a href="#_面试题十">12.10. 面试题十</a></li>
+<li><a href="#_面试题十一">12.11. 面试题十一</a></li>
+<li><a href="#_面试题十二">12.12. 面试题十二</a></li>
+<li><a href="#_面试题十三">12.13. 面试题十三</a></li>
 </ul>
 </li>
 </ul>
@@ -5529,244 +5543,23 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
 <h2 id="_有状态的计算">7. 有状态的计算</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>流式计算分为无状态和有状态两种情况。无状态的计算观察每个独立事件，并根据最后一个事件输出结果。例如，流处理应用程序从传感器接收温度读数，并在温度超过90度时发出警告。有状态的计算则会基于多个事件输出结果。以下是一些例子。</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>所有类型的窗口。例如，计算过去一小时的平均温度，就是有状态的计算。</p>
-</li>
-<li>
-<p>所有用于复杂事件处理的状态机。例如，若在一分钟内收到两个相差20度以上的温度读数，则发出警告，这是有状态的计算。</p>
-</li>
-<li>
-<p>流与流之间的所有关联操作，以及流与静态表或动态表之间的关联操作，都是有状态的计算。</p>
-</li>
-</ul>
+<p>状态操作符和用户自定义函数都是我们在写流处理程序时，常用的工具。事实上，大部分稍微复杂一点的逻辑都需要保存数据或者保存计算结果。很多Flink内置的操作符例如：source操作符，sink操作符等等都是有状态的，也就是说会缓存流数据或者计算结果。例如，窗口操作符将会为ProcessWindowFunction收集输入的数据，或者收集ReduceFunction计算的结果。而ProcessFunction也会保存定时器事件，一些sink方法为了做到exactly-once，会将事务保存下来。除了内置的操作符以及提供的source和sink操作符，Flink的DataStream API还在UDF函数中暴露了可以注册、保存和访问状态的接口。</p>
 </div>
 <div class="paragraph">
-<p>下图展示了无状态流处理和有状态流处理的主要区别。无状态流处理分别接收每条记录(图中的黑条)，然后根据最新输入的记录生成输出记录(白条)。有状态流处理会维护状态(根据每条输入记录进行更新)，并基于最新输入的记录和当前的状态值生成输出记录(灰条)。</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/statevsunstate.png" alt="statevsunstate">
-</div>
-</div>
-<div class="paragraph">
-<p>无状态流处理与有状态流处理的区别。输入记录由黑条表示。无状态流处理每次只转换一条输入记录，并且仅根据最新的输入记录输出结果(白条)。有状态 流处理维护所有已处理记录的状态值，并根据每条新输入的记录更新状态，因此输出记录(灰条)反映的是综合考虑多个事件之后的结果。</p>
-</div>
-<div class="paragraph">
-<p>尽管无状态的计算很重要，但是流处理对有状态的计算更感兴趣。事实上，正确地实现有状态的计算比实现无状态的计算难得多。旧的流处理系统并不支持有状态的计算，而新一代的流处理系统则将状态及其正确性视为重中之重。</p>
+<p>本章重点讨论有状态的用户自定义函数的实现，以及讨论有状态应用的性能和健壮性。特别的，我们将解释在用户自定义函数中，如何定义不同类型的状态，以及如何与状态进行交互。我们还讨论了性能方面的问题以及如何控制状态大小的问题。</p>
 </div>
 <div class="sect2">
-<h3 id="_一致性">7.1. 一致性</h3>
+<h3 id="_实现有状态的用户自定义函数">7.1. 实现有状态的用户自定义函数</h3>
 <div class="paragraph">
-<p>当在分布式系统中引入状态时，自然也引入了一致性问题。一致性实际上是"正确性级别"的另一种说法，即在成功处理故障并恢复之后得到的结果，与没有发生任何故障时得到的结果相比，前者有多正确? 举例来说，假设要对最近一小时登录的用户计数。在系统经历故障之后，计数结果是多少? 在流处理中，一致性分为3个级别。</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>at-most-once: 这其实是没有正确性保障的委婉说法——故障发生之后，计数结果可能丢失。同样的还有udp。</p>
-</li>
-<li>
-<p>at-least-once: 这表示计数结果可能大于正确值，但绝不会小于正确值。也就是说，计数程序在发生故障后可能多算，但是绝不会少算。</p>
-</li>
-<li>
-<p>exactly-once: 这指的是系统保证在发生故障后得到的计数结果与正确值一致。</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>曾经，at-least-once非常流行。第一代流处理器(如Storm和Samza)刚问世时只保证at-least-once，原因有二。</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>保证exactly-once的系统实现起来更复杂。这在基础架构层(决定什么代表正确，以及exactly-once的范围是什么)和实现层都很有挑战性。</p>
-</li>
-<li>
-<p>流处理系统的早期用户愿意接受框架的局限性，并在应用层想办法弥补(例如使应用程序具有幂等性，或者用批量计算层再做一遍计算)。</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>最先保证exactly-once的系统(Storm Trident和Spark Streaming)在性能和表现力这两个方面付出了很大的代价。为了保证exactly-once，这些系统无法单独地对每条记录运用应用逻辑，而是同时处理多条(一批)记录，保证对每一批的处理要么全部成功，要么全部失败。这就导致在得到结果前，必须等待一批记录处理结束。因此，用户经常不得不使用两个流处理框架(一个用来保证exactly-once，另一个用来对每个元素做低延迟处理)，结果使基础设施更加复杂。曾经，用户不得不在保证exactly-once与获得低延迟和效率之间权衡利弊。Flink避免了这种权衡。</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-Flink的一个重大价值在于，它既保证了exactly-once，也具有低延迟和高吞吐的处理能力。
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>从根本上说，Flink通过使自身满足所有需求来避免权衡，它是业界的一次意义重大的技术飞跃。尽管这在外行看来很神奇，但是一旦了解，就会恍然大悟。</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_检查点_保证exactly_once">7.2. 检查点: 保证exactly-once</h3>
-<div class="paragraph">
-<p>Flink如何保证exactly-once呢? 它使用一种被称为"检查点"的特性，在出现故障时将系统重置回正确状态。下面通过简单的类比来解释检查点的作用。</p>
-</div>
-<div class="paragraph">
-<p>假设你和两位朋友正在数项链上有多少颗珠子，如下图所示。你捏住珠子，边数边拨，每拨过一颗珠子就给总数加一。你的朋友也这样数他们手中的珠子。当你分神忘记数到哪里时，怎么办呢? 如果项链上有很多珠子，你显然不想从头再数一遍，尤其是当三人的速度不一样却又试图合作的时候，更是如此(比如想记录前一分钟三人一共数了多少颗珠子，回想一下一分钟滚动窗口)。</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/balls.png" alt="balls">
-</div>
-</div>
-<div class="paragraph">
-<p>于是，你想了一个更好的办法: 在项链上每隔一段就松松地系上一根有色皮筋，将珠子分隔开; 当珠子被拨动的时候，皮筋也可以被拨动; 然后，你安排一个助手，让他在你和朋友拨到皮筋时记录总数。用这种方法，当有人数错时，就不必从头开始数。相反，你向其他人发出错误警示，然后你们都从上一根皮筋处开始重数，助手则会告诉每个人重数时的起始数值，例如在粉色皮筋处的数值是多少。</p>
-</div>
-<div class="paragraph">
-<p>Flink检查点的作用就类似于皮筋标记。数珠子这个类比的关键点是: 对于指定的皮筋而言，珠子的相对位置是确定的; 这让皮筋成为重新计数的参考点。总状态(珠子的总数)在每颗珠子被拨动之后更新一次，助手则会保存与每根皮筋对应的检查点状态，如当遇到粉色皮筋时一共数了多少珠子，当遇到橙色皮筋时又是多少。当问题出现时，这种方法使得重新计数变得简单。</p>
-</div>
-<div class="paragraph">
-<p>Flink检查点的核心作用是确保状态正确，即使遇到程序中断，也要正确。记住这一基本点之后，我们用一个例子来看检查点是如何运行的。Flink为用户提供了用来定义状态的工具。例如，以下这个Scala程序按照输入记录的第一个字段(一个字符串)进行分组并维护第二个字段的计数状态。</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">stream</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
-<span class="tok-k">val</span> <span class="tok-n">counts</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Int</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">stream</span>
-  <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-n">record</span> <span class="tok-k">=&gt;</span> <span class="tok-n">record</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">)</span>
-  <span class="tok-o">.</span><span class="tok-n">mapWithState</span><span class="tok-o">((</span><span class="tok-n">in</span><span class="tok-k">:</span> <span class="tok-o">(</span><span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-kt">Int</span><span class="tok-o">),</span> <span class="tok-n">count</span><span class="tok-k">:</span> <span class="tok-kt">Option</span><span class="tok-o">[</span><span class="tok-kt">Int</span><span class="tok-o">])</span> <span class="tok-k">=&gt;</span>
-    <span class="tok-n">count</span> <span class="tok-k">match</span> <span class="tok-o">{</span>
-      <span class="tok-k">case</span> <span class="tok-nc">Some</span><span class="tok-o">(</span><span class="tok-n">c</span><span class="tok-o">)</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span> <span class="tok-o">(</span><span class="tok-n">in</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-n">c</span> <span class="tok-o">+</span> <span class="tok-n">in</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">),</span> <span class="tok-nc">Some</span><span class="tok-o">(</span><span class="tok-n">c</span> <span class="tok-o">+</span> <span class="tok-n">in</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">)</span> <span class="tok-o">)</span>
-      <span class="tok-k">case</span> <span class="tok-nc">None</span> <span class="tok-k">=&gt;</span> <span class="tok-o">(</span> <span class="tok-o">(</span><span class="tok-n">in</span><span class="tok-o">.</span><span class="tok-n">_1</span><span class="tok-o">,</span> <span class="tok-n">in</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">),</span> <span class="tok-nc">Some</span><span class="tok-o">(</span><span class="tok-n">in</span><span class="tok-o">.</span><span class="tok-n">_2</span><span class="tok-o">)</span> <span class="tok-o">)</span>
-<span class="tok-o">})</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>该程序有两个算子: keyBy算子用来将记录按照第一个元素(一个字符串)进行分组，根据该key将数据进行重新分区，然后将记录再发送给下一个算子: 有状态的map算子(mapWithState)。map算子在接收到每个元素后，将输入记录的第二个字段的数据加到现有总数中，再将更新过的元素发射出去。下图表示程序的初始状态: 输入流中的6条记录被检查点屏障(checkpoint barrier)隔开，所有的map算子状态均为0(计数还未开始)。所有key为a的记录将被顶层的map算子处理，所有key为b的记录将被中间层的map算子处理，所有key为c的记录则将被底层的map算子处理。</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/ckpt1.png" alt="ckpt1">
-</div>
-</div>
-<div class="paragraph">
-<p>程序的初始状态。注意，a、b、c三组的初始计数状态都是0，即三个圆柱上的值。ckpt表示检查点屏障。每条记录在处理顺序上严格地遵守在检查点之前或之后的规定，例如["b",2]在检查点之前被处理，["a",2]则在检查点之后被处理</p>
-</div>
-<div class="paragraph">
-<p>当该程序处理输入流中的6条记录时，涉及的操作遍布3个并行实例(节点、CPU内核等)。那么，检查点该如何保证exactly-once呢?</p>
-</div>
-<div class="paragraph">
-<p>检查点屏障和普通记录类似。它们由算子处理，但并不参与计算，而是会触发与检查点相关的行为。当读取输入流的数据源(在本例中与keyBy算子内联)遇到检查点屏障时，它将其在输入流中的位置保存到持久化存储中。如果输入流来自消息传输系统(Kafka)，这个位置就是偏移量。Flink的存储机制是插件化的，持久化存储可以是分布式文件系统，如HDFS。下图展示了这个过程。</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/ckpt2.png" alt="ckpt2">
-</div>
-</div>
-<div class="paragraph">
-<p>当Flink数据源(在本例中与keyBy算子内联)遇到检查点屏障时，它会将其在输入流中的位置保存到持久化存储中。这让 Flink可以根据该位置重启输入</p>
-</div>
-<div class="paragraph">
-<p>检查点屏障像普通记录一样在算子之间流动。当map算子处理完前3条记录并收到检查点屏障时，它们会将状态以异步的方式写入持久化存储，如下图所示。</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/ckpt3.png" alt="ckpt3">
-</div>
-</div>
-<div class="paragraph">
-<p>位于检查点之前的所有记录(["b",2]、["b",3]和["c",1])被map算子处理之后的情况。此时，持久化存储已经备份了检查点屏障在输入流中的位置(备份操作发生在检查点屏障被输入算子处理的时候)。map算子接着开始处理检查点屏障，并触发将状态异步备份到稳定存储中这个动作</p>
-</div>
-<div class="paragraph">
-<p>当map算子的状态备份和检查点屏障的位置备份被确认之后，该检查点操作就可以被标记为完成，如下图所示。我们在无须停止或者阻断计算的条件下，在一个逻辑时间点(对应检查点屏障在输入流中的位置)为计算状态拍了快照。通过确保备份的状态和位置指向同一个逻辑时间点，后文将解释如何基于备份恢复计算，从而保证exactly-once。值得注意的是，当没有出现故障时，Flink检查点的开销极小，检查点操作的速度由持久化存储的可用带宽决定。回顾数珠子的例子: 除了因为数错而需要用到皮筋之外，皮筋会被很快地拨过。</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/ckpt4.png" alt="ckpt4">
-</div>
-</div>
-<div class="paragraph">
-<p>检查点操作完成，状态和位置均已备份到稳定存储中。输入流中的所有记录都已处理完成。值得注意的是，备份的状态值与实际的状态值是不同的。备份反映的是检查点的状态</p>
-</div>
-<div class="paragraph">
-<p>如果检查点操作失败，Flink会丢弃该检查点并继续正常执行，因为之后的某一个检查点可能会成功。虽然恢复时间可能更长，但是对于状态的保证依旧很有力。只有在一系列连续的检查点操作失败之后，Flink才会抛出错误，因为这通常预示着发生了严重且持久的错误。</p>
-</div>
-<div class="paragraph">
-<p>现在来看看下图所示的情况: 检查点操作已经完成，但故障紧随其后。</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/ckpt5.png" alt="ckpt5">
-</div>
-</div>
-<div class="paragraph">
-<p>故障紧跟检查点，导致最底部的实例丢失</p>
-</div>
-<div class="paragraph">
-<p>在这种情况下，Flink会重新拓扑(可能会获取新的执行资源)，将输入流倒回到上一个检查点，然后恢复状态值并从该处开始继续计算。在本例中，["a",2]、["a",2]和["c",2]这几条记录将被重播。</p>
-</div>
-<div class="paragraph">
-<p>下图展示了这一重新处理过程。从上一个检查点开始重新计算，可以保证在剩下的记录被处理之后，得到的map算子的状态值与没有发生故障时的状态值一致。</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/ckpt6.png" alt="ckpt6">
-</div>
-</div>
-<div class="paragraph">
-<p>Flink将输入流倒回到上一个检查点屏障的位置，同时恢复map算子的状态值。然后，Flink从此处开始重新处理。这样做保证了在记录被处理之后，map算子的状态值与没有发生故障时的一致</p>
-</div>
-<div class="paragraph">
-<p>Flink检查点算法的正式名称是异步屏障快照(asynchronous barrier snapshotting)。该算法大致基于Chandy-Lamport分布式快照算法。</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-检查点是Flink最有价值的创新之一，因为它使Flink可以保证exactly-once，并且不需要牺牲性能。
-</td>
-</tr>
-</table>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_stateful_operators_and_applications">7.3. Stateful Operators and Applications</h3>
-<div class="paragraph">
-<p>Flink内置的很多算子，数据源source，数据存储sink都是有状态的，流中的数据都是buffer records，会保存一定的元素或者元数据。例如: ProcessWindowFunction会缓存输入流的数据，ProcessFunction会保存设置的定时器信息等等。</p>
+<p>我们知道函数有两种状态，键控状态(keyed state)和操作符状态(operator state)。</p>
 </div>
 <div class="sect3">
-<h4 id="_实现stateful_functions">7.3.1. 实现stateful functions</h4>
+<h4 id="_在runtimecontext中定义键控状态keyed_state">7.1.1. 在RuntimeContext中定义键控状态(keyed state)</h4>
 <div class="paragraph">
-<p>函数一般有两种类型的状态：</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>keyed state</p>
-</li>
-<li>
-<p>operator state</p>
-</li>
-</ul>
-</div>
-<div class="sect4">
-<h5 id="_在runtimecontext中声明keyed_state">在RuntimeContext中声明Keyed State</h5>
-<div class="ulist">
-<ul>
-<li>
-<p>keyed state很类似于一个分布式的key-value map数据结构</p>
-</li>
-<li>
-<p>keyed state只能用于KeyedStream(keyBy算子)</p>
-</li>
-</ul>
+<p>用户自定义函数可以使用keyed state来存储和访问key对应的状态。对于每一个key，Flink将会维护一个状态实例。一个操作符的状态实例将会被分发到操作符的所有并行任务中去。这表明函数的每一个并行任务只为所有key的某一部分key保存key对应的状态实例。所以keyed state和分布式key-value map数据结构非常类似。</p>
 </div>
 <div class="paragraph">
-<p>Flink支持以下数据类型：</p>
+<p>keyed state仅可用于KeyedStream。Flink支持以下数据类型的状态变量：</p>
 </div>
 <div class="ulist">
 <ul>
@@ -5833,6 +5626,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <p>State.clear()是清空操作。</p>
 </div>
 <div class="listingblock">
+<div class="title">Example 7-1. 在FlatMapFunction中使用keyed ValueState</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">sensorData</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
 <span class="tok-k">val</span> <span class="tok-n">keyedData</span><span class="tok-k">:</span> <span class="tok-kt">KeyedStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span>, <span class="tok-kt">String</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">sensorData</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">id</span><span class="tok-o">)</span>
@@ -5861,6 +5655,21 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <span class="tok-o">}</span></code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>上面例子中的FlatMapFunction只能访问当前处理的元素所包含的key所对应的状态变量。</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+不同key对应的keyed state是相互隔离的。
+</td>
+</tr>
+</table>
+</div>
 <div class="ulist">
 <ul>
 <li>
@@ -5875,9 +5684,10 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <p>当一个函数注册了StateDescriptor描述符，Flink会检查状态后端是否已经存在这个状态。这种情况通常出现在应用挂掉要从检查点或者保存点恢复的时候。在这两种情况下，Flink会将注册的状态连接到已经存在的状态。如果不存在状态，则初始化一个空的状态。</p>
 </div>
 <div class="paragraph">
-<p>使用FlatMap with keyed ValueState的快捷方式flatMapWithState实现以上需求。还记得之前的例子mapWithState吗？</p>
+<p>使用FlatMap with keyed ValueState的快捷方式flatMapWithState也可以实现以上需求。</p>
 </div>
 <div class="listingblock">
+<div class="title">Example 7-2. 使用flatMapWithState来实现需求</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">alerts</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Double</span>, <span class="tok-kt">Double</span><span class="tok-o">)]</span> <span class="tok-k">=</span> <span class="tok-n">keyedSensorData</span>
   <span class="tok-o">.</span><span class="tok-n">flatMapWithState</span><span class="tok-o">[(</span><span class="tok-kt">String</span>, <span class="tok-kt">Double</span>, <span class="tok-kt">Double</span><span class="tok-o">)</span>, <span class="tok-kt">Double</span><span class="tok-o">]</span> <span class="tok-o">{</span>
@@ -5898,15 +5708,13 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 </div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_使用listcheckpointed接口来实现操作符的列表状态list_state">7.4. 使用ListCheckpointed接口来实现操作符的列表状态(List State)</h3>
+<div class="sect3">
+<h4 id="_使用listcheckpointed接口来实现操作符的列表状态list_state">7.1.2. 使用ListCheckpointed接口来实现操作符的列表状态(List State)</h4>
 <div class="paragraph">
-<p>operator state会在operator的每一个并行实例中去维护。一个操作符并行实例上的所有事件都可以访问同一个状态。Flink支持三种操作符状态：list state, list union state, broadcast state。</p>
+<p>操作符状态会在操作符的每一个并行实例中去维护。一个操作符并行实例上的所有事件都可以访问同一个状态。Flink支持三种操作符状态：list state, list union state, broadcast state。</p>
 </div>
 <div class="paragraph">
-<p>一个函数可以实现ListCheckpointed接口来处理操作符list state。ListCheckpointed接口无法处理ValueState和ListState，因为这些状态是注册在状态后端的。操作符状态类似于成员变量，和状态后端的交互通过ListCheckpointed接口的回调函数实现。接口提供了两个方法：</p>
+<p>一个函数可以实现ListCheckpointed接口来处理操作符的list state。ListCheckpointed接口无法处理ValueState和ListState，因为这些状态是注册在状态后端的。操作符状态类似于成员变量，和状态后端的交互通过ListCheckpointed接口的回调函数实现。接口提供了两个方法：</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -5917,7 +5725,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="paragraph">
-<p>当Flink触发stateful functon的一次checkpoint时，snapshotState()方法会被调用。方法接收两个参数，checkpointId为唯一的单调递增的检查点Id，timestamp为当master机器开始做检查点操作时的墙上时钟。方法必须返回序列化好的状态对象的列表。</p>
+<p>当Flink触发stateful functon的一次checkpoint时，snapshotState()方法会被调用。方法接收两个参数，checkpointId为唯一的单调递增的检查点Id，timestamp为当master机器开始做检查点操作时的墙上时钟（机器时间）。方法必须返回序列化好的状态对象的列表。</p>
 </div>
 <div class="paragraph">
 <p>当宕机程序从检查点或者保存点恢复时会调用restoreState()方法。restoreState使用snapshotState保存的列表来恢复。</p>
@@ -5926,6 +5734,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <p>下面的例子展示了如何实现ListCheckpointed接口。业务场景为：一个对每一个并行实例的超过阈值的温度的计数程序。</p>
 </div>
 <div class="listingblock">
+<div class="title">Example 7-3</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">class</span> <span class="tok-nc">HighTempCounter</span><span class="tok-o">(</span><span class="tok-k">val</span> <span class="tok-n">threshold</span><span class="tok-k">:</span> <span class="tok-kt">Double</span><span class="tok-o">)</span>
     <span class="tok-k">extends</span> <span class="tok-nc">RichFlatMapFunction</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span>, <span class="tok-o">(</span><span class="tok-kt">Int</span>, <span class="tok-kt">Long</span><span class="tok-o">)]</span>
@@ -5967,18 +5776,19 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="paragraph">
-<p>The function in the above example counts per parallel instance how many temperature measurements exceeded a configured threshold. The function uses operator state and has a single state variable for each parallel operator instance that is checkpointed and restored using the methods of the ListCheckpointed interface. Note that the ListCheckpointed interface is implemented in Java and expects a java.util.List instead of a Scala native list.</p>
+<p>上面的例子中，每一个并行实例都计数了本实例有多少温度值超过了设定的阈值。例子中使用了操作符状态，并且每一个并行实例都拥有自己的状态变量，这个状态变量将会被检查点操作保存下来，并且可以通过使用ListCheckpointed接口来恢复状态变量。</p>
 </div>
 <div class="paragraph">
-<p>Looking at the example, you might wonder why operator state is handled as a list of state objects. As discussed in “Scaling Stateful Operators”, the list structure supports changing the parallelism of functions with operator state. In order to increase or decrease the parallelism of a function with operator state, the operator state needs to be redistributed to a larger or smaller number of task instances. This requires splitting or merging of state objects. Since the logic for splitting and merging of state is custom for every stateful function, this cannot be automatically done for arbitrary types of state.</p>
+<p>看了上面的例子，我们可能会有疑问，那就是为什么操作符状态是状态对象的列表。这是因为列表数据结构支持包含操作符状态的函数的并行度改变的操作。为了增加或者减少包含了操作符状态的函数的并行度，操作符状态需要被重新分区到更多或者更少的并行任务实例中去。而这样的操作需要合并或者分割状态对象。而对于每一个有状态的函数，分割和合并状态对象都是很常见的操作，所以这显然不是任何类型的状态都能自动完成的。</p>
 </div>
 <div class="paragraph">
-<p>By providing a list of state objects, functions with operator state can implement this logic using the snapshotState() and restoreState() methods. The snapshotState() method splits the operator state into multiple parts and the restoreState() method assembles the operator state from possibly multiple parts. When the state of a function is restored, the parts of the state are distributed among all parallel instances of the function and handed to the restoreState() method. If there are more parallel subtasks than state objects, some subtasks are started with no state, and the restoreState() method is called with an empty list.</p>
+<p>通过提供一个状态对象的列表，拥有操作符状态的函数可以使用snapshotState()方法和restoreState()方法来实现以上所说的逻辑。snapshotState()方法将操作符状态分割成多个部分，restoreState()方法从所有的部分中将状态对象收集起来。当函数的操作符状态恢复时，状态变量将被分区到函数的所有不同的并行实例中去，并作为参数传递给restoreState()方法。如果并行任务的数量大于状态对象的数量，那么一些并行任务在开始的时候是没有状态的，所以restoreState()函数的参数为空列表。</p>
 </div>
 <div class="paragraph">
-<p>Looking again at the HighTempCounter function in Example 7-4, we see that each parallel instance of the operator exposes its state as a list with a single entry. If we increased the parallelism of this operator, some of the new subtasks would be initialized with an empty state, and start counting from zero. In order to achieve better state distribution behavior when the HighTempCounter function is rescaled, we can implement the snapshotState() method so that it splits its count into multiple partial counts as shown in Example 7-5.</p>
+<p>再来看一下上面的程序，我们可以看到操作符的每一个并行实例都暴露了一个状态对象的列表。如果我们增加操作符的并行度，那么一些并行任务将会从0开始计数。为了获得更好的状态分区的行为，当HighTempCounter函数扩容时，我们可以按照下面的程序来实现snapshotState()方法，这样就可以把计数值分配到不同的并行计数中去了。</p>
 </div>
 <div class="listingblock">
+<div class="title">Example 7-4</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">snapshotState</span><span class="tok-o">(</span>
     <span class="tok-n">chkpntId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span>
@@ -5993,8 +5803,8 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_使用连接的广播状态using_connected_broadcast_state">7.5. 使用连接的广播状态(using connected broadcast state)</h3>
+<div class="sect3">
+<h4 id="_使用连接的广播状态using_connected_broadcast_state">7.1.3. 使用连接的广播状态(using connected broadcast state)</h4>
 <div class="paragraph">
 <p>一个常见的需求就是流应用需要将同样的事件分发到操作符的所有的并行实例中，而这样的分发操作还得是可恢复的。</p>
 </div>
@@ -6008,6 +5818,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <p>下面的例子实现了一个温度报警应用，应用有可以动态设定的阈值，动态设定通过广播流来实现。</p>
 </div>
 <div class="listingblock">
+<div class="title">Example 7-5</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">sensorData</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">???</span>
 <span class="tok-k">val</span> <span class="tok-n">thresholds</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">ThresholdUpdate</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">???</span>
@@ -6047,6 +5858,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <p>下面的例子实现了动态设定温度阈值的功能。</p>
 </div>
 <div class="listingblock">
+<div class="title">Example 7-7</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">class</span> <span class="tok-nc">UpdatableTemperatureAlertFunction</span><span class="tok-o">()</span>
     <span class="tok-k">extends</span> <span class="tok-nc">KeyedBroadcastProcessFunction</span>
@@ -6115,10 +5927,9 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 </div>
+</div>
 <div class="sect2">
-<h3 id="_状态存储恢复和清理">7.6. 状态存储，恢复和清理</h3>
-<div class="sect3">
-<h4 id="_配置检查点">7.6.1. 配置检查点</h4>
+<h3 id="_配置检查点">7.2. 配置检查点</h3>
 <div class="paragraph">
 <p>10秒钟保存一次检查点。</p>
 </div>
@@ -6131,8 +5942,10 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_保证有状态应用的可维护性">7.3. 保证有状态应用的可维护性</h3>
 <div class="sect3">
-<h4 id="_指定唯一的操作符标识符operator_identifiers">7.6.2. 指定唯一的操作符标识符(operator identifiers)</h4>
+<h4 id="_指定唯一的操作符标识符operator_identifiers">7.3.1. 指定唯一的操作符标识符(operator identifiers)</h4>
 <div class="paragraph">
 <p>每一个操作符都可以指定唯一的标识符。标识符将会作为操作符的元数据和状态数据一起保存到savepoint中去。当应用从保存点恢复时，标识符可以用来在savepoint中查找标识符对应的操作符的状态数据。标识符必须是唯一的，否则应用不知道从哪一个标识符恢复。</p>
 </div>
@@ -6148,7 +5961,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_指定操作符的最大并行度">7.6.3. 指定操作符的最大并行度</h4>
+<h4 id="_指定操作符的最大并行度">7.3.2. 指定操作符的最大并行度</h4>
 <div class="paragraph">
 <p>操作符的最大并行度定义了操作符的keyed state可以被分到多少个key groups中。</p>
 </div>
@@ -6166,12 +5979,41 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
   <span class="tok-o">.</span><span class="tok-n">setMaxParallelism</span><span class="tok-o">(</span><span class="tok-mi">1024</span><span class="tok-o">)</span></code></pre>
 </div>
 </div>
-<div class="paragraph">
-<p>示意图：</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_有状态应用的性能和健壮性">7.4. 有状态应用的性能和健壮性</h3>
+<div class="sect3">
+<h4 id="_选择一个状态后端">7.4.1. 选择一个状态后端</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>MemoryStateBackend将状态当作Java的对象(没有序列化操作)存储在TaskManager JVM进程的堆上。</p>
+</li>
+<li>
+<p>FsStateBackend将状态存储在本地的文件系统或者远程的文件系统如HDFS。</p>
+</li>
+<li>
+<p>RocksDBStateBackend将状态存储在RocksDB \footnote{Facebook开源的KV数据库} 中。</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
+
+<span class="tok-k">val</span> <span class="tok-n">checkpointPath</span><span class="tok-k">:</span> <span class="tok-kt">String</span> <span class="tok-o">=</span> <span class="tok-o">???</span>
+<span class="tok-c1">// configure path for checkpoints on the remote filesystem</span>
+<span class="tok-c1">// env.setStateBackend(new FsStateBackend(&quot;file:///tmp/checkpoints&quot;))</span>
+
+<span class="tok-k">val</span> <span class="tok-n">backend</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">RocksDBStateBackend</span><span class="tok-o">(</span><span class="tok-n">checkpointPath</span><span class="tok-o">)</span>
+<span class="tok-c1">// configure the state backend</span>
+<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStateBackend</span><span class="tok-o">(</span><span class="tok-n">backend</span><span class="tok-o">)</span></code></pre>
+</div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_防止状态泄露">7.6.4. 防止状态泄露</h4>
+<h4 id="_防止状态泄露">7.4.2. 防止状态泄露</h4>
 <div class="paragraph">
 <p>流应用通常需要运行几个月或者几年。如果state数据不断增长的话，会爆炸。所以控制state数据的大小十分重要。而Flink并不会清理state和gc。所以所有的stateful operator都需要控制他们各自的状态数据大小，保证不爆炸。</p>
 </div>
@@ -6246,35 +6088,6 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_选择一个状态后端">7.6.5. 选择一个状态后端</h4>
-<div class="ulist">
-<ul>
-<li>
-<p>MemoryStateBackend将状态当作Java的对象(没有序列化操作)存储在TaskManager JVM进程的堆上。</p>
-</li>
-<li>
-<p>FsStateBackend将状态存储在本地的文件系统或者远程的文件系统如HDFS。</p>
-</li>
-<li>
-<p>RocksDBStateBackend将状态存储在RocksDB \footnote{Facebook开源的KV数据库} 中。</p>
-</li>
-</ul>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
-
-<span class="tok-k">val</span> <span class="tok-n">checkpointPath</span><span class="tok-k">:</span> <span class="tok-kt">String</span> <span class="tok-o">=</span> <span class="tok-o">???</span>
-<span class="tok-c1">// configure path for checkpoints on the remote filesystem</span>
-<span class="tok-c1">// env.setStateBackend(new FsStateBackend(&quot;file:///tmp/checkpoints&quot;))</span>
-
-<span class="tok-k">val</span> <span class="tok-n">backend</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">RocksDBStateBackend</span><span class="tok-o">(</span><span class="tok-n">checkpointPath</span><span class="tok-o">)</span>
-<span class="tok-c1">// configure the state backend</span>
-<span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStateBackend</span><span class="tok-o">(</span><span class="tok-n">backend</span><span class="tok-o">)</span></code></pre>
-</div>
-</div>
-</div>
 </div>
 </div>
 </div>
@@ -6327,13 +6140,47 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <div class="paragraph">
 <p>2PC协议依赖于Flink的检查点机制。检查点屏障是开始一个新的事务的通知，所有操作符自己的检查点成功的通知是它们可以commit的投票，而JobManager通知一个检查点成功的消息是commit事务的指令。于WAL sink形成对比的是，2PC sinks依赖于sink系统和sink本身的实现可以实现恰好处理一次语义。更多的，2PC sink不断的将数据写入到sink系统中，而WAL写模型就会有之前所述的问题。</p>
 </div>
-<div class="paragraph">
-<p>表格8-1</p>
-</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. 表格8-1</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"></th>
+<th class="tableblock halign-left valign-top">不可重置的源</th>
+<th class="tableblock halign-left valign-top">可重置的源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">any sink</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">at-most-once</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">at-least-once</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">幂等性sink</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">at-most-once</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">exactly-once(当从任务失败中恢复时，存在暂时的不一致性)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">预写式日志sink</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">at-most-once</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">at-least-once</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2PC sink</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">at-most-once</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">exactly-once</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_flink提供的连接器">8.2. Flink提供的连接器}</h3>
+<h3 id="_flink提供的连接器">8.2. Flink提供的连接器</h3>
 <div class="paragraph">
 <p>Flink提供了读写很多存储系统的连接器。消息队列，日志系统，例如Apache Kafka, Kinesis, RabbitMQ等等这些是常用的数据源。在批处理环境中，数据流很可能是监听一个文件系统，而当新的数据落盘的时候，读取这些新数据。</p>
 </div>
@@ -6678,7 +6525,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">readings</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">???</span>
+<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">val</span> <span class="tok-n">readings</span><span class="tok-k">:</span> <span class="tok-kt">DataStream</span><span class="tok-o">[</span><span class="tok-kt">SensorReading</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-o">...</span>
 
 <span class="tok-c1">// write the sensor readings to a socket</span>
 <span class="tok-n">readings</span><span class="tok-o">.</span><span class="tok-n">addSink</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">SimpleSocketSink</span><span class="tok-o">(</span><span class="tok-s">&quot;localhost&quot;</span><span class="tok-o">,</span> <span class="tok-mi">9191</span><span class="tok-o">))</span>
@@ -6807,8 +6654,9 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </li>
 </ul>
 </div>
-<div class="sect4">
-<h5 id="_genericwriteaheadsink">GENERICWRITEAHEADSINK</h5>
+<div class="paragraph">
+<p><strong>GENERICWRITEAHEADSINK</strong></p>
+</div>
 <div class="paragraph">
 <p>GenericWriteAheadSink使得sink运算符可以很方便的实现。这个运算符和Flink的检查点机制集成使用，目标是将每一条数据恰好一次写入到外部系统中去。需要注意的是，在发生故障的情况下，write-ahead log sink可能会不止一次的发送相同的数据。所以GenericWriteAheadSink无法提供完美无缺的恰好处理一次语义的一致性保证，而是仅能提供at-least-once这样的保证。我们接下来详细的讨论这些场景。</p>
 </div>
@@ -6897,9 +6745,9 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </li>
 </ul>
 </div>
+<div class="paragraph">
+<p><strong>TWOPHASECOMMITSINKFUNCTION</strong></p>
 </div>
-<div class="sect4">
-<h5 id="_twophasecommitsinkfunction">TWOPHASECOMMITSINKFUNCTION</h5>
 <div class="paragraph">
 <p>Flink提供了TwoPhaseCommitSinkFunction接口来简化sink函数的实现。这个接口保证了端到端的exactly-once语义。2PC sink函数是否提供这样的一致性保证取决于我们的实现细节。我们需要讨论一个问题：“2PC协议是否开销太大？”</p>
 </div>
@@ -7047,9 +6895,330 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_flink部署与运维">9. Flink部署与运维</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_部署方式">9.1. 部署方式</h3>
+<div class="sect3">
+<h4 id="_standalone集群">9.1.1. standalone集群</h4>
+<div class="paragraph">
+<p>standalone集群包含至少一个master进程，以及至少一个TaskManager进程，TaskManager进程运行在一台或者多台机器上。所有的进程都是JVM进程。下图展示了standalone集群的部署。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/spaf_0901.png" alt="spaf 0901">
+</div>
+</div>
+<div class="paragraph">
+<p>master进程在不同的线程中运行了一个Dispatcher和一个ResourceManager。一旦它们开始运行，所有TaskManager都将在Resourcemanager中进行注册。下图展示了一个任务如何提交到一个standalone集群中去。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/spaf_0902.png" alt="spaf 0902">
+</div>
+</div>
+<div class="paragraph">
+<p>客户端向Dispatcher提交了一个任务，Dispatcher将会启动一个JobManager线程，并提供执行所需的JobGraph。JobManager向ResourceManager请求必要的task slots。一旦请求的slots分配好，JobManager就会部署job。</p>
+</div>
+<div class="paragraph">
+<p>在standalone这种部署方式中，master和worker进程在失败以后，并不会自动重启。如果有足够的slots可供使用，job是可以从一次worker失败中恢复的。只要我们运行多个worker就好了。但如果job想从master失败中恢复的话，则需要进行高可用(HA)的配置了。</p>
+</div>
+<div class="paragraph">
+<p><strong>部署步骤</strong></p>
+</div>
+<div class="paragraph">
+<p>下载压缩包</p>
+</div>
+<div class="paragraph">
+<p>链接：http://mirror.bit.edu.cn/apache/flink/flink-1.10.0/flink-1.10.0-bin-scala_2.11.tgz</p>
+</div>
+<div class="paragraph">
+<p>解压缩</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="shell"><span></span>tar xvfz flink-1.10.0-bin-scala_2.11.tgz</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>启动集群</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="shell"><span></span><span class="tok-nb">cd</span> flink-1.10.0
+./bin/start-cluster.sh</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>检查集群状态可以访问：http://localhost:8081</p>
+</div>
+<div class="paragraph">
+<p>部署分布式集群</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>所有运行TaskManager的机器的主机名（或者IP地址）都需要写入<code>./conf/slaves</code>文件中。</p>
+</li>
+<li>
+<p><code>start-cluster.sh</code>脚本需要所有机器的无密码的SSH登录配置，方便启动TaskManager进程。</p>
+</li>
+<li>
+<p>Flink的文件夹在所有的机器上都需要有相同的绝对路径。</p>
+</li>
+<li>
+<p>运行master进程的机器的主机名或者IP地址需要写在<code>./conf/flink-conf.yaml</code>文件的<code>jobmanager.rpc.address</code>配置项。</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>一旦部署好，我们就可以调用<code>./bin/start-cluster.sh</code>命令启动集群了，脚本会在本地机器启动一个JobManager，然后在每个slave机器上启动一个TaskManager。停止运行，请使用<code>./bin/stop-cluster.sh</code>。</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_apache_hadoop_yarn">9.1.2. Apache Hadoop Yarn</h4>
+<div class="paragraph">
+<p>YARN是Apache Hadoop的资源管理组件。用来计算集群环境所需要的CPU和内存资源，然后提供给应用程序请求的资源。</p>
+</div>
+<div class="paragraph">
+<p>Flink can run on YARN in two modes: the job mode and the session mode. In job mode, a Flink cluster is started to run a single job. Once the job terminates, the Flink cluster is stopped and all resources are returned. Figure 9-3 shows how a Flink job is submitted to a YARN cluster.</p>
+</div>
+<div class="paragraph">
+<p>Flink在YARN上运行，有两种模式：job模式和session模式。在job模式中，Flink集群用来运行一个单独的job。一旦job结束，Flink集群停止，并释放所有资源。下图展示了Flink的job如何提交到YARN集群。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/spaf_0903.png" alt="spaf 0903">
+</div>
+</div>
+<div class="paragraph">
+<p>当客户端提交任务时，客户端将建立和YARN ResourceManager的连接，然后启动一个新的YARN应用的master进程，进程中包含一个JobManager线程和一个ResourceManager。JobManager向ResourceManager请求所需要的slots，用来运行Flink的job。接下来，Flink的ResourceManager将向Yarn的ResourceManager请求容器，然后启动TaskManager进程。一旦启动，TaskManager会将slots注册在Flink的ResourceManager中，Flink的ResourceManager将把slots提供给JobManager。最终，JobManager把job的任务提交给TaskManager执行。</p>
+</div>
+<div class="paragraph">
+<p>sesison模式将启动一个长期运行的Flink集群，这个集群可以运行多个job，需要手动停止集群。如果以session模式启动，Flink将会连接到YARN的ResourceManager，然后启动一个master进程，包括一个Dispatcher线程和一个Flink的ResourceManager的线程。下图展示了一个Flink YARN session的启动。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/spaf_0904.png" alt="spaf 0904">
+</div>
+</div>
+<div class="paragraph">
+<p>当一个job被提交运行，Dispatcher将启动一个JobManager线程，这个线程将向Flink的ResourceManager请求所需要的slots。如果没有足够的slots，Flink的ResourceManager将向YARN的ResourceManager请求额外的容器，来启动TaskManager进程，并在Flink的ResourceManager中注册。一旦所需slots可用，Flink的ResourceManager将吧slots分配给JobManager，然后开始执行job。下图展示了job如何在session模式下执行。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/spaf_0905.png" alt="spaf 0905">
+</div>
+</div>
+<div class="paragraph">
+<p>无论使用job模式还是sesison模式，都需要能够访问Hadoop。</p>
+</div>
+<div class="paragraph">
+<p>job模式可以用以下命令来提交任务：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="shell"><span></span>./bin/flink run -m yarn-cluster ./path/to/job.jar</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>session模式则是</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="shell"><span></span>./bin/yarn-session.sh
+./bin/flink run ./path/to/job.jar</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_高可用配置ha">9.2. 高可用配置(HA)</h3>
+<div class="paragraph">
+<p>Flink的高可用配置需要Apache ZooKeeper组件，以及一个分布式文件系统，例如HDFS等等。JobManager将会把相关信息都存储在文件系统中，并将指向文件系统中相关信息的指针保存在ZooKeeper中。一旦失败，一个新的JobManager将从ZooKeeper中指向相关信息的指针所指向的文件系统中读取元数据，并恢复运行。</p>
+</div>
+<div class="paragraph">
+<p>配置文件编写</p>
+</div>
+<div class="listingblock">
+<div class="title">./conf/flink-conf.yaml</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="yaml"><span></span><span class="tok-c1"># REQUIRED: enable HA mode via ZooKeeper high-availability: zookeeper</span>
+<span class="tok-c1"># REQUIRED: provide a list of all ZooKeeper servers of the quorum</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">high-availability.zookeeper.quorum</span><span class="tok-p tok-p-Indicator">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">address1:2181[,...],addressX:2181</span>
+<span class="tok-c1"># REQUIRED: set storage location for job metadata in remote storage</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">high-availability.storageDir</span><span class="tok-p tok-p-Indicator">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">hdfs:///flink/recovery</span>
+<span class="tok-c1"># RECOMMENDED: set the base path for all Flink clusters in ZooKeeper.</span>
+<span class="tok-c1"># Isolates Flink from other frameworks using the ZooKeeper cluster.</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">high-availability.zookeeper.path.root</span><span class="tok-p tok-p-Indicator">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">/flink</span></code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_standalone集群高可用配置">9.2.1. standalone集群高可用配置</h4>
+<div class="paragraph">
+<p>需要在配置文件中加一行集群标识符信息，因为可能多个集群共用一个zookeeper服务。</p>
+</div>
+<div class="listingblock">
+<div class="title">./conf/flink-conf.yaml</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="yaml"><span></span><span class="tok-c1"># RECOMMENDED: set the path for the Flink cluster in ZooKeeper.</span>
+<span class="tok-c1"># Isolates multiple Flink clusters from each other.</span>
+<span class="tok-c1"># The cluster id is required to look up the metadata of a failed cluster.</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">high-availability.cluster-id</span><span class="tok-p tok-p-Indicator">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">/cluster-1</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_yarn集群高可用配置">9.2.2. yarn集群高可用配置</h4>
+<div class="paragraph">
+<p>首先在yarn集群的配置文件<code>yarn-site.xml</code>中加入以下代码</p>
+</div>
+<div class="listingblock">
+<div class="title">yarn-site.xml</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="xml"><span></span><span class="tok-nt">&lt;property&gt;</span>
+  <span class="tok-nt">&lt;name&gt;</span>yarn.resourcemanager.am.max-attempts<span class="tok-nt">&lt;/name&gt;</span>
+  <span class="tok-nt">&lt;value&gt;</span>4<span class="tok-nt">&lt;/value&gt;</span>
+  <span class="tok-nt">&lt;description&gt;</span>
+    The maximum number of application master execution attempts.
+    Default value is 2, i.e., an application is restarted at most once.
+  <span class="tok-nt">&lt;/description&gt;</span>
+<span class="tok-nt">&lt;/property&gt;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>然后在<code>./conf/flink-conf.yaml</code>加上</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="yaml"><span></span><span class="tok-c1"># Restart an application at most 3 times (+ the initial start).</span>
+<span class="tok-c1"># Must be less or equal to the configured maximum number of attempts.</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">yarn.application-attempts</span><span class="tok-p tok-p-Indicator">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">4</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_与hadoop集成">9.3. 与Hadoop集成</h3>
+<div class="paragraph">
+<p>推荐两种方法</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>下载包含hadoop的Flink版本。</p>
+</li>
+<li>
+<p>使用我们之前下载的Flink，然后配置Hadoop的环境变量。<code>export HADOOP_CLASSPATH=<code>hadoop classpath</code></code></p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>我们还需要提供Hadoop配置文件的路径。只需设置名为<code>HADOOP_CONF_DIR</code>的环境变量就可以了。这样Flink就能够连上YARN的ResourceManager和HDFS了。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_保存点操作">9.4. 保存点操作</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="shell"><span></span>./bin/flink savepoint &lt;jobId&gt; <span class="tok-o">[</span>savepointPath<span class="tok-o">]</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>例如</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="shell"><span></span>./bin/flink savepoint bc0b2ad61ecd4a615d92ce25390f61ad <span class="tok-se">\</span>
+hdfs:///xxx:50070/savepoints
+Triggering savepoint <span class="tok-k">for</span> job bc0b2ad61ecd4a615d92ce25390f61ad.
+Waiting <span class="tok-k">for</span> response...
+Savepoint completed.
+Path: hdfs:///xxx:50070/savepoints/savepoint-bc0b2a-63cf5d5ccef8
+You can resume your program from this savepoint with the run command.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>删除保存点文件</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="shell"><span></span>./bin/flink savepoint -d &lt;savepointPath&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>例子</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="shell"><span></span>./bin/flink savepoint -d <span class="tok-se">\</span>
+hdfs:///xxx:50070/savepoints/savepoint-bc0b2a-63cf5d5ccef8
+Disposing savepoint <span class="tok-s1">&#39;hdfs:///xxx:50070/savepoints/savepoint-bc0b2a-63cf5d5ccef8&#39;</span>.
+Waiting <span class="tok-k">for</span> response...
+​Savepoint <span class="tok-s1">&#39;hdfs:///xxx:50070/savepoints/savepoint-bc0b2a-63cf5d5ccef8&#39;</span> disposed.</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_取消一个应用">9.5. 取消一个应用</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="shell"><span></span>./bin/flink cancel &lt;jobId&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>取消的同时做保存点操作</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="shell"><span></span>./bin/flink cancel -s <span class="tok-o">[</span>savepointPath<span class="tok-o">]</span> &lt;jobId&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>例如</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="shell"><span></span>./bin/flink cancel -s <span class="tok-se">\</span>
+hdfs:///xxx:50070/savepoints d5fdaff43022954f5f02fcd8f25ef855
+Cancelling job bc0b2ad61ecd4a615d92ce25390f61ad
+with savepoint to hdfs:///xxx:50070/savepoints.
+Cancelled job bc0b2ad61ecd4a615d92ce25390f61ad.
+Savepoint stored in hdfs:///xxx:50070/savepoints/savepoint-bc0b2a-d08de07fbb10.</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_从保存点启动应用程序_2">9.6. 从保存点启动应用程序</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="shell"><span></span>./bin/flink run -s &lt;savepointPath&gt; <span class="tok-o">[</span>options<span class="tok-o">]</span> &lt;jobJar&gt; <span class="tok-o">[</span>arguments<span class="tok-o">]</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_扩容改变并行度操作">9.7. 扩容，改变并行度操作</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="shell"><span></span>./bin/flink modify &lt;jobId&gt; -p &lt;newParallelism&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>例子</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="shell"><span></span>./bin/flink modify bc0b2ad61ecd4a615d92ce25390f61ad -p <span class="tok-m">16</span>
+Modify job bc0b2ad61ecd4a615d92ce25390f61ad.
+​Rescaled job bc0b2ad61ecd4a615d92ce25390f61ad. Its new parallelism is <span class="tok-m">16</span>.</code></pre>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div class="sect1">
-<h2 id="_flink_cep简介">9. Flink CEP简介</h2>
+<h2 id="_flink_cep简介">10. Flink CEP简介</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p><strong>什么是复杂事件CEP？</strong></p>
@@ -7370,12 +7539,12 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect1">
-<h2 id="_尚硅谷大数据技术之电商用户行为分析">10. 尚硅谷大数据技术之电商用户行为分析</h2>
+<h2 id="_尚硅谷大数据技术之电商用户行为分析">11. 尚硅谷大数据技术之电商用户行为分析</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_数据集解析">10.1. 数据集解析</h3>
+<h3 id="_数据集解析">11.1. 数据集解析</h3>
 <div class="sect3">
-<h4 id="_淘宝数据集解析">10.1.1. 淘宝数据集解析</h4>
+<h4 id="_淘宝数据集解析">11.1.1. 淘宝数据集解析</h4>
 <div class="paragraph">
 <p>我们准备了一份淘宝用户行为数据集，保存为csv文件。本数据集包含了淘宝上某一天随机一百万用户的所有行为（包括点击、购买、收藏、喜欢）。数据集的每一行表示一条用户行为，由用户ID、商品ID、商品类目ID、行为类型和时间戳组成，并以逗号分隔。关于数据集中每一列的详细描述如下：</p>
 </div>
@@ -7422,7 +7591,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </table>
 </div>
 <div class="sect3">
-<h4 id="_apache服务器日志数据集解析">10.1.2. Apache服务器日志数据集解析</h4>
+<h4 id="_apache服务器日志数据集解析">11.1.2. Apache服务器日志数据集解析</h4>
 <div class="paragraph">
 <p>这里以apache服务器的一份log为例，每一行日志记录了访问者的IP、userId、访问时间、访问方法以及访问的url，具体描述如下：</p>
 </div>
@@ -7470,7 +7639,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_实时热门商品统计">10.2. 实时热门商品统计</h3>
+<h3 id="_实时热门商品统计">11.2. 实时热门商品统计</h3>
 <div class="paragraph">
 <p>首先要实现的是实时热门商品统计，我们将会基于UserBehavior数据集来进行分析。</p>
 </div>
@@ -7774,7 +7943,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_实时流量统计">10.3. 实时流量统计</h3>
+<h3 id="_实时流量统计">11.3. 实时流量统计</h3>
 <div class="ulist">
 <ul>
 <li>
@@ -7925,7 +8094,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_uv统计的布隆过滤器实现">10.4. Uv统计的布隆过滤器实现</h3>
+<h3 id="_uv统计的布隆过滤器实现">11.4. Uv统计的布隆过滤器实现</h3>
 <div class="paragraph">
 <p>完整代码如下：</p>
 </div>
@@ -8040,7 +8209,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_app分渠道数据统计">10.5. APP分渠道数据统计</h3>
+<h3 id="_app分渠道数据统计">11.5. APP分渠道数据统计</h3>
 <div class="paragraph">
 <p>完整代码如下：</p>
 </div>
@@ -8124,7 +8293,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_app不分渠道数据统计">10.6. APP不分渠道数据统计</h3>
+<h3 id="_app不分渠道数据统计">11.6. APP不分渠道数据统计</h3>
 <div class="paragraph">
 <p>完整代码如下：</p>
 </div>
@@ -8173,7 +8342,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_恶意登陆实现">10.7. 恶意登陆实现</h3>
+<h3 id="_恶意登陆实现">11.7. 恶意登陆实现</h3>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">package</span> <span class="tok-nn">com.atguigu</span>
@@ -8257,7 +8426,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_订单支付实时监控">10.8. 订单支付实时监控</h3>
+<h3 id="_订单支付实时监控">11.8. 订单支付实时监控</h3>
 <div class="ulist">
 <ul>
 <li>
@@ -8286,7 +8455,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </ul>
 </div>
 <div class="sect3">
-<h4 id="_使用flink_cep来实现">10.8.1. 使用Flink CEP来实现</h4>
+<h4 id="_使用flink_cep来实现">11.8.1. 使用Flink CEP来实现</h4>
 <div class="paragraph">
 <p>在电商平台中，最终创造收入和利润的是用户下单购买的环节；更具体一点，是用户真正完成支付动作的时候。用户下单的行为可以表明用户对商品的需求，但在现实中，并不是每次下单都会被用户立刻支付。当拖延一段时间后，用户支付的意愿会降低。所以为了让用户更有紧迫感从而提高支付转化率，同时也为了防范订单支付环节的安全风险，电商网站往往会对订单状态进行监控，设置一个失效时间（比如15分钟），如果下单后一段时间仍未支付，订单就会被取消。</p>
 </div>
@@ -8377,7 +8546,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_使用process_function实现订单超时需求">10.8.2. 使用Process Function实现订单超时需求</h4>
+<h4 id="_使用process_function实现订单超时需求">11.8.2. 使用Process Function实现订单超时需求</h4>
 <div class="listingblock">
 <div class="title">OrderTimeoutWithoutCep.scala</div>
 <div class="content">
@@ -8459,7 +8628,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_实现两条流的join">10.9. 实现两条流的Join</h3>
+<h3 id="_实现两条流的join">11.9. 实现两条流的Join</h3>
 <div class="paragraph">
 <p>完整代码如下：</p>
 </div>
@@ -8586,22 +8755,22 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect1">
-<h2 id="_常见面试题解答">11. 常见面试题解答</h2>
+<h2 id="_常见面试题解答">12. 常见面试题解答</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_面试题一">11.1. 面试题一</h3>
+<h3 id="_面试题一">12.1. 面试题一</h3>
 <div class="paragraph">
 <p>问题：公司怎么提交的实时任务，有多少Job Manager？</p>
 </div>
 <div class="paragraph">
 <p>解答：</p>
 </div>
-<div class="olist arabic">
-<ol class="arabic">
+<div class="ulist">
+<ul>
 <li>
 <p>我们每次提交都会创建一个新的Flink集群，为每一个每个job提供一个yarn-session，任务之间互相独立，互不影响，方便管理。任务执行完成之后创建的集群也会消失。</p>
 </li>
-</ol>
+</ul>
 </div>
 <div class="paragraph">
 <p>线上脚本如下：</p>
@@ -8614,16 +8783,16 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <div class="paragraph">
 <p>其中申请7个taskManager，每个8核，每个taskmanager有32768M内存。</p>
 </div>
-<div class="olist arabic">
-<ol class="arabic">
+<div class="ulist">
+<ul>
 <li>
 <p>集群默认只有一个Job Manager。但为了防止单点故障，我们配置了高可用。我们公司一般配置一个主Job Manager，两个备用Job Manager，然后结合ZooKeeper的使用，来达到高可用。</p>
 </li>
-</ol>
+</ul>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_面试题二">11.2. 面试题二</h3>
+<h3 id="_面试题二">12.2. 面试题二</h3>
 <div class="paragraph">
 <p>问题：怎么做压力测试和监控？</p>
 </div>
@@ -8649,7 +8818,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_面试题三">11.3. 面试题三</h3>
+<h3 id="_面试题三">12.3. 面试题三</h3>
 <div class="paragraph">
 <p>问题：问什么使用Flink替代Spark？</p>
 </div>
@@ -8658,7 +8827,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_面试题四">11.4. 面试题四</h3>
+<h3 id="_面试题四">12.4. 面试题四</h3>
 <div class="paragraph">
 <p>问题：Flink的CheckPoint存在哪里？</p>
 </div>
@@ -8667,7 +8836,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_面试题五">11.5. 面试题五</h3>
+<h3 id="_面试题五">12.5. 面试题五</h3>
 <div class="paragraph">
 <p>问题：如果下级存储不支持事务，Flink怎么保证exactly-once？</p>
 </div>
@@ -8676,7 +8845,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_面试题六">11.6. 面试题六</h3>
+<h3 id="_面试题六">12.6. 面试题六</h3>
 <div class="paragraph">
 <p>问题：说一下Flink状态机制？</p>
 </div>
@@ -8685,7 +8854,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_面试题七">11.7. 面试题七</h3>
+<h3 id="_面试题七">12.7. 面试题七</h3>
 <div class="paragraph">
 <p>问题：怎么去重？考虑一个实时场景：双十一场景，滑动窗口长度为1小时，滑动距离为10秒钟，亿级用户，计算UV？</p>
 </div>
@@ -8694,7 +8863,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_面试题八">11.8. 面试题八</h3>
+<h3 id="_面试题八">12.8. 面试题八</h3>
 <div class="paragraph">
 <p>问题：Flink的checkpoint机制对比spark有什么不同和优势？</p>
 </div>
@@ -8703,7 +8872,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_面试题九">11.9. 面试题九</h3>
+<h3 id="_面试题九">12.9. 面试题九</h3>
 <div class="paragraph">
 <p>问题：Flink的Watermark详细说明？</p>
 </div>
@@ -8712,7 +8881,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_面试题十">11.10. 面试题十</h3>
+<h3 id="_面试题十">12.10. 面试题十</h3>
 <div class="paragraph">
 <p>问题：Flink ExactlyOnce语义是如何实现的，状态是如何存储的？</p>
 </div>
@@ -8721,7 +8890,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_面试题十一">11.11. 面试题十一</h3>
+<h3 id="_面试题十一">12.11. 面试题十一</h3>
 <div class="paragraph">
 <p>问题：Flink CEP编程中当状态没有到达的时候会将数据保存在哪里？</p>
 </div>
@@ -8730,7 +8899,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_面试题十二">11.12. 面试题十二</h3>
+<h3 id="_面试题十二">12.12. 面试题十二</h3>
 <div class="paragraph">
 <p>问题：Flink三种时间概念分别说出应用场景？</p>
 </div>
@@ -8752,7 +8921,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_面试题十三">11.13. 面试题十三</h3>
+<h3 id="_面试题十三">12.13. 面试题十三</h3>
 <div class="paragraph">
 <p>问题：Flink程序在面对数据高峰期时如何处理？</p>
 </div>
@@ -8766,7 +8935,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2020-02-17 13:25:23 +0800
+Last updated 2020-02-17 20:26:21 +0800
 </div>
 </div>
 <style>

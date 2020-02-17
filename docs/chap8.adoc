@@ -32,9 +32,28 @@ Flink提供了两种构建模块来实现事务性sink连接器：write-ahead-lo
 
 2PC协议依赖于Flink的检查点机制。检查点屏障是开始一个新的事务的通知，所有操作符自己的检查点成功的通知是它们可以commit的投票，而JobManager通知一个检查点成功的消息是commit事务的指令。于WAL sink形成对比的是，2PC sinks依赖于sink系统和sink本身的实现可以实现恰好处理一次语义。更多的，2PC sink不断的将数据写入到sink系统中，而WAL写模型就会有之前所述的问题。
 
-表格8-1
+.表格8-1
+|===
+| |不可重置的源 |可重置的源
 
-=== Flink提供的连接器}
+|any sink
+|at-most-once
+|at-least-once
+
+|幂等性sink
+|at-most-once
+|exactly-once(当从任务失败中恢复时，存在暂时的不一致性)
+
+|预写式日志sink
+|at-most-once
+|at-least-once
+
+|2PC sink
+|at-most-once
+|exactly-once
+|===
+
+=== Flink提供的连接器
 
 Flink提供了读写很多存储系统的连接器。消息队列，日志系统，例如Apache Kafka, Kinesis, RabbitMQ等等这些是常用的数据源。在批处理环境中，数据流很可能是监听一个文件系统，而当新的数据落盘的时候，读取这些新数据。
 
@@ -287,7 +306,7 @@ SinkFunction的Context可以访问当前处理时间，当前水位线，以及�
 
 [source,scala]
 ----
-val readings: DataStream[SensorReading] = ???
+val readings: DataStream[SensorReading] = ...
 
 // write the sensor readings to a socket
 readings.addSink(new SimpleSocketSink("localhost", 9191))
@@ -395,7 +414,7 @@ class DerbyUpsertSink extends RichSinkFunction[SensorReading] {
 * GenericWriteAheadSink模版会收集检查点之前的所有的数据，并将数据存储到sink任务的运算符状态中。状态保存到了检查点中，并在任务故障的情况下恢复。当任务接收到检查点完成的通知时，任务会将所有的数据写入到外部系统中。
 * TwoPhaseCommitSinkFunction模版利用了外部系统的事务特性。对于每一个检查点，任务首先开始一个新的事务，并将接下来所有的数据都写到外部系统的当前事务上下文中去。当任务接收到检查点完成的通知时，sink连接器将会commit这个事务。
 
-===== GENERICWRITEAHEADSINK
+*GENERICWRITEAHEADSINK*
 
 GenericWriteAheadSink使得sink运算符可以很方便的实现。这个运算符和Flink的检查点机制集成使用，目标是将每一条数据恰好一次写入到外部系统中去。需要注意的是，在发生故障的情况下，write-ahead log sink可能会不止一次的发送相同的数据。所以GenericWriteAheadSink无法提供完美无缺的恰好处理一次语义的一致性保证，而是仅能提供at-least-once这样的保证。我们接下来详细的讨论这些场景。
 
@@ -460,7 +479,7 @@ class StdOutWriteAheadSink extends GenericWriteAheadSink[SensorReading](
 * 当任务执行sendValues()方法时，程序挂掉了。如果外部系统无法原子性的写入所有数据（要么都写入要么都不写），一些数据可能会写入，而另一些数据并没有被写入。由于checkpoint还没有commit，所以在任务恢复的过程中一些数据可能会被再次写入。
 * 所有数据都写入成功了，sendValues()方法也返回true了；但在CheckpointCommitter方法被调用之前程序挂了，或者CheckpointCommitter在commit检查点时失败了。那么在恢复的过程中，所有未被提交的检查点将会被重新写入。
 
-===== TWOPHASECOMMITSINKFUNCTION
+*TWOPHASECOMMITSINKFUNCTION*
 
 Flink提供了TwoPhaseCommitSinkFunction接口来简化sink函数的实现。这个接口保证了端到端的exactly-once语义。2PC sink函数是否提供这样的一致性保证取决于我们的实现细节。我们需要讨论一个问题：“2PC协议是否开销太大？”
 

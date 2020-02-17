@@ -1,127 +1,18 @@
 == 有状态的计算
 
-流式计算分为无状态和有状态两种情况。无状态的计算观察每个独立事件，并根据最后一个事件输出结果。例如，流处理应用程序从传感器接收温度读数，并在温度超过90度时发出警告。有状态的计算则会基于多个事件输出结果。以下是一些例子。
+状态操作符和用户自定义函数都是我们在写流处理程序时，常用的工具。事实上，大部分稍微复杂一点的逻辑都需要保存数据或者保存计算结果。很多Flink内置的操作符例如：source操作符，sink操作符等等都是有状态的，也就是说会缓存流数据或者计算结果。例如，窗口操作符将会为ProcessWindowFunction收集输入的数据，或者收集ReduceFunction计算的结果。而ProcessFunction也会保存定时器事件，一些sink方法为了做到exactly-once，会将事务保存下来。除了内置的操作符以及提供的source和sink操作符，Flink的DataStream API还在UDF函数中暴露了可以注册、保存和访问状态的接口。
 
-* 所有类型的窗口。例如，计算过去一小时的平均温度，就是有状态的计算。
-* 所有用于复杂事件处理的状态机。例如，若在一分钟内收到两个相差20度以上的温度读数，则发出警告，这是有状态的计算。
-* 流与流之间的所有关联操作，以及流与静态表或动态表之间的关联操作，都是有状态的计算。
+本章重点讨论有状态的用户自定义函数的实现，以及讨论有状态应用的性能和健壮性。特别的，我们将解释在用户自定义函数中，如何定义不同类型的状态，以及如何与状态进行交互。我们还讨论了性能方面的问题以及如何控制状态大小的问题。
 
-下图展示了无状态流处理和有状态流处理的主要区别。无状态流处理分别接收每条记录(图中的黑条)，然后根据最新输入的记录生成输出记录(白条)。有状态流处理会维护状态(根据每条输入记录进行更新)，并基于最新输入的记录和当前的状态值生成输出记录(灰条)。
+=== 实现有状态的用户自定义函数
 
-image::statevsunstate.png[]
+我们知道函数有两种状态，键控状态(keyed state)和操作符状态(operator state)。
 
-无状态流处理与有状态流处理的区别。输入记录由黑条表示。无状态流处理每次只转换一条输入记录，并且仅根据最新的输入记录输出结果(白条)。有状态 流处理维护所有已处理记录的状态值，并根据每条新输入的记录更新状态，因此输出记录(灰条)反映的是综合考虑多个事件之后的结果。
+==== 在RuntimeContext中定义键控状态(keyed state)
 
-尽管无状态的计算很重要，但是流处理对有状态的计算更感兴趣。事实上，正确地实现有状态的计算比实现无状态的计算难得多。旧的流处理系统并不支持有状态的计算，而新一代的流处理系统则将状态及其正确性视为重中之重。
+用户自定义函数可以使用keyed state来存储和访问key对应的状态。对于每一个key，Flink将会维护一个状态实例。一个操作符的状态实例将会被分发到操作符的所有并行任务中去。这表明函数的每一个并行任务只为所有key的某一部分key保存key对应的状态实例。所以keyed state和分布式key-value map数据结构非常类似。
 
-=== 一致性
-
-当在分布式系统中引入状态时，自然也引入了一致性问题。一致性实际上是"正确性级别"的另一种说法，即在成功处理故障并恢复之后得到的结果，与没有发生任何故障时得到的结果相比，前者有多正确? 举例来说，假设要对最近一小时登录的用户计数。在系统经历故障之后，计数结果是多少? 在流处理中，一致性分为3个级别。
-
-* at-most-once: 这其实是没有正确性保障的委婉说法——故障发生之后，计数结果可能丢失。同样的还有udp。
-* at-least-once: 这表示计数结果可能大于正确值，但绝不会小于正确值。也就是说，计数程序在发生故障后可能多算，但是绝不会少算。
-* exactly-once: 这指的是系统保证在发生故障后得到的计数结果与正确值一致。
-
-曾经，at-least-once非常流行。第一代流处理器(如Storm和Samza)刚问世时只保证at-least-once，原因有二。
-
-* 保证exactly-once的系统实现起来更复杂。这在基础架构层(决定什么代表正确，以及exactly-once的范围是什么)和实现层都很有挑战性。
-* 流处理系统的早期用户愿意接受框架的局限性，并在应用层想办法弥补(例如使应用程序具有幂等性，或者用批量计算层再做一遍计算)。
-
-最先保证exactly-once的系统(Storm Trident和Spark Streaming)在性能和表现力这两个方面付出了很大的代价。为了保证exactly-once，这些系统无法单独地对每条记录运用应用逻辑，而是同时处理多条(一批)记录，保证对每一批的处理要么全部成功，要么全部失败。这就导致在得到结果前，必须等待一批记录处理结束。因此，用户经常不得不使用两个流处理框架(一个用来保证exactly-once，另一个用来对每个元素做低延迟处理)，结果使基础设施更加复杂。曾经，用户不得不在保证exactly-once与获得低延迟和效率之间权衡利弊。Flink避免了这种权衡。
-
-NOTE: Flink的一个重大价值在于，它既保证了exactly-once，也具有低延迟和高吞吐的处理能力。
-
-从根本上说，Flink通过使自身满足所有需求来避免权衡，它是业界的一次意义重大的技术飞跃。尽管这在外行看来很神奇，但是一旦了解，就会恍然大悟。
-
-=== 检查点: 保证exactly-once
-
-Flink如何保证exactly-once呢? 它使用一种被称为"检查点"的特性，在出现故障时将系统重置回正确状态。下面通过简单的类比来解释检查点的作用。
-
-假设你和两位朋友正在数项链上有多少颗珠子，如下图所示。你捏住珠子，边数边拨，每拨过一颗珠子就给总数加一。你的朋友也这样数他们手中的珠子。当你分神忘记数到哪里时，怎么办呢? 如果项链上有很多珠子，你显然不想从头再数一遍，尤其是当三人的速度不一样却又试图合作的时候，更是如此(比如想记录前一分钟三人一共数了多少颗珠子，回想一下一分钟滚动窗口)。
-
-image::balls.png[]
-
-于是，你想了一个更好的办法: 在项链上每隔一段就松松地系上一根有色皮筋，将珠子分隔开; 当珠子被拨动的时候，皮筋也可以被拨动; 然后，你安排一个助手，让他在你和朋友拨到皮筋时记录总数。用这种方法，当有人数错时，就不必从头开始数。相反，你向其他人发出错误警示，然后你们都从上一根皮筋处开始重数，助手则会告诉每个人重数时的起始数值，例如在粉色皮筋处的数值是多少。
-
-Flink检查点的作用就类似于皮筋标记。数珠子这个类比的关键点是: 对于指定的皮筋而言，珠子的相对位置是确定的; 这让皮筋成为重新计数的参考点。总状态(珠子的总数)在每颗珠子被拨动之后更新一次，助手则会保存与每根皮筋对应的检查点状态，如当遇到粉色皮筋时一共数了多少珠子，当遇到橙色皮筋时又是多少。当问题出现时，这种方法使得重新计数变得简单。
-
-Flink检查点的核心作用是确保状态正确，即使遇到程序中断，也要正确。记住这一基本点之后，我们用一个例子来看检查点是如何运行的。Flink为用户提供了用来定义状态的工具。例如，以下这个Scala程序按照输入记录的第一个字段(一个字符串)进行分组并维护第二个字段的计数状态。
-
-[source,scala]
-----
-val stream: DataStream[(String, Int)] = ...
-val counts: DataStream[(String, Int)] = stream
-  .keyBy(record => record._1)
-  .mapWithState((in: (String, Int), count: Option[Int]) =>
-    count match {
-      case Some(c) => ( (in._1, c + in._2), Some(c + in._2) )
-      case None => ( (in._1, in._2), Some(in._2) )
-})
-----
-
-该程序有两个算子: keyBy算子用来将记录按照第一个元素(一个字符串)进行分组，根据该key将数据进行重新分区，然后将记录再发送给下一个算子: 有状态的map算子(mapWithState)。map算子在接收到每个元素后，将输入记录的第二个字段的数据加到现有总数中，再将更新过的元素发射出去。下图表示程序的初始状态: 输入流中的6条记录被检查点屏障(checkpoint barrier)隔开，所有的map算子状态均为0(计数还未开始)。所有key为a的记录将被顶层的map算子处理，所有key为b的记录将被中间层的map算子处理，所有key为c的记录则将被底层的map算子处理。
-
-image::ckpt1.png[]
-
-程序的初始状态。注意，a、b、c三组的初始计数状态都是0，即三个圆柱上的值。ckpt表示检查点屏障。每条记录在处理顺序上严格地遵守在检查点之前或之后的规定，例如["b",2]在检查点之前被处理，["a",2]则在检查点之后被处理
-
-当该程序处理输入流中的6条记录时，涉及的操作遍布3个并行实例(节点、CPU内核等)。那么，检查点该如何保证exactly-once呢?
-
-检查点屏障和普通记录类似。它们由算子处理，但并不参与计算，而是会触发与检查点相关的行为。当读取输入流的数据源(在本例中与keyBy算子内联)遇到检查点屏障时，它将其在输入流中的位置保存到持久化存储中。如果输入流来自消息传输系统(Kafka)，这个位置就是偏移量。Flink的存储机制是插件化的，持久化存储可以是分布式文件系统，如HDFS。下图展示了这个过程。
-
-image::ckpt2.png[]
-
-当Flink数据源(在本例中与keyBy算子内联)遇到检查点屏障时，它会将其在输入流中的位置保存到持久化存储中。这让 Flink可以根据该位置重启输入
-
-检查点屏障像普通记录一样在算子之间流动。当map算子处理完前3条记录并收到检查点屏障时，它们会将状态以异步的方式写入持久化存储，如下图所示。
-
-image::ckpt3.png[]
-
-位于检查点之前的所有记录(["b",2]、["b",3]和["c",1])被map算子处理之后的情况。此时，持久化存储已经备份了检查点屏障在输入流中的位置(备份操作发生在检查点屏障被输入算子处理的时候)。map算子接着开始处理检查点屏障，并触发将状态异步备份到稳定存储中这个动作
-
-当map算子的状态备份和检查点屏障的位置备份被确认之后，该检查点操作就可以被标记为完成，如下图所示。我们在无须停止或者阻断计算的条件下，在一个逻辑时间点(对应检查点屏障在输入流中的位置)为计算状态拍了快照。通过确保备份的状态和位置指向同一个逻辑时间点，后文将解释如何基于备份恢复计算，从而保证exactly-once。值得注意的是，当没有出现故障时，Flink检查点的开销极小，检查点操作的速度由持久化存储的可用带宽决定。回顾数珠子的例子: 除了因为数错而需要用到皮筋之外，皮筋会被很快地拨过。
-
-image::ckpt4.png[]
-
-检查点操作完成，状态和位置均已备份到稳定存储中。输入流中的所有记录都已处理完成。值得注意的是，备份的状态值与实际的状态值是不同的。备份反映的是检查点的状态
-
-如果检查点操作失败，Flink会丢弃该检查点并继续正常执行，因为之后的某一个检查点可能会成功。虽然恢复时间可能更长，但是对于状态的保证依旧很有力。只有在一系列连续的检查点操作失败之后，Flink才会抛出错误，因为这通常预示着发生了严重且持久的错误。
-
-现在来看看下图所示的情况: 检查点操作已经完成，但故障紧随其后。
-
-image::ckpt5.png[]
-
-故障紧跟检查点，导致最底部的实例丢失
-
-在这种情况下，Flink会重新拓扑(可能会获取新的执行资源)，将输入流倒回到上一个检查点，然后恢复状态值并从该处开始继续计算。在本例中，["a",2]、["a",2]和["c",2]这几条记录将被重播。
-
-下图展示了这一重新处理过程。从上一个检查点开始重新计算，可以保证在剩下的记录被处理之后，得到的map算子的状态值与没有发生故障时的状态值一致。
-
-image::ckpt6.png[]
-
-Flink将输入流倒回到上一个检查点屏障的位置，同时恢复map算子的状态值。然后，Flink从此处开始重新处理。这样做保证了在记录被处理之后，map算子的状态值与没有发生故障时的一致
-
-Flink检查点算法的正式名称是异步屏障快照(asynchronous barrier snapshotting)。该算法大致基于Chandy-Lamport分布式快照算法。
-
-NOTE: 检查点是Flink最有价值的创新之一，因为它使Flink可以保证exactly-once，并且不需要牺牲性能。
-
-=== Stateful Operators and Applications
-
-Flink内置的很多算子，数据源source，数据存储sink都是有状态的，流中的数据都是buffer records，会保存一定的元素或者元数据。例如: ProcessWindowFunction会缓存输入流的数据，ProcessFunction会保存设置的定时器信息等等。
-
-==== 实现stateful functions
-
-函数一般有两种类型的状态：
-
-* keyed state
-* operator state
-
-===== 在RuntimeContext中声明Keyed State
-
-* keyed state很类似于一个分布式的key-value map数据结构
-* keyed state只能用于KeyedStream(keyBy算子)
-
-Flink支持以下数据类型：
+keyed state仅可用于KeyedStream。Flink支持以下数据类型的状态变量：
 
 * ValueState[T]保存单个的值，值的类型为T。
 ** get操作: ValueState.value()
@@ -142,6 +33,7 @@ Flink支持以下数据类型：
 State.clear()是清空操作。
 
 [source,scala]
+.Example 7-1. 在FlatMapFunction中使用keyed ValueState
 ----
 val sensorData: DataStream[SensorReading] = ...
 val keyedData: KeyedStream[SensorReading, String] = sensorData.keyBy(_.id)
@@ -170,14 +62,19 @@ class TemperatureAlertFunction(val threshold: Double) extends RichFlatMapFunctio
 }
 ----
 
+上面例子中的FlatMapFunction只能访问当前处理的元素所包含的key所对应的状态变量。
+
+NOTE: 不同key对应的keyed state是相互隔离的。
+
 * 通过RuntimeContext注册StateDescriptor。StateDescriptor以状态state的名字和存储的数据类型为参数。数据类型必须指定，因为Flink需要选择合适的序列化器。
 * 在open()方法中创建state变量。注意复习之前的RichFunction相关知识。
 
 当一个函数注册了StateDescriptor描述符，Flink会检查状态后端是否已经存在这个状态。这种情况通常出现在应用挂掉要从检查点或者保存点恢复的时候。在这两种情况下，Flink会将注册的状态连接到已经存在的状态。如果不存在状态，则初始化一个空的状态。
 
-使用FlatMap with keyed ValueState的快捷方式flatMapWithState实现以上需求。还记得之前的例子mapWithState吗？
+使用FlatMap with keyed ValueState的快捷方式flatMapWithState也可以实现以上需求。
 
 [source,scala]
+.Example 7-2. 使用flatMapWithState来实现需求
 ----
 val alerts: DataStream[(String, Double, Double)] = keyedSensorData
   .flatMapWithState[(String, Double, Double), Double] {
@@ -197,11 +94,11 @@ val alerts: DataStream[(String, Double, Double)] = keyedSensorData
   }
 ----
 
-=== 使用ListCheckpointed接口来实现操作符的列表状态(List State)
+==== 使用ListCheckpointed接口来实现操作符的列表状态(List State)
 
-operator state会在operator的每一个并行实例中去维护。一个操作符并行实例上的所有事件都可以访问同一个状态。Flink支持三种操作符状态：list state, list union state, broadcast state。
+操作符状态会在操作符的每一个并行实例中去维护。一个操作符并行实例上的所有事件都可以访问同一个状态。Flink支持三种操作符状态：list state, list union state, broadcast state。
 
-一个函数可以实现ListCheckpointed接口来处理操作符list state。ListCheckpointed接口无法处理ValueState和ListState，因为这些状态是注册在状态后端的。操作符状态类似于成员变量，和状态后端的交互通过ListCheckpointed接口的回调函数实现。接口提供了两个方法：
+一个函数可以实现ListCheckpointed接口来处理操作符的list state。ListCheckpointed接口无法处理ValueState和ListState，因为这些状态是注册在状态后端的。操作符状态类似于成员变量，和状态后端的交互通过ListCheckpointed接口的回调函数实现。接口提供了两个方法：
 
 [source,scala]
 ----
@@ -211,13 +108,14 @@ snapshotState(checkpointId: Long, timestamp: Long): java.util.List[T]
 restoreState(java.util.List[T] state): Unit
 ----
 
-当Flink触发stateful functon的一次checkpoint时，snapshotState()方法会被调用。方法接收两个参数，checkpointId为唯一的单调递增的检查点Id，timestamp为当master机器开始做检查点操作时的墙上时钟。方法必须返回序列化好的状态对象的列表。
+当Flink触发stateful functon的一次checkpoint时，snapshotState()方法会被调用。方法接收两个参数，checkpointId为唯一的单调递增的检查点Id，timestamp为当master机器开始做检查点操作时的墙上时钟（机器时间）。方法必须返回序列化好的状态对象的列表。
 
 当宕机程序从检查点或者保存点恢复时会调用restoreState()方法。restoreState使用snapshotState保存的列表来恢复。
 
 下面的例子展示了如何实现ListCheckpointed接口。业务场景为：一个对每一个并行实例的超过阈值的温度的计数程序。
 
 [source,scala]
+.Example 7-3
 ----
 class HighTempCounter(val threshold: Double)
     extends RichFlatMapFunction[SensorReading, (Int, Long)]
@@ -258,15 +156,16 @@ class HighTempCounter(val threshold: Double)
 }
 ----
 
-The function in the above example counts per parallel instance how many temperature measurements exceeded a configured threshold. The function uses operator state and has a single state variable for each parallel operator instance that is checkpointed and restored using the methods of the ListCheckpointed interface. Note that the ListCheckpointed interface is implemented in Java and expects a java.util.List instead of a Scala native list.
+上面的例子中，每一个并行实例都计数了本实例有多少温度值超过了设定的阈值。例子中使用了操作符状态，并且每一个并行实例都拥有自己的状态变量，这个状态变量将会被检查点操作保存下来，并且可以通过使用ListCheckpointed接口来恢复状态变量。
 
-Looking at the example, you might wonder why operator state is handled as a list of state objects. As discussed in “Scaling Stateful Operators”, the list structure supports changing the parallelism of functions with operator state. In order to increase or decrease the parallelism of a function with operator state, the operator state needs to be redistributed to a larger or smaller number of task instances. This requires splitting or merging of state objects. Since the logic for splitting and merging of state is custom for every stateful function, this cannot be automatically done for arbitrary types of state.
+看了上面的例子，我们可能会有疑问，那就是为什么操作符状态是状态对象的列表。这是因为列表数据结构支持包含操作符状态的函数的并行度改变的操作。为了增加或者减少包含了操作符状态的函数的并行度，操作符状态需要被重新分区到更多或者更少的并行任务实例中去。而这样的操作需要合并或者分割状态对象。而对于每一个有状态的函数，分割和合并状态对象都是很常见的操作，所以这显然不是任何类型的状态都能自动完成的。
 
-By providing a list of state objects, functions with operator state can implement this logic using the snapshotState() and restoreState() methods. The snapshotState() method splits the operator state into multiple parts and the restoreState() method assembles the operator state from possibly multiple parts. When the state of a function is restored, the parts of the state are distributed among all parallel instances of the function and handed to the restoreState() method. If there are more parallel subtasks than state objects, some subtasks are started with no state, and the restoreState() method is called with an empty list.
+通过提供一个状态对象的列表，拥有操作符状态的函数可以使用snapshotState()方法和restoreState()方法来实现以上所说的逻辑。snapshotState()方法将操作符状态分割成多个部分，restoreState()方法从所有的部分中将状态对象收集起来。当函数的操作符状态恢复时，状态变量将被分区到函数的所有不同的并行实例中去，并作为参数传递给restoreState()方法。如果并行任务的数量大于状态对象的数量，那么一些并行任务在开始的时候是没有状态的，所以restoreState()函数的参数为空列表。
 
-Looking again at the HighTempCounter function in Example 7-4, we see that each parallel instance of the operator exposes its state as a list with a single entry. If we increased the parallelism of this operator, some of the new subtasks would be initialized with an empty state, and start counting from zero. In order to achieve better state distribution behavior when the HighTempCounter function is rescaled, we can implement the snapshotState() method so that it splits its count into multiple partial counts as shown in Example 7-5.
+再来看一下上面的程序，我们可以看到操作符的每一个并行实例都暴露了一个状态对象的列表。如果我们增加操作符的并行度，那么一些并行任务将会从0开始计数。为了获得更好的状态分区的行为，当HighTempCounter函数扩容时，我们可以按照下面的程序来实现snapshotState()方法，这样就可以把计数值分配到不同的并行计数中去了。
 
 [source,scala]
+.Example 7-4
 ----
 override def snapshotState(
     chkpntId: Long, 
@@ -280,7 +179,7 @@ override def snapshotState(
 }
 ----
 
-=== 使用连接的广播状态(using connected broadcast state)
+==== 使用连接的广播状态(using connected broadcast state)
 
 一个常见的需求就是流应用需要将同样的事件分发到操作符的所有的并行实例中，而这样的分发操作还得是可恢复的。
 
@@ -291,6 +190,7 @@ override def snapshotState(
 下面的例子实现了一个温度报警应用，应用有可以动态设定的阈值，动态设定通过广播流来实现。
 
 [source,scala]
+.Example 7-5
 ----
 val sensorData: DataStream[SensorReading] = ???
 val thresholds: DataStream[ThresholdUpdate] = ???
@@ -319,6 +219,7 @@ val alerts: DataStream[(String, Double, Double)] = keyedSensorData
 下面的例子实现了动态设定温度阈值的功能。
 
 [source,scala]
+.Example 7-7
 ----
 class UpdatableTemperatureAlertFunction()
     extends KeyedBroadcastProcessFunction
@@ -386,9 +287,7 @@ class UpdatableTemperatureAlertFunction()
 }
 ----
 
-=== 状态存储，恢复和清理
-
-==== 配置检查点
+=== 配置检查点
 
 10秒钟保存一次检查点。
 
@@ -399,6 +298,8 @@ val env = StreamExecutionEnvironment.getExecutionEnvironment
 // set checkpointing interval to 10 seconds (10000 milliseconds)
 env.enableCheckpointing(10000L)
 ----
+
+=== 保证有状态应用的可维护性
 
 ==== 指定唯一的操作符标识符(operator identifiers)
 
@@ -431,7 +332,26 @@ val alerts: DataStream[(String, Double, Double)] = keyedSensorData
   .setMaxParallelism(1024)
 ----
 
-示意图：
+=== 有状态应用的性能和健壮性
+
+==== 选择一个状态后端
+
+* MemoryStateBackend将状态当作Java的对象(没有序列化操作)存储在TaskManager JVM进程的堆上。
+* FsStateBackend将状态存储在本地的文件系统或者远程的文件系统如HDFS。
+* RocksDBStateBackend将状态存储在RocksDB \footnote{Facebook开源的KV数据库} 中。
+
+[source,scala]
+----
+val env = StreamExecutionEnvironment.getExecutionEnvironment
+
+val checkpointPath: String = ???
+// configure path for checkpoints on the remote filesystem
+// env.setStateBackend(new FsStateBackend("file:///tmp/checkpoints"))
+
+val backend = new RocksDBStateBackend(checkpointPath)
+// configure the state backend
+env.setStateBackend(backend)
+----
 
 ==== 防止状态泄露
 
@@ -502,23 +422,4 @@ class SelfCleaningTemperatureAlertFunction(val threshold: Double)
     lastTimerState.clear()
   }
 }
-----
-
-==== 选择一个状态后端
-
-* MemoryStateBackend将状态当作Java的对象(没有序列化操作)存储在TaskManager JVM进程的堆上。
-* FsStateBackend将状态存储在本地的文件系统或者远程的文件系统如HDFS。
-* RocksDBStateBackend将状态存储在RocksDB \footnote{Facebook开源的KV数据库} 中。
-
-[source,scala]
-----
-val env = StreamExecutionEnvironment.getExecutionEnvironment
-
-val checkpointPath: String = ???
-// configure path for checkpoints on the remote filesystem
-// env.setStateBackend(new FsStateBackend("file:///tmp/checkpoints"))
-
-val backend = new RocksDBStateBackend(checkpointPath)
-// configure the state backend
-env.setStateBackend(backend)
 ----
