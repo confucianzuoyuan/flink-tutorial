@@ -736,35 +736,18 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </ul>
 </li>
 <li><a href="#_实时热门商品统计">10.2. 实时热门商品统计</a></li>
-<li><a href="#_实时流量统计">10.3. 实时流量统计</a>
-<ul class="sectlevel3">
-<li><a href="#_模块创建和数据准备">10.3.1. 模块创建和数据准备</a></li>
-<li><a href="#_代码实现">10.3.2. 代码实现</a></li>
-</ul>
-</li>
+<li><a href="#_实时流量统计">10.3. 实时流量统计</a></li>
 <li><a href="#_uv统计的布隆过滤器实现">10.4. Uv统计的布隆过滤器实现</a></li>
 <li><a href="#_app分渠道数据统计">10.5. APP分渠道数据统计</a></li>
 <li><a href="#_app不分渠道数据统计">10.6. APP不分渠道数据统计</a></li>
-<li><a href="#_恶意登陆课堂实现">10.7. 恶意登陆课堂实现</a></li>
-<li><a href="#_恶意登录监控">10.8. 恶意登录监控</a>
+<li><a href="#_恶意登陆实现">10.7. 恶意登陆实现</a></li>
+<li><a href="#_订单支付实时监控">10.8. 订单支付实时监控</a>
 <ul class="sectlevel3">
-<li><a href="#_模块创建和数据准备_2">10.8.1. 模块创建和数据准备</a></li>
-<li><a href="#_代码实现_2">10.8.2. 代码实现</a>
-<ul class="sectlevel4">
-<li><a href="#_状态编程">状态编程</a></li>
-<li><a href="#_cep编程">CEP编程</a></li>
+<li><a href="#_使用flink_cep来实现">10.8.1. 使用Flink CEP来实现</a></li>
+<li><a href="#_使用process_function实现订单超时需求">10.8.2. 使用Process Function实现订单超时需求</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li><a href="#_订单支付实时监控">10.9. 订单支付实时监控</a>
-<ul class="sectlevel3">
-<li><a href="#_模块创建和数据准备_3">10.9.1. 模块创建和数据准备</a></li>
-<li><a href="#_代码实现_3">10.9.2. 代码实现</a></li>
-<li><a href="#_使用process_function实现订单超时需求">10.9.3. 使用Process Function实现订单超时需求</a></li>
-</ul>
-</li>
-<li><a href="#_实现两条流的join">10.10. 实现两条流的join</a></li>
+<li><a href="#_实现两条流的join">10.9. 实现两条流的Join</a></li>
 </ul>
 </li>
 <li><a href="#_常见面试题解答">11. 常见面试题解答</a>
@@ -788,15 +771,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div id="content">
-<div id="preamble">
-<div class="sectionbody">
-<div class="imageblock">
-<div class="content">
-<img src="images/atguigu.jpg" alt="atguigu" width="300" height="200">
-</div>
-</div>
-</div>
-</div>
 <div class="sect1">
 <h2 id="_有状态的流式处理简介">1. 有状态的流式处理简介</h2>
 <div class="sectionbody">
@@ -7831,44 +7805,25 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </li>
 </ul>
 </div>
-<div class="sect3">
-<h4 id="_模块创建和数据准备">10.3.1. 模块创建和数据准备</h4>
 <div class="paragraph">
-<p>在UserBehaviorAnalysis下新建一个maven module作为子项目，命名为NetworkTrafficAnalysis。在这个子模块中，我们同样并没有引入更多的依赖，所以也不需要改动pom文件。</p>
+<p><strong>数据准备</strong></p>
 </div>
 <div class="paragraph">
-<p>在src/main/目录下，将默认源文件目录java改名为scala。将apache服务器的日志文件apache.log复制到资源文件目录src/main/resources下，我们将从这里读取数据。</p>
+<p>将apache服务器的日志文件apache.log复制到资源文件目录src/main/resources下，我们将从这里读取数据。</p>
 </div>
-</div>
-<div class="sect3">
-<h4 id="_代码实现">10.3.2. 代码实现</h4>
 <div class="paragraph">
-<p>我们现在要实现的模块是 “实时流量统计”。对于一个电商平台而言，用户登录的入口流量、不同页面的访问流量都是值得分析的重要数据，而这些数据，可以简单地从web服务器的日志中提取出来。我们在这里实现最基本的“页面浏览数”的统计，也就是读取服务器日志中的每一行log，统计在一段时间内用户访问url的次数。</p>
+<p><strong>代码实现</strong></p>
+</div>
+<div class="paragraph">
+<p>我们现在要实现的模块是“实时流量统计”。对于一个电商平台而言，用户登录的入口流量、不同页面的访问流量都是值得分析的重要数据，而这些数据，可以简单地从web服务器的日志中提取出来。我们在这里实现最基本的“页面浏览数”的统计，也就是读取服务器日志中的每一行log，统计在一段时间内用户访问url的次数。</p>
 </div>
 <div class="paragraph">
 <p>具体做法为：每隔5秒，输出最近10分钟内访问量最多的前N个URL。可以看出，这个需求与之前“实时热门商品统计”非常类似，所以我们完全可以借鉴此前的代码。</p>
 </div>
 <div class="paragraph">
-<p>在src/main/scala下创建TrafficAnalysis.scala文件，新建一个单例对象。定义样例类ApacheLogEvent，这是输入的日志数据流；另外还有UrlViewCount，这是窗口操作统计的输出数据类型。在main函数中创建StreamExecutionEnvironment并做配置，然后从apache.log文件中读取数据，并包装成ApacheLogEvent类型。</p>
-</div>
-<div class="paragraph">
-<p>需要注意的是，原始日志中的时间是“dd/MM/yyyy:HH:mm:ss”的形式，需要定义一个DateTimeFormat将其转换为我们需要的时间戳格式：</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">line</span> <span class="tok-k">=&gt;</span> <span class="tok-o">{</span>
-  <span class="tok-k">val</span> <span class="tok-n">linearray</span> <span class="tok-k">=</span> <span class="tok-n">line</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot; &quot;</span><span class="tok-o">)</span>
-  <span class="tok-k">val</span> <span class="tok-n">sdf</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">SimpleDateFormat</span><span class="tok-o">(</span><span class="tok-s">&quot;dd/MM/yyyy:HH:mm:ss&quot;</span><span class="tok-o">)</span>
-  <span class="tok-k">val</span> <span class="tok-n">timestamp</span> <span class="tok-k">=</span> <span class="tok-n">sdf</span><span class="tok-o">.</span><span class="tok-n">parse</span><span class="tok-o">(</span><span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">3</span><span class="tok-o">)).</span><span class="tok-n">getTime</span>
-  <span class="tok-nc">ApacheLogEvent</span><span class="tok-o">(</span><span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">),</span> <span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">2</span><span class="tok-o">),</span> <span class="tok-n">timestamp</span><span class="tok-o">,</span> <span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">5</span><span class="tok-o">),</span> <span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">6</span><span class="tok-o">))</span>
-<span class="tok-o">})</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
 <p>完整代码如下：</p>
 </div>
 <div class="listingblock">
-<div class="title">NetworkTrafficAnalysis/src/main/scala/TrafficAnalysis.scala</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">ApacheLogEvent</span><span class="tok-o">(</span><span class="tok-n">ip</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">userId</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">eventTime</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">method</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">url</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">)</span>
 
@@ -7881,10 +7836,11 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
     <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
     <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
     <span class="tok-k">val</span> <span class="tok-n">stream</span> <span class="tok-k">=</span> <span class="tok-n">env</span>
-      <span class="tok-c1">// 以window下为例，需替换成自己的路径</span>
+      <span class="tok-c1">// 文件的绝对路径</span>
       <span class="tok-o">.</span><span class="tok-n">readTextFile</span><span class="tok-o">(</span><span class="tok-s">&quot;YOUR_PATH\\resources\\apache.log&quot;</span><span class="tok-o">)</span>
       <span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(</span><span class="tok-n">line</span> <span class="tok-k">=&gt;</span> <span class="tok-o">{</span>
         <span class="tok-k">val</span> <span class="tok-n">linearray</span> <span class="tok-k">=</span> <span class="tok-n">line</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot; &quot;</span><span class="tok-o">)</span>
+        <span class="tok-c1">// 把时间戳ETL成毫秒</span>
         <span class="tok-k">val</span> <span class="tok-n">simpleDateFormat</span> <span class="tok-k">=</span> <span class="tok-k">new</span> <span class="tok-nc">SimpleDateFormat</span><span class="tok-o">(</span><span class="tok-s">&quot;dd/MM/yyyy:HH:mm:ss&quot;</span><span class="tok-o">)</span>
         <span class="tok-k">val</span> <span class="tok-n">timestamp</span> <span class="tok-k">=</span> <span class="tok-n">simpleDateFormat</span><span class="tok-o">.</span><span class="tok-n">parse</span><span class="tok-o">(</span><span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">3</span><span class="tok-o">)).</span><span class="tok-n">getTime</span>
         <span class="tok-nc">ApacheLogEvent</span><span class="tok-o">(</span><span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">0</span><span class="tok-o">),</span> <span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">2</span><span class="tok-o">),</span> <span class="tok-n">timestamp</span><span class="tok-o">,</span> <span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">5</span><span class="tok-o">),</span> <span class="tok-n">linearray</span><span class="tok-o">(</span><span class="tok-mi">6</span><span class="tok-o">))</span>
@@ -7965,7 +7921,6 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
     <span class="tok-o">}</span>
   <span class="tok-o">}</span>
 <span class="tok-o">}</span></code></pre>
-</div>
 </div>
 </div>
 </div>
@@ -8218,7 +8173,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_恶意登陆课堂实现">10.7. 恶意登陆课堂实现</h3>
+<h3 id="_恶意登陆实现">10.7. 恶意登陆实现</h3>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">package</span> <span class="tok-nn">com.atguigu</span>
@@ -8270,15 +8225,16 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
                                 <span class="tok-n">out</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
       <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">value</span><span class="tok-o">.</span><span class="tok-n">loginStatus</span> <span class="tok-o">==</span> <span class="tok-s">&quot;fail&quot;</span><span class="tok-o">)</span> <span class="tok-o">{</span>
         <span class="tok-n">loginState</span><span class="tok-o">.</span><span class="tok-n">add</span><span class="tok-o">(</span><span class="tok-n">value</span><span class="tok-o">)</span>
-        <span class="tok-n">timestamp</span><span class="tok-o">.</span><span class="tok-n">update</span><span class="tok-o">(</span><span class="tok-n">value</span><span class="tok-o">.</span><span class="tok-n">ts</span><span class="tok-o">.</span><span class="tok-n">toLong</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span> <span class="tok-o">+</span> <span class="tok-mi">5000L</span><span class="tok-o">)</span>
-        <span class="tok-n">ctx</span><span class="tok-o">.</span><span class="tok-n">timerService</span><span class="tok-o">().</span><span class="tok-n">registerEventTimeTimer</span><span class="tok-o">(</span><span class="tok-n">value</span><span class="tok-o">.</span><span class="tok-n">ts</span><span class="tok-o">.</span><span class="tok-n">toLong</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span> <span class="tok-o">+</span> <span class="tok-mi">5000L</span><span class="tok-o">)</span>
+        <span class="tok-k">if</span> <span class="tok-o">(!</span><span class="tok-n">timestamp</span><span class="tok-o">.</span><span class="tok-n">value</span><span class="tok-o">())</span> <span class="tok-o">{</span>
+          <span class="tok-n">timestamp</span><span class="tok-o">.</span><span class="tok-n">update</span><span class="tok-o">(</span><span class="tok-n">value</span><span class="tok-o">.</span><span class="tok-n">ts</span><span class="tok-o">.</span><span class="tok-n">toLong</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span> <span class="tok-o">+</span> <span class="tok-mi">5000L</span><span class="tok-o">)</span>
+          <span class="tok-n">ctx</span><span class="tok-o">.</span><span class="tok-n">timerService</span><span class="tok-o">().</span><span class="tok-n">registerEventTimeTimer</span><span class="tok-o">(</span><span class="tok-n">value</span><span class="tok-o">.</span><span class="tok-n">ts</span><span class="tok-o">.</span><span class="tok-n">toLong</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span> <span class="tok-o">+</span> <span class="tok-mi">5000L</span><span class="tok-o">)</span>
+        <span class="tok-o">}</span>
       <span class="tok-o">}</span>
 
       <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">value</span><span class="tok-o">.</span><span class="tok-n">loginStatus</span> <span class="tok-o">==</span> <span class="tok-s">&quot;success&quot;</span><span class="tok-o">)</span> <span class="tok-o">{</span>
         <span class="tok-n">loginState</span><span class="tok-o">.</span><span class="tok-n">clear</span><span class="tok-o">()</span>
         <span class="tok-n">ctx</span><span class="tok-o">.</span><span class="tok-n">timerService</span><span class="tok-o">().</span><span class="tok-n">deleteEventTimeTimer</span><span class="tok-o">(</span><span class="tok-n">timestamp</span><span class="tok-o">.</span><span class="tok-n">value</span><span class="tok-o">())</span>
       <span class="tok-o">}</span>
-
     <span class="tok-o">}</span>
 
     <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">onTimer</span><span class="tok-o">(</span><span class="tok-n">ts</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span>
@@ -8301,203 +8257,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_恶意登录监控">10.8. 恶意登录监控</h3>
-<div class="ulist">
-<ul>
-<li>
-<p>基本需求</p>
-<div class="ulist">
-<ul>
-<li>
-<p>用户在短时间内频繁登录失败，有程序恶意攻击的可能</p>
-</li>
-<li>
-<p>同一用户(可以是不同IP)在2秒内连续两次登录失败，需要报警</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>解决思路</p>
-<div class="ulist">
-<ul>
-<li>
-<p>将用户的登录失败行为存入ListState，设定定时器10秒后触发，查看ListState中有几次失败登录</p>
-</li>
-<li>
-<p>更加精确的检测，可以使用CEP库实现事件流的模式匹配</p>
-</li>
-</ul>
-</div>
-</li>
-</ul>
-</div>
-<div class="sect3">
-<h4 id="_模块创建和数据准备_2">10.8.1. 模块创建和数据准备</h4>
-<div class="paragraph">
-<p>继续在UserBehaviorAnalysis下新建一个maven module作为子项目，命名为LoginFailDetect。在这个子模块中，我们将会用到flink的CEP库来实现事件流的模式匹配，所以需要在pom文件中引入CEP的相关依赖：</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="xml"><span></span><span class="tok-nt">&lt;dependency&gt;</span>
-    <span class="tok-nt">&lt;groupId&gt;</span>org.apache.flink<span class="tok-nt">&lt;/groupId&gt;</span>
-    <span class="tok-nt">&lt;artifactId&gt;</span>flink-cep_${scala.binary.version}<span class="tok-nt">&lt;/artifactId&gt;</span>
-    <span class="tok-nt">&lt;version&gt;</span>${flink.version}<span class="tok-nt">&lt;/version&gt;</span>
-<span class="tok-nt">&lt;/dependency&gt;</span>
-<span class="tok-nt">&lt;dependency&gt;</span>
-    <span class="tok-nt">&lt;groupId&gt;</span>org.apache.flink<span class="tok-nt">&lt;/groupId&gt;</span>
-    <span class="tok-nt">&lt;artifactId&gt;</span>flink-cep-scala_${scala.binary.version}<span class="tok-nt">&lt;/artifactId&gt;</span>
-    <span class="tok-nt">&lt;version&gt;</span>${flink.version}<span class="tok-nt">&lt;/version&gt;</span>
-<span class="tok-nt">&lt;/dependency&gt;</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>同样，在src/main/目录下，将默认源文件目录java改名为scala。</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_代码实现_2">10.8.2. 代码实现</h4>
-<div class="paragraph">
-<p>对于网站而言，用户登录并不是频繁的业务操作。如果一个用户短时间内频繁登录失败，就有可能是出现了程序的恶意攻击，比如密码暴力破解。因此我们考虑，应该对用户的登录失败动作进行统计，具体来说，如果同一用户（可以是不同IP）在2秒之内连续两次登录失败，就认为存在恶意登录的风险，输出相关的信息进行报警提示。这是电商网站、也是几乎所有网站风控的基本一环。</p>
-</div>
-<div class="sect4">
-<h5 id="_状态编程">状态编程</h5>
-<div class="paragraph">
-<p>由于同样引入了时间，我们可以想到，最简单的方法其实与之前的热门统计类似，只需要按照用户ID分流，然后遇到登录失败的事件时将其保存在ListState中，然后设置一个定时器，2秒后触发。定时器触发时检查状态中的登录失败事件个数，如果大于等于2，那么就输出报警信息。</p>
-</div>
-<div class="paragraph">
-<p>在src/main/scala下创建LoginFail.scala文件，新建一个单例对象。定义样例类LoginEvent，这是输入的登录事件流。由于没有现成的登录数据，我们用几条自定义的示例数据来做演示。</p>
-</div>
-<div class="paragraph">
-<p>代码如下：</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">case</span> <span class="tok-k">class</span> <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-n">userId</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span> <span class="tok-n">ip</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">eventType</span><span class="tok-k">:</span> <span class="tok-kt">String</span><span class="tok-o">,</span> <span class="tok-n">eventTime</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">)</span>
-
-<span class="tok-k">object</span> <span class="tok-nc">LoginFail</span> <span class="tok-o">{</span>
-
-  <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-
-    <span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
-    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
-    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
-
-    <span class="tok-k">val</span> <span class="tok-n">loginEventStream</span> <span class="tok-k">=</span> <span class="tok-n">env</span>
-      <span class="tok-o">.</span><span class="tok-n">fromCollection</span><span class="tok-o">(</span><span class="tok-nc">List</span><span class="tok-o">(</span>
-        <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.0.1&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;fail&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1558430842</span><span class="tok-o">),</span>
-        <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.0.2&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;fail&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1558430843</span><span class="tok-o">),</span>
-        <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.0.3&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;fail&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1558430844</span><span class="tok-o">),</span>
-        <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-mi">2</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.10.10&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;success&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1558430845</span><span class="tok-o">)</span>
-      <span class="tok-o">))</span>
-      <span class="tok-o">.</span><span class="tok-n">assignAscendingTimestamps</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">eventTime</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span><span class="tok-o">)</span>
-      <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">userId</span><span class="tok-o">)</span>
-      <span class="tok-o">.</span><span class="tok-n">process</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">MatchFunction</span><span class="tok-o">())</span>
-      <span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">()</span>
-
-    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span><span class="tok-o">(</span><span class="tok-s">&quot;Login Fail Detect Job&quot;</span><span class="tok-o">)</span>
-  <span class="tok-o">}</span>
-
-  <span class="tok-k">class</span> <span class="tok-nc">MatchFunction</span> <span class="tok-k">extends</span> <span class="tok-nc">KeyedProcessFunction</span><span class="tok-o">[</span><span class="tok-kt">Long</span>, <span class="tok-kt">LoginEvent</span>, <span class="tok-kt">LoginEvent</span><span class="tok-o">]</span> <span class="tok-o">{</span>
-
-    <span class="tok-c1">// 定义状态变量</span>
-    <span class="tok-k">lazy</span> <span class="tok-k">val</span> <span class="tok-n">loginState</span><span class="tok-k">:</span> <span class="tok-kt">ListState</span><span class="tok-o">[</span><span class="tok-kt">LoginEvent</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-n">getRuntimeContext</span><span class="tok-o">.</span><span class="tok-n">getListState</span><span class="tok-o">(</span><span class="tok-k">new</span> <span class="tok-nc">ListStateDescriptor</span><span class="tok-o">[</span><span class="tok-kt">LoginEvent</span><span class="tok-o">](</span><span class="tok-s">&quot;saved login&quot;</span><span class="tok-o">,</span> <span class="tok-n">classOf</span><span class="tok-o">[</span><span class="tok-kt">LoginEvent</span><span class="tok-o">]))</span>
-
-    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">processElement</span><span class="tok-o">(</span><span class="tok-n">login</span><span class="tok-k">:</span> <span class="tok-kt">LoginEvent</span><span class="tok-o">,</span>
-                                <span class="tok-n">context</span><span class="tok-k">:</span> <span class="tok-kt">KeyedProcessFunction</span><span class="tok-o">[</span><span class="tok-kt">Long</span>, <span class="tok-kt">LoginEvent</span>, <span class="tok-kt">LoginEvent</span><span class="tok-o">]</span><span class="tok-k">#</span><span class="tok-nc">Context</span><span class="tok-o">,</span>
-                                <span class="tok-n">out</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[</span><span class="tok-kt">LoginEvent</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-
-      <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">login</span><span class="tok-o">.</span><span class="tok-n">eventType</span> <span class="tok-o">==</span> <span class="tok-s">&quot;fail&quot;</span><span class="tok-o">)</span> <span class="tok-o">{</span>
-        <span class="tok-n">loginState</span><span class="tok-o">.</span><span class="tok-n">add</span><span class="tok-o">(</span><span class="tok-n">login</span><span class="tok-o">)</span>
-      <span class="tok-o">}</span>
-      <span class="tok-c1">// 注册定时器，触发事件设定为2秒后</span>
-      <span class="tok-n">context</span><span class="tok-o">.</span><span class="tok-n">timerService</span><span class="tok-o">.</span><span class="tok-n">registerEventTimeTimer</span><span class="tok-o">(</span><span class="tok-n">login</span><span class="tok-o">.</span><span class="tok-n">eventTime</span> <span class="tok-o">+</span> <span class="tok-mi">2</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span><span class="tok-o">)</span>
-    <span class="tok-o">}</span>
-
-    <span class="tok-k">override</span> <span class="tok-k">def</span> <span class="tok-n">onTimer</span><span class="tok-o">(</span><span class="tok-n">timestamp</span><span class="tok-k">:</span> <span class="tok-kt">Long</span><span class="tok-o">,</span>
-                         <span class="tok-n">ctx</span><span class="tok-k">:</span> <span class="tok-kt">KeyedProcessFunction</span><span class="tok-o">[</span><span class="tok-kt">Long</span>, <span class="tok-kt">LoginEvent</span>, <span class="tok-kt">LoginEvent</span><span class="tok-o">]</span><span class="tok-k">#</span><span class="tok-nc">OnTimerContext</span><span class="tok-o">,</span>
-                         <span class="tok-n">out</span><span class="tok-k">:</span> <span class="tok-kt">Collector</span><span class="tok-o">[</span><span class="tok-kt">LoginEvent</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-
-      <span class="tok-k">val</span> <span class="tok-n">allLogins</span><span class="tok-k">:</span> <span class="tok-kt">ListBuffer</span><span class="tok-o">[</span><span class="tok-kt">LoginEvent</span><span class="tok-o">]</span> <span class="tok-k">=</span> <span class="tok-nc">ListBuffer</span><span class="tok-o">()</span>
-      <span class="tok-k">import</span> <span class="tok-nn">scala.collection.JavaConversions._</span>
-      <span class="tok-k">for</span> <span class="tok-o">(</span><span class="tok-n">login</span> <span class="tok-k">&lt;-</span> <span class="tok-n">loginState</span><span class="tok-o">.</span><span class="tok-n">get</span><span class="tok-o">)</span> <span class="tok-o">{</span>
-        <span class="tok-n">allLogins</span> <span class="tok-o">+=</span> <span class="tok-n">login</span>
-      <span class="tok-o">}</span>
-      <span class="tok-n">loginState</span><span class="tok-o">.</span><span class="tok-n">clear</span><span class="tok-o">()</span>
-
-      <span class="tok-k">if</span> <span class="tok-o">(</span><span class="tok-n">allLogins</span><span class="tok-o">.</span><span class="tok-n">length</span> <span class="tok-o">&gt;</span> <span class="tok-mi">1</span><span class="tok-o">)</span> <span class="tok-o">{</span>
-        <span class="tok-n">out</span><span class="tok-o">.</span><span class="tok-n">collect</span><span class="tok-o">(</span><span class="tok-n">allLogins</span><span class="tok-o">.</span><span class="tok-n">head</span><span class="tok-o">)</span>
-      <span class="tok-o">}</span>
-    <span class="tok-o">}</span>
-  <span class="tok-o">}</span>
-<span class="tok-o">}</span></code></pre>
-</div>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_cep编程">CEP编程</h5>
-<div class="paragraph">
-<p>上一节的代码实现中我们可以看到，直接把每次登录失败的数据存起来、设置定时器一段时间后再读取，这种做法尽管简单，但和我们开始的需求还是略有差异的。这种做法只能隔2秒之后去判断一下这期间是否有多次失败登录，而不是在一次登录失败之后、再一次登录失败时就立刻报警。这个需求如果严格实现起来，相当于要判断任意紧邻的事件，是否符合某种模式。这听起来就很复杂了，那有什么方式可以方便地实现呢？</p>
-</div>
-<div class="paragraph">
-<p>很幸运，flink为我们提供了CEP（Complex Event Processing，复杂事件处理）库，用于在流中筛选符合某种复杂模式的事件。接下来我们就基于CEP来完成这个模块的实现。</p>
-</div>
-<div class="paragraph">
-<p>在src/main/scala下继续创建LoginFailWithCep.scala文件，新建一个单例对象。样例类LoginEvent由于在LoginFail.scala已经定义，我们在同一个模块中就不需要再定义了。</p>
-</div>
-<div class="paragraph">
-<p>代码如下：</p>
-</div>
-<div class="listingblock">
-<div class="title">LoginFailDetect/src/main/scala/LoginFailWithCep.scala</div>
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">object</span> <span class="tok-nc">LoginFailWithCep</span> <span class="tok-o">{</span>
-
-  <span class="tok-k">def</span> <span class="tok-n">main</span><span class="tok-o">(</span><span class="tok-n">args</span><span class="tok-k">:</span> <span class="tok-kt">Array</span><span class="tok-o">[</span><span class="tok-kt">String</span><span class="tok-o">])</span><span class="tok-k">:</span> <span class="tok-kt">Unit</span> <span class="tok-o">=</span> <span class="tok-o">{</span>
-
-    <span class="tok-k">val</span> <span class="tok-n">env</span> <span class="tok-k">=</span> <span class="tok-nc">StreamExecutionEnvironment</span><span class="tok-o">.</span><span class="tok-n">getExecutionEnvironment</span>
-    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setStreamTimeCharacteristic</span><span class="tok-o">(</span><span class="tok-nc">TimeCharacteristic</span><span class="tok-o">.</span><span class="tok-nc">EventTime</span><span class="tok-o">)</span>
-    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">setParallelism</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">)</span>
-
-    <span class="tok-k">val</span> <span class="tok-n">loginEventStream</span> <span class="tok-k">=</span> <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">fromCollection</span><span class="tok-o">(</span><span class="tok-nc">List</span><span class="tok-o">(</span>
-      <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.0.1&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;fail&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1558430842</span><span class="tok-o">),</span>
-      <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.0.2&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;fail&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1558430843</span><span class="tok-o">),</span>
-      <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-mi">1</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.0.3&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;fail&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1558430844</span><span class="tok-o">),</span>
-      <span class="tok-nc">LoginEvent</span><span class="tok-o">(</span><span class="tok-mi">2</span><span class="tok-o">,</span> <span class="tok-s">&quot;192.168.10.10&quot;</span><span class="tok-o">,</span> <span class="tok-s">&quot;success&quot;</span><span class="tok-o">,</span> <span class="tok-mi">1558430845</span><span class="tok-o">)</span>
-    <span class="tok-o">)).</span><span class="tok-n">assignAscendingTimestamps</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">eventTime</span> <span class="tok-o">*</span> <span class="tok-mi">1000</span><span class="tok-o">)</span>
-
-
-    <span class="tok-c1">// 定义匹配模式</span>
-    <span class="tok-k">val</span> <span class="tok-n">loginFailPattern</span> <span class="tok-k">=</span> <span class="tok-nc">Pattern</span>
-      <span class="tok-o">.</span><span class="tok-n">begin</span><span class="tok-o">[</span><span class="tok-kt">LoginEvent</span><span class="tok-o">](</span><span class="tok-s">&quot;begin&quot;</span><span class="tok-o">)</span>
-      <span class="tok-o">.</span><span class="tok-n">where</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">eventType</span> <span class="tok-o">==</span> <span class="tok-s">&quot;fail&quot;</span><span class="tok-o">)</span>
-      <span class="tok-o">.</span><span class="tok-n">next</span><span class="tok-o">(</span><span class="tok-s">&quot;next&quot;</span><span class="tok-o">)</span>
-      <span class="tok-o">.</span><span class="tok-n">where</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">eventType</span> <span class="tok-o">==</span> <span class="tok-s">&quot;fail&quot;</span><span class="tok-o">)</span>
-      <span class="tok-o">.</span><span class="tok-n">within</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">2</span><span class="tok-o">))</span>
-
-
-    <span class="tok-c1">// 在数据流中匹配出定义好的模式</span>
-    <span class="tok-k">val</span> <span class="tok-n">patternStream</span> <span class="tok-k">=</span> <span class="tok-nc">CEP</span><span class="tok-o">.</span><span class="tok-n">pattern</span><span class="tok-o">(</span><span class="tok-n">loginEventStream</span><span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-k">_</span><span class="tok-o">.</span><span class="tok-n">userId</span><span class="tok-o">),</span> <span class="tok-n">loginFailPattern</span><span class="tok-o">)</span>
-
-    <span class="tok-c1">// .select方法传入一个 pattern select function，当检测到定义好的模式序列时就会调用</span>
-    <span class="tok-k">val</span> <span class="tok-n">loginFailDataStream</span> <span class="tok-k">=</span> <span class="tok-n">patternStream</span>
-      <span class="tok-o">.</span><span class="tok-n">select</span><span class="tok-o">((</span><span class="tok-n">pattern</span><span class="tok-k">:</span> <span class="tok-kt">Map</span><span class="tok-o">[</span><span class="tok-kt">String</span>, <span class="tok-kt">Iterable</span><span class="tok-o">[</span><span class="tok-kt">LoginEvent</span><span class="tok-o">]])</span> <span class="tok-k">=&gt;</span> <span class="tok-o">{</span>
-        <span class="tok-k">val</span> <span class="tok-n">first</span> <span class="tok-k">=</span> <span class="tok-n">pattern</span><span class="tok-o">.</span><span class="tok-n">getOrElse</span><span class="tok-o">(</span><span class="tok-s">&quot;begin&quot;</span><span class="tok-o">,</span> <span class="tok-kc">null</span><span class="tok-o">).</span><span class="tok-n">iterator</span><span class="tok-o">.</span><span class="tok-n">next</span><span class="tok-o">()</span>
-        <span class="tok-k">val</span> <span class="tok-n">second</span> <span class="tok-k">=</span> <span class="tok-n">pattern</span><span class="tok-o">.</span><span class="tok-n">getOrElse</span><span class="tok-o">(</span><span class="tok-s">&quot;next&quot;</span><span class="tok-o">,</span> <span class="tok-kc">null</span><span class="tok-o">).</span><span class="tok-n">iterator</span><span class="tok-o">.</span><span class="tok-n">next</span><span class="tok-o">()</span>
-        <span class="tok-o">(</span><span class="tok-n">second</span><span class="tok-o">.</span><span class="tok-n">userId</span><span class="tok-o">,</span> <span class="tok-n">second</span><span class="tok-o">.</span><span class="tok-n">ip</span><span class="tok-o">,</span> <span class="tok-n">second</span><span class="tok-o">.</span><span class="tok-n">eventType</span><span class="tok-o">)</span>
-      <span class="tok-o">})</span>
-    <span class="tok-c1">// 将匹配到的符合条件的事件打印出来</span>
-    <span class="tok-n">loginFailDataStream</span><span class="tok-o">.</span><span class="tok-n">print</span><span class="tok-o">()</span>
-    <span class="tok-n">env</span><span class="tok-o">.</span><span class="tok-n">execute</span><span class="tok-o">(</span><span class="tok-s">&quot;Login Fail Detect Job&quot;</span><span class="tok-o">)</span>
-  <span class="tok-o">}</span>
-<span class="tok-o">}</span></code></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_订单支付实时监控">10.9. 订单支付实时监控</h3>
+<h3 id="_订单支付实时监控">10.8. 订单支付实时监控</h3>
 <div class="ulist">
 <ul>
 <li>
@@ -8526,30 +8286,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </ul>
 </div>
 <div class="sect3">
-<h4 id="_模块创建和数据准备_3">10.9.1. 模块创建和数据准备</h4>
-<div class="paragraph">
-<p>同样地，在UserBehaviorAnalysis下新建一个maven module作为子项目，命名为OrderTimeoutDetect。在这个子模块中，我们同样将会用到flink的CEP库来实现事件流的模式匹配，所以需要在pom文件中引入CEP的相关依赖：</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="xml"><span></span><span class="tok-nt">&lt;dependency&gt;</span>
-    <span class="tok-nt">&lt;groupId&gt;</span>org.apache.flink<span class="tok-nt">&lt;/groupId&gt;</span>
-    <span class="tok-nt">&lt;artifactId&gt;</span>flink-cep_${scala.binary.version}<span class="tok-nt">&lt;/artifactId&gt;</span>
-    <span class="tok-nt">&lt;version&gt;</span>${flink.version}<span class="tok-nt">&lt;/version&gt;</span>
-<span class="tok-nt">&lt;/dependency&gt;</span>
-<span class="tok-nt">&lt;dependency&gt;</span>
-    <span class="tok-nt">&lt;groupId&gt;</span>org.apache.flink<span class="tok-nt">&lt;/groupId&gt;</span>
-    <span class="tok-nt">&lt;artifactId&gt;</span>flink-cep-scala_${scala.binary.version}<span class="tok-nt">&lt;/artifactId&gt;</span>
-    <span class="tok-nt">&lt;version&gt;</span>${flink.version}<span class="tok-nt">&lt;/version&gt;</span>
-<span class="tok-nt">&lt;/dependency&gt;</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>同样，在src/main/目录下，将默认源文件目录java改名为scala。</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_代码实现_3">10.9.2. 代码实现</h4>
+<h4 id="_使用flink_cep来实现">10.8.1. 使用Flink CEP来实现</h4>
 <div class="paragraph">
 <p>在电商平台中，最终创造收入和利润的是用户下单购买的环节；更具体一点，是用户真正完成支付动作的时候。用户下单的行为可以表明用户对商品的需求，但在现实中，并不是每次下单都会被用户立刻支付。当拖延一段时间后，用户支付的意愿会降低。所以为了让用户更有紧迫感从而提高支付转化率，同时也为了防范订单支付环节的安全风险，电商网站往往会对订单状态进行监控，设置一个失效时间（比如15分钟），如果下单后一段时间仍未支付，订单就会被取消。</p>
 </div>
@@ -8571,7 +8308,6 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 完整代码如下：</p>
 </div>
 <div class="listingblock">
-<div class="title">OrderTimeoutDetect/src/main/scala/OrderTimeout.scala</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.cep.scala.CEP</span>
 <span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.cep.scala.pattern.Pattern</span>
@@ -8641,7 +8377,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect3">
-<h4 id="_使用process_function实现订单超时需求">10.9.3. 使用Process Function实现订单超时需求</h4>
+<h4 id="_使用process_function实现订单超时需求">10.8.2. 使用Process Function实现订单超时需求</h4>
 <div class="listingblock">
 <div class="title">OrderTimeoutWithoutCep.scala</div>
 <div class="content">
@@ -8723,15 +8459,11 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 </div>
 </div>
 <div class="sect2">
-<h3 id="_实现两条流的join">10.10. 实现两条流的join</h3>
-<div class="imageblock">
-<div class="content">
-<img src="images/twostreamsjoin.png" alt="twostreamsjoin">
-</div>
-<div class="title">Figure 1. 示意图</div>
+<h3 id="_实现两条流的join">10.9. 实现两条流的Join</h3>
+<div class="paragraph">
+<p>完整代码如下：</p>
 </div>
 <div class="listingblock">
-<div class="title">TwoStreamsJoin.scala</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="scala"><span></span><span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.api.common.state.</span><span class="tok-o">{</span><span class="tok-nc">ValueState</span><span class="tok-o">,</span> <span class="tok-nc">ValueStateDescriptor</span><span class="tok-o">}</span>
 <span class="tok-k">import</span> <span class="tok-nn">org.apache.flink.streaming.api.TimeCharacteristic</span>
@@ -9034,7 +8766,7 @@ Flink的一个重大价值在于，它既保证了exactly-once，也具有低延
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2020-02-15 22:44:04 +0800
+Last updated 2020-02-17 13:25:23 +0800
 </div>
 </div>
 <style>
