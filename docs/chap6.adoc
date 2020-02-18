@@ -67,12 +67,7 @@ val stream = env
   .map(...)
   .filter(...)
   .assignTimestampsAndWatermarks(...)
-  .keyBy(...)
-  .timeWindow(...)
-  .process(...)
 ----
-
-NOTE: 注意以上程序的顺序：先分配时间戳，再keyBy，再开窗，顺序不能乱！
 
 下面的例子展示了首先filter流，然后再分配时间戳和水位线。
 

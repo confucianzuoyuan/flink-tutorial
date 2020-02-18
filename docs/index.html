@@ -2416,7 +2416,7 @@ Flink限制通过DataStream API访问时间戳和watermark。函数不能读取�
 
     <span class="tok-c1">// parse the data, group it, window it, and aggregate the counts</span>
     <span class="tok-k">val</span> <span class="tok-n">windowCounts</span> <span class="tok-k">=</span> <span class="tok-n">text</span>
-      <span class="tok-o">.</span><span class="tok-n">flatMap</span> <span class="tok-o">{</span> <span class="tok-n">w</span> <span class="tok-k">=&gt;</span> <span class="tok-n">w</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot;\\s&quot;</span><span class="tok-o">)</span> <span class="tok-o">}</span> <i class="conum" data-value="1"></i><b>(1)</b>
+      <span class="tok-o">.</span><span class="tok-n">flatMap</span> <span class="tok-o">{</span> <span class="tok-n">w</span> <span class="tok-k">=&gt;</span> <span class="tok-n">w</span><span class="tok-o">.</span><span class="tok-n">split</span><span class="tok-o">(</span><span class="tok-s">&quot;\\s&quot;</span><span class="tok-o">)</span> <span class="tok-o">}</span>
       <span class="tok-o">.</span><span class="tok-n">map</span> <span class="tok-o">{</span> <span class="tok-n">w</span> <span class="tok-k">=&gt;</span> <span class="tok-nc">WordWithCount</span><span class="tok-o">(</span><span class="tok-n">w</span><span class="tok-o">,</span> <span class="tok-mi">1</span><span class="tok-o">)</span> <span class="tok-o">}</span>
       <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(</span><span class="tok-s">&quot;word&quot;</span><span class="tok-o">)</span>
       <span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(</span><span class="tok-nc">Time</span><span class="tok-o">.</span><span class="tok-n">seconds</span><span class="tok-o">(</span><span class="tok-mi">5</span><span class="tok-o">))</span>
@@ -4065,23 +4065,8 @@ IngestionTime没什么价值，既有EventTime的执行效率（比较低），�
   <span class="tok-o">.</span><span class="tok-n">addSource</span><span class="tok-o">(...)</span>
   <span class="tok-o">.</span><span class="tok-n">map</span><span class="tok-o">(...)</span>
   <span class="tok-o">.</span><span class="tok-n">filter</span><span class="tok-o">(...)</span>
-  <span class="tok-o">.</span><span class="tok-n">assignTimestampsAndWatermarks</span><span class="tok-o">(...)</span>
-  <span class="tok-o">.</span><span class="tok-n">keyBy</span><span class="tok-o">(...)</span>
-  <span class="tok-o">.</span><span class="tok-n">timeWindow</span><span class="tok-o">(...)</span>
-  <span class="tok-o">.</span><span class="tok-n">process</span><span class="tok-o">(...)</span></code></pre>
+  <span class="tok-o">.</span><span class="tok-n">assignTimestampsAndWatermarks</span><span class="tok-o">(...)</span></code></pre>
 </div>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-注意以上程序的顺序：先分配时间戳，再keyBy，再开窗，顺序不能乱！
-</td>
-</tr>
-</table>
 </div>
 <div class="paragraph">
 <p>下面的例子展示了首先filter流，然后再分配时间戳和水位线。</p>
