@@ -2393,7 +2393,7 @@ Flink限制通过DataStream API访问时间戳和watermark。函数不能读取�
 </div>
 </div>
 <div class="paragraph">
-<p>编写`WordCount.scala`程序</p>
+<p>编写<code>WordCount.scala</code>程序</p>
 </div>
 <div class="listingblock">
 <div class="title">WordCount.scala</div>
@@ -2450,7 +2450,7 @@ Flink限制通过DataStream API访问时间戳和watermark。函数不能读取�
 </div>
 </div>
 <div class="paragraph">
-<p>接下来使用`IDEA`运行就可以了。</p>
+<p>接下来使用<code>IDEA</code>运行就可以了。</p>
 </div>
 </div>
 <div class="sect2">
@@ -2482,7 +2482,7 @@ Flink限制通过DataStream API访问时间戳和watermark。函数不能读取�
 <p>在`IDEA`中使用`maven package`打包。</p>
 </div>
 <div class="paragraph">
-<p>提交打包好的`JAR`包</p>
+<p>提交打包好的<code>JAR</code>包</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2855,7 +2855,7 @@ Flink限制通过DataStream API访问时间戳和watermark。函数不能读取�
 <p>在这一小节我们将大概看一下DataStream API的基本转换算子。与时间有关的操作符（例如窗口操作符和其他特殊的转换算子）将会在后面的章节叙述。一个流的转换操作将会应用在一个或者多个流上面，这些转换操作将流转换成一个或者多个输出流。编写一个DataStream API简单来说就是将这些转换算子组合在一起来构建一个数据流图，这个数据流图就实现了我们的业务逻辑。</p>
 </div>
 <div class="paragraph">
-<p>大部分的流转换操作都基于用户自定义函数UDF。UDF函数打包了一些业务逻辑并定义了输入流的元素如何转换成输出流的元素。像`MapFunction`这样的函数，将会被定义为类，这个类实现了Flink针对特定的转换操作暴露出来的接口。</p>
+<p>大部分的流转换操作都基于用户自定义函数UDF。UDF函数打包了一些业务逻辑并定义了输入流的元素如何转换成输出流的元素。像<code>MapFunction</code>这样的函数，将会被定义为类，这个类实现了Flink针对特定的转换操作暴露出来的接口。</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -3053,7 +3053,7 @@ FlatMapFunction[T, O]
 <p><strong>滚动聚合</strong></p>
 </div>
 <div class="paragraph">
-<p>滚动聚合算子由`KeyedStream`调用，并生成一个聚合以后的DataStream，例如：sum，minimum，maximum。一个滚动聚合算子会为每一个观察到的key保存一个聚合的值。针对每一个输入事件，算子将会更新保存的聚合结果，并发送一个带有更新后的值的事件到下游算子。滚动聚合不需要用户自定义函数，但需要接受一个参数，这个参数指定了在哪一个字段上面做聚合操作。DataStream API提供了以下滚动聚合方法。</p>
+<p>滚动聚合算子由<code>KeyedStream</code>调用，并生成一个聚合以后的DataStream，例如：sum，minimum，maximum。一个滚动聚合算子会为每一个观察到的key保存一个聚合的值。针对每一个输入事件，算子将会更新保存的聚合结果，并发送一个带有更新后的值的事件到下游算子。滚动聚合不需要用户自定义函数，但需要接受一个参数，这个参数指定了在哪一个字段上面做聚合操作。DataStream API提供了以下滚动聚合方法。</p>
 </div>
 <div class="admonitionblock note">
 <table>

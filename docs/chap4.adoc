@@ -206,7 +206,7 @@
 </project>
 ----
 
-编写`WordCount.scala`程序
+编写``WordCount.scala``程序
 
 [source,scala]
 .WordCount.scala
@@ -254,7 +254,7 @@ object StreamingJob {
 nc -lk 9999
 ----
 
-接下来使用`IDEA`运行就可以了。
+接下来使用``IDEA``运行就可以了。
 
 === 下载Flink运行时环境，提交Jar包的运行方式
 
@@ -279,7 +279,7 @@ cd flink-1.10.0
 
 在`IDEA`中使用`maven package`打包。
 
-提交打包好的`JAR`包
+提交打包好的``JAR``包
 
 [source,shell]
 ----
