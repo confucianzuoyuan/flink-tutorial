@@ -954,7 +954,7 @@ object OrderTimeoutWithoutCep {
 }
 ----
 
-=== 实现两条流的Join
+=== 实时对帐：实现两条流的Join
 
 完整代码如下：
 
