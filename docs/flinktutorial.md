@@ -1,4 +1,4 @@
-# 有状态的流式处理简介
+# 第一章，有状态的流式处理简介
 
 Apache Flink是一个分布式流处理器，具有直观和富有表现力的API，可实现有状态的流处理应用程序。它以容错的方式有效地大规模运行这些应用程序。 Flink于2014年4月加入Apache软件基金会作为孵化项目，并于2015年1月成为顶级项目。从一开始，Flink就拥有一个非常活跃且不断增长的用户和贡献者社区。到目前为止，已有超过五百人为Flink做出贡献，并且它已经发展成为最复杂的开源流处理引擎之一，并得到了广泛采用的证明。 Flink为不同行业和全球的许多公司和企业提供大规模的商业关键应用。
 
@@ -139,7 +139,7 @@ Apache Flink是第三代分布式流处理器，它拥有极富竞争力的功�
 
 除了这些功能之外，Flink还是一个非常易于开发的框架，因为它易于使用的API。嵌入式执行模式，可以在单个JVM进程中启动应用程序和整个Flink系统，这种模式一般用于在IDE中运行和调试Flink作业。在开发和测试Flink应用程序时，此功能非常有用。
 
-# 流处理基础
+# 第二章，流处理基础
 
 ## 数据流编程简介
 
@@ -399,7 +399,7 @@ Socket，文件，Kafka Topic或传感器数据接口中提取数据。数据出
 
 目前我们看到的一致性保证都是由流处理器实现的，也就是说都是在Flink流处理器内部保证的。而在真实世界中，流处理应用除了流处理器以外还包含了数据源（例如Kafka）和持久化系统。端到端的一致性保证意味着结果的正确性贯穿了整个流处理应用的始终。每一个组件都保证了它自己的一致性。而整个端到端的一致性级别取决于所有组件中一致性最弱的组件。要注意的是，我们可以通过弱一致性来实现更强的一致性语义。例如，当任务的操作具有幂等性时，比如流的最大值或者最小值的计算。在这种场景下，我们可以通过最少处理一次这样的一致性来实现恰好处理一次这样的最高级别的一致性。
 
-# Flink运行架构
+# 第三章，Flink运行架构
 
 ## 系统架构
 
@@ -776,7 +776,7 @@ Flink中一个最有价值，也是最独特的功能是保存点（savepoints�
 
 如果我们要从保存点启动一个修改过的应用程序，那么保存点中的状态只能映射到符合标准的应用程序——它里面的算子必须具有相应的ID和状态名称。默认情况下，Flink会自动分配唯一的算子ID。然而，一个算子的ID，是基于它之前算子的ID确定性地生成的。因此，算子的ID会在其前序算子改变时改变，比如，当我们添加了新的或移除掉一个算子时，前序算子ID改变，当前算子ID就会变化。所以对于具有默认算子ID的应用程序而言，如果想在不丢失状态的前提下升级，就会受到极大的限制。因此，我们强烈建议在程序中为算子手动分配唯一ID，而不是依靠Flink的默认分配。我们将在“指定唯一的算子标识符”一节中详细说明如何分配算子标识符。
 
-# 编写第一个Flink程序
+# 第四章，编写第一个Flink程序
 
 ## 在IDEA中编写Flink程序
 
@@ -841,7 +841,7 @@ $ nc -lk 9999
 
 ## 下载Flink运行时环境，提交Jar包的运行方式
 
-下载链接：http://mirror.bit.edu.cn/apache/flink/flink-1.10.0/flink-1.10.0-bin-scala_2.11.tgz
+下载链接：http://mirror.bit.edu.cn/apache/flink/flink-1.10.1/flink-1.10.1-bin-scala_2.11.tgz
 
 然后解压
 
@@ -879,7 +879,7 @@ $ ./bin/stop-cluster.sh
 $ cd flink-1.10.0/log
 ```
 
-# Flink DataStream API
+# 第五章，Flink DataStream API
 
 本章介绍了Flink DataStream API的基本知识。我们展示了典型的Flink流处理程序的结构和组成部分，还讨论了Flink的类型系统以及支持的数据类型，还展示了数据和分区转换操作。窗口操作符，基于时间语义的转换操作，有状态的操作符，以及和外部系统的连接器将在接下来的章节进行介绍。阅读完这一章后，我们将会知道如何去实现一个具有基本功能的流处理程序。我们的示例程序采用Scala语言，因为Scala语言相对比较简洁。但Java API也是十分类似的（特殊情况，我们将会指出）。在我们的Github仓库里，我们所写的应用程序具有Scala和Java两种版本。
 
@@ -973,7 +973,8 @@ val remoteEnv = StreamExecutionEnvironment
 在我们的例子里面，我们这样写：
 
 ```{.scala}
-val sensorData: DataStream[SensorReading] = env.addSource(new SensorSource)
+val sensorData: DataStream[SensorReading] = env
+  .addSource(new SensorSource)
 ```
 
 这样就可以连接到传感器测量数据的数据源并创建一个类型为`SensorReading`的`DataStream`了。Flink支持很多数据类型，我们将在接下来的章节里面讲解。在我们的例子里面，我们的数据类型是一个定义好的Scala样例类。`SensorReading`样例类包含了传感器ID，数据的测量时间戳，以及测量温度值。`assignTimestampsAndWatermarks(new SensorTimeAssigner)`方法指定了如何设置事件时间语义的时间戳和水位线。有关`SensorTimeAssigner`我们后面再讲。
@@ -1061,7 +1062,13 @@ env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 env.setParallelism(1)
 val stream = env
   // source为来自Kafka的数据，这里我们实例化一个消费者，topic为hotitems
-  .addSource(new FlinkKafkaConsumer[String]("hotitems", new SimpleStringSchema(), properties))
+  .addSource(
+    new FlinkKafkaConsumer[String](
+      "hotitems",
+      new SimpleStringSchema(),
+      properties
+    )
+  )
 ```
 
 >注意，Kafka的版本为`2.2`。
@@ -1080,7 +1087,8 @@ import scala.util.Random
 case class SensorReading(id: String, timestamp: Long, temperature: Double)
 
 // 需要extends RichParallelSourceFunction, 泛型为SensorReading
-class SensorSource extends RichParallelSourceFunction[SensorReading] {
+class SensorSource
+  extends RichParallelSourceFunction[SensorReading] {
 
   // flag indicating whether source is still running.
   // flag: 表示数据源是否还在正常运行
@@ -1110,14 +1118,14 @@ class SensorSource extends RichParallelSourceFunction[SensorReading] {
 
       // update temperature
       // 更新温度
-      curFTemp = curFTemp.map( t => (t._1, t._2 + (rand.nextGaussian() * 0.5)) )
+      curFTemp = curFTemp.map(t => (t._1, t._2 + (rand.nextGaussian() * 0.5)) )
       // get current time
       // 获取当前时间戳
       val curTime = Calendar.getInstance.getTimeInMillis
 
       // emit new SensorReading
       // 发射新的传感器数据, 注意这里srcCtx.collect
-      curFTemp.foreach( t => srcCtx.collect(SensorReading(t._1, curTime, t._2)))
+      curFTemp.foreach(t => srcCtx.collect(SensorReading(t._1, curTime, t._2)))
 
       // wait for 100 ms
       Thread.sleep(100)
@@ -1350,7 +1358,7 @@ DataStream.union()方法将两条或者多条DataStream合并成一条具有与�
 val parisStream: DataStream[SensorReading] = ...
 val tokyoStream: DataStream[SensorReading] = ...
 val rioStream: DataStream[SensorReading] = ...
-val allCities: DataStream[SensorRreading] = parisStream
+val allCities: DataStream[SensorReading] = parisStream
   .union(tokyoStream, rioStream)
 ```
 
@@ -1440,8 +1448,7 @@ DataStream.split()方法返回`SplitStream`类型，此类型提供`select()`方
 
 例5-2将一条整数流分成了不同的流，大的整数一条流，小的整数一条流。
 
-
-```
+```{.scala .numberLines}
 val inputStream: DataStream[(Int, String)] = ...
 
 val splitted: SplitStream[(Int, String)] = inputStream
@@ -1522,6 +1529,8 @@ val result = env.addSource(new CustomSource)
 ```
 
 当我们通过客户端将应用程序的并行度设置为16并提交执行时，source操作符的并行度为16，mapper并行度为32，sink并行度为2。如果我们在本地环境运行应用程序的话，例如在IDE中运行，机器是8核，那么source任务将会并行执行在8个任务上面，mapper运行在16个任务上面，sink运行在2个任务上面。
+
+>并行度是动态概念，任务槽数量是静态概念。并行度<=任务槽数量。一个任务槽最多运行一个并行度。
 
 ## 类型
 
@@ -1656,7 +1665,13 @@ DataStream<Person> persons = env.fromElements(
 
 Flink类型系统的核心类是`TypeInformation`。它为系统在产生序列化器和比较操作符时，提供了必要的类型信息。例如，如果我们想使用某个key来做联结查询或者分组操作，`TypeInformation`可以让Flink做更严格的类型检查。
 
-Flink针对Java和Scala分别提供了类来产生类型信息。在Java中，类是 `org.apache.flink.api.common.typeinfo.Types` ，举个例子：
+Flink针对Java和Scala分别提供了类来产生类型信息。在Java中，类是
+
+```{.java}
+org.apache.flink.api.common.typeinfo.Types
+```
+
+举个例子：
 
 ```{.java}
 TypeInformation<Integer> intType = Types.INT;
@@ -1862,7 +1877,7 @@ class MyFlatMap extends RichFlatMapFunction[Int, (Int, Int)] {
 
 ## Sink
 
-Flink没有类似于spark中foreach方法，让用户进行迭代的操作。虽有对外的输出操作都要利用Sink完成。最后通过类似如下方式完成整个任务最终输出操作。
+Flink没有类似于spark中foreach方法，让用户进行迭代的操作。所有对外的输出操作都要利用Sink完成。最后通过类似如下方式完成整个任务最终输出操作。
 
 ```{.scala}
 stream.addSink(new MySink(xxxx))
@@ -1920,14 +1935,16 @@ union.addSink(
 
 定义一个redis的mapper类，用于定义保存到redis时调用的命令：
 
-```{.scala}
+```{.scala .numberLines}
 class MyRedisMapper extends RedisMapper[SensorReading] {
 
   override def getCommandDescription: RedisCommandDescription = {
     new RedisCommandDescription(RedisCommand.HSET, "sensor_temperature")
   }
 
-  override def getValueFromData(t: SensorReading): String = t.temperature.toString
+  override def getValueFromData(t: SensorReading): String = {
+    t.temperature.toString
+  }
 
   override def getKeyFromData(t: SensorReading): String = t.id
 
@@ -1948,7 +1965,7 @@ class MyRedisMapper extends RedisMapper[SensorReading] {
 
 在主函数中调用：
 
-```{.scala}
+```{.scala .numberLines}
 val httpHosts = new util.ArrayList[HttpHost]()
 httpHosts.add(new HttpHost("localhost", 9200))
 val esSinkBuilder = new ElasticsearchSink.Builder[SensorReading](
@@ -1984,7 +2001,7 @@ dataStream.addSink(esSinkBuilder.build())
 
 添加MyJdbcSink
 
-```{.scala}
+```{.scala .numberLines}
 class MyJdbcSink() extends RichSinkFunction[SensorReading]{
   var conn: Connection = _
   var insertStmt: PreparedStatement = _
@@ -2031,7 +2048,7 @@ class MyJdbcSink() extends RichSinkFunction[SensorReading]{
 dataStream.addSink(new MyJdbcSink())
 ```
 
-# 基于时间和窗口的操作符
+# 第六章，基于时间和窗口的操作符
 
 在本章，我们将要学习DataStream API中处理时间和基于时间的操作符，例如窗口操作符。
 
@@ -2188,22 +2205,26 @@ class SensorTimeAssigner
 
 ### 如何产生不规则的水位线
 
-直接上代码，只给sensor_1的传感器的数据流插入水位线
+有时候输入流中会包含一些用于指示系统进度的特殊元组或标记。Flink为此类情形以及可根据输入元素生成水位线的情形提供了`AssignerWithPunctuatedWatermarks`接口。该接口中的`checkAndGetNextWatermark()`方法会在针对每个事件的`extractTimestamp()`方法后立即调用。它可以决定是否生成一个新的水位线。如果该方法返回一个非空、且大于之前值的水位线，算子就会将这个新水位线发出。
 
-```{.scala}
+```{.scala .numberLines}
 class PunctuatedAssigner
   extends AssignerWithPunctuatedWatermarks[SensorReading] {
   val bound: Long = 60 * 1000
 
+  // 每来一条数据就调用一次
+  // 紧跟`extractTimestamp`函数调用
   override def checkAndGetNextWatermark(r: SensorReading,
                                         extractedTS: Long): Watermark = {
     if (r.id == "sensor_1") {
+      // 抽取的时间戳 - 最大延迟时间
       new Watermark(extractedTS - bound)
     } else {
       null
     }
   }
 
+  // 每来一条数据就调用一次
   override def extractTimestamp(r: SensorReading,
                                 previousTS: Long): Long = {
     r.timestamp
@@ -2220,6 +2241,11 @@ class PunctuatedAssigner
 设定水位线通常需要用到领域知识。举例来说，如果知道事件的迟到时间不会超过5秒，就可以将水位线标记时间设为收到的最大时间戳减去5秒。另一种做法是，采用一个Flink作业监控事件流，学习事件的迟到规律，并以此构建水位线生成模型。
 
 如果最大延迟时间设置的很大，计算出的结果会更精确，但收到计算结果的速度会很慢，同时系统会缓存大量的数据，并对系统造成比较大的压力。如果最大延迟时间设置的很小，那么收到计算结果的速度会很快，但可能收到错误的计算结果。不过Flink处理迟到数据的机制可以解决这个问题。上述问题看起来很复杂，但是恰恰符合现实世界的规律：大部分真实的事件流都是乱序的，并且通常无法了解它们的乱序程度(因为理论上不能预见未来)。水位线是唯一让我们直面乱序事件流并保证正确性的机制; 否则只能选择忽视事实，假装错误的结果是正确的。
+
+>思考题一：实时程序，要求实时性非常高，并且结果并不一定要求非常准确，那么应该怎么办？
+>直接使用处理时间。
+>思考题二：如果要进行时间旅行，也就是要还原以前的数据集当时的流的状态，应该怎么办？
+>使用事件时间。使用Hive将数据集先按照时间戳升序排列，再将最大延迟时间设置为0。
 
 ## Process Function(Low-Level API)
 
@@ -2276,7 +2302,7 @@ val warnings = readings
 
 看一下TempIncreaseAlertFunction如何实现, 程序中使用了ValueState这样一个状态变量, 后面会详细讲解。
 
-```{.scala}
+```{.scala .numberLines}
 class TempIncreaseAlertFunction
   extends KeyedProcessFunction[String, SensorReading, String] {
   // 保存上一个传感器温度值
@@ -2349,7 +2375,7 @@ readings.print()
 
 接下来我们实现FreezingMonitor函数，用来监控传感器温度值，将温度值低于32F的温度输出到side output。
 
-```{.scala}
+```{.scala .numberLines}
 class FreezingMonitor extends ProcessFunction[SensorReading, SensorReading] {
   // define a side output tag
   // 定义一个侧输出标签
@@ -2374,7 +2400,7 @@ class FreezingMonitor extends ProcessFunction[SensorReading, SensorReading] {
 
 对于两条输入流，DataStream API提供了CoProcessFunction这样的low-level操作。CoProcessFunction提供了操作每一个输入流的方法: processElement1()和processElement2()。类似于ProcessFunction，这两种方法都通过Context对象来调用。这个Context对象可以访问事件数据，定时器时间戳，TimerService，以及side outputs。CoProcessFunction也提供了onTimer()回调函数。下面的例子展示了如何使用CoProcessFunction来合并两条流。
 
-```{.scala}
+```{.scala .numberLines}
 // ingest sensor stream
 val readings: DataStream[SensorReading] = ...
 
@@ -2394,7 +2420,7 @@ val forwardedReadings = readings
   .process(new ReadingFilter)
 ```
 
-```{.scala}
+```{.scala .numberLines}
 class ReadingFilter
   extends CoProcessFunction[SensorReading,
     (String, Long), SensorReading] {
@@ -2525,7 +2551,7 @@ val avgTemp = sensorData
   .process(new TemperatureAverager)
 ```
 
-默认情况下，滚动窗口会和`1970- 01-01-00:00:00.000`对齐，例如一个1小时的滚动窗口将会定义以下开始时间的窗口：00:00:00，01:00:00，02:00:00，等等。
+默认情况下，滚动窗口会和`1970-01-01-00:00:00.000`对齐，例如一个1小时的滚动窗口将会定义以下开始时间的窗口：00:00:00，01:00:00，02:00:00，等等。
 
 *滑动窗口(sliding window)*
 
@@ -2622,7 +2648,7 @@ IN是输入元素的类型，ACC是累加器的类型，OUT是输出元素的类
 
 例子
 
-```{.scala}
+```{.scala .numberLines}
 val avgTempPerWindow: DataStream[(String, Double)] = sensorData
   .map(r => (r.id, r.temperature))
   .keyBy(_._1)
@@ -2701,7 +2727,7 @@ process()方法接受的参数为：window的key，Iterable迭代器包含窗口
 
 例子：计算5s滚动窗口中的最低和最高的温度。输出的元素包含了(流的Key, 最低温度, 最高温度, 窗口结束时间)。
 
-```{.scala}
+```{.scala .numberLines}
 val minMaxTempPerWindow: DataStream[MinMaxTemp] = sensorData
   .keyBy(_.id)
   .timeWindow(Time.seconds(5))
@@ -2746,7 +2772,7 @@ input
 
 我们把之前的需求重新使用以上两种方法实现一下。
 
-```{.scala}
+```{.scala .numberLines}
 case class MinMaxTemp(id: String, min: Double, max: Double, endTs: Long)
 
 val minMaxTempPerWindow2: DataStream[MinMaxTemp] = sensorData
@@ -2833,7 +2859,7 @@ stream
 
 WindowAssigner将会把元素分配到0个，1个或者多个窗口中去。我们看一下WindowAssigner接口：
 
-```
+```{.java}
 public abstract class WindowAssigner<T, W extends Window>
     implements Serializable {
 
@@ -2863,7 +2889,7 @@ WindowAssigner有两个泛型参数：
 
 下面的代码创建了一个自定义窗口分配器，是一个30秒的滚动事件时间窗口。
 
-```{.scala}
+```{.scala .numberLines}
 class ThirtySecondsWindows
     extends WindowAssigner[Object, TimeWindow] {
 
@@ -2966,8 +2992,6 @@ public interface TriggerContext {
 
   void registerEventTimeTimer(long time);
 
-  void registerEventTimeTimer(long time);
-
   void deleteProcessingTimeTimer(long time);
 
   void deleteEventTimeTimer(long time);
@@ -2992,7 +3016,7 @@ public interface OnMergeContext extends TriggerContext {
 
 下面的例子展示了一个触发器在窗口结束时间之前触发。当第一个事件被分配到窗口时，这个触发器注册了一个定时器，定时时间为水位线之前一秒钟。当定时事件执行，将会注册一个新的定时事件，这样，这个触发器每秒钟最多触发一次。
 
-```{.scala}
+```{.scala .numberLines}
 class OneSecondIntervalTrigger
     extends Trigger[SensorReading, TimeWindow] {
 
@@ -3130,7 +3154,10 @@ package com.atguigu.course
 
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.functions.co.ProcessJoinFunction
-import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor
+
+import org.apache.flink.streaming.api.functions
+.timestamps.BoundedOutOfOrdernessTimestampExtractor
+
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
 import org.apache.flink.util.Collector
@@ -3207,11 +3234,14 @@ object IntervalJoinExample {
     env.execute()
   }
 
-  class MyIntervalJoin extends ProcessJoinFunction[UserClickLog, UserBrowseLog, String] {
-    override def processElement(left: UserClickLog,
-                                right: UserBrowseLog,
-                                context: ProcessJoinFunction[UserClickLog, UserBrowseLog, String]#Context,
-                                out: Collector[String]): Unit = {
+  class MyIntervalJoin
+    extends ProcessJoinFunction[UserClickLog, UserBrowseLog, String] {
+    override def processElement(
+      left: UserClickLog,
+      right: UserBrowseLog,
+      context: ProcessJoinFunction[UserClickLog, UserBrowseLog, String]#Context,
+      out: Collector[String]
+    ): Unit = {
       out.collect(left +" =Interval Join=> "+right)
     }
   }
@@ -3268,17 +3298,43 @@ process function可以通过比较迟到元素的时间戳和当前水位线的�
 
 例子
 
-```{.scala}
-val readings: DataStream[SensorReading] = ???
+```{.scala .numberLines}
+val readings = env
+  .socketTextStream("localhost", 9999, '\n')
+  .map(line => {
+    val arr = line.split(" ")
+    (arr(0), arr(1).toLong * 1000)
+  })
+  .assignAscendingTimestamps(_._2)
 
-val countPer10Secs: DataStream[(String, Long, Int)] = readings
-  .keyBy(_.id)
+val countPer10Secs = readings
+  .keyBy(_._1)
   .timeWindow(Time.seconds(10))
-  .sideOutputLateData(new OutputTag[SensorReading]("late-readings"))
+  .sideOutputLateData(
+    new OutputTag[(String, Long)]("late-readings")
+  )
   .process(new CountFunction())
 
-val lateStream: DataStream[SensorReading] = countPer10Secs
-  .getSideOutput(new OutputTag[SensorReading]("late-readings"))
+val lateStream = countPer10Secs
+  .getSideOutput(
+    new OutputTag[(String, Long)]("late-readings")
+  )
+
+lateStream.print()
+```
+
+实现`CountFunction`:
+
+```{.scala .numberLines}
+class CountFunction extends ProcessWindowFunction[(String, Long),
+  String, String, TimeWindow] {
+  override def process(key: String,
+                       context: Context,
+                       elements: Iterable[(String, Long)],
+                       out: Collector[String]): Unit = {
+    out.collect("窗口共有" + elements.size + "条数据")
+  }
+}
 ```
 
 下面这个例子展示了ProcessFunction如何过滤掉迟到的元素然后将迟到的元素发送到侧输出流中去。
@@ -3373,7 +3429,7 @@ class UpdatingWindowCountFunction
 }
 ```
 
-# 有状态的计算
+# 第七章，有状态算子和应用
 
 状态操作符和用户自定义函数都是我们在写流处理程序时，常用的工具。事实上，大部分稍微复杂一点的逻辑都需要保存数据或者保存计算结果。很多Flink内置的操作符例如：source操作符，sink操作符等等都是有状态的，也就是说会缓存流数据或者计算结果。例如，窗口操作符将会为ProcessWindowFunction收集输入的数据，或者收集ReduceFunction计算的结果。而ProcessFunction也会保存定时器事件，一些sink方法为了做到exactly-once，会将事务保存下来。除了内置的操作符以及提供的source和sink操作符，Flink的DataStream API还在UDF函数中暴露了可以注册、保存和访问状态的接口。
 
@@ -3425,8 +3481,10 @@ class TemperatureAlertFunction(val threshold: Double)
     lastTempState = getRuntimeContext.getState[Double](lastTempDescriptor)
   }
 
-  override def flatMap(reading: SensorReading,
-                       out: Collector[(String, Double, Double)]): Unit = {
+  override def flatMap(
+    reading: SensorReading,
+    out: Collector[(String, Double, Double)]
+  ): Unit = {
     val lastTemp = lastTempState.value()
     val tempDiff = (reading.temperature - lastTemp).abs
     if (tempDiff > threshold) {
@@ -3840,7 +3898,7 @@ class SelfCleaningTemperatureAlertFunction(val threshold: Double)
 }
 ```
 
-# 从外部系统读取以及写入外部系统
+# 第八章，读写外部系统
 
 数据可以存储在不同的系统中，例如：文件系统，对象存储系统（OSS），关系型数据库，Key-Value存储，搜索引擎索引，日志系统，消息队列，等等。每一种系统都是给特定的应用场景设计的，在某一个特定的目标上超越了其他系统。今天的数据架构，往往包含着很多不同的存储系统。在将一个组件加入到我们的系统中时，我们需要问一个问题：“这个组件和架构中的其他组件能多好的一起工作？”
 
@@ -3874,12 +3932,12 @@ Flink提供了两种构建模块来实现事务性sink连接器：write-ahead-lo
 
 2PC协议依赖于Flink的检查点机制。检查点屏障是开始一个新的事务的通知，所有操作符自己的检查点成功的通知是它们可以commit的投票，而JobManager通知一个检查点成功的消息是commit事务的指令。于WAL sink形成对比的是，2PC sinks依赖于sink系统和sink本身的实现可以实现恰好处理一次语义。更多的，2PC sink不断的将数据写入到sink系统中，而WAL写模型就会有之前所述的问题。
 
-|             | 不可重置的源     |    可重置的源   |
-|-------------| ------------------| --------------------|
-| any sink    |  at-most-once     |  at-least-once |
-| 幂等性sink   |  at-most-once     |  exactly-once（当从任务失败中恢复时，存在暂时的不一致性）|
-|预写式日志sink | at-most-once      | at-least-once |
-| 2PC sink    |  at-most-once     |  exactly-once |
+|                | 不可重置的源 | 可重置的源                                               |
+|----------------|--------------|----------------------------------------------------------|
+| any sink       | at-most-once | at-least-once                                            |
+| 幂等性sink     | at-most-once | exactly-once（当从任务失败中恢复时，存在暂时的不一致性） |
+| 预写式日志sink | at-most-once | at-least-once                                            |
+| 2PC sink       | at-most-once | exactly-once                                             |
 
 ## Flink提供的连接器
 
@@ -4183,8 +4241,8 @@ class SimpleSocketSink(val host: String, val port: Int)
 
 下面的例子展示了如何实现一个针对JDBC数据库的幂等写入sink连接器，这里使用的是Apache Derby数据库。
 
-```{.scala}
-val readings: DataStream[SensorReading] = ???
+```{.scala .numberLines}
+val readings: DataStream[SensorReading] = ...
 
 // write the sensor readings to a Derby table
 readings.addSink(new DerbyUpsertSink)
@@ -4409,7 +4467,7 @@ TwoPhaseCommitSinkFunction的构造器需要两个TypeSerializer。一个是TXN�
 * commit(txn: TXN): Unit提交一个事务。这个操作必须是幂等的。
 * abort(txn: TXN): Unit终止一个事务。
 
-# Flink部署与运维
+# 第九章，搭建Flink运行流式应用
 
 ## 部署方式
 
@@ -4431,12 +4489,12 @@ master进程在不同的线程中运行了一个Dispatcher和一个ResourceManag
 
 下载压缩包
 
-链接：http://mirror.bit.edu.cn/apache/flink/flink-1.10.0/flink-1.10.0-bin-scala_2.11.tgz
+链接：http://mirror.bit.edu.cn/apache/flink/flink-1.10.1/flink-1.10.1-bin-scala_2.11.tgz
 
 解压缩
 
 ```{.sh}
-$ tar xvfz flink-1.10.0-bin-scala_2.11.tgz
+$ tar xvfz flink-1.10.1-bin-scala_2.11.tgz
 ```
 
 启动集群
@@ -4475,6 +4533,8 @@ sesison模式将启动一个长期运行的Flink集群，这个集群可以运�
 
 ![](images/spaf_0905.png){ width=100% }
 
+无论是作业模式还是会话模式，Flink的ResourceManager都会自动对故障的TaskManager进行重启。你可以通过`./conf/flink-conf.yaml`配置文件来控制Flink在YARN上的故障恢复行为。例如，可以配置有多少容器发生故障后终止应用。
+
 无论使用job模式还是sesison模式，都需要能够访问Hadoop。
 
 job模式可以用以下命令来提交任务：
@@ -4483,12 +4543,16 @@ job模式可以用以下命令来提交任务：
 $ ./bin/flink run -m yarn-cluster ./path/to/job.jar
 ```
 
+参数`-m`用来定义提交作业的目标主机。如果加上关键字`"yarn-cluster"`，客户端会将作业提交到由Hadoop配置所指定的YARN集群上。Flink的CLI客户端还支持很多参数，例如用于控制TaskManager容器内存大小的参数等。有关它们的详细信息，请参阅文档。Flink集群的Web UI由YARN集群某个节点上的主进程负责提供。你可以通过YARN的Web UI对其进行访问，具体链接位置在"Tracking URL: ApplicationMaster"下的Application Overview页面上。
+
 session模式则是
 
 ```{.sh}
-$ ./bin/yarn-session.sh
-$ ./bin/flink run ./path/to/job.jar
+$ ./bin/yarn-session.sh # 启动一个yarn会话
+$ ./bin/flink run ./path/to/job.jar # 向会话提交作业
 ```
+
+>Flink的Web UI链接可以从YARN Web UI的Application Overview页面上找到。
 
 ## 高可用配置(HA)
 
@@ -4627,7 +4691,9 @@ Modify job bc0b2ad61ecd4a615d92ce25390f61ad.
 ​Rescaled job bc0b2ad61ecd4a615d92ce25390f61ad. Its new parallelism is 16.
 ```
 
-# Flink CEP简介
+# 第十章，Flink和流式应用运维
+
+# 第十一章，Flink CEP简介
 
 *什么是复杂事件CEP？*
 
@@ -4870,7 +4936,7 @@ case class LoginEvent(userId: String,
                       eventTime: String)
 ```
 
-# Table API 和 Flink SQL
+# 第十二章，Table API 和 Flink SQL
 
 ## 整体介绍
 
@@ -5483,7 +5549,7 @@ Table API和SQL，本质上还是基于关系型表的操作方式；而关系�
 
 下图显示了流、动态表和连续查询的关系：
 
-![](images/streamtable.png){ width=100% }
+![](images/stream-query-stream.png){ width=100% }
 
 流式持续查询的过程为：
 
@@ -5511,7 +5577,7 @@ Table API和SQL，本质上还是基于关系型表的操作方式；而关系�
 
 下图显示了如何将访问URL事件流，或者叫点击事件流（左侧）转换为表（右侧）。
 
-![](images/streamtable1.png){ width=100% }
+![](images/append-mode.png){ width=100% }
 
 随着插入更多的访问事件流记录，生成的表将不断增长。
 
@@ -5525,7 +5591,7 @@ Table API和SQL，本质上还是基于关系型表的操作方式；而关系�
 
 这个Query很简单，是一个分组聚合做count统计的查询。它将用户字段上的clicks表分组，并统计访问的url数。图中显示了随着时间的推移，当clicks表被其他行更新时如何计算查询。
 
-![](images/streamtable2.png){ width=100% }
+![](images/query-groupBy-cnt.png){ width=100% }
 
 #### 将动态表转换成流
 
@@ -5543,7 +5609,7 @@ Retract流是包含两类消息的流，添加（Add）消息和撤回（Retract
 
 下图显示了将动态表转换为Retract流的过程。
 
-![](images/streamtable3.png){ width=100% }
+![](images/undo-redo-mode.png){ width=100% }
 
 3. Upsert（更新插入）流
 
@@ -5553,7 +5619,7 @@ Upsert流包含两种类型的消息：Upsert消息和delete消息。转换为up
 
 下图显示了将动态表转换为upsert流的过程。
 
-![](images/streamtable4.png){ width=100% }
+![](images/redo-mode.png){ width=100% }
 
 这些概念我们之前都已提到过。需要注意的是，在代码里将动态表转换为DataStream时，仅支持Append和Retract流。而向外部系统输出动态表的TableSink接口，则可以有不同的实现，比如之前我们讲到的ES，就可以有Upsert模式。
 
@@ -6249,6 +6315,8 @@ resultSqlTable2.toAppendStream[Row].print("2")
 
 用户自定义聚合函数（User-Defined Aggregate Functions，UDAGGs）可以把一个表中的数据，聚合成一个标量值。用户定义的聚合函数，是通过继承AggregateFunction抽象类实现的。
 
+![](images/udagg-mechanism.png){ width=100% }
+
 上图中显示了一个聚合的例子。
 
 假设现在有一张表，包含了各种饮料的数据。该表由三列（id、name和price）、五行组成数据。现在我们需要找到表中所有饮料的最高价格，即执行max（）聚合，结果将是一个数值。
@@ -6324,7 +6392,7 @@ resultSqlTable.toRetractStream[Row].print("agg temp sql")
 
 用户定义的表聚合函数（User-Defined Table Aggregate Functions，UDTAGGs），可以把一个表中数据，聚合为具有多行和多列的结果表。这跟AggregateFunction非常类似，只是之前聚合结果是一个标量值，现在变成了一张表。
 
-![](images/streamtable6.png){ width=100% }
+![](images/udtagg-mechanism.png){ width=100% }
 
 比如现在我们需要找到表中所有饮料的前2个最高价格，即执行top2()表聚合。我们需要检查5行中的每一行，得到的结果将是一个具有排序后前2个值的表。
 
@@ -6529,7 +6597,7 @@ object HotItemsSQL {
 }
 ```
 
-# 尚硅谷大数据技术之电商用户行为分析
+# 第十三章，尚硅谷大数据技术之电商用户行为分析
 
 ## 数据集解析
 
@@ -6537,25 +6605,25 @@ object HotItemsSQL {
 
 我们准备了一份淘宝用户行为数据集，保存为csv文件。本数据集包含了淘宝上某一天随机一百万用户的所有行为（包括点击、购买、收藏、喜欢）。数据集的每一行表示一条用户行为，由用户ID、商品ID、商品类目ID、行为类型和时间戳组成，并以逗号分隔。关于数据集中每一列的详细描述如下：
 
-| 字段名 | 数据类型 | 说明 |
-|-------|---------|-----|
-|userId | Long | 脱敏后的用户ID |
-| itemId | Long | 脱敏后的商品ID |
-| categoryId | Int | 脱敏后的商品所属类别ID |
-| behavior | String | 用户行为类型，包括：('pv', 'buy', 'cart', 'fav') |
-| timestamp | Long | 行为发生的时间戳，单位秒 |
+| 字段名     | 数据类型 | 说明                                             |
+|------------|----------|--------------------------------------------------|
+| userId     | Long     | 脱敏后的用户ID                                   |
+| itemId     | Long     | 脱敏后的商品ID                                   |
+| categoryId | Int      | 脱敏后的商品所属类别ID                           |
+| behavior   | String   | 用户行为类型，包括：('pv', 'buy', 'cart', 'fav') |
+| timestamp  | Long     | 行为发生的时间戳，单位秒                         |
 
 ### Apache服务器日志数据集解析
 
 这里以apache服务器的一份log为例，每一行日志记录了访问者的IP、userId、访问时间、访问方法以及访问的url，具体描述如下：
 
-| 字段名 | 数据类型 | 说明 |
-|-------|---------|-----|
-| ip      |    String    |             访问的IP |
-| userId   |   Long       |            访问的userId |
-| eventTime |  Long      |             访问时间                     |
-| method    |  String    |             访问方法 GET/POST/PUT/DELETE |
-| url       |  String    |             访问的url                    |
+| 字段名    | 数据类型 | 说明                         |
+|-----------|----------|------------------------------|
+| ip        | String   | 访问的IP                     |
+| userId    | Long     | 访问的userId                 |
+| eventTime | Long     | 访问时间                     |
+| method    | String   | 访问方法 GET/POST/PUT/DELETE |
+| url       | String   | 访问的url                    |
 
 ## 实时热门商品统计
 
@@ -6580,12 +6648,18 @@ object HotItemsSQL {
 
 *程序主体*
 
-```{.scala}
+```{.scala .numberLines}
 // 把数据需要ETL成UserBehavior类型
-case class UserBehavior(userId: Long, itemId: Long, categoryId: Int, behavior: String, timestamp: Long)
+case class UserBehavior(userId: Long,
+                        itemId: Long,
+                        categoryId: Int,
+                        behavior: String,
+                        timestamp: Long)
 
 // 全窗口聚合函数输出的数据类型
-case class ItemViewCount(itemId: Long, windowEnd: Long, count: Long)
+case class ItemViewCount(itemId: Long,
+                         windowEnd: Long,
+                         count: Long)
  
 object HotItems {
   def main(args: Array[String]): Unit = {
@@ -6593,7 +6667,8 @@ object HotItems {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     // 设定Time类型为EventTime
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-    // 为了打印到控制台的结果不乱序，我们配置全局的并发为1，这里改变并发对结果正确性没有影响
+    // 为了打印到控制台的结果不乱序，
+    // 我们配置全局的并发为1，这里改变并发对结果正确性没有影响
     env.setParallelism(1)
     val stream = env
       // 以window下为例，需替换成数据集的绝对路径
@@ -6601,7 +6676,10 @@ object HotItems {
       .map(line => {
         val linearray = line.split(",")
         UserBehavior(linearray(0).toLong,
-          linearray(1).toLong, linearray(2).toInt, linearray(3), linearray(4).toLong)
+                     linearray(1).toLong,
+                     linearray(2).toInt,
+                     linearray(3),
+                     linearray(4).toLong)
       })
       // 过滤出点击事件
       .filter(_.behavior == "pv")
@@ -6633,7 +6711,8 @@ object HotItems {
 
 ```{.scala}
 // COUNT统计的聚合函数实现，每出现一条记录就加一
-class CountAgg extends AggregateFunction[UserBehavior, Long, Long] {
+class CountAgg
+  extends AggregateFunction[UserBehavior, Long, Long] {
   override def createAccumulator(): Long = 0L
   override def add(userBehavior: UserBehavior, acc: Long): Long = acc + 1
   override def getResult(acc: Long): Long = acc
@@ -6649,7 +6728,8 @@ class CountAgg extends AggregateFunction[UserBehavior, Long, Long] {
 
 ```{.scala}
 // 用于输出窗口的结果
-class WindowResultFunction extends ProcessWindowFunction[Long, ItemViewCount, String, TimeWindow] {
+class WindowResultFunction
+  extends ProcessWindowFunction[Long, ItemViewCount, String, TimeWindow] {
   override def process(key: String,
                         context: Context,
                         elements: Iterable[Long],
@@ -6681,9 +6761,11 @@ class WindowResultFunction extends ProcessWindowFunction[Long, ItemViewCount, St
     }
 
     // 定时器事件
-    override def onTimer(ts: Long,
-                         ctx: KeyedProcessFunction[Long, ItemViewCount, String]#OnTimerContext,
-                         out: Collector[String]): Unit = {
+    override def onTimer(
+      ts: Long,
+      ctx: KeyedProcessFunction[Long, ItemViewCount, String]#OnTimerContext,
+      out: Collector[String]
+    ): Unit = {
       val allItems: ListBuffer[ItemViewCount] = ListBuffer()
       // 导入一些隐式类型转换
       import scala.collection.JavaConversions._
@@ -6830,7 +6912,7 @@ object KafkaProducerUtil {
 
 完整代码如下：
 
-```{.scala}
+```{.scala .numberLines}
 package com.atguigu.project
 
 import java.sql.Timestamp
@@ -6841,7 +6923,10 @@ import org.apache.flink.api.common.state.ListStateDescriptor
 import org.apache.flink.api.scala.typeutils.Types
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction
-import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor
+
+import org.apache.flink.streaming.api.functions
+.timestamps.BoundedOutOfOrdernessTimestampExtractor
+
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.scala.function.ProcessWindowFunction
 import org.apache.flink.streaming.api.windowing.time.Time
@@ -6874,7 +6959,11 @@ object ApacheLogAnalysis {
         // 把时间戳ETL成毫秒
         val simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy:HH:mm:ss")
         val timestamp = simpleDateFormat.parse(linearray(3)).getTime
-        ApacheLogEvent(linearray(0), linearray(2), timestamp, linearray(5), linearray(6))
+        ApacheLogEvent(linearray(0),
+                       linearray(2),
+                       timestamp,
+                       linearray(5),
+                       linearray(6))
       })
       .assignTimestampsAndWatermarks(
         new BoundedOutOfOrdernessTimestampExtractor[ApacheLogEvent](
@@ -6919,7 +7008,11 @@ object ApacheLogAnalysis {
       )
     )
 
-    override def processElement(input: UrlViewCount, context: KeyedProcessFunction[Long, UrlViewCount, String]#Context, collector: Collector[String]): Unit = {
+    override def processElement(
+      input: UrlViewCount,
+      context: KeyedProcessFunction[Long, UrlViewCount, String]#Context,
+      collector: Collector[String]
+    ): Unit = {
       // 每条数据都保存到状态中
       urlState.add(input)
       context
@@ -6976,6 +7069,16 @@ object ApacheLogAnalysis {
 
 ## Uv统计的布隆过滤器实现
 
+依赖：
+
+```{.xml}
+<dependency>
+	<groupId>redis.clients</groupId>
+	<artifactId>jedis</artifactId>
+	<version>2.8.1</version>
+</dependency>
+```
+
 完整代码如下：
 
 ```{.scala .numberLines}
@@ -7016,7 +7119,8 @@ object UvWithBloomFilter {
   }
 
   class MyProcess
-    extends ProcessWindowFunction[(String, String), (Long, Long), String, TimeWindow] {
+    extends ProcessWindowFunction[(String, String),
+      (Long, Long), String, TimeWindow] {
     lazy val jedis = new Jedis("localhost", 6379)
     lazy val bloom = new Bloom(1 << 29)
 
@@ -7039,8 +7143,6 @@ object UvWithBloomFilter {
         jedis.setbit(storeKey, offset, true)
         jedis.hset("UvCountHashTable", storeKey, (count + 1).toString)
       }
-
-
 
 //      out.collect((count, storeKey.toLong))
 
@@ -7419,74 +7521,68 @@ object OrderTimeout {
 ### 使用Process Function实现订单超时需求
 
 ```{.scala .numberLines}
-import org.apache.flink.api.common.state.{ValueState, ValueStateDescriptor}
+package com.atguigu.project
+
+import org.apache.flink.api.common.state.ValueStateDescriptor
+import org.apache.flink.api.scala.typeutils.Types
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction
-import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.util.Collector
 
-case class OrderEvent1(orderId: String,
-                      eventType: String,
-                      eventTime: String)
+object OrderTimeoutWIthoutCep {
 
-object OrderTimeoutWithoutCep {
+  case class OrderEvent(orderId: String,
+                        eventType: String,
+                        eventTime: String)
+
   def main(args: Array[String]): Unit = {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setParallelism(1)
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+    env.setParallelism(1)
 
-    val orderEventsStream = env.fromCollection(List(
-      OrderEvent1("1", "create", "1558430842"),
-      OrderEvent1("2", "create", "1558430843"),
-      OrderEvent1("2", "pay", "1558430844"),
-      OrderEvent1("3", "pay", "1558430942"),
-      OrderEvent1("4", "pay", "1558430943")
-    )).assignAscendingTimestamps(_.eventTime.toLong * 1000)
-
-    val orders = orderEventsStream
+    val stream = env
+      .fromElements(
+        OrderEvent("1", "create", "2"),
+        OrderEvent("2", "create", "3"),
+        OrderEvent("2", "pay", "4")
+      )
+      .assignAscendingTimestamps(_.eventTime.toLong * 1000L)
       .keyBy(_.orderId)
-      .process(new OrderMatchFunction)
-      .print()
+      .process(new OrderMatchFunc)
 
-    env.execute
+    stream.print()
+    env.execute()
   }
 
-  class OrderMatchFunction extends KeyedProcessFunction[String,
-    OrderEvent1, OrderEvent1] {
-    lazy val orderState: ValueState[OrderEvent1] = getRuntimeContext
-      .getState(new ValueStateDescriptor[OrderEvent1]("saved order",
-        classOf[OrderEvent1]))
+  class OrderMatchFunc extends KeyedProcessFunction[String, OrderEvent, String] {
+    lazy val orderState = getRuntimeContext.getState(
+      new ValueStateDescriptor[OrderEvent]("saved order", Types.of[OrderEvent])
+    )
 
-    override def processElement(
-      order: OrderEvent1,
-      context: KeyedProcessFunction[String, OrderEvent1, OrderEvent1]#Context,
-      out: Collector[OrderEvent1]
-    ): Unit = {
-      val timerService = context.timerService
-
-      if (order.eventType == "create") {
-        if (orderState.value() == null) {
-          orderState.update(order)
+    override def processElement(value: OrderEvent,
+                                ctx: KeyedProcessFunction[String, OrderEvent, String]#Context,
+                                out: Collector[String]): Unit = {
+      if (value.eventType.equals("create")) {
+        if (orderState.value() == null) { // 为什么要判空？因为可能出现`pay`先到的情况
+          // 如果orderState为空，保存`create`事件
+          orderState.update(value)
         }
       } else {
-        orderState.update(order)
+        // 保存`pay`事件
+        orderState.update(value)
       }
 
-      timerService.registerEventTimeTimer(
-        order.eventTime.toLong * 1000 + 5 * 1000
-      )
+      ctx.timerService().registerEventTimeTimer(value.eventTime.toLong * 1000 + 5000L)
     }
 
     override def onTimer(timestamp: Long,
-                         ctx: KeyedProcessFunction[
-                           String, OrderEvent1, OrderEvent1]#OnTimerContext,
-                         out: Collector[OrderEvent1]): Unit = {
+                         ctx: KeyedProcessFunction[String, OrderEvent, String]#OnTimerContext,
+                         out: Collector[String]): Unit = {
       val savedOrder = orderState.value()
 
-      if (savedOrder != null &&
-        (savedOrder.eventType == "create")) {
-        out.collect(savedOrder)
+      if (savedOrder != null && savedOrder.eventType.equals("create")) {
+        out.collect("超时订单的ID为：" + savedOrder.orderId)
       }
 
       orderState.clear()
@@ -7621,7 +7717,7 @@ object TwoStreamsJoin {
 }
 ```
 
-# 常见面试题解答
+# 第十四章，常见面试题解答
 
 ## 面试题一
 
@@ -7640,6 +7736,8 @@ $ bin/yarn-session.sh -n 7 -s 8 -jm 3072 -tm 32768 -qu root.*.*-nm *-* -d
 其中申请7个taskManager，每个8核，每个taskmanager有32768M内存。
 
 * 集群默认只有一个Job Manager。但为了防止单点故障，我们配置了高可用。我们公司一般配置一个主Job Manager，两个备用Job Manager，然后结合ZooKeeper的使用，来达到高可用。
+
+>作为参考，快手的Flink集群的机器数量是1500台。
 
 ## 面试题二
 
@@ -7808,3 +7906,27 @@ https://cloud.tencent.com/developer/article/1189624
 * 机器数量及其可用 CPU 和内存
 
 最后但并非最不重要的，在开始应用部署前，你需要考虑集群中可用机器的数量及其可用的 CPU 和内存。这最终确保了在将应用程序投入生产之后，集群有充足的处理能力。
+
+## 面试题十八
+
+* Flink上有多少个指标，一个指标一个jar包吗？Flink亲自负责的有几个jar包产出？
+* flink的开发中用了哪些算子？
+* flink的异步join有了解吗？就是例如kafka和MySQL的流进行join
+* flink的broadcast join的原理是什么？
+* flink的双流join你们用的时候是类似数据中的left join还是inner join，双流join中怎么确定左表还是右表【没太懂，好像应该是full join，全外连接】
+* flink集群有多大，怎么部署的？
+* hadoop集群有多大，分给flink有多少资源，多少cpu，多少内存，多少slot？
+* 你自己写的哪些jar包，用了多少cpu，用了内存，多少个slot？
+* 有没有关注你的jar包的处理性能，就是处理kafka的qps和tps？
+* 你们有用过flink的背压吗，怎么做优化还是调整？
+* flink的知识点还有啥想介绍的？
+
+## 面试题十九
+
+* flink如何实现精准一次性？flink怎么保证容错性，说些checkPoint的内部原理，要很细节的。
+* flink的双流join有什么问题？写代码实现interval join的功能，怎么实现？
+* 通过双流join进行对账，有没有没join上的情况，interval join的时间是多少，你设置这个时间不会有数据丢失？
+
+## 面试题二十
+
+你们flink输出的目标数据库是什么，答看需求到es或者mysql需要自定义mysqlsink，他问自定义mysql sink里面实际上是jdbc做的？你们有没有发现用jdbc并发的写mysql他的性能很差，怎么处理的？答：一般不直接写入mysql，一般先写入消息队列（redis，kafka，rabbitmq，。。。），用消息队列来保护mysql。
