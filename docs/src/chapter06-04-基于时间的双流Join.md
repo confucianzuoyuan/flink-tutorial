@@ -1,0 +1,8 @@
+## 基于时间的双流Join
+
+数据流操作的另一个常见需求是对两条数据流中的事件进行联结（connect）或Join。Flink DataStream API中内置有两个可以根据时间条件对数据流进行Join的算子：基于间隔的Join和基于窗口的Join。本节我们会对它们进行介绍。
+
+如果Flink内置的Join算子无法表达所需的Join语义，那么你可以通过CoProcessFunction、BroadcastProcessFunction或KeyedBroadcastProcessFunction实现自定义的Join逻辑。
+
+>注意，你要设计的Join算子需要具备高效的状态访问模式及有效的状态清理策略。
+

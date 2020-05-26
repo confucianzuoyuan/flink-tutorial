@@ -1,0 +1,14 @@
+### 应用部署
+
+Flink应用程序可以用以下两种不同的方式部署：
+
+*框架（Framework）方式*
+
+在这个模式下，Flink应用被打包成一个Jar文件，并由客户端提交给一个运行服务（running service）。这个服务可以是一个Flink的Dispatcher，也可以是一个Flink的作业管理器，或是Yarn的ResourceManager。如果application被提交给一个作业管理器，则它会立即开始执行这个application。如果application被提交给了一个Dispatcher，或是Yarn ResourceManager，则它会启动一个作业管理器，然后将application交给它，再由作业管理器开始执行此应用。
+
+*库（Library）方式*
+
+在这个模式下，Flink Application 会被打包在一个容器（container） 镜像里，例如一个Docker 镜像。此镜像包含了运行作业管理器和ResourceManager的代码。当一个容器从镜像启动后，它会自动启动ResourceManager和作业管理器，并提交打包好的应用。另一种方法是：将应用打包到镜像后，只用于部署TaskManager容器。从镜像启动的容器会自动启动一个TaskManager，然后连接ResourceManager并注册它的slots。这些镜像的启动以及失败重启，通常都会由一个外部的资源管理器管理（比如Kubernetes）。
+
+框架模式遵循了传统的任务提交方式，从客户端提交到Flink运行服务。而在库模式下，没有运行的Flink服务。它是将Flink作为一个库，与应用程序一同打包到了一个容器镜像。这种部署方式在微服务架构中较为常见。我们会在“运行管理流式应用程序”一节对这个话题做详细讨论。
+

@@ -1,9 +1,0 @@
-% Create the index
-\usepackage{makeidx}
-\makeindex
-\usepackage{framed}
-\usepackage{xcolor}
-\let\oldquote=\quote
-\let\endoldquote=\endquote
-\colorlet{shadecolor}{orange!15}
-\renewenvironment{quote}{\begin{tabular}{|p{\textwidth}}\begin{oldquote}}{\end{oldquote}\end{tabular}}
