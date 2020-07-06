@@ -34,6 +34,7 @@ PDF_OPTS= \
 	-H latex/header_index.latex \
 	-A latex/after_index.latex \
 	--pdf-engine=xelatex \
+	--columns=10 \
 	--variable mainfont=$(PDF_MAINFONT) \
 	--variable sansfont=$(PDF_SANSFONT) \
 	--variable monofont=$(PDF_MONOFONT) \

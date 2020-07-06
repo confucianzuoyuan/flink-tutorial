@@ -1927,22 +1927,23 @@
 <span id="cb82-3"><a href="#cb82-3"></a>  <span class="kw">val</span> bound: Long = <span class="dv">60</span> * <span class="dv">1000</span></span>
 <span id="cb82-4"><a href="#cb82-4"></a></span>
 <span id="cb82-5"><a href="#cb82-5"></a>  <span class="co">// 每来一条数据就调用一次</span></span>
-<span id="cb82-6"><a href="#cb82-6"></a>  <span class="kw">override</span> <span class="kw">def</span> <span class="fu">checkAndGetNextWatermark</span>(r: SensorReading,</span>
-<span id="cb82-7"><a href="#cb82-7"></a>                                        extractedTS: Long): Watermark = {</span>
-<span id="cb82-8"><a href="#cb82-8"></a>    <span class="kw">if</span> (r.<span class="fu">id</span> == <span class="st">&quot;sensor_1&quot;</span>) {</span>
-<span id="cb82-9"><a href="#cb82-9"></a>      <span class="co">// 抽取的时间戳 - 最大延迟时间</span></span>
-<span id="cb82-10"><a href="#cb82-10"></a>      <span class="kw">new</span> <span class="fu">Watermark</span>(extractedTS - bound)</span>
-<span id="cb82-11"><a href="#cb82-11"></a>    } <span class="kw">else</span> {</span>
-<span id="cb82-12"><a href="#cb82-12"></a>      <span class="kw">null</span></span>
-<span id="cb82-13"><a href="#cb82-13"></a>    }</span>
-<span id="cb82-14"><a href="#cb82-14"></a>  }</span>
-<span id="cb82-15"><a href="#cb82-15"></a></span>
-<span id="cb82-16"><a href="#cb82-16"></a>  <span class="co">// 每来一条数据就调用一次</span></span>
-<span id="cb82-17"><a href="#cb82-17"></a>  <span class="kw">override</span> <span class="kw">def</span> <span class="fu">extractTimestamp</span>(r: SensorReading,</span>
-<span id="cb82-18"><a href="#cb82-18"></a>                                previousTS: Long): Long = {</span>
-<span id="cb82-19"><a href="#cb82-19"></a>    r.<span class="fu">timestamp</span></span>
-<span id="cb82-20"><a href="#cb82-20"></a>  }</span>
-<span id="cb82-21"><a href="#cb82-21"></a>}</span></code></pre></div>
+<span id="cb82-6"><a href="#cb82-6"></a>  <span class="co">// 紧跟`extractTimestamp`函数调用</span></span>
+<span id="cb82-7"><a href="#cb82-7"></a>  <span class="kw">override</span> <span class="kw">def</span> <span class="fu">checkAndGetNextWatermark</span>(r: SensorReading,</span>
+<span id="cb82-8"><a href="#cb82-8"></a>                                        extractedTS: Long): Watermark = {</span>
+<span id="cb82-9"><a href="#cb82-9"></a>    <span class="kw">if</span> (r.<span class="fu">id</span> == <span class="st">&quot;sensor_1&quot;</span>) {</span>
+<span id="cb82-10"><a href="#cb82-10"></a>      <span class="co">// 抽取的时间戳 - 最大延迟时间</span></span>
+<span id="cb82-11"><a href="#cb82-11"></a>      <span class="kw">new</span> <span class="fu">Watermark</span>(extractedTS - bound)</span>
+<span id="cb82-12"><a href="#cb82-12"></a>    } <span class="kw">else</span> {</span>
+<span id="cb82-13"><a href="#cb82-13"></a>      <span class="kw">null</span></span>
+<span id="cb82-14"><a href="#cb82-14"></a>    }</span>
+<span id="cb82-15"><a href="#cb82-15"></a>  }</span>
+<span id="cb82-16"><a href="#cb82-16"></a></span>
+<span id="cb82-17"><a href="#cb82-17"></a>  <span class="co">// 每来一条数据就调用一次</span></span>
+<span id="cb82-18"><a href="#cb82-18"></a>  <span class="kw">override</span> <span class="kw">def</span> <span class="fu">extractTimestamp</span>(r: SensorReading,</span>
+<span id="cb82-19"><a href="#cb82-19"></a>                                previousTS: Long): Long = {</span>
+<span id="cb82-20"><a href="#cb82-20"></a>    r.<span class="fu">timestamp</span></span>
+<span id="cb82-21"><a href="#cb82-21"></a>  }</span>
+<span id="cb82-22"><a href="#cb82-22"></a>}</span></code></pre></div>
 <p>现在我们已经知道如何使用 <code>TimestampAssigner</code> 来产生水位线了。现在我们要讨论一下水位线会对我们的程序产生什么样的影响。</p>
 <p>水位线用来平衡延迟和计算结果的正确性。水位线告诉我们，在触发计算（例如关闭窗口并触发窗口计算）之前，我们需要等待事件多长时间。基于事件时间的操作符根据水位线来衡量系统的逻辑时间的进度。</p>
 <p>完美的水位线永远不会错：时间戳小于水位线的事件不会再出现。在特殊情况下(例如非乱序事件流)，最近一次事件的时间戳就可能是完美的水位线。启发式水位线则相反，它只估计时间，因此有可能出错，即迟到的事件(其时间戳小于水位线标记时间)晚于水位线出现。针对启发式水位线，Flink提供了处理迟到元素的机制。</p>
@@ -4440,34 +4441,32 @@
 <h2 id="流处理中的特殊概念">流处理中的特殊概念</h2>
 <p>Table API和SQL，本质上还是基于关系型表的操作方式；而关系型表、关系代数，以及SQL本身，一般是有界的，更适合批处理的场景。这就导致在进行流处理的过程中，理解会稍微复杂一些，需要引入一些特殊概念。</p>
 <h3 id="流处理和关系代数表及sql的区别">流处理和关系代数（表，及SQL）的区别</h3>
-    <div>
-    <table>
-    <thead>
-    <tr class="header">
-    <th></th>
-    <th>关系代数（表）/SQL</th>
-    <th>流处理</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr class="odd">
-    <td>处理的数据对象</td>
-    <td>字段元组的有界集合</td>
-    <td>字段元组的无限序列</td>
-    </tr>
-    <tr class="even">
-    <td>查询（Query）对数据的访问</td>
-    <td>可以访问到完整的数据输入</td>
-    <td>无法访问所有数据，必须持续等待流式输入</td>
-    </tr>
-    <tr class="odd">
-    <td>查询终止条件</td>
-    <td>生成固定大小的结果集后终止</td>
-    <td>永不停止，根据持续收到的数据不断更新查询结果</td>
-    </tr>
-    </tbody>
-    </table>
-    </div>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th>关系代数（表）/SQL</th>
+<th>流处理</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>处理的数据对象</td>
+<td>字段元组的有界集合</td>
+<td>无法访问所有数据，必须持续等待流式输入</td>
+</tr>
+<tr class="even">
+<td>查询（Query）对数据的访问</td>
+<td>可以访问到完整的数据输入</td>
+<td>无法访问所有数据，必须持续等待流式输入</td>
+</tr>
+<tr class="odd">
+<td>查询终止条件</td>
+<td>生成固定大小的结果集后终止</td>
+<td>永不停止，根据持续收到的数据不断更新查询结果</td>
+</tr>
+</tbody>
+</table>
 <p>可以看到，其实关系代数（主要就是指关系型数据库中的表）和SQL，主要就是针对批处理的，这和流处理有天生的隔阂。</p>
 <h3 id="动态表dynamic-tables">动态表（Dynamic Tables）</h3>
 <p>因为流处理面对的数据，是连续不断的，这和我们熟悉的关系型数据库中保存的“表”完全不同。所以，如果我们把流数据转换成Table，然后执行类似于table的select操作，结果就不是一成不变的，而是随着新数据的到来，会不停更新。</p>
