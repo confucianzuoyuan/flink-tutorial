@@ -1,10 +1,9 @@
-package com.atguigu
+package com.atguigu.day1
 
-// 导入一些隐式类型转换，implicit
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
 
-object WordCount {
+object WordCountFromSocket {
 
   case class WordWithCount(word: String, count: Int)
 
@@ -34,7 +33,7 @@ object WordCount {
     // 将计算的结果输出到标准输出
     transformed.print()
 
-    // 执行计算逻辑
+    // 执行计算逻辑，一定要写着一句！
     env.execute()
   }
 }
