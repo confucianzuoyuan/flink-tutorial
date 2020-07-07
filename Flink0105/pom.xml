@@ -139,7 +139,7 @@ under the License.
 							</filters>
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>com.atguigu.day1.WordCountFromBatch</mainClass>
+									<mainClass>com.atguigu.day1.WordCountFromSocket</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>
