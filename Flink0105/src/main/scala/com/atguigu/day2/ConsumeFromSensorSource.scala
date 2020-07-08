@@ -8,7 +8,7 @@ object ConsumeFromSensorSource {
     env.setParallelism(1)
 
     // 调用addSource方法
-    val stream = env.addSource(new SensorSource)
+    val stream : DataStream[SensorReading] = env.addSource(new SensorSource)
 
     stream.print()
 
