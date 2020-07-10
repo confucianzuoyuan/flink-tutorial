@@ -14,7 +14,7 @@ object WindowExample {
 
     val keyedStream : KeyedStream[SensorReading, String]  = stream.keyBy(_.id)
 
-    val windowedStream : WindowedStream[SensorReading, String, TimeWindow] = keyedStream.timeWindow(Time.seconds(10), Time.seconds(5))
+    val windowedStream : WindowedStream[SensorReading, String, TimeWindow] = keyedStream.timeWindow(Time.seconds(10))
 
     val reducedStream : DataStream[SensorReading] = windowedStream.reduce((r1, r2) => SensorReading(r1.id, 0L, r1.temperature.min(r2.temperature)))
 
