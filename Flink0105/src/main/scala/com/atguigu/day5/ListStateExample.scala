@@ -3,6 +3,7 @@ package com.atguigu.day5
 import com.atguigu.day2.{SensorReading, SensorSource}
 import org.apache.flink.api.common.state.{ListStateDescriptor, ValueStateDescriptor}
 import org.apache.flink.api.scala.typeutils.Types
+import org.apache.flink.runtime.state.filesystem.FsStateBackend
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.util.Collector
@@ -13,6 +14,11 @@ object ListStateExample {
   def main(args: Array[String]): Unit = {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
+
+    // 每个10s做一次检查点操作
+    env.enableCheckpointing(10000L)
+    // windows: file:\\ + 绝对路径
+    env.setStateBackend(new FsStateBackend("file:///Users/yuanzuo/Desktop/flink-tutorial/Flink0105/src/main/resources/checkpoint"))
 
     val stream = env
       .addSource(new SensorSource)
