@@ -17,7 +17,8 @@ object WindowJoinExample {
         ("a", 1, 1000L),
         ("a", 2, 2000L),
         ("b", 1, 3000L),
-        ("b", 2, 4000L)
+        ("b", 2, 4000L),
+        ("a", 3, 15000L)
       )
       .assignAscendingTimestamps(_._3)
 
@@ -26,7 +27,8 @@ object WindowJoinExample {
         ("a", 10, 1000L),
         ("a", 20, 2000L),
         ("b", 10, 3000L),
-        ("b", 20, 4000L)
+        ("b", 20, 4000L),
+        ("a", 30, 15000L)
       )
       .assignAscendingTimestamps(_._3)
 
