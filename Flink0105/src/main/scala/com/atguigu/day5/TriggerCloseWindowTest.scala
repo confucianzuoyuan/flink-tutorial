@@ -1,7 +1,5 @@
 package com.atguigu.day5
 
-import org.apache.flink.api.common.state.ValueStateDescriptor
-import org.apache.flink.api.scala.typeutils.Types
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.scala.function.ProcessWindowFunction
@@ -11,7 +9,7 @@ import org.apache.flink.streaming.api.windowing.triggers.{Trigger, TriggerResult
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow
 import org.apache.flink.util.Collector
 
-object TiggerCloseWindowTest {
+object TriggerCloseWindowTest {
   def main(args: Array[String]): Unit = {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
@@ -39,6 +37,7 @@ object TiggerCloseWindowTest {
     // 每来一条数据都要调用一次！
     override def onElement(element: (String, Long), timestamp: Long, window: TimeWindow, ctx: TriggerContext): TriggerResult = {
       ctx.registerEventTimeTimer(window.getEnd)
+      println("注册的定时器的时间戳是：" + window.getEnd)
       TriggerResult.CONTINUE
     }
 
@@ -47,8 +46,8 @@ object TiggerCloseWindowTest {
     }
 
     override def onEventTime(time: Long, window: TimeWindow, ctx: TriggerContext): TriggerResult = {
-        println("触发了！！！")
-        TriggerResult.FIRE_AND_PURGE
+      println("触发时间是： " + time)
+      TriggerResult.FIRE
     }
 
     override def clear(window: TimeWindow, ctx: TriggerContext): Unit = {}
