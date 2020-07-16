@@ -945,12 +945,12 @@
 <p>如果我们要从保存点启动一个修改过的应用程序，那么保存点中的状态只能映射到符合标准的应用程序——它里面的算子必须具有相应的ID和状态名称。默认情况下，Flink会自动分配唯一的算子ID。然而，一个算子的ID，是基于它之前算子的ID确定性地生成的。因此，算子的ID会在其前序算子改变时改变，比如，当我们添加了新的或移除掉一个算子时，前序算子ID改变，当前算子ID就会变化。所以对于具有默认算子ID的应用程序而言，如果想在不丢失状态的前提下升级，就会受到极大的限制。因此，我们强烈建议在程序中为算子手动分配唯一ID，而不是依靠Flink的默认分配。我们将在“指定唯一的算子标识符”一节中详细说明如何分配算子标识符。</p>
 <h1 id="第四章编写第一个flink程序">第四章，编写第一个Flink程序</h1>
 <h2 id="在idea中编写flink程序">在IDEA中编写Flink程序</h2>
-<p>本项目使用的Flink版本为最新版本，也就是1.10.0。现在提供maven项目的配置文件。</p>
+<p>本项目使用的Flink版本为最新版本，也就是1.11.0。现在提供maven项目的配置文件。</p>
 <ol type="1">
 <li>使用Intellij IDEA创建一个Maven新项目</li>
 <li>勾选<code>Create from archetype</code>，然后点击<code>Add Archetype</code>按钮</li>
-<li><code>GroupId</code>中输入<code>org.apache.flink</code>，<code>ArtifactId</code>中输入<code>flink-quickstart-scala</code>，<code>Version</code>中输入<code>1.10.0</code>，然后点击<code>OK</code></li>
-<li>点击向右箭头，出现下拉列表，选中<code>flink-quickstart-scala:1.10.0</code>，点击<code>Next</code></li>
+<li><code>GroupId</code>中输入<code>org.apache.flink</code>，<code>ArtifactId</code>中输入<code>flink-quickstart-scala</code>，<code>Version</code>中输入<code>1.11.0</code>，然后点击<code>OK</code></li>
+<li>点击向右箭头，出现下拉列表，选中<code>flink-quickstart-scala:1.11.0</code>，点击<code>Next</code></li>
 <li><code>Name</code>中输入<code>FlinkTutorial</code>，<code>GroupId</code>中输入<code>com.atguigu</code>，<code>ArtifactId</code>中输入<code>FlinkTutorial</code>，点击<code>Next</code></li>
 <li>最好使用IDEA默认的Maven工具：Bundled（Maven 3），点击<code>Finish</code>，等待一会儿，项目就创建好了</li>
 </ol>
@@ -996,21 +996,21 @@
 <div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a>    $ <span class="ex">nc</span> -lk 9999</span></code></pre></div>
 <p>接下来使用<code>IDEA</code>运行就可以了。</p>
 <h2 id="下载flink运行时环境提交jar包的运行方式">下载Flink运行时环境，提交Jar包的运行方式</h2>
-<p>下载链接：http://mirror.bit.edu.cn/apache/flink/flink-1.10.1/flink-1.10.1-bin-scala_2.11.tgz</p>
+<p>下载链接：http://mirror.bit.edu.cn/apache/flink/flink-1.11.0/flink-1.11.0-bin-scala_2.11.tgz</p>
 <p>然后解压</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a>    $ <span class="fu">tar</span> xvfz flink-1.10.0-bin-scala_2.11.tgz</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a>    $ <span class="fu">tar</span> xvfz flink-1.11.0-bin-scala_2.11.tgz</span></code></pre></div>
 <p>启动Flink集群</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a>    $ <span class="bu">cd</span> flink-1.10.0</span>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a>    $ <span class="bu">cd</span> flink-1.11.0</span>
 <span id="cb4-2"><a href="#cb4-2"></a>    $ <span class="ex">./bin/start-cluster.sh</span></span></code></pre></div>
 <p>可以打开Flink WebUI查看集群状态：http://localhost:8081</p>
 <p>在<code>IDEA</code>中使用<code>maven package</code>打包。</p>
 <p>提交打包好的<code>JAR</code>包</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1"></a>    $ <span class="bu">cd</span> flink-1.10.0</span>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1"></a>    $ <span class="bu">cd</span> flink-1.11.0</span>
 <span id="cb5-2"><a href="#cb5-2"></a>    $ <span class="ex">./bin/flink</span> run 打包好的JAR包的绝对路径</span></code></pre></div>
 <p>停止Flink集群</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1"></a>    $ <span class="ex">./bin/stop-cluster.sh</span></span></code></pre></div>
 <p>查看标准输出日志的位置，在<code>log</code>文件夹中。</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1"></a>    $ <span class="bu">cd</span> flink-1.10.0/log</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1"></a>    $ <span class="bu">cd</span> flink-1.11.0/log</span></code></pre></div>
 <h1 id="第五章flink-datastream-api">第五章，Flink DataStream API</h1>
 <p>本章介绍了Flink DataStream API的基本知识。我们展示了典型的Flink流处理程序的结构和组成部分，还讨论了Flink的类型系统以及支持的数据类型，还展示了数据和分区转换操作。窗口操作符，基于时间语义的转换操作，有状态的操作符，以及和外部系统的连接器将在接下来的章节进行介绍。阅读完这一章后，我们将会知道如何去实现一个具有基本功能的流处理程序。我们的示例程序采用Scala语言，因为Scala语言相对比较简洁。但Java API也是十分类似的（特殊情况，我们将会指出）。在我们的Github仓库里，我们所写的应用程序具有Scala和Java两种版本。</p>
 <h2 id="你好flink">你好，Flink！</h2>
@@ -1694,13 +1694,13 @@
 <div class="sourceCode" id="cb65"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb65-1"><a href="#cb65-1"></a>    <span class="kw">&lt;dependency&gt;</span></span>
 <span id="cb65-2"><a href="#cb65-2"></a>      <span class="kw">&lt;groupId&gt;</span>org.apache.flink<span class="kw">&lt;/groupId&gt;</span></span>
 <span id="cb65-3"><a href="#cb65-3"></a>      <span class="kw">&lt;artifactId&gt;</span>flink-connector-kafka-0.11_2.11<span class="kw">&lt;/artifactId&gt;</span></span>
-<span id="cb65-4"><a href="#cb65-4"></a>      <span class="kw">&lt;version&gt;</span>1.10.0<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb65-4"><a href="#cb65-4"></a>      <span class="kw">&lt;version&gt;</span>${flink.version}<span class="kw">&lt;/version&gt;</span></span>
 <span id="cb65-5"><a href="#cb65-5"></a>    <span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
 <p>Kafka版本为2.0以上</p>
 <div class="sourceCode" id="cb66"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb66-1"><a href="#cb66-1"></a>    <span class="kw">&lt;dependency&gt;</span></span>
 <span id="cb66-2"><a href="#cb66-2"></a>      <span class="kw">&lt;groupId&gt;</span>org.apache.flink<span class="kw">&lt;/groupId&gt;</span></span>
 <span id="cb66-3"><a href="#cb66-3"></a>      <span class="kw">&lt;artifactId&gt;</span>flink-connector-kafka_2.11<span class="kw">&lt;/artifactId&gt;</span></span>
-<span id="cb66-4"><a href="#cb66-4"></a>      <span class="kw">&lt;version&gt;</span>1.10.0<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb66-4"><a href="#cb66-4"></a>      <span class="kw">&lt;version&gt;</span>${flink.version}<span class="kw">&lt;/version&gt;</span></span>
 <span id="cb66-5"><a href="#cb66-5"></a>    <span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
 <p>主函数中添加sink：</p>
 <div class="sourceCode" id="cb67"><pre class="sourceCode scala"><code class="sourceCode scala"><span id="cb67-1"><a href="#cb67-1"></a>    <span class="kw">val</span> union = high</span>
@@ -1721,25 +1721,39 @@
 <span id="cb68-4"><a href="#cb68-4"></a>      <span class="kw">&lt;version&gt;</span>1.0<span class="kw">&lt;/version&gt;</span></span>
 <span id="cb68-5"><a href="#cb68-5"></a>    <span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
 <p>定义一个redis的mapper类，用于定义保存到redis时调用的命令：</p>
-<div class="sourceCode" id="cb69"><pre class="sourceCode numberSource scala numberLines"><code class="sourceCode scala"><span id="cb69-1"><a href="#cb69-1"></a><span class="kw">class</span> MyRedisMapper <span class="kw">extends</span> RedisMapper[SensorReading] {</span>
-<span id="cb69-2"><a href="#cb69-2"></a></span>
-<span id="cb69-3"><a href="#cb69-3"></a>  <span class="kw">override</span> <span class="kw">def</span> getCommandDescription: RedisCommandDescription = {</span>
-<span id="cb69-4"><a href="#cb69-4"></a>    <span class="kw">new</span> <span class="fu">RedisCommandDescription</span>(RedisCommand.<span class="fu">HSET</span>, <span class="st">&quot;sensor_temperature&quot;</span>)</span>
-<span id="cb69-5"><a href="#cb69-5"></a>  }</span>
-<span id="cb69-6"><a href="#cb69-6"></a></span>
-<span id="cb69-7"><a href="#cb69-7"></a>  <span class="kw">override</span> <span class="kw">def</span> <span class="fu">getValueFromData</span>(t: SensorReading): String = {</span>
-<span id="cb69-8"><a href="#cb69-8"></a>    t.<span class="fu">temperature</span>.<span class="fu">toString</span></span>
-<span id="cb69-9"><a href="#cb69-9"></a>  }</span>
-<span id="cb69-10"><a href="#cb69-10"></a></span>
-<span id="cb69-11"><a href="#cb69-11"></a>  <span class="kw">override</span> <span class="kw">def</span> <span class="fu">getKeyFromData</span>(t: SensorReading): String = t.<span class="fu">id</span></span>
-<span id="cb69-12"><a href="#cb69-12"></a></span>
-<span id="cb69-13"><a href="#cb69-13"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb69"><pre class="sourceCode numberSource scala numberLines"><code class="sourceCode scala"><span id="cb69-1"><a href="#cb69-1"></a><span class="kw">object</span> WriteToRedis {</span>
+<span id="cb69-2"><a href="#cb69-2"></a>  <span class="kw">def</span> <span class="fu">main</span>(args: Array[String]): Unit = {</span>
+<span id="cb69-3"><a href="#cb69-3"></a>    <span class="kw">val</span> env = StreamExecutionEnvironment.<span class="fu">getExecutionEnvironment</span></span>
+<span id="cb69-4"><a href="#cb69-4"></a>    env.<span class="fu">setParallelism</span>(<span class="dv">1</span>)</span>
+<span id="cb69-5"><a href="#cb69-5"></a></span>
+<span id="cb69-6"><a href="#cb69-6"></a>    <span class="kw">val</span> stream = env.<span class="fu">addSource</span>(<span class="kw">new</span> SensorSource)</span>
+<span id="cb69-7"><a href="#cb69-7"></a></span>
+<span id="cb69-8"><a href="#cb69-8"></a>    <span class="kw">val</span> conf = <span class="kw">new</span> FlinkJedisPoolConfig.<span class="fu">Builder</span>().<span class="fu">setHost</span>(<span class="st">&quot;localhost&quot;</span>).<span class="fu">build</span>()</span>
+<span id="cb69-9"><a href="#cb69-9"></a></span>
+<span id="cb69-10"><a href="#cb69-10"></a>    stream.<span class="fu">addSink</span>(<span class="kw">new</span> RedisSink[SensorReading](conf, <span class="kw">new</span> MyRedisMapper))</span>
+<span id="cb69-11"><a href="#cb69-11"></a></span>
+<span id="cb69-12"><a href="#cb69-12"></a>    env.<span class="fu">execute</span>()</span>
+<span id="cb69-13"><a href="#cb69-13"></a></span>
+<span id="cb69-14"><a href="#cb69-14"></a>  }</span>
+<span id="cb69-15"><a href="#cb69-15"></a></span>
+<span id="cb69-16"><a href="#cb69-16"></a>  <span class="kw">class</span> MyRedisMapper <span class="kw">extends</span> RedisMapper[SensorReading] {</span>
+<span id="cb69-17"><a href="#cb69-17"></a>    <span class="co">// 使用id作为key</span></span>
+<span id="cb69-18"><a href="#cb69-18"></a>    <span class="kw">override</span> <span class="kw">def</span> <span class="fu">getKeyFromData</span>(t: SensorReading): String = t.<span class="fu">id</span></span>
+<span id="cb69-19"><a href="#cb69-19"></a></span>
+<span id="cb69-20"><a href="#cb69-20"></a>    <span class="co">// 使用温度作为value</span></span>
+<span id="cb69-21"><a href="#cb69-21"></a>    <span class="kw">override</span> <span class="kw">def</span> <span class="fu">getValueFromData</span>(t: SensorReading): String = t.<span class="fu">temperature</span>.<span class="fu">toString</span></span>
+<span id="cb69-22"><a href="#cb69-22"></a></span>
+<span id="cb69-23"><a href="#cb69-23"></a>    <span class="kw">override</span> <span class="kw">def</span> getCommandDescription: RedisCommandDescription = {</span>
+<span id="cb69-24"><a href="#cb69-24"></a>      <span class="kw">new</span> <span class="fu">RedisCommandDescription</span>(RedisCommand.<span class="fu">HSET</span>, <span class="st">&quot;sensor&quot;</span>)</span>
+<span id="cb69-25"><a href="#cb69-25"></a>    }</span>
+<span id="cb69-26"><a href="#cb69-26"></a>  }</span>
+<span id="cb69-27"><a href="#cb69-27"></a>}</span></code></pre></div>
 <h3 id="elasticsearch">ElasticSearch</h3>
 <p>在主函数中调用：</p>
 <div class="sourceCode" id="cb70"><pre class="sourceCode scala"><code class="sourceCode scala"><span id="cb70-1"><a href="#cb70-1"></a>    &lt;dependency&gt;</span>
 <span id="cb70-2"><a href="#cb70-2"></a>      &lt;groupId&gt;org.<span class="fu">apache</span>.<span class="fu">flink</span>&lt;/groupId&gt;</span>
 <span id="cb70-3"><a href="#cb70-3"></a>      &lt;artifactId&gt;flink-connector-elasticsearch6_<span class="fl">2.11</span>&lt;/artifactId&gt;</span>
-<span id="cb70-4"><a href="#cb70-4"></a>      &lt;version&gt;<span class="dv">1</span>.<span class="fl">10.0</span>&lt;/version&gt;</span>
+<span id="cb70-4"><a href="#cb70-4"></a>      &lt;version&gt;${flink.<span class="fu">version</span>}&lt;/version&gt;</span>
 <span id="cb70-5"><a href="#cb70-5"></a>    &lt;/dependency&gt;</span></code></pre></div>
 <p>在主函数中调用：</p>
 <div class="sourceCode" id="cb71"><pre class="sourceCode numberSource scala numberLines"><code class="sourceCode scala"><span id="cb71-1"><a href="#cb71-1"></a><span class="kw">val</span> httpHosts = <span class="kw">new</span> util.<span class="fu">ArrayList</span>[HttpHost]()</span>
@@ -1950,7 +1964,12 @@
 <p>设定水位线通常需要用到领域知识。举例来说，如果知道事件的迟到时间不会超过5秒，就可以将水位线标记时间设为收到的最大时间戳减去5秒。另一种做法是，采用一个Flink作业监控事件流，学习事件的迟到规律，并以此构建水位线生成模型。</p>
 <p>如果最大延迟时间设置的很大，计算出的结果会更精确，但收到计算结果的速度会很慢，同时系统会缓存大量的数据，并对系统造成比较大的压力。如果最大延迟时间设置的很小，那么收到计算结果的速度会很快，但可能收到错误的计算结果。不过Flink处理迟到数据的机制可以解决这个问题。上述问题看起来很复杂，但是恰恰符合现实世界的规律：大部分真实的事件流都是乱序的，并且通常无法了解它们的乱序程度(因为理论上不能预见未来)。水位线是唯一让我们直面乱序事件流并保证正确性的机制; 否则只能选择忽视事实，假装错误的结果是正确的。</p>
 <blockquote>
-<p>思考题一：实时程序，要求实时性非常高，并且结果并不一定要求非常准确，那么应该怎么办？ 直接使用处理时间。 思考题二：如果要进行时间旅行，也就是要还原以前的数据集当时的流的状态，应该怎么办？ 使用事件时间。使用Hive将数据集先按照时间戳升序排列，再将最大延迟时间设置为0。</p>
+<ul>
+<li>思考题一：实时程序，要求实时性非常高，并且结果并不一定要求非常准确，那么应该怎么办？</li>
+<li>回答：直接使用处理时间。</li>
+<li>思考题二：如果要进行时间旅行，也就是要还原以前的数据集当时的流的状态，应该怎么办？</li>
+<li>回答：使用事件时间。使用Hive将数据集先按照时间戳升序排列，再将最大延迟时间设置为0。</li>
+</ul>
 </blockquote>
 <h2 id="process-functionlow-level-api">Process Function(Low-Level API)</h2>
 <p>我们之前学习的转换算子是无法访问事件的时间戳信息和水位线信息的。而这在一些应用场景下，极为重要。例如MapFunction这样的map转换算子就无法访问时间戳或者当前事件的事件时间。</p>
@@ -1983,9 +2002,6 @@
 <li><code>deleteEventTimeTimer(timestamp: Long): Unit</code> 删除之前注册的事件时间定时器，如果没有此时间戳的定时器，则不执行。</li>
 </ul>
 <p>当定时器timer触发时，执行回调函数onTimer()。processElement()方法和onTimer()方法是同步（不是异步）方法，这样可以避免并发访问和操作状态。</p>
-<blockquote>
-<p>定时器timer只能在KeyedStream上面使用。</p>
-</blockquote>
 <p>针对每一个key和timestamp，只能注册一个定期器。也就是说，每一个key可以注册多个定时器，但在每一个时间戳只能注册一个定时器。KeyedProcessFunction默认将所有定时器的时间戳放在一个优先队列中。在Flink做检查点操作时，定时器也会被保存到状态后端中。</p>
 <p>举个例子说明KeyedProcessFunction如何操作KeyedStream。</p>
 <p>下面的程序展示了如何监控温度传感器的温度值，如果温度值在一秒钟之内(processing time)连续上升，报警。</p>
@@ -3787,11 +3803,11 @@
 <p>在standalone这种部署方式中，master和worker进程在失败以后，并不会自动重启。如果有足够的slots可供使用，job是可以从一次worker失败中恢复的。只要我们运行多个worker就好了。但如果job想从master失败中恢复的话，则需要进行高可用(HA)的配置了。</p>
 <p><em>部署步骤</em></p>
 <p>下载压缩包</p>
-<p>链接：http://mirror.bit.edu.cn/apache/flink/flink-1.10.1/flink-1.10.1-bin-scala_2.11.tgz</p>
+<p>链接：http://mirror.bit.edu.cn/apache/flink/flink-1.11.0/flink-1.11.0-bin-scala_2.11.tgz</p>
 <p>解压缩</p>
-<div class="sourceCode" id="cb145"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb145-1"><a href="#cb145-1"></a>    $ <span class="fu">tar</span> xvfz flink-1.10.1-bin-scala_2.11.tgz</span></code></pre></div>
+<div class="sourceCode" id="cb145"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb145-1"><a href="#cb145-1"></a>    $ <span class="fu">tar</span> xvfz flink-1.11.0-bin-scala_2.11.tgz</span></code></pre></div>
 <p>启动集群</p>
-<div class="sourceCode" id="cb146"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb146-1"><a href="#cb146-1"></a>    $ <span class="bu">cd</span> flink-1.10.0</span>
+<div class="sourceCode" id="cb146"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb146-1"><a href="#cb146-1"></a>    $ <span class="bu">cd</span> flink-1.11.0</span>
 <span id="cb146-2"><a href="#cb146-2"></a>    $ <span class="ex">./bin/start-cluster.sh</span></span></code></pre></div>
 <p>检查集群状态可以访问：http://localhost:8081</p>
 <p>部署分布式集群</p>
@@ -3809,7 +3825,7 @@
 <p>当客户端提交任务时，客户端将建立和YARN ResourceManager的连接，然后启动一个新的YARN应用的master进程，进程中包含一个JobManager线程和一个ResourceManager。JobManager向ResourceManager请求所需要的slots，用来运行Flink的job。接下来，Flink的ResourceManager将向Yarn的ResourceManager请求容器，然后启动TaskManager进程。一旦启动，TaskManager会将slots注册在Flink的ResourceManager中，Flink的ResourceManager将把slots提供给JobManager。最终，JobManager把job的任务提交给TaskManager执行。</p>
 <p>sesison模式将启动一个长期运行的Flink集群，这个集群可以运行多个job，需要手动停止集群。如果以session模式启动，Flink将会连接到YARN的ResourceManager，然后启动一个master进程，包括一个Dispatcher线程和一个Flink的ResourceManager的线程。下图展示了一个Flink YARN session的启动。</p>
 <p><img src="images/spaf_0904.png" style="width:100.0%" /></p>
-<p>当一个job被提交运行，Dispatcher将启动一个JobManager线程，这个线程将向Flink的ResourceManager请求所需要的slots。如果没有足够的slots，Flink的ResourceManager将向YARN的ResourceManager请求额外的容器，来启动TaskManager进程，并在Flink的ResourceManager中注册。一旦所需slots可用，Flink的ResourceManager将吧slots分配给JobManager，然后开始执行job。下图展示了job如何在session模式下执行。</p>
+<p>当一个作业被提交运行，分发器将启动一个JobManager线程，这个线程将向Flink的资源管理器请求所需要的slots。如果没有足够的slots，Flink的资源管理器将向YARN的资源管理器请求额外的容器，来启动TaskManager进程，并在Flink的资源管理器中注册。一旦所需slots可用，Flink的资源管理器将把slots分配给JobManager，然后开始执行job。下图展示了job如何在session模式下执行。</p>
 <p><img src="images/spaf_0905.png" style="width:100.0%" /></p>
 <p>无论是作业模式还是会话模式，Flink的ResourceManager都会自动对故障的TaskManager进行重启。你可以通过<code>./conf/flink-conf.yaml</code>配置文件来控制Flink在YARN上的故障恢复行为。例如，可以配置有多少容器发生故障后终止应用。</p>
 <p>无论使用job模式还是sesison模式，都需要能够访问Hadoop。</p>
@@ -4081,12 +4097,12 @@
 <div class="sourceCode" id="cb175"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb175-1"><a href="#cb175-1"></a>    <span class="kw">&lt;dependency&gt;</span></span>
 <span id="cb175-2"><a href="#cb175-2"></a>      <span class="kw">&lt;groupId&gt;</span>org.apache.flink<span class="kw">&lt;/groupId&gt;</span></span>
 <span id="cb175-3"><a href="#cb175-3"></a>      <span class="kw">&lt;artifactId&gt;</span>flink-table-planner_2.11<span class="kw">&lt;/artifactId&gt;</span></span>
-<span id="cb175-4"><a href="#cb175-4"></a>      <span class="kw">&lt;version&gt;</span>1.10.0<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb175-4"><a href="#cb175-4"></a>      <span class="kw">&lt;version&gt;</span>${flink.version}<span class="kw">&lt;/version&gt;</span></span>
 <span id="cb175-5"><a href="#cb175-5"></a>    <span class="kw">&lt;/dependency&gt;</span></span>
 <span id="cb175-6"><a href="#cb175-6"></a>    <span class="kw">&lt;dependency&gt;</span></span>
 <span id="cb175-7"><a href="#cb175-7"></a>      <span class="kw">&lt;groupId&gt;</span>org.apache.flink<span class="kw">&lt;/groupId&gt;</span></span>
 <span id="cb175-8"><a href="#cb175-8"></a>      <span class="kw">&lt;artifactId&gt;</span>flink-table-api-scala-bridge_2.11<span class="kw">&lt;/artifactId&gt;</span></span>
-<span id="cb175-9"><a href="#cb175-9"></a>      <span class="kw">&lt;version&gt;</span>1.10.0<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb175-9"><a href="#cb175-9"></a>      <span class="kw">&lt;version&gt;</span>${flink.version}<span class="kw">&lt;/version&gt;</span></span>
 <span id="cb175-10"><a href="#cb175-10"></a>    <span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
 <ul>
 <li>flink-table-planner：planner计划器，是table API最主要的部分，提供了运行时环境和生成程序执行计划的planner；</li>
@@ -4183,11 +4199,11 @@
 <div class="sourceCode" id="cb183"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb183-1"><a href="#cb183-1"></a>    <span class="kw">&lt;dependency&gt;</span></span>
 <span id="cb183-2"><a href="#cb183-2"></a>      <span class="kw">&lt;groupId&gt;</span>org.apache.flink<span class="kw">&lt;/groupId&gt;</span></span>
 <span id="cb183-3"><a href="#cb183-3"></a>      <span class="kw">&lt;artifactId&gt;</span>flink-csv<span class="kw">&lt;/artifactId&gt;</span></span>
-<span id="cb183-4"><a href="#cb183-4"></a>      <span class="kw">&lt;version&gt;</span>1.10.0<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb183-4"><a href="#cb183-4"></a>      <span class="kw">&lt;version&gt;</span>${flink.version}<span class="kw">&lt;/version&gt;</span></span>
 <span id="cb183-5"><a href="#cb183-5"></a>    <span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
 <p>代码非常类似，只需要把withFormat里的OldCsv改成Csv就可以了。</p>
 <h4 id="连接到kafka">连接到Kafka</h4>
-<p>kafka的连接器flink-kafka-connector中，1.10版本的已经提供了Table API的支持。我们可以在 connect方法中直接传入一个叫做Kafka的类，这就是kafka连接器的描述器ConnectorDescriptor。</p>
+<p>kafka的连接器flink-kafka-connector中，1.11版本的已经提供了Table API的支持。我们可以在 connect方法中直接传入一个叫做Kafka的类，这就是kafka连接器的描述器ConnectorDescriptor。</p>
 <div class="sourceCode" id="cb184"><pre class="sourceCode scala"><code class="sourceCode scala"><span id="cb184-1"><a href="#cb184-1"></a>    tableEnv</span>
 <span id="cb184-2"><a href="#cb184-2"></a>      .<span class="fu">connect</span>(</span>
 <span id="cb184-3"><a href="#cb184-3"></a>        <span class="kw">new</span> <span class="fu">Kafka</span>()</span>
@@ -4349,7 +4365,7 @@
 <div class="sourceCode" id="cb197"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb197-1"><a href="#cb197-1"></a>    <span class="kw">&lt;dependency&gt;</span></span>
 <span id="cb197-2"><a href="#cb197-2"></a>      <span class="kw">&lt;groupId&gt;</span>org.apache.flink<span class="kw">&lt;/groupId&gt;</span></span>
 <span id="cb197-3"><a href="#cb197-3"></a>      <span class="kw">&lt;artifactId&gt;</span>flink-json<span class="kw">&lt;/artifactId&gt;</span></span>
-<span id="cb197-4"><a href="#cb197-4"></a>      <span class="kw">&lt;version&gt;</span>1.10.0<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb197-4"><a href="#cb197-4"></a>      <span class="kw">&lt;version&gt;</span>${flink.version}<span class="kw">&lt;/version&gt;</span></span>
 <span id="cb197-5"><a href="#cb197-5"></a>    <span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
 <p>代码实现如下：</p>
 <div class="sourceCode" id="cb198"><pre class="sourceCode scala"><code class="sourceCode scala"><span id="cb198-1"><a href="#cb198-1"></a>    <span class="co">// 输出到es</span></span>
@@ -4375,7 +4391,7 @@
 <div class="sourceCode" id="cb199"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb199-1"><a href="#cb199-1"></a>    <span class="kw">&lt;dependency&gt;</span></span>
 <span id="cb199-2"><a href="#cb199-2"></a>      <span class="kw">&lt;groupId&gt;</span>org.apache.flink<span class="kw">&lt;/groupId&gt;</span></span>
 <span id="cb199-3"><a href="#cb199-3"></a>      <span class="kw">&lt;artifactId&gt;</span>flink-jdbc_2.11<span class="kw">&lt;/artifactId&gt;</span></span>
-<span id="cb199-4"><a href="#cb199-4"></a>      <span class="kw">&lt;version&gt;</span>1.10.0<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb199-4"><a href="#cb199-4"></a>      <span class="kw">&lt;version&gt;</span>${flink.version}<span class="kw">&lt;/version&gt;</span></span>
 <span id="cb199-5"><a href="#cb199-5"></a>    <span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
 <p>jdbc连接的代码实现比较特殊，因为没有对应的java/scala类实现ConnectorDescriptor，所以不能直接tableEnv.connect()。不过Flink SQL留下了执行DDL的接口：tableEnv.sqlUpdate()。</p>
 <p>对于jdbc的创建表操作，天生就适合直接写DDL来实现，所以我们的代码可以这样写：</p>

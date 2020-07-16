@@ -780,12 +780,12 @@ Flink中一个最有价值，也是最独特的功能是保存点（savepoints�
 
 ## 在IDEA中编写Flink程序
 
-本项目使用的Flink版本为最新版本，也就是1.10.0。现在提供maven项目的配置文件。
+本项目使用的Flink版本为最新版本，也就是1.11.0。现在提供maven项目的配置文件。
 
 1. 使用Intellij IDEA创建一个Maven新项目
 2. 勾选`Create from archetype`，然后点击`Add Archetype`按钮
-3. `GroupId`中输入`org.apache.flink`，`ArtifactId`中输入`flink-quickstart-scala`，`Version`中输入`1.10.0`，然后点击`OK`
-4. 点击向右箭头，出现下拉列表，选中`flink-quickstart-scala:1.10.0`，点击`Next`
+3. `GroupId`中输入`org.apache.flink`，`ArtifactId`中输入`flink-quickstart-scala`，`Version`中输入`1.11.0`，然后点击`OK`
+4. 点击向右箭头，出现下拉列表，选中`flink-quickstart-scala:1.11.0`，点击`Next`
 5. `Name`中输入`FlinkTutorial`，`GroupId`中输入`com.atguigu`，`ArtifactId`中输入`FlinkTutorial`，点击`Next`
 6. 最好使用IDEA默认的Maven工具：Bundled（Maven 3），点击`Finish`，等待一会儿，项目就创建好了
 
@@ -841,18 +841,18 @@ $ nc -lk 9999
 
 ## 下载Flink运行时环境，提交Jar包的运行方式
 
-下载链接：http://mirror.bit.edu.cn/apache/flink/flink-1.10.1/flink-1.10.1-bin-scala_2.11.tgz
+下载链接：http://mirror.bit.edu.cn/apache/flink/flink-1.11.0/flink-1.11.0-bin-scala_2.11.tgz
 
 然后解压
 
 ```{.sh}
-$ tar xvfz flink-1.10.0-bin-scala_2.11.tgz
+$ tar xvfz flink-1.11.0-bin-scala_2.11.tgz
 ```
 
 启动Flink集群
 
 ```{.sh}
-$ cd flink-1.10.0
+$ cd flink-1.11.0
 $ ./bin/start-cluster.sh
 ```
 
@@ -863,7 +863,7 @@ $ ./bin/start-cluster.sh
 提交打包好的`JAR`包
 
 ```{.sh}
-$ cd flink-1.10.0
+$ cd flink-1.11.0
 $ ./bin/flink run 打包好的JAR包的绝对路径
 ```
 
@@ -876,7 +876,7 @@ $ ./bin/stop-cluster.sh
 查看标准输出日志的位置，在`log`文件夹中。
 
 ```{.sh}
-$ cd flink-1.10.0/log
+$ cd flink-1.11.0/log
 ```
 
 # 第五章，Flink DataStream API
@@ -1893,7 +1893,7 @@ Kafka版本为0.11
 <dependency>
   <groupId>org.apache.flink</groupId>
   <artifactId>flink-connector-kafka-0.11_2.11</artifactId>
-  <version>1.10.0</version>
+  <version>${flink.version}</version>
 </dependency>
 ```
 
@@ -1903,7 +1903,7 @@ Kafka版本为2.0以上
 <dependency>
   <groupId>org.apache.flink</groupId>
   <artifactId>flink-connector-kafka_2.11</artifactId>
-  <version>1.10.0</version>
+  <version>${flink.version}</version>
 </dependency>
 ```
 
@@ -1936,18 +1936,32 @@ union.addSink(
 定义一个redis的mapper类，用于定义保存到redis时调用的命令：
 
 ```{.scala .numberLines}
-class MyRedisMapper extends RedisMapper[SensorReading] {
+object WriteToRedis {
+  def main(args: Array[String]): Unit = {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setParallelism(1)
 
-  override def getCommandDescription: RedisCommandDescription = {
-    new RedisCommandDescription(RedisCommand.HSET, "sensor_temperature")
+    val stream = env.addSource(new SensorSource)
+
+    val conf = new FlinkJedisPoolConfig.Builder().setHost("localhost").build()
+
+    stream.addSink(new RedisSink[SensorReading](conf, new MyRedisMapper))
+
+    env.execute()
+
   }
 
-  override def getValueFromData(t: SensorReading): String = {
-    t.temperature.toString
+  class MyRedisMapper extends RedisMapper[SensorReading] {
+    // 使用id作为key
+    override def getKeyFromData(t: SensorReading): String = t.id
+
+    // 使用温度作为value
+    override def getValueFromData(t: SensorReading): String = t.temperature.toString
+
+    override def getCommandDescription: RedisCommandDescription = {
+      new RedisCommandDescription(RedisCommand.HSET, "sensor")
+    }
   }
-
-  override def getKeyFromData(t: SensorReading): String = t.id
-
 }
 ```
 
@@ -1959,7 +1973,7 @@ class MyRedisMapper extends RedisMapper[SensorReading] {
 <dependency>
   <groupId>org.apache.flink</groupId>
   <artifactId>flink-connector-elasticsearch6_2.11</artifactId>
-  <version>1.10.0</version>
+  <version>${flink.version}</version>
 </dependency>
 ```
 
@@ -4487,18 +4501,18 @@ master进程在不同的线程中运行了一个Dispatcher和一个ResourceManag
 
 下载压缩包
 
-链接：http://mirror.bit.edu.cn/apache/flink/flink-1.10.1/flink-1.10.1-bin-scala_2.11.tgz
+链接：http://mirror.bit.edu.cn/apache/flink/flink-1.11.0/flink-1.11.0-bin-scala_2.11.tgz
 
 解压缩
 
 ```{.sh}
-$ tar xvfz flink-1.10.1-bin-scala_2.11.tgz
+$ tar xvfz flink-1.11.0-bin-scala_2.11.tgz
 ```
 
 启动集群
 
 ```{.sh}
-$ cd flink-1.10.0
+$ cd flink-1.11.0
 $ ./bin/start-cluster.sh
 ```
 
@@ -4527,7 +4541,7 @@ sesison模式将启动一个长期运行的Flink集群，这个集群可以运�
 
 ![](images/spaf_0904.png){ width=100% }
 
-当一个job被提交运行，Dispatcher将启动一个JobManager线程，这个线程将向Flink的ResourceManager请求所需要的slots。如果没有足够的slots，Flink的ResourceManager将向YARN的ResourceManager请求额外的容器，来启动TaskManager进程，并在Flink的ResourceManager中注册。一旦所需slots可用，Flink的ResourceManager将吧slots分配给JobManager，然后开始执行job。下图展示了job如何在session模式下执行。
+当一个作业被提交运行，分发器将启动一个JobManager线程，这个线程将向Flink的资源管理器请求所需要的slots。如果没有足够的slots，Flink的资源管理器将向YARN的资源管理器请求额外的容器，来启动TaskManager进程，并在Flink的资源管理器中注册。一旦所需slots可用，Flink的资源管理器将把slots分配给JobManager，然后开始执行job。下图展示了job如何在session模式下执行。
 
 ![](images/spaf_0905.png){ width=100% }
 
@@ -4954,12 +4968,12 @@ Table API和SQL需要引入的依赖有两个：planner和bridge。
 <dependency>
   <groupId>org.apache.flink</groupId>
   <artifactId>flink-table-planner_2.11</artifactId>
-  <version>1.10.0</version>
+  <version>${flink.version}</version>
 </dependency>
 <dependency>
   <groupId>org.apache.flink</groupId>
   <artifactId>flink-table-api-scala-bridge_2.11</artifactId>
-  <version>1.10.0</version>
+  <version>${flink.version}</version>
 </dependency>
 ```
 
@@ -5101,7 +5115,7 @@ tableEnv
 <dependency>
   <groupId>org.apache.flink</groupId>
   <artifactId>flink-csv</artifactId>
-  <version>1.10.0</version>
+  <version>${flink.version}</version>
 </dependency>
 ```
 
@@ -5109,7 +5123,7 @@ tableEnv
 
 #### 连接到Kafka
 
-kafka的连接器flink-kafka-connector中，1.10版本的已经提供了Table API的支持。我们可以在 connect方法中直接传入一个叫做Kafka的类，这就是kafka连接器的描述器ConnectorDescriptor。
+kafka的连接器flink-kafka-connector中，1.11版本的已经提供了Table API的支持。我们可以在 connect方法中直接传入一个叫做Kafka的类，这就是kafka连接器的描述器ConnectorDescriptor。
 
 ```{.scala}
 tableEnv
@@ -5365,7 +5379,7 @@ es目前支持的数据格式，只有Json，而flink本身并没有对应的支
 <dependency>
   <groupId>org.apache.flink</groupId>
   <artifactId>flink-json</artifactId>
-  <version>1.10.0</version>
+  <version>${flink.version}</version>
 </dependency>
 ```
 
@@ -5400,7 +5414,7 @@ Flink专门为Table API的jdbc连接提供了flink-jdbc连接器，我们需要�
 <dependency>
   <groupId>org.apache.flink</groupId>
   <artifactId>flink-jdbc_2.11</artifactId>
-  <version>1.10.0</version>
+  <version>${flink.version}</version>
 </dependency>
 ```
 
