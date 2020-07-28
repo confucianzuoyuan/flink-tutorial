@@ -48,6 +48,8 @@ under the License.
 		<scala.binary.version>2.11</scala.binary.version>
 		<scala.version>2.11.12</scala.version>
 		<log4j.version>2.12.1</log4j.version>
+		<hive.version>3.1.2</hive.version>
+		<hadoop.version>3.2.0</hadoop.version>
 	</properties>
 
 	<dependencies>
@@ -129,12 +131,47 @@ under the License.
 			<version>${flink.version}</version>
 		</dependency>
 
+
+
 		<!-- Scala Library, provided by Flink as well. -->
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
 			<version>${scala.version}</version>
 <!--			<scope>provided</scope>-->
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-connector-hive_2.11</artifactId>
+			<version>${flink.version}</version>
+			<!--			<scope>provided</scope>-->
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.hive</groupId>
+			<artifactId>hive-exec</artifactId>
+			<version>${hive.version}</version>
+			<!--			<scope>provided</scope>-->
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-common</artifactId>
+			<version>${hadoop.version}</version>
+			<!--            <scope>provided</scope>-->
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-hdfs</artifactId>
+			<version>${hadoop.version}</version>
+			<!--<scope>provided</scope>-->
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-mapreduce-client-core</artifactId>
+			<version>${hadoop.version}</version>
 		</dependency>
 
 		<!-- Add connector dependencies here. They must be in the default scope (compile). -->
@@ -241,6 +278,7 @@ under the License.
 					</execution>
 				</executions>
 				<configuration>
+					<addScalacArgs>-target:jvm-1.8</addScalacArgs>
 					<args>
 						<arg>-nobootcp</arg>
 					</args>

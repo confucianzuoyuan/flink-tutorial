@@ -23,7 +23,7 @@ object KafkaProduceUserBehaviourData {
     )
 
     val producer = new KafkaProducer[String, String](props)
-    val bufferedSource = io.Source.fromFile("/Users/yuanzuo/Desktop/flink-tutorial/Flink0105/src/main/resources/UserBehavior.csv")
+    val bufferedSource = scala.io.Source.fromFile("/Users/yuanzuo/Desktop/flink-tutorial/Flink0105/src/main/resources/UserBehavior.csv")
     for (line <- bufferedSource.getLines) {
       val record = new ProducerRecord[String, String](topic, line)
       producer.send(record)
