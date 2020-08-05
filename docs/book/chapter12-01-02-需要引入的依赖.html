@@ -156,24 +156,38 @@
                 <div id="content" class="content">
                     <main>
                         <h3><a class="header" href="#需要引入的依赖" id="需要引入的依赖">需要引入的依赖</a></h3>
-<p>Table API和SQL需要引入的依赖有两个：planner和bridge。</p>
+<p>取决于你使用的编程语言，比如这里，我们选择 Scala API 来构建你的 Table API 和 SQL 程序：</p>
 <pre><code class="language-xml">&lt;dependency&gt;
   &lt;groupId&gt;org.apache.flink&lt;/groupId&gt;
-  &lt;artifactId&gt;flink-table-planner_2.11&lt;/artifactId&gt;
-  &lt;version&gt;${flink.version}&lt;/version&gt;
-&lt;/dependency&gt;
-&lt;dependency&gt;
-  &lt;groupId&gt;org.apache.flink&lt;/groupId&gt;
   &lt;artifactId&gt;flink-table-api-scala-bridge_2.11&lt;/artifactId&gt;
-  &lt;version&gt;${flink.version}&lt;/version&gt;
+  &lt;version&gt;1.11.0&lt;/version&gt;
+  &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;
+</code></pre>
+<p>除此之外，如果你想在 IDE 本地运行你的程序，你需要添加下面的模块，具体用哪个取决于你使用哪个 Planner，我们这里选择使用 blink planner：</p>
+<pre><code class="language-xml">&lt;dependency&gt;
+  &lt;groupId&gt;org.apache.flink&lt;/groupId&gt;
+  &lt;artifactId&gt;flink-table-planner-blink_2.11&lt;/artifactId&gt;
+  &lt;version&gt;1.11.0&lt;/version&gt;
+  &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;
+</code></pre>
+<p>如果你想实现自定义格式来解析 Kafka 数据，或者自定义函数，使用下面的依赖：</p>
+<pre><code class="language-xml">&lt;dependency&gt;
+  &lt;groupId&gt;org.apache.flink&lt;/groupId&gt;
+  &lt;artifactId&gt;flink-table-common&lt;/artifactId&gt;
+  &lt;version&gt;1.11.0&lt;/version&gt;
+  &lt;scope&gt;provided&lt;/scope&gt;
 &lt;/dependency&gt;
 </code></pre>
 <ul>
-<li>flink-table-planner：planner计划器，是table API最主要的部分，提供了运行时环境和生成程序执行计划的planner；</li>
+<li>flink-table-planner-blink：planner计划器，是table API最主要的部分，提供了运行时环境和生成程序执行计划的planner；</li>
 <li>flink-table-api-scala-bridge：bridge桥接器，主要负责table API和 DataStream/DataSet API的连接支持，按照语言分java和scala。</li>
 </ul>
 <p>这里的两个依赖，是IDE环境下运行需要添加的；如果是生产环境，lib目录下默认已经有了planner，就只需要有bridge就可以了。</p>
-<p>当然，如果想使用用户自定义函数，或是跟kafka做连接，需要有一个SQL client，这个包含在flink-table-common里。</p>
+<blockquote>
+<p>需要注意的是：flink table本身有两个 planner 计划器，在flink 1.11之后，已经默认使用 blink planner，如果想了解 old planner，可以查阅官方文档。</p>
+</blockquote>
 
                     </main>
 

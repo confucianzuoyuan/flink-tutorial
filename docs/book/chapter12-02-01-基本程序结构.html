@@ -158,19 +158,24 @@
                         <h3><a class="header" href="#基本程序结构" id="基本程序结构">基本程序结构</a></h3>
 <p>Table API 和 SQL 的程序结构，与流式处理的程序结构类似；也可以近似地认为有这么几步：首先创建执行环境，然后定义source、transform和sink。</p>
 <p>具体操作流程如下：</p>
-<pre><code class="language-scala">val tableEnv = ...  // 创建表的执行环境
+<pre><code class="language-scala">val tableEnv = ... // 创建表环境
 
-// 创建一张表，用于读取数据
-tableEnv.connect(...).createTemporaryTable(&quot;inputTable&quot;)
-// 注册一张表，用于把计算结果输出
+// 创建表
+tableEnv.connect(...).createTemporaryTable(&quot;table1&quot;)
+// 注册输出表
 tableEnv.connect(...).createTemporaryTable(&quot;outputTable&quot;)
-// 通过 Table API 查询算子，得到一张结果表
-val result = tableEnv.from(&quot;inputTable&quot;).select(...)
-// 通过 SQL查询语句，得到一张结果表
-val sqlResult  = tableEnv.sqlQuery(&quot;SELECT ... FROM inputTable ...&quot;)
 
-// 将结果表写入输出表中
-result.insertInto(&quot;outputTable&quot;)
+// 使用 Table API query 创建表
+val tapiResult = tableEnv.from(&quot;table1&quot;).select(...)
+// 使用 SQL query 创建表
+val sqlResult  = tableEnv.sqlQuery(&quot;SELECT ... FROM table1 ...&quot;)
+
+// 输出一张结果表到 TableSink，SQL查询的结果表也一样
+TableResult tableResult = tapiResult.executeInsert(&quot;outputTable&quot;);
+tableResult...
+
+// 执行
+tableEnv.execute(&quot;scala_job&quot;)
 </code></pre>
 
                     </main>
