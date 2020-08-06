@@ -1,66 +1,63 @@
 ### 在Catalog中注册表
 
-#### 表（Table）的概念
+TableEnvironment 维护着一个由标识符（identifier）创建的表 catalog 的映射。标识符由三个部分组成：catalog 名称、数据库名称以及对象名称。如果 catalog 或者数据库没有指明，就会使用当前默认值。
 
-TableEnvironment可以注册目录Catalog，并可以基于Catalog注册表。它会维护一个Catalog-Table表之间的map。
+Table 可以是虚拟的（视图 VIEWS）也可以是常规的（表 TABLES）。视图 VIEWS可以从已经存在的Table中创建，一般是 Table API 或者 SQL 的查询结果。 表TABLES描述的是外部数据，例如文件、数据库表或者消息队列。
 
-表（Table）是由一个“标识符”来指定的，由3部分组成：Catalog名、数据库（database）名和对象名（表名）。如果没有指定目录或数据库，就使用当前的默认值。
+#### 临时表（Temporary Table）和永久表（Permanent Table）
 
-表可以是常规的（Table，表），或者虚拟的（View，视图）。常规表（Table）一般可以用来描述外部数据，比如文件、数据库表或消息队列的数据，也可以直接从 DataStream转换而来。视图可以从现有的表中创建，通常是table API或者SQL查询的一个结果。
+表可以是临时的，并与单个 Flink 会话（session）的生命周期相关，也可以是永久的，并且在多个 Flink 会话和群集（cluster）中可见。
 
-#### 连接到文件系统（Csv格式）
+永久表需要 catalog（例如 Hive Metastore）以维护表的元数据。一旦永久表被创建，它将对任何连接到 catalog 的 Flink 会话可见且持续存在，直至被明确删除。
 
-连接外部系统在Catalog中注册表，直接调用tableEnv.connect()就可以，里面参数要传入一个ConnectorDescriptor，也就是connector描述器。对于文件系统的connector而言，flink内部已经提供了，就叫做FileSystem()。
+另一方面，临时表通常保存于内存中并且仅在创建它们的 Flink 会话持续期间存在。这些表对于其它会话是不可见的。它们不与任何 catalog 或者数据库绑定但可以在一个命名空间（namespace）中创建。即使它们对应的数据库被删除，临时表也不会被删除。
 
-代码如下：
+#### 创建表
 
-```scala
-tableEnv
-  .connect(new FileSystem().path("sensor.txt"))  // 定义表数据来源，外部连接
-  .withFormat(new OldCsv())    // 定义从外部系统读取数据之后的格式化方法
-  .withSchema(
-    new Schema()
-      .field("id", DataTypes.STRING())
-      .field("timestamp", DataTypes.BIGINT())
-      .field("temperature", DataTypes.DOUBLE())
-  )    // 定义表结构
-  .createTemporaryTable("inputTable")    // 创建临时表
-```
+##### 虚拟表
 
-这是旧版本的csv格式描述器。由于它是非标的，跟外部系统对接并不通用，所以将被弃用，以后会被一个符合RFC-4180标准的新format描述器取代。新的描述器就叫Csv()，但flink没有直接提供，需要引入依赖flink-csv：
-
-```xml
-<dependency>
-  <groupId>org.apache.flink</groupId>
-  <artifactId>flink-csv</artifactId>
-  <version>${flink.version}</version>
-</dependency>
-```
-
-代码非常类似，只需要把withFormat里的OldCsv改成Csv就可以了。
-
-#### 连接到Kafka
-
-kafka的连接器flink-kafka-connector中，1.11版本的已经提供了Table API的支持。我们可以在 connect方法中直接传入一个叫做Kafka的类，这就是kafka连接器的描述器ConnectorDescriptor。
+在 SQL 的术语中，Table API 的对象对应于视图（虚拟表）。它封装了一个逻辑查询计划。它可以通过以下方法在 catalog 中创建：
 
 ```scala
-tableEnv
-  .connect(
-    new Kafka()
-      .version("0.11") // 定义kafka的版本
-      .topic("sensor") // 定义主题
-      .property("zookeeper.connect", "localhost:2181")
-      .property("bootstrap.servers", "localhost:9092")
-  )
-  .withFormat(new Csv())
-  .withSchema(
-    new Schema()
-      .field("id", DataTypes.STRING())
-      .field("timestamp", DataTypes.BIGINT())
-      .field("temperature", DataTypes.DOUBLE())
-  )
-  .createTemporaryTable("kafkaInputTable")
+// get a TableEnvironment
+val tableEnv = ... // see "Create a TableEnvironment" section
+
+// table is the result of a simple projection query
+val projTable: Table = tableEnv.from("X").select(...)
+
+// register the Table projTable as table "projectedTable"
+tableEnv.createTemporaryView("projectedTable", projTable)
 ```
 
-当然也可以连接到ElasticSearch、MySql、HBase、Hive等外部系统，实现方式基本上是类似的。
+#### 扩展表标识符
 
+表总是通过三元标识符注册，包括 catalog 名、数据库名和表名。
+
+用户可以指定一个 catalog 和数据库作为 “当前catalog” 和”当前数据库”。有了这些，那么刚刚提到的三元标识符的前两个部分就可以被省略了。如果前两部分的标识符没有指定， 那么会使用当前的 catalog 和当前数据库。用户也可以通过 Table API 或 SQL 切换当前的 catalog 和当前的数据库。
+
+标识符遵循 SQL 标准，因此使用时需要用反引号（`）进行转义。
+
+```scala
+// get a TableEnvironment
+val tEnv: TableEnvironment = ...;
+tEnv.useCatalog("custom_catalog")
+tEnv.useDatabase("custom_database")
+
+val table: Table = ...;
+
+// register the view named 'exampleView' in the catalog named 'custom_catalog'
+// in the database named 'custom_database' 
+tableEnv.createTemporaryView("exampleView", table)
+
+// register the view named 'exampleView' in the catalog named 'custom_catalog'
+// in the database named 'other_database' 
+tableEnv.createTemporaryView("other_database.exampleView", table)
+
+// register the view named 'example.View' in the catalog named 'custom_catalog'
+// in the database named 'custom_database' 
+tableEnv.createTemporaryView("`example.View`", table)
+
+// register the view named 'exampleView' in the catalog named 'other_catalog'
+// in the database named 'other_database' 
+tableEnv.createTemporaryView("other_catalog.other_database.exampleView", table)
+```

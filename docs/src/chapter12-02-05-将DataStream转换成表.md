@@ -33,14 +33,14 @@ val sensorTable2 = tableEnv.fromDataStream(dataStream, 'id, 'timestamp as 'ts)
 
 ```scala
 val sensorTable = tableEnv
-  .fromDataStream(dataStream, 'timestamp as 'ts, 'id as 'myId, 'temperature)
+  .fromDataStream(dataStream, $"timestamp" as "ts", $"id" as "myId", "temperature")
 ```
 
 基于位置的对应：
 
 ```scala
 val sensorTable = tableEnv
-  .fromDataStream(dataStream, 'myId, 'ts)
+  .fromDataStream(dataStream, $"myId", $"ts")
 ```
 
 Flink的DataStream和 DataSet API支持多种类型。
