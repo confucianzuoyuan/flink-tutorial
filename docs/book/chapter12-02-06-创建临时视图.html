@@ -160,7 +160,7 @@
 <p>代码如下：</p>
 <pre><code class="language-scala">tableEnv.createTemporaryView(&quot;sensorView&quot;, dataStream)
 tableEnv.createTemporaryView(&quot;sensorView&quot;,
-  dataStream, 'id, 'temperature, 'timestamp as 'ts)
+  dataStream, $&quot;id&quot;, $&quot;temperature&quot;, $&quot;timestamp&quot; as &quot;ts&quot;)
 </code></pre>
 <p>另外，当然还可以基于Table创建视图：</p>
 <pre><code class="language-scala">tableEnv.createTemporaryView(&quot;sensorView&quot;, sensorTable)

@@ -177,11 +177,11 @@ val sensorTable2 = tableEnv.fromDataStream(dataStream, 'id, 'timestamp as 'ts)
 <p>另外一种对应方式是，直接按照字段的位置来对应（position-based mapping），对应的过程中，就可以直接指定新的字段名了。</p>
 <p>基于名称的对应：</p>
 <pre><code class="language-scala">val sensorTable = tableEnv
-  .fromDataStream(dataStream, 'timestamp as 'ts, 'id as 'myId, 'temperature)
+  .fromDataStream(dataStream, $&quot;timestamp&quot; as &quot;ts&quot;, $&quot;id&quot; as &quot;myId&quot;, &quot;temperature&quot;)
 </code></pre>
 <p>基于位置的对应：</p>
 <pre><code class="language-scala">val sensorTable = tableEnv
-  .fromDataStream(dataStream, 'myId, 'ts)
+  .fromDataStream(dataStream, $&quot;myId&quot;, $&quot;ts&quot;)
 </code></pre>
 <p>Flink的DataStream和 DataSet API支持多种类型。</p>
 <p>组合类型，比如元组（内置Scala和Java元组）、POJO、Scala case类和Flink的Row类型等，允许具有多个字段的嵌套数据结构，这些字段可以在Table的表达式中访问。其他类型，则被视为原子类型。</p>

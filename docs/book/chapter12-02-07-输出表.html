@@ -156,24 +156,6 @@
                 <div id="content" class="content">
                     <main>
                         <h3><a class="header" href="#输出表" id="输出表">输出表</a></h3>
-<p>表的输出，是通过将数据写入 TableSink 来实现的。TableSink 是一个通用接口，可以支持不同的文件格式、存储数据库和消息队列。</p>
-<p>具体实现，输出表最直接的方法，就是通过 Table.insertInto() 方法将一个 Table 写入注册过的 TableSink 中。</p>
-<h4><a class="header" href="#输出到文件" id="输出到文件">输出到文件</a></h4>
-<p>代码如下：</p>
-<pre><code class="language-scala">// 注册输出表
-tableEnv.connect(
-    new FileSystem().path(&quot;…\\resources\\out.txt&quot;)
-  ) // 定义到文件系统的连接
-  .withFormat(new Csv()) // 定义格式化方法，Csv格式
-  .withSchema(
-    new Schema()
-      .field(&quot;id&quot;, DataTypes.STRING())
-      .field(&quot;temp&quot;, DataTypes.DOUBLE())
-  ) // 定义表结构
-  .createTemporaryTable(&quot;outputTable&quot;) // 创建临时表
-
-resultSqlTable.insertInto(&quot;outputTable&quot;)
-</code></pre>
 <h4><a class="header" href="#更新模式update-mode" id="更新模式update-mode">更新模式（Update Mode）</a></h4>
 <p>在流处理过程中，表的处理并不像传统定义的那样简单。</p>
 <p>对于流式查询（Streaming Queries），需要声明如何在（动态）表和外部连接器之间执行转换。与外部系统交换的消息类型，由更新模式（update mode）指定。</p>
@@ -202,86 +184,6 @@ resultSqlTable.insertInto(&quot;outputTable&quot;)
 <li>删除（Delete）编码为Delete信息。</li>
 </ul>
 <p>这种模式和Retract模式的主要区别在于，Update操作是用单个消息编码的，所以效率会更高。</p>
-<h4><a class="header" href="#输出到kafka" id="输出到kafka">输出到Kafka</a></h4>
-<p>除了输出到文件，也可以输出到Kafka。我们可以结合前面Kafka作为输入数据，构建数据管道，kafka进，kafka出。</p>
-<p>代码如下：</p>
-<pre><code class="language-scala">// 输出到 kafka
-tableEnv.connect(
-  new Kafka()
-    .version(&quot;0.11&quot;)
-    .topic(&quot;sinkTest&quot;)
-    .property(&quot;zookeeper.connect&quot;, &quot;localhost:2181&quot;)
-    .property(&quot;bootstrap.servers&quot;, &quot;localhost:9092&quot;)
-  )
-  .withFormat(new Csv())
-  .withSchema(
-    new Schema()
-      .field(&quot;id&quot;, DataTypes.STRING())
-      .field(&quot;temp&quot;, DataTypes.DOUBLE())
-  )
-  .createTemporaryTable(&quot;kafkaOutputTable&quot;)
-  
-resultTable.insertInto(&quot;kafkaOutputTable&quot;)
-</code></pre>
-<h4><a class="header" href="#输出到elasticsearch" id="输出到elasticsearch">输出到ElasticSearch</a></h4>
-<p>ElasticSearch的connector可以在upsert（update+insert，更新插入）模式下操作，这样就可以使用Query定义的键（key）与外部系统交换UPSERT/DELETE消息。</p>
-<p>另外，对于“仅追加”（append-only）的查询，connector还可以在append 模式下操作，这样就可以与外部系统只交换insert消息。</p>
-<p>es目前支持的数据格式，只有Json，而flink本身并没有对应的支持，所以还需要引入依赖：</p>
-<pre><code class="language-xml">&lt;dependency&gt;
-  &lt;groupId&gt;org.apache.flink&lt;/groupId&gt;
-  &lt;artifactId&gt;flink-json&lt;/artifactId&gt;
-  &lt;version&gt;${flink.version}&lt;/version&gt;
-&lt;/dependency&gt;
-</code></pre>
-<p>代码实现如下：</p>
-<pre><code class="language-scala">// 输出到es
-tableEnv.connect(
-  new Elasticsearch()
-    .version(&quot;6&quot;)
-    .host(&quot;localhost&quot;, 9200, &quot;http&quot;)
-    .index(&quot;sensor&quot;)
-    .documentType(&quot;temp&quot;)
-  )
-  .inUpsertMode()           // 指定是 Upsert 模式
-  .withFormat(new Json())
-  .withSchema(
-    new Schema()
-      .field(&quot;id&quot;, DataTypes.STRING())
-      .field(&quot;count&quot;, DataTypes.BIGINT())
-  )
-  .createTemporaryTable(&quot;esOutputTable&quot;)
-  
-aggResultTable.insertInto(&quot;esOutputTable&quot;)
-</code></pre>
-<h4><a class="header" href="#输出到mysql" id="输出到mysql">输出到MySql</a></h4>
-<p>Flink专门为Table API的jdbc连接提供了flink-jdbc连接器，我们需要先引入依赖：</p>
-<pre><code class="language-xml">&lt;dependency&gt;
-  &lt;groupId&gt;org.apache.flink&lt;/groupId&gt;
-  &lt;artifactId&gt;flink-jdbc_2.11&lt;/artifactId&gt;
-  &lt;version&gt;${flink.version}&lt;/version&gt;
-&lt;/dependency&gt;
-</code></pre>
-<p>jdbc连接的代码实现比较特殊，因为没有对应的java/scala类实现ConnectorDescriptor，所以不能直接tableEnv.connect()。不过Flink SQL留下了执行DDL的接口：tableEnv.sqlUpdate()。</p>
-<p>对于jdbc的创建表操作，天生就适合直接写DDL来实现，所以我们的代码可以这样写：</p>
-<pre><code class="language-scala">// 输出到 Mysql
-val sinkDDL: String =
-  &quot;&quot;&quot;
-    |create table jdbcOutputTable (
-    |  id varchar(20) not null,
-    |  cnt bigint not null
-    |) with (
-    |  'connector.type' = 'jdbc',
-    |  'connector.url' = 'jdbc:mysql://localhost:3306/test',
-    |  'connector.table' = 'sensor_count',
-    |  'connector.driver' = 'com.mysql.jdbc.Driver',
-    |  'connector.username' = 'root',
-    |  'connector.password' = '123456'
-    |)
-  &quot;&quot;&quot;.stripMargin
-
-tableEnv.sqlUpdate(sinkDDL)
-aggResultSqlTable.insertInto(&quot;jdbcOutputTable&quot;)
-</code></pre>
 
                     </main>
 
