@@ -13,12 +13,27 @@ Table API基于代表一张“表”的Table类，并提供一整套操作处理
 代码中的实现如下：
 
 ```scala
-val sensorTable: Table = tableEnv.from("inputTable")
+// 获取表环境
+val tableEnv = ...
 
-val resultTable: Table = senorTable
-  .select("id, temperature")
-  .filter("id ='sensor_1'")
+// 注册订单表
+
+// 扫描注册的订单表
+val orders = tableEnv.from("Orders")
+// 计算来自法国的客户的总收入
+val revenue = orders
+  .filter($"cCountry" === "FRANCE")
+  .groupBy($"cID", $"cName")
+  .select($"cID", $"cName", $"revenue".sum AS "revSum")
+
+// 输出或者转换表
+// 执行查询
 ```
+
+>注意：需要导入的隐式类型转换
+>  - org.apache.flink.table.api._
+>  - org.apache.flink.api.scala._
+>  - org.apache.flink.table.api.bridge.scala._
 
 #### SQL查询
 
@@ -27,37 +42,39 @@ Flink的SQL集成，基于的是Apache Calcite，它实现了SQL标准。在Flin
 代码实现如下：
 
 ```scala
-val resultSqlTable: Table = tableEnv
-  .sqlQuery("select id, temperature from inputTable where id ='sensor_1'")
+// get a TableEnvironment
+val tableEnv = ... // see "Create a TableEnvironment" section
+
+// register Orders table
+
+// compute revenue for all customers from France
+val revenue = tableEnv.sqlQuery("""
+  |SELECT cID, cName, SUM(revenue) AS revSum
+  |FROM Orders
+  |WHERE cCountry = 'FRANCE'
+  |GROUP BY cID, cName
+  """.stripMargin)
+
+// emit or convert Table
+// execute query
 ```
 
-或者：
+如下的示例展示了如何指定一个更新查询，将查询的结果插入到已注册的表中。
 
 ```scala
-val resultSqlTable: Table = tableEnv.sqlQuery(
-  """
-    |select id, temperature
-    |from inputTable
-    |where id = 'sensor_1'
+// get a TableEnvironment
+val tableEnv = ... // see "Create a TableEnvironment" section
+
+// register "Orders" table
+// register "RevenueFrance" output table
+
+// compute revenue for all customers from France and emit to "RevenueFrance"
+tableEnv.executeSql("""
+  |INSERT INTO RevenueFrance
+  |SELECT cID, cName, SUM(revenue) AS revSum
+  |FROM Orders
+  |WHERE cCountry = 'FRANCE'
+  |GROUP BY cID, cName
   """.stripMargin)
 ```
-
-当然，也可以加上聚合操作，比如我们统计每个sensor温度数据出现的个数，做个count统计：
-
-```scala
-val aggResultTable = sensorTable
-  .groupBy('id)
-  .select('id, 'id.count as 'count)
-```
-
-SQL的实现：
-
-```scala
-val aggResultSqlTable = tableEnv
-  .sqlQuery("select id, count(id) as cnt from inputTable group by id")
-```
-
-这里Table API里指定的字段，前面加了一个单引号`'`，这是Table API中定义的Expression类型的写法，可以很方便地表示一个表中的字段。
-
-字段可以直接全部用双引号引起来，也可以用半边单引号+字段名的方式。以后的代码中，一般都用后一种形式。
 
