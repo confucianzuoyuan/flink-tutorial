@@ -25,12 +25,12 @@ object AggregateFunctionExample {
     val avgTemp = new AvgTemp()
 
     // table api
-    val table = tEnv.fromDataStream(stream, 'id, 'timestamp as 'ts, 'temperature as 'temp)
+    val table = tEnv.fromDataStream(stream, $"id", $"timestamp" as "ts", $"temperature" as "temp")
 
     table
-        .groupBy('id)
-        .aggregate(avgTemp('temp) as 'avgTemp)
-        .select('id, 'avgTemp)
+        .groupBy($"id")
+        .aggregate(avgTemp($"temp") as "avgTemp")
+        .select($"id", $"avgTemp")
         .toRetractStream[Row]
 //        .print()
 

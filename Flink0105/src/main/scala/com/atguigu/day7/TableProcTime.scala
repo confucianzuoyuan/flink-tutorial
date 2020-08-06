@@ -23,16 +23,16 @@ object TableProcTime {
     val stream: DataStream[SensorReading] = env.addSource(new SensorSource)
 
     // 'pt.proctime指定了处理时间是'pt字段，必须放在最后
-    val table: Table = tEnv.fromDataStream(stream, 'id, 'timestamp as 'ts, 'temperature as 'temp, 'pt.proctime)
+    val table: Table = tEnv.fromDataStream(stream, $"id", $"timestamp" as "ts", $"temperature" as "temp", $"pt".proctime)
 
     // table api 窗口操作
     table
-      // 开窗口，并命名为'w
-        .window(Tumble over 10.seconds on 'pt as 'w)
+      // 开窗口，并命名为$"w"
+        .window(Tumble over 10.seconds on $"pt" as $"w")
       // .keyBy(_.id).timeWindow(Time.seconds(10))
-        .groupBy('id, 'w)
+        .groupBy($"id", $"w")
       // .process
-        .select('id, 'id.count)
+        .select($"id", $"id".count)
         .toAppendStream[Row]
         .print()
 

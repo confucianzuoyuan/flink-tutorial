@@ -22,7 +22,7 @@ object SQLProcTime {
 
     val stream: DataStream[SensorReading] = env.addSource(new SensorSource)
 
-    tEnv.createTemporaryView("sensor", stream, 'id, 'timestamp as 'ts, 'pt.proctime)
+    tEnv.createTemporaryView("sensor", stream, $"id", $"timestamp" as "ts", $"pt".proctime)
 
     tEnv
         .sqlQuery("SELECT id, count(id) FROM sensor GROUP BY id, TUMBLE(pt, INTERVAL '10' SECOND)")

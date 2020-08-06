@@ -22,7 +22,7 @@ object SensorReadingCountBySQL {
 
     val stream = env.addSource(new SensorSource).filter(_.id.equals("sensor_1"))
 
-    tEnv.createTemporaryView("sensor", stream, 'id, 'timestamp as 'ts, 'temperature)
+    tEnv.createTemporaryView("sensor", stream, $"id", $"timestamp" as "ts", $"temperature")
 
     tEnv
       .sqlQuery("SELECT id, count(id) FROM sensor GROUP BY id")

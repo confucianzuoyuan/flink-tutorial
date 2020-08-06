@@ -5,7 +5,7 @@ import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.api.scala._
 import org.apache.flink.table.api._
 import org.apache.flink.table.api.bridge.scala._
-import org.apache.flink.table.functions.ScalarFunction
+import org.apache.flink.table.functions.{FunctionContext, ScalarFunction}
 import org.apache.flink.types.Row
 
 object ScalarFunctionExample {
@@ -22,20 +22,19 @@ object ScalarFunctionExample {
 
     val tEnv = StreamTableEnvironment.create(env, settings)
 
-    val hashCode = new HashCode(10)
+    tEnv.getConfig.addJobParameter("hashcode_factor", "31")
 
-    // table写法
-    val table = tEnv.fromDataStream(stream)
+    tEnv.createTemporaryView("sensor", stream)
 
-    table
-        .select('id, hashCode('id))
-        .toAppendStream[Row]
-//        .print()
+    // 在 Table API 里不经注册直接“内联”调用函数
+    tEnv.from("sensor").select(call(classOf[HashCodeFunction], $"id"))
 
     // sql 写法
-    tEnv.registerFunction("hashCode", hashCode)
+    // 注册函数
+    tEnv.createTemporarySystemFunction("hashCode", classOf[HashCodeFunction])
 
-    tEnv.createTemporaryView("sensor", table)
+    // 在 Table API 里调用注册好的函数
+    tEnv.from("sensor").select(call("hashCode", $"id"))
 
     tEnv
         .sqlQuery("SELECT id, hashCode(id) FROM sensor")
@@ -45,7 +44,16 @@ object ScalarFunctionExample {
     env.execute()
   }
 
-  class HashCode(factor: Int) extends ScalarFunction {
+  class HashCodeFunction extends ScalarFunction {
+
+    private var factor: Int = 0
+
+    override def open(context: FunctionContext): Unit = {
+      // 获取参数 "hashcode_factor"
+      // 如果不存在，则使用默认值 "12"
+      factor = context.getJobParameter("hashcode_factor", "12").toInt
+    }
+
     def eval(s: String): Int = {
       s.hashCode * factor
     }

@@ -26,7 +26,7 @@ object SQLEventTime {
       .addSource(new SensorSource)
       .assignAscendingTimestamps(_.timestamp) // 必须分配时间戳和设置水位线
 
-    tEnv.createTemporaryView("sensor", stream, 'id, 'timestamp.rowtime as 'ts, 'temperature)
+    tEnv.createTemporaryView("sensor", stream, $"id", $"timestamp".rowtime as "ts", $"temperature")
 
     tEnv
         .sqlQuery("SELECT id, COUNT(id) FROM sensor GROUP BY id, HOP(ts, INTERVAL '5' SECOND, INTERVAL '10' SECOND)")

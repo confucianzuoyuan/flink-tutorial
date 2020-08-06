@@ -1,5 +1,6 @@
 package com.atguigu.day7
 
+import com.atguigu.day2.SensorReading
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api._
 import org.apache.flink.api.scala._
@@ -22,24 +23,22 @@ object TableExample {
     // 初始化一个表环境
     val tEnv = StreamTableEnvironment.create(env, settings)
 
-    tEnv
-      .connect(new FileSystem().path("/Users/yuanzuo/Desktop/flink-tutorial/Flink0105/src/main/resources/sensor.txt"))  // 定义表数据来源，外部连接
-      .withFormat(new Csv())    // 定义从外部系统读取数据之后的格式化方法
-      .withSchema(
-        new Schema()
-          .field("id", DataTypes.STRING())
-          .field("timestamp", DataTypes.BIGINT())
-          .field("temperature", DataTypes.DOUBLE())
-      )    // 定义表结构
-      .createTemporaryTable("inputTable")    // 创建临时表
+    val stream = env
+      .readTextFile("/Users/yuanzuo/Desktop/flink-tutorial/Flink0105/src/main/resources/sensor.txt")
+      .map(line => {
+        val arr = line.split(",")
+        SensorReading(arr(0), arr(1).toLong, arr(2).toDouble)
+      })
+
+    tEnv.createTemporaryView("inputTable", stream)
 
     // 将临时表转换成Table数据类型
     val sensorTable: Table = tEnv.from("inputTable")
 
     // 使用Table API进行查询
     val result = sensorTable
-      .select("id, temperature")
-      .filter("id = 'sensor_1'")
+      .select($"id", $"temperature")
+      .filter($"id" === "sensor_1")
 
     tEnv.toAppendStream[Row](result).print()
 

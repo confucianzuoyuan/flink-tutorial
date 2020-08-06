@@ -5,7 +5,7 @@ import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.api.scala._
 import org.apache.flink.table.api._
 import org.apache.flink.table.api.bridge.scala._
-import org.apache.flink.table.functions.{AggregateFunction, TableAggregateFunction}
+import org.apache.flink.table.functions.TableAggregateFunction
 import org.apache.flink.types.Row
 import org.apache.flink.util.Collector
 
@@ -26,12 +26,12 @@ object TableAggregateFunctionExample {
     val top2Temp = new Top2Temp()
 
     // table api
-    val table = tEnv.fromDataStream(stream, 'id, 'timestamp as 'ts, 'temperature)
+    val table = tEnv.fromDataStream(stream, $"id", $"timestamp" as "ts", $"temperature")
 
     table
-        .groupBy('id)
-        .flatAggregate(top2Temp('temperature) as ('temp, 'rank))
-        .select('id, 'temp, 'rank)
+        .groupBy($"id")
+        .flatAggregate(top2Temp($"temperature") as ("temp", "rank"))
+        .select($"id", $"temp", $"rank")
         .toRetractStream[Row]
         .print()
 

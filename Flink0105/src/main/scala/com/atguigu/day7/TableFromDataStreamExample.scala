@@ -24,16 +24,16 @@ object TableFromDataStreamExample {
 
     // 字段名必须以`'`开始，as用来取别名
     // DataStream => Table
-    val table: Table = tEnv.fromDataStream(stream, 'id, 'timestamp as 'ts, 'temperature)
+    val table: Table = tEnv.fromDataStream(stream, $"id", $"timestamp" as "ts", $"temperature")
 
     table
-      .select('id)
+      .select($"id")
       .toAppendStream[Row] // 追加流
       .print()
 
     // 使用数据流来创建名字为sensor的临时表
     // 创建临时表的目的是为了在临时表上做sql查询
-    tEnv.createTemporaryView("sensor", stream, 'id, 'timestamp as 'ts, 'temperature)
+    tEnv.createTemporaryView("sensor", stream, $"id", $"timestamp" as "ts", $"temperature")
 
     tEnv
         .sqlQuery("select * from sensor where id='sensor_1'")

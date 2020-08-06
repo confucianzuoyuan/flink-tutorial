@@ -2,6 +2,7 @@ package com.atguigu.day8
 
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.api.scala._
+import org.apache.flink.table.annotation.{DataTypeHint, FunctionHint}
 import org.apache.flink.table.api._
 import org.apache.flink.table.api.bridge.scala._
 import org.apache.flink.table.functions.TableFunction
@@ -25,40 +26,43 @@ object TableFunctionExample {
 
     val tEnv = StreamTableEnvironment.create(env, settings)
 
-    // table 写法
-    val table = tEnv.fromDataStream(stream, 's)
+    tEnv.createTemporaryView("MyTable", stream, $"s")
 
-    val split = new Split("#")
+    // 注册函数
+    tEnv.createTemporarySystemFunction("SplitFunction", classOf[SplitFunction])
 
-    table
-      // 为了将`hello#world`和`hello 5`join到一行
-      .joinLateral(split('s) as ('word, 'length))
-      // 下面的写法和上面的写法等价
-      // .leftOuterJoinLateral(split('s) as ('word, 'length))
-      .select('s, 'word, 'length)
+    // 在 Table API 里调用注册好的函数
+    tEnv
+      .from("MyTable")
+      .joinLateral(call("SplitFunction", $"s"))
+      .select($"s", $"word", $"length")
       .toAppendStream[Row]
-//      .print()
-
-    // sql 写法
-    tEnv.registerFunction("split", split)
-
-    tEnv.createTemporaryView("t", table)
+      .print()
 
     tEnv
-      // `T`的意思是元组，flink里面的固定语法
-        .sqlQuery("SELECT s, word, length FROM t, LATERAL TABLE(split(s)) as T(word, length)")
-      //.sqlQuery("SELECT s, word, length FROM t LEFT JOIN LATERAL TABLE(split(s)) as T(word, length) ON TRUE")
-        .toAppendStream[Row]
-        .print()
+      .from("MyTable")
+      .leftOuterJoinLateral(call("SplitFunction", $"s"))
+      .select($"s", $"word", $"length")
+
+    // 在 SQL 里调用注册好的函数
+    tEnv.sqlQuery(
+      "SELECT s, word, length " +
+        "FROM MyTable, LATERAL TABLE(SplitFunction(s))")
+
+    tEnv.sqlQuery(
+      "SELECT s, word, length " +
+        "FROM MyTable " +
+        "LEFT JOIN LATERAL TABLE(SplitFunction(s)) ON TRUE")
 
     env.execute()
   }
 
-  // 输出的泛型是(String, Int)
-  class Split(sep: String) extends TableFunction[(String, Int)] {
-    def eval(s: String): Unit = {
-      // 使用collect方法向下游发送数据
-      s.split(sep).foreach(x => collect((x, x.length)))
+  @FunctionHint(output = new DataTypeHint("ROW<word STRING, length INT>"))
+  class SplitFunction extends TableFunction[Row] {
+
+    def eval(str: String): Unit = {
+      // use collect(...) to emit a row
+      str.split("#").foreach(s => collect(Row.of(s, Int.box(s.length))))
     }
   }
 }

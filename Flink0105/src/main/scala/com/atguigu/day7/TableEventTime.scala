@@ -27,12 +27,12 @@ object TableEventTime {
       .assignAscendingTimestamps(_.timestamp)
 
     // `.rowtime`指定已有字段为事件时间
-    val table: Table = tEnv.fromDataStream(stream, 'id, 'timestamp.rowtime as 'ts, 'temperature as 'temp)
+    val table: Table = tEnv.fromDataStream(stream, $"id", $"timestamp".rowtime as "ts", $"temperature" as "temp")
 
     table
-        .window(Slide over 10.seconds every 5.seconds on 'ts as 'w)
-        .groupBy('id, 'w)
-        .select('id, 'id.count)
+        .window(Slide over 10.seconds every 5.seconds on $"ts" as $"w")
+        .groupBy($"id", $"w")
+        .select($"id", $"id".count)
         .toAppendStream[Row]
         .print()
 
