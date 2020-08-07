@@ -6,18 +6,18 @@ Table API中的Group Windows都是使用.window（w:GroupWindow）子句定义�
 
 ```scala
 val table = input
-  .window([w: GroupWindow] as 'w) // 定义窗口，别名 w
-  .groupBy('w, 'a)  // 以属性a和窗口w作为分组的key
-  .select('a, 'b.sum)  // 聚合字段b的值，求和
+  .window([w: GroupWindow] as $"w") // 定义窗口，别名 w
+  .groupBy($"w", $"a")  // 以属性a和窗口w作为分组的key
+  .select($"a", $"b".sum)  // 聚合字段b的值，求和
 ```
 
 或者，还可以把窗口的相关信息，作为字段添加到结果表中：
 
 ```scala
 val table = input
-  .window([w: GroupWindow] as 'w)
-  .groupBy('w, 'a) 
-  .select('a, 'w.start, 'w.end, 'w.rowtime, 'b.count)
+  .window([w: GroupWindow] as $"w")
+  .groupBy($"w", $"a")
+  .select($"a", $"w".start, $"w".end, $"w".rowtime, $"b".count)
 ```
 
 Table API提供了一组具有特定语义的预定义Window类，这些类会被转换为底层DataStream或DataSet的窗口操作。
@@ -36,11 +36,11 @@ Table API支持的窗口定义，和我们熟悉的一样，主要也是三种�
 
 ```scala
 // Tumbling Event-time Window（事件时间字段rowtime
-.window(Tumble over 10.minutes on 'rowtime as 'w)
+.window(Tumble over 10.minutes on $"rowtime" as $"w")
 // Tumbling Processing-time Window（处理时间字段proctime）
-.window(Tumble over 10.minutes on 'proctime as 'w)
+.window(Tumble over 10.minutes on $"proctime" as $"w")
 // Tumbling Row-count Window (类似于计数窗口，按处理时间排序，10行一组)
-.window(Tumble over 10.rows on 'proctime as 'w)
+.window(Tumble over 10.rows on $"proctime" as $"w")
 ```
 
 #### 滑动窗口
@@ -56,11 +56,11 @@ Table API支持的窗口定义，和我们熟悉的一样，主要也是三种�
 
 ```scala
 // Sliding Event-time Window
-.window(Slide over 10.minutes every 5.minutes on 'rowtime as 'w)
+.window(Slide over 10.minutes every 5.minutes on $"rowtime" as $"w")
 // Sliding Processing-time window
-.window(Slide over 10.minutes every 5.minutes on 'proctime as 'w)
+.window(Slide over 10.minutes every 5.minutes on $"proctime" as $"w")
 // Sliding Row-count window
-.window(Slide over 10.rows every 5.rows on 'proctime as 'w)
+.window(Slide over 10.rows every 5.rows on $"proctime" as $"w")
 ```
 
 #### 会话窗口
@@ -75,8 +75,8 @@ Table API支持的窗口定义，和我们熟悉的一样，主要也是三种�
 
 ```{scala}
 // Session Event-time Window
-.window(Session withGap 10.minutes on 'rowtime as 'w)
+.window(Session withGap 10.minutes on $"rowtime" as $"w")
 // Session Processing-time Window
-.window(Session withGap 10.minutes on 'proctime as 'w)
+.window(Session withGap 10.minutes on $"proctime" as $"w")
 ```
 

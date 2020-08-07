@@ -28,7 +28,6 @@ def main(args: Array[String]): Unit = {
 
   val settings: EnvironmentSettings = EnvironmentSettings
     .newInstance()
-    .useOldPlanner()
     .inStreamingMode()
     .build()
 
@@ -36,18 +35,18 @@ def main(args: Array[String]): Unit = {
     .create(env, settings)
 
   val dataTable: Table = tableEnv
-    .fromDataStream(dataStream, 'id, 'temperature, 'timestamp.rowtime)
+    .fromDataStream(dataStream, $"id", $"temperature", $"timestamp".rowtime)
 
   val resultTable: Table = dataTable
-    .window(Tumble over 10.seconds on 'timestamp as 'tw)
-    .groupBy('id, 'tw)
-    .select('id, 'id.count)
+    .window(Tumble over 10.seconds on $"timestamp" as $"tw")
+    .groupBy($"id", $"tw")
+    .select($"id", $"id.count")
 
   val sqlDataTable: Table = dataTable
-    .select('id, 'temperature, 'timestamp as 'ts)
+    .select($"id", $"temperature", $"timestamp" as $"ts")
   val resultSqlTable: Table = tableEnv
-    .sqlQuery("select id, count(id) from " 
-      + sqlDataTable 
+    .sqlQuery("select id, count(id) from "
+      + sqlDataTable
       + " group by id,tumble(ts,interval '10' second)")
 
   // 把 Table转化成数据流

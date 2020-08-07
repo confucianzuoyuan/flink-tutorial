@@ -18,59 +18,82 @@
 
 ```scala
 // 自定义一个标量函数
-class HashCode( factor: Int ) extends ScalarFunction {
-  def eval( s: String ): Int = {
-    s.hashCode * factor
+  class HashCodeFunction extends ScalarFunction {
+
+    private var factor: Int = 0
+
+    override def open(context: FunctionContext): Unit = {
+      // 获取参数 "hashcode_factor"
+      // 如果不存在，则使用默认值 "12"
+      factor = context.getJobParameter("hashcode_factor", "12").toInt
+    }
+
+    def eval(s: String): Int = {
+      s.hashCode * factor
+    }
   }
-}
 ```
 
 主函数中调用，计算sensor id的哈希值（前面部分照抄，流环境、表环境、读取source、建表）：
 
 ```scala
-package com.atguigu.course
-
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.api.scala._
-import org.apache.flink.table.api.{EnvironmentSettings, Tumble}
-import org.apache.flink.table.api.scala._
-import org.apache.flink.table.functions.ScalarFunction
+import org.apache.flink.table.api._
+import org.apache.flink.table.api.bridge.scala._
+import org.apache.flink.table.functions.{FunctionContext, ScalarFunction}
+import org.apache.flink.types.Row
 
-object TableUDFExample1 {
+object ScalarFunctionExample {
   def main(args: Array[String]): Unit = {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
-    val settings = EnvironmentSettings.newInstance()
-      .useBlinkPlanner()
-      .inStreamingMode()
-      .build()
-    val tEnv = StreamTableEnvironment.create(env, settings)
     env.setParallelism(1)
+
     val stream = env.addSource(new SensorSource)
-    val hashCode = new HashCode(10)
-    tEnv.registerFunction("hashCode", new HashCode(10))
-    val table = tEnv.fromDataStream(stream, 'id)
-    // table api 写法
-    table
-      .select('id, hashCode('id))
-      .toAppendStream[(String, Int)]
-      .print()
+
+    val settings = EnvironmentSettings
+        .newInstance()
+        .inStreamingMode()
+        .build()
+
+    val tEnv = StreamTableEnvironment.create(env, settings)
+
+    tEnv.getConfig.addJobParameter("hashcode_factor", "31")
+
+    tEnv.createTemporaryView("sensor", stream)
+
+    // 在 Table API 里不经注册直接“内联”调用函数
+    tEnv.from("sensor").select(call(classOf[HashCodeFunction], $"id"))
 
     // sql 写法
-    tEnv.createTemporaryView("t", table, 'id)
+    // 注册函数
+    tEnv.createTemporarySystemFunction("hashCode", classOf[HashCodeFunction])
+
+    // 在 Table API 里调用注册好的函数
+    tEnv.from("sensor").select(call("hashCode", $"id"))
+
     tEnv
-      .sqlQuery("SELECT id, hashCode(id) FROM t")
-      .toAppendStream[(String, Int)]
-      .print()
+        .sqlQuery("SELECT id, hashCode(id) FROM sensor")
+        .toAppendStream[Row]
+        .print()
 
     env.execute()
   }
 
-  class HashCode(factor: Int) extends ScalarFunction {
+  class HashCodeFunction extends ScalarFunction {
+
+    private var factor: Int = 0
+
+    override def open(context: FunctionContext): Unit = {
+      // 获取参数 "hashcode_factor"
+      // 如果不存在，则使用默认值 "12"
+      factor = context.getJobParameter("hashcode_factor", "12").toInt
+    }
+
     def eval(s: String): Int = {
-      s.hashCode() * factor
+      s.hashCode * factor
     }
   }
-  
 }
 ```
 
@@ -96,61 +119,87 @@ joinLateral算子，会将外部表中的每一行，与表函数（TableFunctio
 
 ```scala
 // 自定义TableFunction
-class Split(separator: String) extends TableFunction[(String, Int)]{
-  def eval(str: String): Unit = {
-    str.split(separator).foreach(
-      word => collect((word, word.length))
-    )
+  @FunctionHint(output = new DataTypeHint("ROW<word STRING, length INT>"))
+  class SplitFunction extends TableFunction[Row] {
+
+    def eval(str: String): Unit = {
+      // use collect(...) to emit a row
+      str.split("#").foreach(s => collect(Row.of(s, Int.box(s.length))))
+    }
+  }
+```
+
+完整代码：
+
+```scala
+import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
+import org.apache.flink.api.scala._
+import org.apache.flink.table.annotation.{DataTypeHint, FunctionHint}
+import org.apache.flink.table.api._
+import org.apache.flink.table.api.bridge.scala._
+import org.apache.flink.table.functions.TableFunction
+import org.apache.flink.types.Row
+
+object TableFunctionExample {
+  def main(args: Array[String]): Unit = {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setParallelism(1)
+
+    val stream = env
+      .fromElements(
+        "hello#world",
+        "atguigu#bigdata"
+      )
+
+    val settings = EnvironmentSettings
+      .newInstance()
+      .inStreamingMode()
+      .build()
+
+    val tEnv = StreamTableEnvironment.create(env, settings)
+
+    tEnv.createTemporaryView("MyTable", stream, $"s")
+
+    // 注册函数
+    tEnv.createTemporarySystemFunction("SplitFunction", classOf[SplitFunction])
+
+    // 在 Table API 里调用注册好的函数
+    tEnv
+      .from("MyTable")
+      .joinLateral(call("SplitFunction", $"s"))
+      .select($"s", $"word", $"length")
+      .toAppendStream[Row]
+      .print()
+
+    tEnv
+      .from("MyTable")
+      .leftOuterJoinLateral(call("SplitFunction", $"s"))
+      .select($"s", $"word", $"length")
+
+    // 在 SQL 里调用注册好的函数
+    tEnv.sqlQuery(
+      "SELECT s, word, length " +
+        "FROM MyTable, LATERAL TABLE(SplitFunction(s))")
+
+    tEnv.sqlQuery(
+      "SELECT s, word, length " +
+        "FROM MyTable " +
+        "LEFT JOIN LATERAL TABLE(SplitFunction(s)) ON TRUE")
+
+    env.execute()
+  }
+
+  @FunctionHint(output = new DataTypeHint("ROW<word STRING, length INT>"))
+  class SplitFunction extends TableFunction[Row] {
+
+    def eval(str: String): Unit = {
+      // use collect(...) to emit a row
+      str.split("#").foreach(s => collect(Row.of(s, Int.box(s.length))))
+    }
   }
 }
 ```
 
-接下来，就是在代码中调用。首先是Table API的方式：
-
-```scala
-// Table API中调用，需要用joinLateral
-val resultTable = sensorTable
-  .joinLateral(split('id) as ('word, 'length))   // as对输出行的字段重命名
-  .select('id, 'word, 'length)
-  
-// 或者用leftOuterJoinLateral
-val resultTable2 = sensorTable
-  .leftOuterJoinLateral(split('id) as ('word, 'length))
-  .select('id, 'word, 'length)
-  
-// 转换成流打印输出
-resultTable.toAppendStream[Row].print("1")
-resultTable2.toAppendStream[Row].print("2")
-```
-
-然后是SQL的方式：
-
-```scala
-tableEnv.createTemporaryView("sensor", sensorTable)
-tableEnv.registerFunction("split", split)
-
-val resultSqlTable = tableEnv.sqlQuery(
-  """
-    |select id, word, length
-    |from
-    |sensor, LATERAL TABLE(split(id)) AS newsensor(word, length)
-  """.stripMargin)
-    
-// 或者用左连接的方式
-val resultSqlTable2 = tableEnv.sqlQuery(
-  """
-    |SELECT id, word, length
-    |FROM
-    |sensor
-    |  LEFT JOIN 
-    |  LATERAL TABLE(split(id)) AS newsensor(word, length) 
-    |  ON TRUE
-  """.stripMargin)
-
-// 转换成流打印输出
-resultSqlTable.toAppendStream[Row].print("1")
-resultSqlTable2.toAppendStream[Row].print("2")
-```
 
 #### 聚合函数（Aggregate Functions）
 
@@ -193,7 +242,7 @@ class AvgTemp extends AggregateFunction[Double, AvgTempAcc] {
   override def getValue(accumulator: AvgTempAcc): Double = accumulator.sum / accumulator.count
 
   override def createAccumulator(): AvgTempAcc = new AvgTempAcc
-  
+
   def accumulate(accumulator: AvgTempAcc, temp: Double): Unit ={
     accumulator.sum += temp
     accumulator.count += 1
@@ -208,10 +257,10 @@ class AvgTemp extends AggregateFunction[Double, AvgTempAcc] {
 val avgTemp = new AvgTemp()
 // Table API的调用
 val resultTable = sensorTable
-  .groupBy('id)
-  .aggregate(avgTemp('temperature) as 'avgTemp)
-  .select('id, 'avgTemp)
-  
+  .groupBy($"id")
+  .aggregate(avgTemp($"temperature") as $"avgTemp")
+  .select($"id", $"avgTemp")
+
 // SQL的实现
 tableEnv.createTemporaryView("sensor", sensorTable)
 tableEnv.registerFunction("avgTemp", avgTemp)
@@ -223,7 +272,7 @@ val resultSqlTable = tableEnv.sqlQuery(
     |sensor
     |GROUP BY id
   """.stripMargin)
-  
+
 // 转换成流打印输出
 resultTable.toRetractStream[(String, Double)].print("agg temp")
 resultSqlTable.toRetractStream[Row].print("agg temp sql")
@@ -252,10 +301,10 @@ AggregationFunction要求必须实现的方法：
 
 除了上述方法之外，还有一些可选择实现的方法。
 
-* retract() 
-* merge()  
-* resetAccumulator() 
-* emitValue() 
+* retract()
+* merge()
+* resetAccumulator()
+* emitValue()
 * emitUpdateWithRetract()
 
 接下来我们写一个自定义TableAggregateFunction，用来提取每个sensor最高的两个温度值。
@@ -269,9 +318,9 @@ class Top2TempAcc{
 
 // 自定义 TableAggregateFunction
 class Top2Temp extends TableAggregateFunction[(Double, Int), Top2TempAcc]{
-  
+
   override def createAccumulator(): Top2TempAcc = new Top2TempAcc
-  
+
   def accumulate(acc: Top2TempAcc, temp: Double): Unit ={
     if( temp > acc.highestTemp ){
       acc.secondHighestTemp = acc.highestTemp
@@ -280,7 +329,7 @@ class Top2Temp extends TableAggregateFunction[(Double, Int), Top2TempAcc]{
       acc.secondHighestTemp = temp
     }
   }
-  
+
   def emitValue(acc: Top2TempAcc, out: Collector[(Double, Int)]): Unit ={
     out.collect(acc.highestTemp, 1)
     out.collect(acc.secondHighestTemp, 2)
@@ -295,12 +344,11 @@ class Top2Temp extends TableAggregateFunction[(Double, Int), Top2TempAcc]{
 val top2Temp = new Top2Temp()
 // Table API的调用
 val resultTable = sensorTable
-  .groupBy('id)
-  .flatAggregate( top2Temp('temperature) as ('temp, 'rank) )
-  .select('id, 'temp, 'rank)
-  
+  .groupBy($"id")
+  .flatAggregate(top2Temp($"temperature") as ($"temp", $"rank"))
+  .select($"id", $"temp", $"rank")
+
 // 转换成流打印输出
 resultTable.toRetractStream[(String, Double, Int)].print("agg temp")
 resultSqlTable.toRetractStream[Row].print("agg temp sql")
 ```
-
