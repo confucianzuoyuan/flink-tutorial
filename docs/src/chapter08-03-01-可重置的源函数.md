@@ -6,7 +6,7 @@
 
 下面的例子将CountSource重写为可重置的数据源。
 
-```scala
+```java
 class ResettableCountSource
     extends SourceFunction[Long] with CheckpointedFunction {
 
@@ -14,7 +14,8 @@ class ResettableCountSource
   var cnt: Long = _
   var offsetState: ListState[Long] = _
 
-  override def run(ctx: SourceFunction.SourceContext[Long]) = {
+  @Override
+public run(ctx: SourceFunction.SourceContext[Long]) = {
     while (isRunning && cnt < Long.MaxValue) {
       // synchronize data emission and checkpoints
       ctx.getCheckpointLock.synchronized {
@@ -24,9 +25,11 @@ class ResettableCountSource
     }
   }
 
-  override def cancel() = isRunning = false
+  @Override
+public cancel() = isRunning = false
 
-  override def snapshotState(
+  @Override
+public snapshotState(
     snapshotCtx: FunctionSnapshotContext
   ): Unit = {
     // remove previous cnt
@@ -35,7 +38,8 @@ class ResettableCountSource
     offsetState.add(cnt)
   }
 
-  override def initializeState(
+  @Override
+public initializeState(
       initCtx: FunctionInitializationContext): Unit = {
  
     val desc = new ListStateDescriptor[Long](

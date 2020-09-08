@@ -164,7 +164,7 @@
 &lt;/dependency&gt;  
 </code></pre>
 <p>下面的例子展示了如何创建一个Kafka sink</p>
-<pre><code class="language-scala">val stream: DataStream[String] = ...
+<pre><code class="language-java">val stream: DataStream[String] = ...
 
 val myProducer = new FlinkKafkaProducer[String](
   &quot;localhost:9092&quot;,         // broker list

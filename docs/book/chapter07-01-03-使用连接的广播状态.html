@@ -160,7 +160,7 @@
 <p>我们举个例子：一条流是一个规则(比如5秒钟内连续两个超过阈值的温度)，另一条流是待匹配的流。也就是说，规则流和事件流。所以每一个操作符的并行实例都需要把规则流保存在操作符状态中。也就是说，规则流需要被广播到所有的并行实例中去。</p>
 <p>在Flink中，这样的状态叫做广播状态(broadcast state)。广播状态和DataStream或者KeyedStream都可以做连接操作。</p>
 <p>下面的例子实现了一个温度报警应用，应用有可以动态设定的阈值，动态设定通过广播流来实现。</p>
-<pre><code class="language-scala">val sensorData: DataStream[SensorReading] = ...
+<pre><code class="language-java">val sensorData: DataStream[SensorReading] = ...
 val thresholds: DataStream[ThresholdUpdate] = ...
 val keyedSensorData: KeyedStream[SensorReading, String] = sensorData
   .keyBy(_.id)
@@ -185,7 +185,7 @@ val alerts: DataStream[(String, Double, Double)] = keyedSensorData
 <li>在connected streams上调用KeyedBroadcastProcessFunction/BroadcastProcessFunction。</li>
 </ul>
 <p>下面的例子实现了动态设定温度阈值的功能。</p>
-<pre><code class="language-scala">class UpdatableTemperatureAlertFunction()
+<pre><code class="language-java">class UpdatableTemperatureAlertFunction()
     extends KeyedBroadcastProcessFunction[String,
       SensorReading, ThresholdUpdate, (String, Double, Double)] {
 
@@ -197,7 +197,8 @@ val alerts: DataStream[(String, Double, Double)] = keyedSensorData
   // the keyed state handle
   private var lastTempState: ValueState[Double] = _
 
-  override def open(parameters: Configuration): Unit = {
+  @Override
+public open(parameters: Configuration): Unit = {
     // create keyed state descriptor
     val lastTempDescriptor = new ValueStateDescriptor[Double](
       &quot;lastTemp&quot;, classOf[Double])
@@ -206,7 +207,8 @@ val alerts: DataStream[(String, Double, Double)] = keyedSensorData
       .getState[Double](lastTempDescriptor)
   }
 
-  override def processBroadcastElement(
+  @Override
+public processBroadcastElement(
       update: ThresholdUpdate,
       ctx: KeyedBroadcastProcessFunction[String,
         SensorReading, ThresholdUpdate,
@@ -225,7 +227,8 @@ val alerts: DataStream[(String, Double, Double)] = keyedSensorData
     }
   }
 
-  override def processElement(
+  @Override
+public processElement(
       reading: SensorReading,
       readOnlyCtx: KeyedBroadcastProcessFunction
         [String, SensorReading, ThresholdUpdate, 

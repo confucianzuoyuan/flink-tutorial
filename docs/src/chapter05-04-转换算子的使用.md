@@ -4,7 +4,7 @@
 
 在我们的例子中，我们首先使用`map()`转换算子将传感器的温度值转换成了摄氏温度单位。然后，我们使用`keyBy()`转换算子将传感器读数流按照传感器ID进行分区。接下来，我们定义了一个`timeWindow()`转换算子，这个算子将每个传感器ID所对应的分区的传感器读数分配到了5秒钟的滚动窗口中。
 
-```scala
+```java
 val avgTemp: DataStream[SensorReading] = sensorData
   .map(r => {
     val celsius = (r.temperature - 32) * (5.0 / 9.0)

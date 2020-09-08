@@ -157,7 +157,7 @@
                     <main>
                         <h2><a class="header" href="#实时对帐实现两条流的join" id="实时对帐实现两条流的join">实时对帐：实现两条流的Join</a></h2>
 <p>完整代码如下：</p>
-<pre><code class="language-scala">import org.apache.flink.api.common.state.{ValueState, ValueStateDescriptor}
+<pre><code class="language-java">import org.apache.flink.api.common.state.{ValueState, ValueStateDescriptor}
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.functions.co.CoProcessFunction
 import org.apache.flink.streaming.api.scala.OutputTag
@@ -177,7 +177,7 @@ object TwoStreamsJoin {
   val unmatchedPays = new OutputTag[PayEvent](&quot;unmatchedPays&quot;){}
 
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
@@ -219,7 +219,8 @@ object TwoStreamsJoin {
       .getState(new ValueStateDescriptor[PayEvent](&quot;saved pay&quot;,
         classOf[PayEvent]))
 
-    override def processElement1(
+    @Override
+public processElement1(
       order: OrderEvent,
       context: CoProcessFunction[OrderEvent,
         PayEvent, (OrderEvent, PayEvent)]#Context,
@@ -239,7 +240,8 @@ object TwoStreamsJoin {
       }
     }
 
-    override def processElement2(
+    @Override
+public processElement2(
       pay: PayEvent,
       context: CoProcessFunction[OrderEvent,
         PayEvent,(OrderEvent, PayEvent)]#Context,
@@ -258,7 +260,8 @@ object TwoStreamsJoin {
       }
     }
 
-    override def onTimer(
+    @Override
+public onTimer(
       timestamp: Long,
       ctx: CoProcessFunction[OrderEvent,
         PayEvent, (OrderEvent, PayEvent)]#OnTimerContext,

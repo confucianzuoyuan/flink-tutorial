@@ -158,13 +158,13 @@
                         <h3><a class="header" href="#分组窗口" id="分组窗口">分组窗口</a></h3>
 <p>分组窗口（Group Windows）会根据时间或行计数间隔，将行聚合到有限的组（Group）中，并对每个组的数据执行一次聚合函数。</p>
 <p>Table API中的Group Windows都是使用.window（w:GroupWindow）子句定义的，并且必须由as子句指定一个别名。为了按窗口对表进行分组，窗口的别名必须在group by子句中，像常规的分组字段一样引用。</p>
-<pre><code class="language-scala">val table = input
+<pre><code class="language-java">val table = input
   .window([w: GroupWindow] as $&quot;w&quot;) // 定义窗口，别名 w
   .groupBy($&quot;w&quot;, $&quot;a&quot;)  // 以属性a和窗口w作为分组的key
   .select($&quot;a&quot;, $&quot;b&quot;.sum)  // 聚合字段b的值，求和
 </code></pre>
 <p>或者，还可以把窗口的相关信息，作为字段添加到结果表中：</p>
-<pre><code class="language-scala">val table = input
+<pre><code class="language-java">val table = input
   .window([w: GroupWindow] as $&quot;w&quot;)
   .groupBy($&quot;w&quot;, $&quot;a&quot;)
   .select($&quot;a&quot;, $&quot;w&quot;.start, $&quot;w&quot;.end, $&quot;w&quot;.rowtime, $&quot;b&quot;.count)
@@ -179,7 +179,7 @@
 <li>as：别名，必须出现在后面的groupBy中</li>
 </ul>
 <p>代码如下：</p>
-<pre><code class="language-scala">// Tumbling Event-time Window（事件时间字段rowtime
+<pre><code class="language-java">// Tumbling Event-time Window（事件时间字段rowtime
 .window(Tumble over 10.minutes on $&quot;rowtime&quot; as $&quot;w&quot;)
 // Tumbling Processing-time Window（处理时间字段proctime）
 .window(Tumble over 10.minutes on $&quot;proctime&quot; as $&quot;w&quot;)
@@ -195,7 +195,7 @@
 <li>as：别名，必须出现在后面的groupBy中</li>
 </ul>
 <p>代码如下：</p>
-<pre><code class="language-scala">// Sliding Event-time Window
+<pre><code class="language-java">// Sliding Event-time Window
 .window(Slide over 10.minutes every 5.minutes on $&quot;rowtime&quot; as $&quot;w&quot;)
 // Sliding Processing-time window
 .window(Slide over 10.minutes every 5.minutes on $&quot;proctime&quot; as $&quot;w&quot;)

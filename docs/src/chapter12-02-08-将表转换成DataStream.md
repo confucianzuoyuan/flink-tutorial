@@ -20,7 +20,7 @@ Table API中表到DataStream有两种模式：
 
 代码实现如下：
 
-```scala
+```java
 val resultStream: DataStream[Row] = tableEnv
   .toAppendStream[Row](resultTable)
 

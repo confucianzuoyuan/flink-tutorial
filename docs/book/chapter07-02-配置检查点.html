@@ -157,10 +157,10 @@
                     <main>
                         <h2><a class="header" href="#配置检查点" id="配置检查点">配置检查点</a></h2>
 <p>10秒钟保存一次检查点。</p>
-<pre><code class="language-scala">val env = StreamExecutionEnvironment.getExecutionEnvironment
+<pre><code class="language-java">StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment;
 
 // set checkpointing interval to 10 seconds (10000 milliseconds)
-env.enableCheckpointing(10000L)
+env.enableCheckpointing(10000L);
 </code></pre>
 
                     </main>

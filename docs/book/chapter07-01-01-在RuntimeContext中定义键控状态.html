@@ -185,7 +185,7 @@
 <li>AggregatingState[I, O]</li>
 </ul>
 <p>State.clear()是清空操作。</p>
-<pre><code class="language-scala">val sensorData: DataStream[SensorReading] = ...
+<pre><code class="language-java">val sensorData: DataStream[SensorReading] = ...
 val keyedData: KeyedStream[SensorReading, String] = sensorData.keyBy(_.id)
 
 val alerts: DataStream[(String, Double, Double)] = keyedData
@@ -195,14 +195,16 @@ class TemperatureAlertFunction(val threshold: Double)
   extends RichFlatMapFunction[SensorReading, (String, Double, Double)] {
   private var lastTempState: ValueState[Double] = _
 
-  override def open(parameters: Configuration): Unit = {
+  @Override
+public open(parameters: Configuration): Unit = {
     val lastTempDescriptor = new ValueStateDescriptor[Double](
       &quot;lastTemp&quot;, classOf[Double])
 
     lastTempState = getRuntimeContext.getState[Double](lastTempDescriptor)
   }
 
-  override def flatMap(
+  @Override
+public flatMap(
     reading: SensorReading,
     out: Collector[(String, Double, Double)]
   ): Unit = {
@@ -225,13 +227,13 @@ class TemperatureAlertFunction(val threshold: Double)
 </ul>
 <p>当一个函数注册了StateDescriptor描述符，Flink会检查状态后端是否已经存在这个状态。这种情况通常出现在应用挂掉要从检查点或者保存点恢复的时候。在这两种情况下，Flink会将注册的状态连接到已经存在的状态。如果不存在状态，则初始化一个空的状态。</p>
 <p>使用FlatMap with keyed ValueState的快捷方式flatMapWithState也可以实现以上需求。</p>
-<pre><code class="language-scala">val alerts: DataStream[(String, Double, Double)] = keyedSensorData
+<pre><code class="language-java">val alerts: DataStream[(String, Double, Double)] = keyedSensorData
   .flatMapWithState[(String, Double, Double), Double] {
     case (in: SensorReading, None) =&gt;
       // no previous temperature defined.
       // Just update the last temperature
       (List.empty, Some(in.temperature))
-    case (r: SensorReading, lastTemp: Some[Double]) =&gt;
+    case (SensorReading r, lastTemp: Some[Double]) =&gt;
       // compare temperature difference with threshold
       val tempDiff = (r.temperature - lastTemp.get).abs
       if (tempDiff &gt; 1.7) {

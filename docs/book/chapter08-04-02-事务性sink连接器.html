@@ -178,7 +178,7 @@
 </code></pre>
 <p>当检查点完成时，GenericWriteAheadSink调用sendValues()方法来将数据写入到外部存储系统中。这个方法接收一个检查点对应的所有数据的迭代器，检查点的ID，检查点被处理时的时间戳。当数据写入成功时，方法必须返回true，写入失败返回false。</p>
 <p>下面的例子展示了如何实现一个写入到标准输出的write-ahead sink。它使用了FileCheckpointCommitter。</p>
-<pre><code class="language-scala">val readings: DataStream[SensorReading] = ???
+<pre><code class="language-java">val readings: DataStream[SensorReading] = ???
 
 // write the sensor readings to the standard out via a write-ahead log
 readings.transform(
@@ -196,7 +196,8 @@ class StdOutWriteAheadSink extends GenericWriteAheadSink[SensorReading](
     // Random JobID used by the CheckpointCommitter
     UUID.randomUUID.toString) {
 
-  override def sendValues(
+  @Override
+public sendValues(
       readings: Iterable[SensorReading],
       checkpointId: Long,
       timestamp: Long): Boolean = {
@@ -228,7 +229,7 @@ class StdOutWriteAheadSink extends GenericWriteAheadSink[SensorReading](
 <li>commit一个事务必须是一个幂等性操作。sink系统或者外部系统能够观察到事务已经被提交，或者重复提交并没有副作用。</li>
 </ul>
 <p>下面的例子可能会让上面的一些概念好理解一些。</p>
-<pre><code class="language-scala">class TransactionalFileSink(val targetPath: String, val tempPath: String)
+<pre><code class="language-java">class TransactionalFileSink(val targetPath: String, val tempPath: String)
     extends TwoPhaseCommitSinkFunction[(String, Double), String, Void](
       createTypeInformation[String].createSerializer(new ExecutionConfig),
       createTypeInformation[Void].createSerializer(new ExecutionConfig)) {
@@ -237,7 +238,8 @@ class StdOutWriteAheadSink extends GenericWriteAheadSink[SensorReading](
 
   // Creates a temporary file for a transaction into
   // which the records are written.
-  override def beginTransaction(): String = {
+  @Override
+public beginTransaction(): String = {
     // path of transaction file
     // is built from current time and task index
     val timeNow = LocalDateTime.now(ZoneId.of(&quot;UTC&quot;))
@@ -256,7 +258,8 @@ class StdOutWriteAheadSink extends GenericWriteAheadSink[SensorReading](
   }
 
   /** Write record into the current transaction file. */
-  override def invoke(
+  @Override
+public invoke(
       transaction: String,
       value: (String, Double),
       context: Context[_]): Unit = {
@@ -265,7 +268,8 @@ class StdOutWriteAheadSink extends GenericWriteAheadSink[SensorReading](
   }
 
   /** Flush and close the current transaction file. */
-  override def preCommit(transaction: String): Unit = {
+  @Override
+public preCommit(transaction: String): Unit = {
     transactionWriter.flush()
     transactionWriter.close()
   }
@@ -273,7 +277,8 @@ class StdOutWriteAheadSink extends GenericWriteAheadSink[SensorReading](
   // Commit a transaction by moving
   // the precommitted transaction file
   // to the target directory.
-  override def commit(transaction: String): Unit = {
+  @Override
+public commit(transaction: String): Unit = {
     val tFilePath = Paths.get(s&quot;$tempPath/$transaction&quot;)
     // check if the file exists to ensure
     // that the commit is idempotent
@@ -284,7 +289,8 @@ class StdOutWriteAheadSink extends GenericWriteAheadSink[SensorReading](
   }
 
   // Aborts a transaction by deleting the transaction file.
-  override def abort(transaction: String): Unit = {
+  @Override
+public abort(transaction: String): Unit = {
     val tFilePath = Paths.get(s&quot;$tempPath/$transaction&quot;)
     if (Files.exists(tFilePath)) {
       Files.delete(tFilePath)

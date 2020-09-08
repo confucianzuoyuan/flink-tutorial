@@ -161,7 +161,7 @@
 <p>代码中实现非常简单，直接用tableEnv.fromDataStream()就可以了。默认转换后的 Table schema 和 DataStream 中的字段定义一一对应，也可以单独指定出来。</p>
 <p>这就允许我们更换字段的顺序、重命名，或者只选取某些字段出来，相当于做了一次map操作（或者Table API的 select操作）。</p>
 <p>代码具体如下：</p>
-<pre><code class="language-scala">val inputStream: DataStream[String] = env.readTextFile(&quot;sensor.txt&quot;)
+<pre><code class="language-java">val inputStream: DataStream[String] = env.readTextFile(&quot;sensor.txt&quot;)
 val dataStream: DataStream[SensorReading] = inputStream
   .map(data =&gt; {
     val dataArray = data.split(&quot;,&quot;)
@@ -176,11 +176,11 @@ val sensorTable2 = tableEnv.fromDataStream(dataStream, 'id, 'timestamp as 'ts)
 <p>在上节的例子中，DataStream 中的数据类型，与表的 Schema 之间的对应关系，是按照样例类中的字段名来对应的（name-based mapping），所以还可以用as做重命名。</p>
 <p>另外一种对应方式是，直接按照字段的位置来对应（position-based mapping），对应的过程中，就可以直接指定新的字段名了。</p>
 <p>基于名称的对应：</p>
-<pre><code class="language-scala">val sensorTable = tableEnv
+<pre><code class="language-java">val sensorTable = tableEnv
   .fromDataStream(dataStream, $&quot;timestamp&quot; as &quot;ts&quot;, $&quot;id&quot; as &quot;myId&quot;, &quot;temperature&quot;)
 </code></pre>
 <p>基于位置的对应：</p>
-<pre><code class="language-scala">val sensorTable = tableEnv
+<pre><code class="language-java">val sensorTable = tableEnv
   .fromDataStream(dataStream, $&quot;myId&quot;, $&quot;ts&quot;)
 </code></pre>
 <p>Flink的DataStream和 DataSet API支持多种类型。</p>

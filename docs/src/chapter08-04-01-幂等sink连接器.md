@@ -7,7 +7,7 @@
 
 下面的例子展示了如何实现一个针对JDBC数据库的幂等写入sink连接器，这里使用的是Apache Derby数据库。
 
-```scala
+```java
 val readings: DataStream[SensorReading] = ...
 
 // write the sensor readings to a Derby table
@@ -20,7 +20,8 @@ class DerbyUpsertSink extends RichSinkFunction[SensorReading] {
   var insertStmt: PreparedStatement = _
   var updateStmt: PreparedStatement = _
 
-  override def open(parameters: Configuration): Unit = {
+  @Override
+public open(parameters: Configuration): Unit = {
     // connect to embedded in-memory Derby
     conn = DriverManager.getConnection(
        "jdbc:derby:memory:flinkExample",
@@ -32,7 +33,8 @@ class DerbyUpsertSink extends RichSinkFunction[SensorReading] {
       "UPDATE Temperatures SET temp = ? WHERE sensor = ?")
   }
 
-  override def invoke(r: SensorReading, context: Context[_]): Unit = {
+  @Override
+public invoke(SensorReading r, context: Context[_]): Unit = {
     // set parameters for update statement and execute it
     updateStmt.setDouble(1, r.temperature)
     updateStmt.setString(2, r.id)
@@ -48,7 +50,8 @@ class DerbyUpsertSink extends RichSinkFunction[SensorReading] {
     }
   }
 
-  override def close(): Unit = {
+  @Override
+public close(): Unit = {
     insertStmt.close()
     updateStmt.close()
     conn.close()

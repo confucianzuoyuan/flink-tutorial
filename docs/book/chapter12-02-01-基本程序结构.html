@@ -158,7 +158,7 @@
                         <h3><a class="header" href="#基本程序结构" id="基本程序结构">基本程序结构</a></h3>
 <p>Table API 和 SQL 的程序结构，与流式处理的程序结构类似；也可以近似地认为有这么几步：首先创建执行环境，然后定义source、transform和sink。</p>
 <p>具体操作流程如下：</p>
-<pre><code class="language-scala">val tableEnv = ... // 创建表环境
+<pre><code class="language-java">val tableEnv = ... // 创建表环境
 
 // 创建表
 tableEnv.connect(...).createTemporaryTable(&quot;table1&quot;)

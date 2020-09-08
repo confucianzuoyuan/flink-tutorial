@@ -4,7 +4,7 @@
 
 也可以用下面的方法来显式的创建本地或者远程执行环境：
 
-```scala
+```java
 // create a local stream execution environment
 val localEnv = StreamExecutionEnvironment
   .createLocalEnvironment()

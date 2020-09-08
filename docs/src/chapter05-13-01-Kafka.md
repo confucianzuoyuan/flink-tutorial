@@ -22,17 +22,16 @@ Kafka版本为2.0以上
 
 主函数中添加sink：
 
-```scala
-val union = high
+```java
+DataStream<String> union = high
   .union(low)
-  .map(_.temperature.toString)
+  .map(r -> r.temperature.toString)
 
 union.addSink(
-  new FlinkKafkaProducer011[String](
+  new FlinkKafkaProducer011<String>(
     "localhost:9092",
     "test",
     new SimpleStringSchema()
   )
 )
 ```
-

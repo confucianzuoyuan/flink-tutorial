@@ -4,9 +4,9 @@
 
 强烈建议为应用的每一个操作符定义唯一标识符。例子：
 
-```scala
-val alerts: DataStream[(String, Double, Double)] = keyedSensorData
+```java
+DataStream<Tuple3<String, Double, Double>> alerts = keyedSensorData
   .flatMap(new TemperatureAlertFunction(1.1))  
-  .uid("TempAlert")
+  .uid("TempAlert");
 ```
 

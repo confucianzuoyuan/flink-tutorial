@@ -156,7 +156,7 @@
                 <div id="content" class="content">
                     <main>
                         <h2><a class="header" href="#恶意登陆实现" id="恶意登陆实现">恶意登陆实现</a></h2>
-<pre><code class="language-scala">package com.atguigu
+<pre><code class="language-java">package com.atguigu
 
 import com.atguigu.FlinkCepExample.LoginEvent
 import org.apache.flink.api.common.state.{ListStateDescriptor, ValueStateDescriptor}
@@ -171,7 +171,7 @@ import scala.collection.mutable.ListBuffer
 
 object LoginFailWithoutCEP {
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
@@ -200,7 +200,8 @@ object LoginFailWithoutCEP {
       new ValueStateDescriptor[Long](&quot;ts&quot;, Types.of[Long])
     )
 
-    override def processElement(
+    @Override
+public processElement(
       value: LoginEvent,
       ctx: KeyedProcessFunction[String, LoginEvent, String]#Context,
       out: Collector[String]
@@ -223,7 +224,8 @@ object LoginFailWithoutCEP {
       }
     }
 
-    override def onTimer(
+    @Override
+public onTimer(
       ts: Long,
       ctx: KeyedProcessFunction[String, LoginEvent, String]#OnTimerContext,
       out: Collector[String]

@@ -4,7 +4,7 @@ Table API 和 SQL 的程序结构，与流式处理的程序结构类似；也�
 
 具体操作流程如下：
 
-```scala
+```java
 val tableEnv = ... // 创建表环境
 
 // 创建表

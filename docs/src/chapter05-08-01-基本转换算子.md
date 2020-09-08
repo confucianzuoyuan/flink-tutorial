@@ -19,20 +19,23 @@ MapFunction[T, O]
 
 下面的代码实现了将SensorReading中的id字段抽取出来的功能。
 
-```scala
-val readings: DataStream[SensorReading] = ...
-val sensorIds: DataStream[String] = readings.map(new MyMapFunction)
+```java
+DataStream[SensorReading] readings = ...
+DataStream[String] sensorIds = readings.map(new IdExtractor)
 
-class MyMapFunction extends MapFunction[SensorReading, String] {
-  override def map(r: SensorReading): String = r.id
+public static class IdExtractor implements MapFunction<SensorReading, String> {
+    @Override
+    public String map(SensorReading r) throws Exception {
+        return r.id;
+    }
 }
 ```
 
 当然我们更推荐匿名函数的写法。
 
-```scala
-val readings: DataStream[SensorReading] = ...
-val sensorIds: DataStream[String] = readings.map(r => r.id)
+```java
+DataStream<String> sensorIds = filteredReadings
+        .map(r -> r.id);
 ```
 
 *FILTER*
@@ -51,9 +54,9 @@ FilterFunction[T]
 
 下面的例子展示了如何使用filter来从传感器数据中过滤掉温度值小于25华氏温度的读数。
 
-```scala
-val readings: DataStream[SensorReading] = ...
-val filteredSensors = readings.filter(r => r.temperature >= 25)
+```java
+DataStream<SensorReading> filteredReadings = readings
+        .filter(r -> r.temperature >= 25);
 ```
 
 *FLATMAP*
@@ -71,11 +74,28 @@ FlatMapFunction[T, O]
     > flatMap(T, Collector[O]): Unit
 ```
 
-下面的例子展示了在数据分析教程中经常用到的例子，我们用`flatMap`来实现。这个函数应用在一个语句流上面，将每个句子用空格切分，然后把切分出来的单词作为单独的事件发送出去。
+下面的例子展示了在数据分析教程中经常用到的例子，我们用`flatMap`来实现。使用`_`来切割传感器ID，比如`sensor_1`。
 
-```scala
-val sentences: DataStream[String] = ...
-val words: DataStream[String] = sentences
-  .flatMap(id => id.split(" "))
+```java
+public static class IdSplitter implements FlatMapFunction<String, String> {
+    @Override
+    public void flatMap(String id, Collector<String> out) {
+
+        String[] splits = id.split("_");
+
+        for (String split : splits) {
+            out.collect(split);
+        }
+    }
+}
 ```
 
+匿名函数写法：
+
+```java
+DataStream<String> splitIds = sensorIds
+        .flatMap((FlatMapFunction<String, String>)
+                (id, out) -> { for (String s: id.split("_")) { out.collect(s);}})
+        // provide result type because Java cannot infer return type of lambda function
+        .returns(Types.STRING);
+```

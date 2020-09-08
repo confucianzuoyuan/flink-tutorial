@@ -54,13 +54,13 @@ Flink为CEP提供了专门的Flink CEP library，它包含如下组件：
 
 登录事件流
 
-```scala
+```java
 case class LoginEvent(userId: String,
                       ip: String,
                       eventType: String,
                       eventTime: String)
 
-val env = StreamExecutionEnvironment.getExecutionEnvironment
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
 env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 env.setParallelism(1)
 
@@ -78,7 +78,7 @@ val loginEventStream = env
 
 每个Pattern都应该包含几个步骤，或者叫做state。从一个state到另一个state，通常我们需要定义一些条件，例如下列的代码：
 
-```scala
+```java
 val loginFailPattern = Pattern.begin[LoginEvent]("begin")
   .where(_.eventType.equals("fail"))
   .next("next")
@@ -96,26 +96,26 @@ val loginFailPattern = Pattern.begin[LoginEvent]("begin")
 
 我们也可以通过subtype来限制event的子类型：
 
-```scala
+```java
 start.subtype(SubEvent.class).where(...);
 ```
 
 事实上，你可以多次调用subtype和where方法；而且如果where条件是不相关的，你可以通过or来指定一个单独的filter函数：
 
-```scala
+```java
 pattern.where(...).or(...);
 ```
 
 之后，我们可以在此条件基础上，通过next或者followedBy方法切换到下一个state，next的意思是说上一步符合条件的元素之后紧挨着的元素；而followedBy并不要求一定是挨着的元素。这两者分别称为严格近邻和非严格近邻。
 
-```scala
+```java
 val strictNext = start.next("middle")
 val nonStrictNext = start.followedBy("middle")
 ```
 
 最后，我们可以将所有的Pattern的条件限定在一定的时间范围内：
 
-```scala
+```java
 next.within(Time.seconds(10))
 ```
 
@@ -125,14 +125,14 @@ next.within(Time.seconds(10))
 
 通过一个input DataStream以及刚刚我们定义的Pattern，我们可以创建一个PatternStream：
 
-```scala
+```java
 val input = ...
 val pattern = ...
 
 val patternStream = CEP.pattern(input, pattern)
 ```
 
-```scala
+```java
 val patternStream = CEP
   .pattern(
     loginEventStream.keyBy(_.userId), loginFailPattern
@@ -145,7 +145,7 @@ val patternStream = CEP
 
 select方法需要实现一个PatternSelectFunction，通过select方法来输出需要的警告。它接受一个Map对，包含string/event，其中key为state的名字，event则为真是的Event。
 
-```scala
+```java
 val loginFailDataStream = patternStream
   .select((pattern: Map[String, Iterable[LoginEvent]]) => {
     val first = pattern.getOrElse("begin", null).iterator.next()
@@ -165,7 +165,7 @@ val loginFailDataStream = patternStream
 
 通过within方法，我们的parttern规则限定在一定的窗口范围内。当有超过窗口时间后还到达的event，我们可以通过在select或flatSelect中，实现PatternTimeoutFunction/PatternFlatTimeoutFunction来处理这种情况。
 
-```scala
+```java
 val complexResult = patternStream.select(orderTimeoutOutput) {
   (pattern: Map[String, Iterable[OrderEvent]], timestamp: Long) => {
     val createOrder = pattern.get("begin")
@@ -186,7 +186,7 @@ timeoutResult.print()
 
 完整例子:
 
-```scala
+```java
 import org.apache.flink.cep.scala.CEP
 import org.apache.flink.cep.scala.pattern.Pattern
 import org.apache.flink.streaming.api.TimeCharacteristic
@@ -199,7 +199,7 @@ object ScalaFlinkLoginFail {
 
   def main(args: Array[String]): Unit = {
 
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 

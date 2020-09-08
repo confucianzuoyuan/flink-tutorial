@@ -10,7 +10,7 @@ window operator API提供了方法来明确声明我们要等待迟到元素。�
 
 Allowed lateness可以使用allowedLateness()方法来指定，如下所示：
 
-```scala
+```java
 val readings: DataStream[SensorReading] = ...
 
 val countPer10Secs: DataStream[(String, Long, Int, String)] = readings
@@ -27,7 +27,8 @@ class UpdatingWindowCountFunction
     extends ProcessWindowFunction[SensorReading,
       (String, Long, Int, String), String, TimeWindow] {
 
-  override def process(
+  @Override
+public process(
       id: String,
       ctx: Context,
       elements: Iterable[SensorReading],

@@ -4,9 +4,9 @@
 
 代码如下：
 
-```scala
+```java
 def main(args: Array[String]): Unit = {
-  val env = StreamExecutionEnvironment.getExecutionEnvironment
+  StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
   env.setParallelism(1)
   env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
@@ -21,7 +21,8 @@ def main(args: Array[String]): Unit = {
       new BoundedOutOfOrdernessTimestampExtractor[SensorReading](
         Time.seconds(1)
       ) {
-        override def extractTimestamp(
+        @Override
+public extractTimestamp(
           element: SensorReading
         ): Long = element.timestamp * 1000L
     })

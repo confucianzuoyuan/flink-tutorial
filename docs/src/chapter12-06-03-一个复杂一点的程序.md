@@ -1,6 +1,6 @@
 ### 一个复杂一点的程序
 
-```scala
+```java
 import java.sql.Timestamp
 
 import org.apache.flink.streaming.api.scala._
@@ -10,7 +10,7 @@ import org.apache.flink.table.catalog.hive.HiveCatalog
 
 object TestHiveStreaming {
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     val tableEnv = StreamTableEnvironment.create(env)
 
     val stream = env.fromElements(

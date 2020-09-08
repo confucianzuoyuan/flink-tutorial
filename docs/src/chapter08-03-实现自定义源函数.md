@@ -16,11 +16,12 @@ run()方法用来读取或者接收数据然后将数据摄入到Flink应用中�
 
 当应用被取消或者关闭时，cancel()方法会被Flink调用。为了优雅的关闭Flink应用，run()方法需要在cancel()被调用以后，立即终止执行。下面的例子显示了一个简单的源函数的例子：从0数到Long.MaxValue。
 
-```scala
+```java
 class CountSource extends SourceFunction[Long] {
   var isRunning: Boolean = true
 
-  override def run(ctx: SourceFunction.SourceContext[Long]) = {
+  @Override
+public run(ctx: SourceFunction.SourceContext[Long]) = {
 
     var cnt: Long = -1
     while (isRunning && cnt < Long.MaxValue) {
@@ -29,7 +30,8 @@ class CountSource extends SourceFunction[Long] {
     }
   }
 
-  override def cancel() = isRunning = false
+  @Override
+public cancel() = isRunning = false
 }
 ```
 

@@ -17,67 +17,67 @@ Context和OnTimerContext所持有的TimerService对象拥有以下方法:
 
 下面的程序展示了如何监控温度传感器的温度值，如果温度值在一秒钟之内(processing time)连续上升，报警。
 
-```scala
-val warnings = readings
-  // key by sensor id
-  .keyBy(_.id)
-  // apply ProcessFunction to monitor temperatures
-  .process(new TempIncreaseAlertFunction)
+```java
+DataStream<String> warings = readings
+    .keyBy(r -> r.id)
+    .process(new TempIncreaseAlertFunction());
 ```
 
 看一下TempIncreaseAlertFunction如何实现, 程序中使用了ValueState这样一个状态变量, 后面会详细讲解。
 
-```scala
-class TempIncreaseAlertFunction
-  extends KeyedProcessFunction[String, SensorReading, String] {
-  // 保存上一个传感器温度值
-  lazy val lastTemp: ValueState[Double] = getRuntimeContext.getState(
-    new ValueStateDescriptor[Double]("lastTemp", Types.of[Double])
-  )
+```java
+	public static class TempIncreaseAlertFunction extends KeyedProcessFunction<String, SensorReading, String> {
 
-  // 保存注册的定时器的时间戳
-  lazy val currentTimer: ValueState[Long] = getRuntimeContext.getState(
-    new ValueStateDescriptor[Long]("timer", Types.of[Long])
-  )
+		private ValueState<Double> lastTemp;
+		private ValueState<Long> currentTimer;
 
-  override def processElement(r: SensorReading,
-                              ctx: KeyedProcessFunction[String,
-                                SensorReading, String]#Context,
-                              out: Collector[String]): Unit = {
-    // get previous temperature
-    // 取出上一次的温度
-    val prevTemp = lastTemp.value()
-    // update last temperature
-    // 将当前温度更新到上一次的温度这个变量中
-    lastTemp.update(r.temperature)
+		@Override
+		public void open(Configuration parameters) throws Exception {
+			super.open(parameters);
+			lastTemp = getRuntimeContext().getState(
+					new ValueStateDescriptor<>("last-temp", Types.DOUBLE)
+			);
+			currentTimer = getRuntimeContext().getState(
+					new ValueStateDescriptor<>("current-timer", Types.LONG)
+			);
+		}
 
-    val curTimerTimestamp = currentTimer.value()
-    if (prevTemp == 0.0 || r.temperature < prevTemp) {
-      // temperature decreased; delete current timer
-      // 温度下降或者是第一个温度值，删除定时器
-      ctx.timerService().deleteProcessingTimeTimer(curTimerTimestamp)
-      // 清空状态变量
-      currentTimer.clear()
-    } else if (r.temperature > prevTemp && curTimerTimestamp == 0) {
-      // temperature increased and we have not set a timer yet
-      // set processing time timer for now + 1 second
-      // 温度上升且我们并没有设置定时器
-      val timerTs = ctx.timerService().currentProcessingTime() + 1000
-      ctx.timerService().registerProcessingTimeTimer(timerTs)
-      // remember current timer
-      currentTimer.update(timerTs)
-    }
-  }
+		@Override
+		public void processElement(SensorReading r, Context ctx, Collector<String> out) throws Exception {
+			// 取出上一次的温度
+			Double prevTemp = 0.0;
+			if (lastTemp.value() != null) {
+				prevTemp = lastTemp.value();
+			}
+			// 将当前温度更新到上一次的温度这个变量中
+			lastTemp.update(r.temperature);
 
-  override def onTimer(ts: Long,
-                       ctx: KeyedProcessFunction[String,
-                        SensorReading, String]#OnTimerContext,
-                       out: Collector[String]): Unit = {
-    out.collect("传感器id为: "
-      + ctx.getCurrentKey
-      + "的传感器温度值已经连续1s上升了。")
-    currentTimer.clear()
-  }
-}
+			Long curTimerTimestamp = 0L;
+			if (currentTimer.value() != null) {
+				curTimerTimestamp = currentTimer.value();
+			}
+			if (prevTemp == 0.0 || r.temperature < prevTemp) {
+				// 温度下降或者是第一个温度值，删除定时器
+				ctx.timerService().deleteProcessingTimeTimer(curTimerTimestamp);
+				// 清空状态变量
+				currentTimer.clear();
+			} else if (r.temperature > prevTemp && curTimerTimestamp == 0) {
+				// 温度上升且我们并没有设置定时器
+				long timerTs = ctx.timerService().currentProcessingTime() + 1000L;
+				ctx.timerService().registerProcessingTimeTimer(timerTs);
+				// 保存定时器时间戳
+				currentTimer.update(timerTs);
+			}
+		}
+
+		@Override
+		public void onTimer(long timestamp, OnTimerContext ctx, Collector<String> out) throws Exception {
+			super.onTimer(timestamp, ctx, out);
+			out.collect("传感器id为: "
+					+ ctx.getCurrentKey()
+					+ "的传感器温度值已经连续1s上升了。");
+			currentTimer.clear();
+		}
+	}
 ```
 

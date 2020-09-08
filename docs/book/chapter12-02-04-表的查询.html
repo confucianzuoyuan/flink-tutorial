@@ -162,7 +162,7 @@
 <p>Table API是集成在Scala和Java语言内的查询API。与SQL不同，Table API的查询不会用字符串表示，而是在宿主语言中一步一步调用完成的。</p>
 <p>Table API基于代表一张“表”的Table类，并提供一整套操作处理的方法API。这些方法会返回一个新的Table对象，这个对象就表示对输入表应用转换操作的结果。有些关系型转换操作，可以由多个方法调用组成，构成链式调用结构。例如table.select(…).filter(…)，其中select（…）表示选择表中指定的字段，filter(…)表示筛选条件。</p>
 <p>代码中的实现如下：</p>
-<pre><code class="language-scala">// 获取表环境
+<pre><code class="language-java">// 获取表环境
 val tableEnv = ...
 
 // 注册订单表
@@ -189,7 +189,7 @@ val revenue = orders
 <h4><a class="header" href="#sql查询" id="sql查询">SQL查询</a></h4>
 <p>Flink的SQL集成，基于的是Apache Calcite，它实现了SQL标准。在Flink中，用常规字符串来定义SQL查询语句。SQL 查询的结果，是一个新的 Table。</p>
 <p>代码实现如下：</p>
-<pre><code class="language-scala">// get a TableEnvironment
+<pre><code class="language-java">// get a TableEnvironment
 val tableEnv = ... // see &quot;Create a TableEnvironment&quot; section
 
 // register Orders table
@@ -206,7 +206,7 @@ val revenue = tableEnv.sqlQuery(&quot;&quot;&quot;
 // execute query
 </code></pre>
 <p>如下的示例展示了如何指定一个更新查询，将查询的结果插入到已注册的表中。</p>
-<pre><code class="language-scala">// get a TableEnvironment
+<pre><code class="language-java">// get a TableEnvironment
 val tableEnv = ... // see &quot;Create a TableEnvironment&quot; section
 
 // register &quot;Orders&quot; table

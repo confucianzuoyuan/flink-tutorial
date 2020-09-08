@@ -33,7 +33,7 @@ boolean sendValues(Iterable<IN> values, long chkpntId, long timestamp)
 
 下面的例子展示了如何实现一个写入到标准输出的write-ahead sink。它使用了FileCheckpointCommitter。
 
-```scala
+```java
 val readings: DataStream[SensorReading] = ???
 
 // write the sensor readings to the standard out via a write-ahead log
@@ -52,7 +52,8 @@ class StdOutWriteAheadSink extends GenericWriteAheadSink[SensorReading](
     // Random JobID used by the CheckpointCommitter
     UUID.randomUUID.toString) {
 
-  override def sendValues(
+  @Override
+public sendValues(
       readings: Iterable[SensorReading],
       checkpointId: Long,
       timestamp: Long): Boolean = {
@@ -91,7 +92,7 @@ TwoPhaseCommitSinkFunction实现了以下协议。在sink任务发送出第一�
 
 下面的例子可能会让上面的一些概念好理解一些。
 
-```scala
+```java
 class TransactionalFileSink(val targetPath: String, val tempPath: String)
     extends TwoPhaseCommitSinkFunction[(String, Double), String, Void](
       createTypeInformation[String].createSerializer(new ExecutionConfig),
@@ -101,7 +102,8 @@ class TransactionalFileSink(val targetPath: String, val tempPath: String)
 
   // Creates a temporary file for a transaction into
   // which the records are written.
-  override def beginTransaction(): String = {
+  @Override
+public beginTransaction(): String = {
     // path of transaction file
     // is built from current time and task index
     val timeNow = LocalDateTime.now(ZoneId.of("UTC"))
@@ -120,7 +122,8 @@ class TransactionalFileSink(val targetPath: String, val tempPath: String)
   }
 
   /** Write record into the current transaction file. */
-  override def invoke(
+  @Override
+public invoke(
       transaction: String,
       value: (String, Double),
       context: Context[_]): Unit = {
@@ -129,7 +132,8 @@ class TransactionalFileSink(val targetPath: String, val tempPath: String)
   }
 
   /** Flush and close the current transaction file. */
-  override def preCommit(transaction: String): Unit = {
+  @Override
+public preCommit(transaction: String): Unit = {
     transactionWriter.flush()
     transactionWriter.close()
   }
@@ -137,7 +141,8 @@ class TransactionalFileSink(val targetPath: String, val tempPath: String)
   // Commit a transaction by moving
   // the precommitted transaction file
   // to the target directory.
-  override def commit(transaction: String): Unit = {
+  @Override
+public commit(transaction: String): Unit = {
     val tFilePath = Paths.get(s"$tempPath/$transaction")
     // check if the file exists to ensure
     // that the commit is idempotent
@@ -148,7 +153,8 @@ class TransactionalFileSink(val targetPath: String, val tempPath: String)
   }
 
   // Aborts a transaction by deleting the transaction file.
-  override def abort(transaction: String): Unit = {
+  @Override
+public abort(transaction: String): Unit = {
     val tFilePath = Paths.get(s"$tempPath/$transaction")
     if (Files.exists(tFilePath)) {
       Files.delete(tFilePath)

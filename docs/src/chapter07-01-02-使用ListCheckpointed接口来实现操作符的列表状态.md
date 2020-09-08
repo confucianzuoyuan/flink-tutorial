@@ -4,7 +4,7 @@
 
 一个函数可以实现ListCheckpointed接口来处理操作符的list state。ListCheckpointed接口无法处理ValueState和ListState，因为这些状态是注册在状态后端的。操作符状态类似于成员变量，和状态后端的交互通过ListCheckpointed接口的回调函数实现。接口提供了两个方法：
 
-```scala
+```java
 // 返回函数状态的快照，返回值为列表
 snapshotState(checkpointId: Long, timestamp: Long): java.util.List[T]
 // 从列表恢复函数状态
@@ -17,7 +17,7 @@ restoreState(java.util.List[T] state): Unit
 
 下面的例子展示了如何实现ListCheckpointed接口。业务场景为：一个对每一个并行实例的超过阈值的温度的计数程序。
 
-```scala
+```java
 class HighTempCounter(val threshold: Double)
     extends RichFlatMapFunction[SensorReading, (Int, Long)]
     with ListCheckpointed[java.lang.Long] {
@@ -28,7 +28,8 @@ class HighTempCounter(val threshold: Double)
   // local count variable
   private var highTempCnt = 0L
 
-  override def flatMap(
+  @Override
+public flatMap(
       in: SensorReading, 
       out: Collector[(Int, Long)]): Unit = {
     if (in.temperature > threshold) {
@@ -39,7 +40,8 @@ class HighTempCounter(val threshold: Double)
     }
   }
 
-  override def restoreState(
+  @Override
+public restoreState(
       state: util.List[java.lang.Long]): Unit = {
     highTempCnt = 0
     // restore state by adding all longs of the list
@@ -48,7 +50,8 @@ class HighTempCounter(val threshold: Double)
     }
   }
 
-  override def snapshotState(
+  @Override
+public snapshotState(
       chkpntId: Long, 
       ts: Long): java.util.List[java.lang.Long] = {
     // snapshot state as list with a single count
@@ -65,8 +68,9 @@ class HighTempCounter(val threshold: Double)
 
 再来看一下上面的程序，我们可以看到操作符的每一个并行实例都暴露了一个状态对象的列表。如果我们增加操作符的并行度，那么一些并行任务将会从0开始计数。为了获得更好的状态分区的行为，当HighTempCounter函数扩容时，我们可以按照下面的程序来实现snapshotState()方法，这样就可以把计数值分配到不同的并行计数中去了。
 
-```scala
-override def snapshotState(
+```java
+@Override
+public snapshotState(
     chkpntId: Long, 
     ts: Long): java.util.List[java.lang.Long] = {
   // split count into ten partial counts

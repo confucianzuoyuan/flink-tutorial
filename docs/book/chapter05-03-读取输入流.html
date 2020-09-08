@@ -158,7 +158,7 @@
                         <h2><a class="header" href="#读取输入流" id="读取输入流">读取输入流</a></h2>
 <p>一旦执行环境设置好，就该写业务逻辑了。<code>StreamExecutionEnvironment</code>提供了创建数据源的方法，这些方法可以从数据流中将数据摄取到程序中。数据流可以来自消息队列或者文件系统，也可能是实时产生的（例如socket）。</p>
 <p>在我们的例子里面，我们这样写：</p>
-<pre><code class="language-scala">val sensorData: DataStream[SensorReading] = env
+<pre><code class="language-java">val sensorData: DataStream[SensorReading] = env
   .addSource(new SensorSource)
 </code></pre>
 <p>这样就可以连接到传感器测量数据的数据源并创建一个类型为<code>SensorReading</code>的<code>DataStream</code>了。Flink支持很多数据类型，我们将在接下来的章节里面讲解。在我们的例子里面，我们的数据类型是一个定义好的Scala样例类。<code>SensorReading</code>样例类包含了传感器ID，数据的测量时间戳，以及测量温度值。<code>assignTimestampsAndWatermarks(new SensorTimeAssigner)</code>方法指定了如何设置事件时间语义的时间戳和水位线。有关<code>SensorTimeAssigner</code>我们后面再讲。</p>

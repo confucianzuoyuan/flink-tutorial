@@ -18,7 +18,7 @@ Table 可以是虚拟的（视图 VIEWS）也可以是常规的（表 TABLES）�
 
 在 SQL 的术语中，Table API 的对象对应于视图（虚拟表）。它封装了一个逻辑查询计划。它可以通过以下方法在 catalog 中创建：
 
-```scala
+```java
 // get a TableEnvironment
 val tableEnv = ... // see "Create a TableEnvironment" section
 
@@ -37,7 +37,7 @@ tableEnv.createTemporaryView("projectedTable", projTable)
 
 标识符遵循 SQL 标准，因此使用时需要用反引号（`）进行转义。
 
-```scala
+```java
 // get a TableEnvironment
 val tEnv: TableEnvironment = ...;
 tEnv.useCatalog("custom_catalog")

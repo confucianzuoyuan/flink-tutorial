@@ -15,27 +15,27 @@ Flink创建的窗口类型是`TimeWindow`，包含开始时间和结束时间，
 
 ![](images/spaf_0601.png)
 
-```scala
-val sensorData: DataStream[SensorReading] = ...
+```java
+DataStream<SensorReading> sensorData = ...
 
-val avgTemp = sensorData
-  .keyBy(_.id)
+DataStream<T> avgTemp = sensorData
+  .keyBy(r -> r.id)
   // group readings in 1s event-time windows
   .window(TumblingEventTimeWindows.of(Time.seconds(1)))
-  .process(new TemperatureAverager)
+  .process(new TemperatureAverager);
 
-val avgTemp = sensorData
-  .keyBy(_.id)
+DataStream<T> avgTemp = sensorData
+  .keyBy(r -> r.id)
   // group readings in 1s processing-time windows
   .window(TumblingProcessingTimeWindows.of(Time.seconds(1)))
-  .process(new TemperatureAverager)
+  .process(new TemperatureAverager);
 
 // 其实就是之前的
 // shortcut for window.(TumblingEventTimeWindows.of(size))
-val avgTemp = sensorData
-  .keyBy(_.id)
+DataStream<T> avgTemp = sensorData
+  .keyBy(r -> r.id)
   .timeWindow(Time.seconds(1))
-  .process(new TemperatureAverager)
+  .process(new TemperatureAverager);
 ```
 
 默认情况下，滚动窗口会和`1970-01-01-00:00:00.000`对齐，例如一个1小时的滚动窗口将会定义以下开始时间的窗口：00:00:00，01:00:00，02:00:00，等等。
@@ -48,25 +48,25 @@ val avgTemp = sensorData
 
 ![](images/spaf_0602.png)
 
-```scala
-val slidingAvgTemp = sensorData
-  .keyBy(_.id)
+```java
+DataStream<T> slidingAvgTemp = sensorData
+  .keyBy(r -> r.id)
   .window(
     SlidingEventTimeWindows.of(Time.hours(1), Time.minutes(15))
   )
-  .process(new TemperatureAverager)
+  .process(new TemperatureAverager);
 
-val slidingAvgTemp = sensorData
-  .keyBy(_.id)
+DataStream<T> slidingAvgTemp = sensorData
+  .keyBy(r -> r.id)
   .window(
     SlidingProcessingTimeWindows.of(Time.hours(1), Time.minutes(15))
   )
-  .process(new TemperatureAverager)
+  .process(new TemperatureAverager);
 
-val slidingAvgTemp = sensorData
-  .keyBy(_.id)
+DataStream<T> slidingAvgTemp = sensorData
+  .keyBy(r -> r.id)
   .timeWindow(Time.hours(1), Time.minutes(15))
-  .process(new TemperatureAverager)
+  .process(new TemperatureAverager);
 ```
 
 *会话窗口(session windows)*
@@ -75,16 +75,16 @@ val slidingAvgTemp = sensorData
 
 ![](images/spaf_0603.png)
 
-```scala
-val sessionWindows = sensorData
-  .keyBy(_.id)
+```java
+DataStream<T> sessionWindows = sensorData
+  .keyBy(r -> r.id)
   .window(EventTimeSessionWindows.withGap(Time.minutes(15)))
-  .process(...)
+  .process(...);
 
-val sessionWindows = sensorData
-  .keyBy(_.id)
+DataStream<T> sessionWindows = sensorData
+  .keyBy(r -> r.id)
   .window(ProcessingTimeSessionWindows.withGap(Time.minutes(15)))
-  .process(...)
+  .process(...);
 ```
 
 由于会话窗口的开始时间和结束时间取决于接收到的元素，所以窗口分配器无法立即将所有的元素分配到正确的窗口中去。相反，会话窗口分配器最开始时先将每一个元素分配到它自己独有的窗口中去，窗口开始时间是这个元素的时间戳，窗口大小是session gap的大小。接下来，会话窗口分配器会将出现重叠的窗口合并成一个窗口。

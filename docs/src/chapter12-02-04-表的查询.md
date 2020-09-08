@@ -12,7 +12,7 @@ Table API基于代表一张“表”的Table类，并提供一整套操作处理
 
 代码中的实现如下：
 
-```scala
+```java
 // 获取表环境
 val tableEnv = ...
 
@@ -41,7 +41,7 @@ Flink的SQL集成，基于的是Apache Calcite，它实现了SQL标准。在Flin
 
 代码实现如下：
 
-```scala
+```java
 // get a TableEnvironment
 val tableEnv = ... // see "Create a TableEnvironment" section
 
@@ -61,7 +61,7 @@ val revenue = tableEnv.sqlQuery("""
 
 如下的示例展示了如何指定一个更新查询，将查询的结果插入到已注册的表中。
 
-```scala
+```java
 // get a TableEnvironment
 val tableEnv = ... // see "Create a TableEnvironment" section
 

@@ -157,7 +157,7 @@
                     <main>
                         <h2><a class="header" href="#app不分渠道数据统计" id="app不分渠道数据统计">APP不分渠道数据统计</a></h2>
 <p>完整代码如下：</p>
-<pre><code class="language-scala">package com.atguigu
+<pre><code class="language-java">package com.atguigu
 
 import com.atguigu.AppMarketingByChannel.SimulatedEventSource
 import org.apache.flink.streaming.api.TimeCharacteristic
@@ -169,7 +169,7 @@ import org.apache.flink.util.Collector
 
 object AppMarketingStatistics {
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     val stream = env
@@ -189,7 +189,8 @@ object AppMarketingStatistics {
   class MarketingCountTotal
     extends ProcessWindowFunction[(String, Long),
       (String, Long, Long), String, TimeWindow] {
-    override def process(key: String,
+    @Override
+public process(key: String,
                          context: Context,
                          elements: Iterable[(String, Long)],
                          out: Collector[(String, Long, Long)]): Unit = {

@@ -20,7 +20,7 @@
 
 代码如下：
 
-```scala
+```java
 // 定义好 DataStream
 val inputStream: DataStream[String] = env.readTextFile("\\sensor.txt")
 val dataStream: DataStream[SensorReading] = inputStream
@@ -40,7 +40,7 @@ val sensorTable = tableEnv
 
 代码如下：
 
-```scala
+```java
 tableEnv
   .connect(
     new FileSystem().path("..\\sensor.txt"))
@@ -62,7 +62,7 @@ tableEnv
 
 代码如下：
 
-```scala
+```java
 val sinkDDL: String =
   """
     |create table dataTable (
@@ -101,7 +101,7 @@ tableEnv.sqlUpdate(sinkDDL) // 执行 DDL
 
 代码如下：
 
-```scala
+```java
 val inputStream: DataStream[String] = env.readTextFile("\\sensor.txt")
 val dataStream: DataStream[SensorReading] = inputStream
   .map(data => {
@@ -124,7 +124,7 @@ val sensorTable2 = tableEnv
 
 代码如下：
 
-```scala
+```java
 tableEnv
   .connect(new FileSystem().path("sensor.txt"))
   .withFormat(new Csv())
@@ -148,7 +148,7 @@ tableEnv
 
 代码如下：
 
-```scala
+```java
 val sinkDDL: String =
   """
     |create table dataTable (

@@ -18,13 +18,12 @@ keyBy通过指定key来将DataStream转换成KeyedStream。基于不同的key，
 
 `keyBy()`方法接收一个参数，这个参数指定了key或者keys，有很多不同的方法来指定key。我们将在后面讲解。下面的代码声明了`id`这个字段为SensorReading流的key。
 
-```scala
-val readings: DataStream[SensorReading] = ...
-val keyed: KeyedStream[SensorReading, String] = readings
-  .keyBy(r => r.id)
+```java
+KeyedStream<SensorReading, String> keyed = readings
+        .keyBy(r -> r.id);
 ```
 
-匿名函数`r => r.id`抽取了传感器读数SensorReading的id值。
+匿名函数`r -> r.id`抽取了传感器读数SensorReading的id值。
 
 *滚动聚合*
 
@@ -42,11 +41,11 @@ val keyed: KeyedStream[SensorReading, String] = readings
 
 下面的例子根据第一个字段来对类型为`Tuple3[Int, Int, Int]`的流做分流操作，然后针对第二个字段做滚动求和操作。
 
-```scala
-val inputStream: DataStream[(Int, Int, Int)] = env.fromElements(
-  (1, 2, 2), (2, 3, 1), (2, 2, 4), (1, 5, 3))
+```java
+DataStream[Tuple3(Integer, Integer, Integer)] inputStream = env.fromElements(
+  Tuple3(1, 2, 2), Tuple3(2, 3, 1), Tuple3(2, 2, 4), Tuple3(1, 5, 3))
 
-val resultStream: DataStream[(Int, Int, Int)] = inputStream
+DataStream[Tuple3(Integer, Integer, Integer)] resultStream = inputStream
   .keyBy(0) // key on first field of the tuple
   .sum(1)   // sum the second field of the tuple in place
 ```
@@ -69,13 +68,15 @@ ReduceFunction[T]
 
 下面的例子，流根据语言这个key来分区，输出结果为针对每一种语言都实时更新的单词列表。
 
-```scala
-val inputStream: DataStream[(String, List[String])] = env.fromElements(
-  ("en", List("tea")), ("fr", List("vin")), ("en", List("cake")))
-
-val resultStream: DataStream[(String, List[String])] = inputStream
-  .keyBy(0)
-  .reduce((x, y) => (x._1, x._2 ::: y._2))
+```java
+DataStream<SensorReading> maxTempPerSensor = keyed
+        .reduce((r1, r2) -> {
+            if (r1.temperature > r2.temperature) {
+                return r1;
+            } else {
+                return r2;
+            }
+        });
 ```
 
 reduce匿名函数将连续两个tuple的第一个字段(key字段)继续发送出去，然后将两个tuple的第二个字段List[String]连接。

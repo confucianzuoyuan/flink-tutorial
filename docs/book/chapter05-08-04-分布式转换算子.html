@@ -173,18 +173,7 @@
 <p><em>Global</em></p>
 <p><code>global()</code>方法将所有的输入流数据都发送到下游算子的第一个并行任务中去。这个操作需要很谨慎，因为将所有数据发送到同一个task，将会对应用程序造成很大的压力。</p>
 <p><em>Custom</em></p>
-<p>当Flink提供的分区策略都不适用时，我们可以使用<code>partitionCustom()</code>方法来自定义分区策略。这个方法接收一个<code>Partitioner</code>对象，这个对象需要实现分区逻辑以及定义针对流的哪一个字段或者key来进行分区。下面的例子将一条整数流做partition，使得所有的负整数都发送到第一个任务中，剩下的数随机分配。</p>
-<pre><code class="language-scala">val numbers: DataStream[(Int)] = ...
-numbers.partitionCustom(myPartitioner, 0)
-
-object myPartitioner extends Partitioner[Int] {
-  val r = scala.util.Random
-
-  override def partition(key: Int, numPartitions: Int): Int = {
-    if (key &lt; 0) 0 else r.nextInt(numPartitions)
-  }
-}
-</code></pre>
+<p>当Flink提供的分区策略都不适用时，我们可以使用<code>partitionCustom()</code>方法来自定义分区策略。这个方法接收一个<code>Partitioner</code>对象，这个对象需要实现分区逻辑以及定义针对流的哪一个字段或者key来进行分区。</p>
 
                     </main>
 

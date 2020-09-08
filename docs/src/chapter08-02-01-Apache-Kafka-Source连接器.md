@@ -20,7 +20,7 @@ Flink Kafka连接器并行的摄入事件流。每一个并行source任务可以
 
 Kafka source连接器使用如下代码创建
 
-```scala
+```java
 val properties = new Properties()
 properties.setProperty("bootstrap.servers", "localhost:9092")
 properties.setProperty("group.id", "test")
@@ -40,7 +40,7 @@ val stream: DataStream[String] = env.addSource(
 
 为了抽取事件时间的时间戳然后产生水印，我们可以通过调用
 
-```scala
+```java
 FlinkKafkaConsumer.assignTimestampsAndWatermark()
 ```
 

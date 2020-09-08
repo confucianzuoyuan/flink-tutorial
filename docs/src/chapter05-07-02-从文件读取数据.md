@@ -1,6 +1,6 @@
 ### 从文件读取数据
 
-```scala
+```java
 val stream = env.readTextFile(filePath)
 ```
 

@@ -10,7 +10,7 @@ explain方法会返回一个字符串，描述三个计划：
 
 我们可以在代码中查看执行计划：
 
-```scala
+```java
 val explaination: String = tableEnv.explain(resultTable)
 println(explaination)
 ```

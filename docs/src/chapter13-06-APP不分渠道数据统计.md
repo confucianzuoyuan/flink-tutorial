@@ -2,7 +2,7 @@
 
 完整代码如下：
 
-```scala
+```java
 package com.atguigu
 
 import com.atguigu.AppMarketingByChannel.SimulatedEventSource
@@ -15,7 +15,7 @@ import org.apache.flink.util.Collector
 
 object AppMarketingStatistics {
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     val stream = env
@@ -35,7 +35,8 @@ object AppMarketingStatistics {
   class MarketingCountTotal
     extends ProcessWindowFunction[(String, Long),
       (String, Long, Long), String, TimeWindow] {
-    override def process(key: String,
+    @Override
+public process(key: String,
                          context: Context,
                          elements: Iterable[(String, Long)],
                          out: Collector[(String, Long, Long)]): Unit = {

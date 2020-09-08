@@ -10,12 +10,15 @@ Flink应用程序在一个像集群这样的分布式环境中并行执行。当
 
 算子默认的并行度也可以通过重写来明确指定。在下面的例子里面，数据源的操作符将会按照环境默认的并行度来并行执行，map操作符的并行度将会是默认并行度的2倍，sink操作符的并行度为2。
 
-```scala
-val env = StreamExecutionEnvironment.getExecutionEnvironment
-val defaultP = env.getParallelism
-val result = env.addSource(new CustomSource)
-  .map(new MyMapper).setParallelism(defaultP * 2)
-  .print().setParallelism(2)
+```java
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment;
+int defaultP = env.getParallelism;
+env
+  .addSource(new CustomSource)
+  .map(new MyMapper)
+  .setParallelism(defaultP * 2)
+  .print()
+  .setParallelism(2);
 ```
 
 当我们通过客户端将应用程序的并行度设置为16并提交执行时，source操作符的并行度为16，mapper并行度为32，sink并行度为2。如果我们在本地环境运行应用程序的话，例如在IDE中运行，机器是8核，那么source任务将会并行执行在8个任务上面，mapper运行在16个任务上面，sink运行在2个任务上面。

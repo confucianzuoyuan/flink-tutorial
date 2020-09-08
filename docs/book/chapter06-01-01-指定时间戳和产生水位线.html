@@ -165,22 +165,22 @@
 <p>也就是说，任何分区操作都会将元素的顺序打乱，例如：并行度改变，keyBy()操作等等。</p>
 <p>所以最佳实践是：在尽量接近数据源source操作符的地方分配时间戳和产生水位线，甚至最好在SourceFunction中分配时间戳和产生水位线。当然在分配时间戳和产生水位线之前可以对流进行map和filter操作是没问题的，也就是说必须是窄依赖。</p>
 <p>以下这种写法是可以的。</p>
-<pre><code class="language-scala">val stream = env
+<pre><code class="language-java">DataStream&lt;T&gt; stream = env
   .addSource(...)
   .map(...)
   .filter(...)
   .assignTimestampsAndWatermarks(...)
 </code></pre>
 <p>下面的例子展示了首先filter流，然后再分配时间戳和水位线。</p>
-<pre><code class="language-scala">val env = StreamExecutionEnvironment.getExecutionEnvironment
+<pre><code class="language-java">StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment;
  
 // 从调用时刻开始给env创建的每一个stream追加时间特征
-env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
-val readings: DataStream[SensorReading] = env
+DataStream&lt;SensorReading&gt; readings = env
   .addSource(new SensorSource)
   .filter(r =&gt; r.temperature &gt; 25)
-  .assignTimestampsAndWatermarks(new MyAssigner())
+  .assignTimestampsAndWatermarks(new MyAssigner());
 </code></pre>
 <p>MyAssigner有两种类型</p>
 <ul>

@@ -1250,7 +1250,7 @@
 <span id="cb22-2"><a href="#cb22-2"></a>    <span class="kw">val</span> sensorIds: DataStream[String] = readings.<span class="fu">map</span>(<span class="kw">new</span> MyMapFunction)</span>
 <span id="cb22-3"><a href="#cb22-3"></a>    </span>
 <span id="cb22-4"><a href="#cb22-4"></a>    <span class="kw">class</span> MyMapFunction <span class="kw">extends</span> MapFunction[SensorReading, String] {</span>
-<span id="cb22-5"><a href="#cb22-5"></a>      <span class="kw">override</span> <span class="kw">def</span> <span class="fu">map</span>(r: SensorReading): String = r.<span class="fu">id</span></span>
+<span id="cb22-5"><a href="#cb22-5"></a>      <span class="kw">override</span> <span class="kw">def</span> <span class="fu">map</span>(SensorReading r): String = r.<span class="fu">id</span></span>
 <span id="cb22-6"><a href="#cb22-6"></a>    }</span></code></pre></div>
 <p>当然我们更推荐匿名函数的写法。</p>
 <div class="sourceCode" id="cb23"><pre class="sourceCode scala"><code class="sourceCode scala"><span id="cb23-1"><a href="#cb23-1"></a>    <span class="kw">val</span> readings: DataStream[SensorReading] = ...</span>
@@ -1890,7 +1890,7 @@
 <span id="cb77-7"><a href="#cb77-7"></a>        <span class="kw">new</span> <span class="fu">Watermark</span>(maxTs - bound)</span>
 <span id="cb77-8"><a href="#cb77-8"></a>      }</span>
 <span id="cb77-9"><a href="#cb77-9"></a>    </span>
-<span id="cb77-10"><a href="#cb77-10"></a>      <span class="kw">override</span> <span class="kw">def</span> <span class="fu">extractTimestamp</span>(r: SensorReading, previousTS: Long) = {</span>
+<span id="cb77-10"><a href="#cb77-10"></a>      <span class="kw">override</span> <span class="kw">def</span> <span class="fu">extractTimestamp</span>(SensorReading r, previousTS: Long) = {</span>
 <span id="cb77-11"><a href="#cb77-11"></a>        maxTs = maxTs.<span class="fu">max</span>(r.<span class="fu">timestamp</span>)</span>
 <span id="cb77-12"><a href="#cb77-12"></a>        r.<span class="fu">timestamp</span></span>
 <span id="cb77-13"><a href="#cb77-13"></a>      }</span>
@@ -1913,7 +1913,7 @@
 <span id="cb79-8"><a href="#cb79-8"></a>        Time.<span class="fu">seconds</span>(<span class="dv">5</span>)</span>
 <span id="cb79-9"><a href="#cb79-9"></a>      ) {</span>
 <span id="cb79-10"><a href="#cb79-10"></a>        <span class="co">// 抽取时间戳</span></span>
-<span id="cb79-11"><a href="#cb79-11"></a>        <span class="kw">override</span> <span class="kw">def</span> <span class="fu">extractTimestamp</span>(r: SensorReading): Long = r.<span class="fu">timestamp</span></span>
+<span id="cb79-11"><a href="#cb79-11"></a>        <span class="kw">override</span> <span class="kw">def</span> <span class="fu">extractTimestamp</span>(SensorReading r): Long = r.<span class="fu">timestamp</span></span>
 <span id="cb79-12"><a href="#cb79-12"></a>    }</span></code></pre></div>
 <p>以上代码设置了最大延迟时间为5秒。</p>
 <h3 id="如何产生不规则的水位线">如何产生不规则的水位线</h3>
@@ -1924,7 +1924,7 @@
 <span id="cb80-4"><a href="#cb80-4"></a>    </span>
 <span id="cb80-5"><a href="#cb80-5"></a>      <span class="co">// 每来一条数据就调用一次</span></span>
 <span id="cb80-6"><a href="#cb80-6"></a>      <span class="co">// 紧跟`extractTimestamp`函数调用</span></span>
-<span id="cb80-7"><a href="#cb80-7"></a>      <span class="kw">override</span> <span class="kw">def</span> <span class="fu">checkAndGetNextWatermark</span>(r: SensorReading,</span>
+<span id="cb80-7"><a href="#cb80-7"></a>      <span class="kw">override</span> <span class="kw">def</span> <span class="fu">checkAndGetNextWatermark</span>(SensorReading r,</span>
 <span id="cb80-8"><a href="#cb80-8"></a>                                            extractedTS: Long): Watermark = {</span>
 <span id="cb80-9"><a href="#cb80-9"></a>        <span class="kw">if</span> (r.<span class="fu">id</span> == <span class="st">&quot;sensor_1&quot;</span>) {</span>
 <span id="cb80-10"><a href="#cb80-10"></a>          <span class="co">// 抽取的时间戳 - 最大延迟时间</span></span>
@@ -1935,7 +1935,7 @@
 <span id="cb80-15"><a href="#cb80-15"></a>      }</span>
 <span id="cb80-16"><a href="#cb80-16"></a>    </span>
 <span id="cb80-17"><a href="#cb80-17"></a>      <span class="co">// 每来一条数据就调用一次</span></span>
-<span id="cb80-18"><a href="#cb80-18"></a>      <span class="kw">override</span> <span class="kw">def</span> <span class="fu">extractTimestamp</span>(r: SensorReading,</span>
+<span id="cb80-18"><a href="#cb80-18"></a>      <span class="kw">override</span> <span class="kw">def</span> <span class="fu">extractTimestamp</span>(SensorReading r,</span>
 <span id="cb80-19"><a href="#cb80-19"></a>                                    previousTS: Long): Long = {</span>
 <span id="cb80-20"><a href="#cb80-20"></a>        r.<span class="fu">timestamp</span></span>
 <span id="cb80-21"><a href="#cb80-21"></a>      }</span>
@@ -2005,7 +2005,7 @@
 <span id="cb82-10"><a href="#cb82-10"></a>        <span class="kw">new</span> ValueStateDescriptor[Long](<span class="st">&quot;timer&quot;</span>, Types.<span class="fu">of</span>[Long])</span>
 <span id="cb82-11"><a href="#cb82-11"></a>      )</span>
 <span id="cb82-12"><a href="#cb82-12"></a>    </span>
-<span id="cb82-13"><a href="#cb82-13"></a>      <span class="kw">override</span> <span class="kw">def</span> <span class="fu">processElement</span>(r: SensorReading,</span>
+<span id="cb82-13"><a href="#cb82-13"></a>      <span class="kw">override</span> <span class="kw">def</span> <span class="fu">processElement</span>(SensorReading r,</span>
 <span id="cb82-14"><a href="#cb82-14"></a>                                  ctx: KeyedProcessFunction[String,</span>
 <span id="cb82-15"><a href="#cb82-15"></a>                                    SensorReading, String]#Context,</span>
 <span id="cb82-16"><a href="#cb82-16"></a>                                  out: Collector[String]): Unit = {</span>
@@ -2062,7 +2062,7 @@
 <span id="cb84-4"><a href="#cb84-4"></a>      <span class="kw">lazy</span> <span class="kw">val</span> freezingAlarmOutput: OutputTag[String] =</span>
 <span id="cb84-5"><a href="#cb84-5"></a>        <span class="kw">new</span> OutputTag[String](<span class="st">&quot;freezing-alarms&quot;</span>)</span>
 <span id="cb84-6"><a href="#cb84-6"></a>    </span>
-<span id="cb84-7"><a href="#cb84-7"></a>      <span class="kw">override</span> <span class="kw">def</span> <span class="fu">processElement</span>(r: SensorReading,</span>
+<span id="cb84-7"><a href="#cb84-7"></a>      <span class="kw">override</span> <span class="kw">def</span> <span class="fu">processElement</span>(SensorReading r,</span>
 <span id="cb84-8"><a href="#cb84-8"></a>                                  ctx: ProcessFunction[SensorReading,</span>
 <span id="cb84-9"><a href="#cb84-9"></a>                                    SensorReading]#Context,</span>
 <span id="cb84-10"><a href="#cb84-10"></a>                                  out: Collector[SensorReading]): Unit = {</span>
@@ -2585,7 +2585,7 @@
 <span id="cb102-2"><a href="#cb102-2"></a>        <span class="kw">extends</span> Trigger[SensorReading, TimeWindow] {</span>
 <span id="cb102-3"><a href="#cb102-3"></a>    </span>
 <span id="cb102-4"><a href="#cb102-4"></a>      <span class="kw">override</span> <span class="kw">def</span> <span class="fu">onElement</span>(</span>
-<span id="cb102-5"><a href="#cb102-5"></a>        r: SensorReading,</span>
+<span id="cb102-5"><a href="#cb102-5"></a>        SensorReading r,</span>
 <span id="cb102-6"><a href="#cb102-6"></a>        timestamp: Long,</span>
 <span id="cb102-7"><a href="#cb102-7"></a>        window: TimeWindow,</span>
 <span id="cb102-8"><a href="#cb102-8"></a>        ctx: Trigger.<span class="fu">TriggerContext</span></span>
@@ -2868,7 +2868,7 @@
 <span id="cb109-15"><a href="#cb109-15"></a>      <span class="kw">val</span> lateReadingsOut = <span class="kw">new</span> OutputTag[SensorReading](<span class="st">&quot;late-readings&quot;</span>)</span>
 <span id="cb109-16"><a href="#cb109-16"></a>    </span>
 <span id="cb109-17"><a href="#cb109-17"></a>      <span class="kw">override</span> <span class="kw">def</span> <span class="fu">processElement</span>(</span>
-<span id="cb109-18"><a href="#cb109-18"></a>          r: SensorReading,</span>
+<span id="cb109-18"><a href="#cb109-18"></a>          SensorReading r,</span>
 <span id="cb109-19"><a href="#cb109-19"></a>          ctx: ProcessFunction[SensorReading, SensorReading]#Context,</span>
 <span id="cb109-20"><a href="#cb109-20"></a>          out: Collector[SensorReading]): Unit = {</span>
 <span id="cb109-21"><a href="#cb109-21"></a>    </span>
@@ -3006,7 +3006,7 @@
 <span id="cb112-4"><a href="#cb112-4"></a>          <span class="co">// no previous temperature defined.</span></span>
 <span id="cb112-5"><a href="#cb112-5"></a>          <span class="co">// Just update the last temperature</span></span>
 <span id="cb112-6"><a href="#cb112-6"></a>          (List.<span class="fu">empty</span>, Some(in.<span class="fu">temperature</span>))</span>
-<span id="cb112-7"><a href="#cb112-7"></a>        <span class="kw">case</span> (r: SensorReading, lastTemp: Some[Double]) =&gt;</span>
+<span id="cb112-7"><a href="#cb112-7"></a>        <span class="kw">case</span> (SensorReading r, lastTemp: Some[Double]) =&gt;</span>
 <span id="cb112-8"><a href="#cb112-8"></a>          <span class="co">// compare temperature difference with threshold</span></span>
 <span id="cb112-9"><a href="#cb112-9"></a>          <span class="kw">val</span> tempDiff = (r.<span class="fu">temperature</span> - lastTemp.<span class="fu">get</span>).<span class="fu">abs</span></span>
 <span id="cb112-10"><a href="#cb112-10"></a>          <span class="kw">if</span> (tempDiff &gt; <span class="fl">1.7</span>) {</span>
@@ -3602,7 +3602,7 @@
 <span id="cb139-22"><a href="#cb139-22"></a>          <span class="st">&quot;UPDATE Temperatures SET temp = ? WHERE sensor = ?&quot;</span>)</span>
 <span id="cb139-23"><a href="#cb139-23"></a>      }</span>
 <span id="cb139-24"><a href="#cb139-24"></a>    </span>
-<span id="cb139-25"><a href="#cb139-25"></a>      <span class="kw">override</span> <span class="kw">def</span> <span class="fu">invoke</span>(r: SensorReading, context: Context[_]): Unit = {</span>
+<span id="cb139-25"><a href="#cb139-25"></a>      <span class="kw">override</span> <span class="kw">def</span> <span class="fu">invoke</span>(SensorReading r, context: Context[_]): Unit = {</span>
 <span id="cb139-26"><a href="#cb139-26"></a>        <span class="co">// set parameters for update statement and execute it</span></span>
 <span id="cb139-27"><a href="#cb139-27"></a>        updateStmt.<span class="fu">setDouble</span>(<span class="dv">1</span>, r.<span class="fu">temperature</span>)</span>
 <span id="cb139-28"><a href="#cb139-28"></a>        updateStmt.<span class="fu">setString</span>(<span class="dv">2</span>, r.<span class="fu">id</span>)</span>

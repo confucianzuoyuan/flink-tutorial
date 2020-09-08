@@ -158,8 +158,8 @@
                         <h3><a class="header" href="#代码练习以分组滚动窗口为例" id="代码练习以分组滚动窗口为例">代码练习（以分组滚动窗口为例）</a></h3>
 <p>我们可以综合学习过的内容，用一段完整的代码实现一个具体的需求。例如，可以开一个滚动窗口，统计10秒内出现的每个sensor的个数。</p>
 <p>代码如下：</p>
-<pre><code class="language-scala">def main(args: Array[String]): Unit = {
-  val env = StreamExecutionEnvironment.getExecutionEnvironment
+<pre><code class="language-java">def main(args: Array[String]): Unit = {
+  StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
   env.setParallelism(1)
   env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
@@ -174,7 +174,8 @@
       new BoundedOutOfOrdernessTimestampExtractor[SensorReading](
         Time.seconds(1)
       ) {
-        override def extractTimestamp(
+        @Override
+public extractTimestamp(
           element: SensorReading
         ): Long = element.timestamp * 1000L
     })

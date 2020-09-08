@@ -2,27 +2,29 @@
 
 有时候输入流中会包含一些用于指示系统进度的特殊元组或标记。Flink为此类情形以及可根据输入元素生成水位线的情形提供了`AssignerWithPunctuatedWatermarks`接口。该接口中的`checkAndGetNextWatermark()`方法会在针对每个事件的`extractTimestamp()`方法后立即调用。它可以决定是否生成一个新的水位线。如果该方法返回一个非空、且大于之前值的水位线，算子就会将这个新水位线发出。
 
-```scala
+```java
 class PunctuatedAssigner
   extends AssignerWithPunctuatedWatermarks[SensorReading] {
-  val bound: Long = 60 * 1000
+  Long bound = 60 * 1000;
 
   // 每来一条数据就调用一次
   // 紧跟`extractTimestamp`函数调用
-  override def checkAndGetNextWatermark(r: SensorReading,
-                                        extractedTS: Long): Watermark = {
+  @Override
+  public Watermark checkAndGetNextWatermark(SensorReading r,
+                                            Long extractedTS) {
     if (r.id == "sensor_1") {
       // 抽取的时间戳 - 最大延迟时间
-      new Watermark(extractedTS - bound)
+      return new Watermark(extractedTS - bound);
     } else {
-      null
+      return null;
     }
   }
 
   // 每来一条数据就调用一次
-  override def extractTimestamp(r: SensorReading,
-                                previousTS: Long): Long = {
-    r.timestamp
+  @Override
+  public Long extractTimestamp(SensorReading r,
+                          Long previousTS) {
+    return r.timestamp;
   }
 }
 ```

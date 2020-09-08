@@ -14,31 +14,16 @@ Flink支持Java和Scala提供的所有普通数据类型。最常用的数据类
 
 Java和Scala提供的所有原始数据类型都支持，例如`Int`(Java的`Integer`)，String，Double等等。下面举一个例子：
 
-```scala
-val numbers: DataStream[Long] = env.fromElements(1L, 2L, 3L, 4L)
-numbers.map(n => n + 1)
+```java
+DataStream[Long] numbers = env.fromElements(1L, 2L, 3L, 4L);
+numbers.map(n -> n + 1);
 ```
 
 *Tuples*
 
 元组是一种组合数据类型，由固定数量的元素组成。
 
-DataStream的Scala API直接使用Scala内置的Tuple。举个例子：
-
-```scala
-val persons: DataStream[(String, Integer)] =
-env.fromElements(
-  ("Adam", 17),
-  ("Sarah", 23)
-)
-
-persons.filter(p => p._2 > 18)
-```
-
-Flink为Java的Tuple同样提供了高效的实现。Flink实现的Java Tuple最多可以有25个元素，根据元素数量的不同，Tuple都被实现成了不同的类：Tuple1，Tuple2，一直到Tuple25。Tuple类是强类型。
-
-我们可以将上面的例子用Java的DataStream API重写：
-
+Flink为Java的Tuple提供了高效的实现。Flink实现的Java Tuple最多可以有25个元素，根据元素数量的不同，Tuple都被实现成了不同的类：Tuple1，Tuple2，一直到Tuple25。Tuple类是强类型。
 
 ```java
 DataStream<Tuple2<String, Integer>> persons = env
@@ -50,8 +35,7 @@ DataStream<Tuple2<String, Integer>> persons = env
 persons.filter(p -> p.f1 > 18);
 ```
 
-Tuple的元素可以通过它们的public属性访问--f0，f1，f2等等。或者使用`getField(int pos)`方法来访问，元素下标从0开始：
-
+Tuple的元素可以通过它们的public属性访问——f0，f1，f2等等。或者使用`getField(int pos)`方法来访问，元素下标从0开始：
 
 ```java
 import org.apache.flink.api.java.tuple.Tuple2
@@ -62,23 +46,9 @@ Integer age = personTuple.getField(1); // age = 42
 
 不同于Scala的Tuple，Java的Tuple是可变数据结构，所以Tuple中的元素可以重新进行赋值。重复利用Java的Tuple可以减轻垃圾收集的压力。举个例子：
 
-
 ```java
 personTuple.f1 = 42; // set the 2nd field to 42
 personTuple.setField(43, 1); // set the 2nd field to 43
-```
-
-*Scala case classes*
-
-```scala
-case class Person(name: String, age: Int)
-
-val persons: DataStream[Person] = env.fromElements(
-  Person("Adam", 17),
-  Person("Sarah", 23)
-)
-
-persons.filter(p => p.age > 18)
 ```
 
 *POJO*
@@ -115,5 +85,3 @@ DataStream<Person> persons = env.fromElements(
 
 * Array, ArrayList, HashMap, Enum
 * Hadoop Writable types
-* Either, Option, Try
-

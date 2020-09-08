@@ -4,37 +4,37 @@
 
 例子
 
-```scala
-val monitoredReadings: DataStream[SensorReading] = readings
-  .process(new FreezingMonitor)
+```java
+public class StreamingJob {
 
-monitoredReadings
-  .getSideOutput(new OutputTag[String]("freezing-alarms"))
-  .print()
+	private static OutputTag<String> outputTag = new OutputTag<String>("side-output"){};
 
-readings.print()
-```
+	public static void main(String[] args) throws Exception {
+		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-接下来我们实现FreezingMonitor函数，用来监控传感器温度值，将温度值低于32F的温度输出到side output。
+		env.setParallelism(1);
 
-```scala
-class FreezingMonitor extends ProcessFunction[SensorReading, SensorReading] {
-  // define a side output tag
-  // 定义一个侧输出标签
-  lazy val freezingAlarmOutput: OutputTag[String] =
-    new OutputTag[String]("freezing-alarms")
+		DataStream<SensorReading> readings = env.addSource(new SensorSource());
 
-  override def processElement(r: SensorReading,
-                              ctx: ProcessFunction[SensorReading,
-                                SensorReading]#Context,
-                              out: Collector[SensorReading]): Unit = {
-    // emit freezing alarm if temperature is below 32F
-    if (r.temperature < 32.0) {
-      ctx.output(freezingAlarmOutput, s"Freezing Alarm for ${r.id}")
-    }
-    // forward all readings to the regular output
-    out.collect(r)
-  }
+		SingleOutputStreamOperator<SensorReading> monitoredReadings = readings
+				.process(new FreezingMonitor());
+
+		monitoredReadings.getSideOutput(outputTag).print();
+
+		env.execute("Flink Streaming Java API Skeleton");
+	}
+
+	public static class FreezingMonitor extends ProcessFunction<SensorReading, SensorReading> {
+		// 定义一个侧输出标签
+
+		@Override
+		public void processElement(SensorReading r, Context ctx, Collector<SensorReading> out) throws Exception {
+			if (r.temperature < 32.0) {
+				ctx.output(outputTag, "Freezing Alarm for " + r.id);
+			}
+			out.collect(r);
+		}
+	}
 }
 ```
 

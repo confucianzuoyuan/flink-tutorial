@@ -1,6 +1,6 @@
 ### 以Kafka消息队列的数据为数据来源
 
-```scala
+```java
 val properties = new Properties()
 properties.setProperty("bootstrap.servers", "localhost:9092")
 properties.setProperty("group.id", "consumer-group")
@@ -13,7 +13,7 @@ properties.setProperty(
   "org.apache.kafka.common.serialization.StringDeserializer"
 )
 properties.setProperty("auto.offset.reset", "latest")
-val env = StreamExecutionEnvironment.getExecutionEnvironment
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
 env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 env.setParallelism(1)
 val stream = env

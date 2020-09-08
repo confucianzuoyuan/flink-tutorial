@@ -1,78 +1,51 @@
 ### 自定义数据源
 
-```scala
-import java.util.Calendar
+```java
+import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
 
-import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction
-import org.apache.flink.streaming.api.functions.source.SourceFunction.SourceContext
+import java.util.Calendar;
+import java.util.Random;
 
-import scala.util.Random
+public class SensorSource extends RichParallelSourceFunction<SensorReading> {
 
-// 传感器id，时间戳，温度
-case class SensorReading(id: String, timestamp: Long, temperature: Double)
+    private boolean running = true;
 
-// 需要extends RichParallelSourceFunction, 泛型为SensorReading
-class SensorSource
-  extends RichParallelSourceFunction[SensorReading] {
+    @Override
+    public void run(SourceContext<SensorReading> srcCtx) throws Exception {
 
-  // flag indicating whether source is still running.
-  // flag: 表示数据源是否还在正常运行
-  var running: Boolean = true
+        Random rand = new Random();
+        int taskIdx = this.getRuntimeContext().getIndexOfThisSubtask();
 
-  // run()函数连续的发送SensorReading数据，使用SourceContext
-  // 需要override
-  override def run(srcCtx: SourceContext[SensorReading]): Unit = {
+        String[] sensorIds = new String[10];
+        double[] curFTemp = new double[10];
+        for (int i = 0; i < 10; i++) {
+            sensorIds[i] = "sensor_" + (taskIdx * 10 + i);
+            curFTemp[i] = 65 + (rand.nextGaussian() * 20);
+        }
 
-    // initialize random number generator
-    // 初始化随机数发生器
-    val rand = new Random()
-    // look up index of this parallel task
-    // 查找当前运行时上下文的任务的索引
-    val taskIdx = this.getRuntimeContext.getIndexOfThisSubtask
+        while (running) {
+            long curTime = Calendar.getInstance().getTimeInMillis();
+            for (int i = 0; i < 10; i++) {
+                curFTemp[i] += rand.nextGaussian() * 0.5;
+                srcCtx.collect(new SensorReading(sensorIds[i], curTime, curFTemp[i]));
+            }
 
-    // initialize sensor ids and temperatures
-    // 初始化10个(温度传感器的id, 温度值)元组
-    var curFTemp = (1 to 10).map {
-      // nextGaussian产生高斯随机数
-      i => ("sensor_" + (taskIdx * 10 + i), 65 + (rand.nextGaussian() * 20))
+            Thread.sleep(100);
+        }
     }
 
-    // emit data until being canceled
-    // 无限循环，产生数据流
-    while (running) {
-
-      // update temperature
-      // 更新温度
-      curFTemp = curFTemp.map(t => (t._1, t._2 + (rand.nextGaussian() * 0.5)) )
-      // get current time
-      // 获取当前时间戳
-      val curTime = Calendar.getInstance.getTimeInMillis
-
-      // emit new SensorReading
-      // 发射新的传感器数据, 注意这里srcCtx.collect
-      curFTemp.foreach(t => srcCtx.collect(SensorReading(t._1, curTime, t._2)))
-
-      // wait for 100 ms
-      Thread.sleep(100)
+    @Override
+    public void cancel() {
+        this.running = false;
     }
-
-  }
-
-  // override cancel函数
-  override def cancel(): Unit = {
-    running = false
-  }
-
 }
 ```
 
 使用方法
 
-```scala
-// ingest sensor stream
-val sensorData: DataStream[SensorReading] = env
-  // SensorSource generates random temperature readings
-  .addSource(new SensorSource)
+```java
+// 摄入数据流
+DataStream[SensorReading] sensorData = env.addSource(new SensorSource)
 ```
 
 >注意，在我们本教程中，我们一直会使用这个自定义的数据源。

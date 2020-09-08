@@ -168,7 +168,7 @@
 <p>由DataStream转换成表时，可以在后面指定字段名来定义Schema。在定义Schema期间，可以使用.proctime，定义处理时间字段。</p>
 <p>注意，这个proctime属性只能通过附加逻辑字段，来扩展物理schema。因此，只能在schema定义的末尾定义它。</p>
 <p>代码如下：</p>
-<pre><code class="language-scala">// 定义好 DataStream
+<pre><code class="language-java">// 定义好 DataStream
 val inputStream: DataStream[String] = env.readTextFile(&quot;\\sensor.txt&quot;)
 val dataStream: DataStream[SensorReading] = inputStream
   .map(data =&gt; {
@@ -185,7 +185,7 @@ val sensorTable = tableEnv
 </ol>
 <p>这种方法其实也很简单，只要在定义Schema的时候，加上一个新的字段，并指定成proctime就可以了。</p>
 <p>代码如下：</p>
-<pre><code class="language-scala">tableEnv
+<pre><code class="language-java">tableEnv
   .connect(
     new FileSystem().path(&quot;..\\sensor.txt&quot;))
   .withFormat(new Csv())
@@ -204,7 +204,7 @@ val sensorTable = tableEnv
 </ol>
 <p>在创建表的DDL中，增加一个字段并指定成proctime，也可以指定当前的时间字段。</p>
 <p>代码如下：</p>
-<pre><code class="language-scala">val sinkDDL: String =
+<pre><code class="language-java">val sinkDDL: String =
   &quot;&quot;&quot;
     |create table dataTable (
     |  id varchar(20) not null,
@@ -235,7 +235,7 @@ tableEnv.sqlUpdate(sinkDDL) // 执行 DDL
 </ul>
 <p>在这两种情况下，定义的事件时间戳字段，都将保存DataStream中事件时间戳的值。</p>
 <p>代码如下：</p>
-<pre><code class="language-scala">val inputStream: DataStream[String] = env.readTextFile(&quot;\\sensor.txt&quot;)
+<pre><code class="language-java">val inputStream: DataStream[String] = env.readTextFile(&quot;\\sensor.txt&quot;)
 val dataStream: DataStream[SensorReading] = inputStream
   .map(data =&gt; {
     val dataArray = data.split(&quot;,&quot;)
@@ -255,7 +255,7 @@ val sensorTable2 = tableEnv
 </ol>
 <p>这种方法只要在定义Schema的时候，将事件时间字段，并指定成rowtime就可以了。</p>
 <p>代码如下：</p>
-<pre><code class="language-scala">tableEnv
+<pre><code class="language-java">tableEnv
   .connect(new FileSystem().path(&quot;sensor.txt&quot;))
   .withFormat(new Csv())
   .withSchema(
@@ -276,7 +276,7 @@ val sensorTable2 = tableEnv
 </ol>
 <p>事件时间属性，是使用CREATE TABLE DDL中的WARDMARK语句定义的。watermark语句，定义现有事件时间字段上的watermark生成表达式，该表达式将事件时间字段标记为事件时间属性。</p>
 <p>代码如下：</p>
-<pre><code class="language-scala">val sinkDDL: String =
+<pre><code class="language-java">val sinkDDL: String =
   &quot;&quot;&quot;
     |create table dataTable (
     |  id varchar(20) not null,

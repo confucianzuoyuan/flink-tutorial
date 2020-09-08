@@ -2,7 +2,7 @@
 
 代码
 
-```scala
+```java
 package com.atguigu.project.topnhotitems
 
 import java.sql.Timestamp
@@ -18,7 +18,7 @@ object HotItemsSQL {
 
   def main(args: Array[String]): Unit = {
 
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     val settings = EnvironmentSettings.newInstance()
       .useBlinkPlanner()
       .inStreamingMode()

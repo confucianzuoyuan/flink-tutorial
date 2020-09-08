@@ -171,12 +171,12 @@
 &lt;/dependency&gt;
 </code></pre>
 <p>主函数中添加sink：</p>
-<pre><code class="language-scala">val union = high
+<pre><code class="language-java">DataStream&lt;String&gt; union = high
   .union(low)
-  .map(_.temperature.toString)
+  .map(r -&gt; r.temperature.toString)
 
 union.addSink(
-  new FlinkKafkaProducer011[String](
+  new FlinkKafkaProducer011&lt;String&gt;(
     &quot;localhost:9092&quot;,
     &quot;test&quot;,
     new SimpleStringSchema()

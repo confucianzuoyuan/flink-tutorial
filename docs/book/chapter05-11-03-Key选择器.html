@@ -161,11 +161,11 @@
   &gt; getKey(IN): KEY
 </code></pre>
 <p>两个例子</p>
-<pre><code class="language-scala">val sensorData: DataStream[SensorReading] = ...
-val byId: KeyedStream[SensorReading, String] = sensorData.keyBy(r =&gt; r.id)
+<pre><code class="language-java">DataStream[SensorReading] sensorData = ...
+KeyedStream&lt;SensorReading, String&gt; byId = sensorData.keyBy(r -&gt; r.id);
 </code></pre>
-<pre><code class="language-scala">val input: DataStream[(Int, Int)] = ...
-val keyedStream = input.keyBy(value =&gt; math.max(value._1, value._2))
+<pre><code class="language-java">DataStream&lt;(Integer, Integer)&gt; input = ...
+input.keyBy(value -&gt; Math.max(value.f0, value.f1));
 </code></pre>
 
                     </main>

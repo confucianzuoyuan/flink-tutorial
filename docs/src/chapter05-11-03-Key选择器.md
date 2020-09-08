@@ -9,13 +9,13 @@ KeySelector[IN, KEY]
 
 两个例子
 
-```scala
-val sensorData: DataStream[SensorReading] = ...
-val byId: KeyedStream[SensorReading, String] = sensorData.keyBy(r => r.id)
+```java
+DataStream[SensorReading] sensorData = ...
+KeyedStream<SensorReading, String> byId = sensorData.keyBy(r -> r.id);
 ```
 
-```scala
-val input: DataStream[(Int, Int)] = ...
-val keyedStream = input.keyBy(value => math.max(value._1, value._2))
+```java
+DataStream<(Integer, Integer)> input = ...
+input.keyBy(value -> Math.max(value.f0, value.f1));
 ```
 

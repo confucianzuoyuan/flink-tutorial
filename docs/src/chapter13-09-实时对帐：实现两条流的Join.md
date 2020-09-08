@@ -2,7 +2,7 @@
 
 完整代码如下：
 
-```scala
+```java
 import org.apache.flink.api.common.state.{ValueState, ValueStateDescriptor}
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.functions.co.CoProcessFunction
@@ -23,7 +23,7 @@ object TwoStreamsJoin {
   val unmatchedPays = new OutputTag[PayEvent]("unmatchedPays"){}
 
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
@@ -65,7 +65,8 @@ object TwoStreamsJoin {
       .getState(new ValueStateDescriptor[PayEvent]("saved pay",
         classOf[PayEvent]))
 
-    override def processElement1(
+    @Override
+public processElement1(
       order: OrderEvent,
       context: CoProcessFunction[OrderEvent,
         PayEvent, (OrderEvent, PayEvent)]#Context,
@@ -85,7 +86,8 @@ object TwoStreamsJoin {
       }
     }
 
-    override def processElement2(
+    @Override
+public processElement2(
       pay: PayEvent,
       context: CoProcessFunction[OrderEvent,
         PayEvent,(OrderEvent, PayEvent)]#Context,
@@ -104,7 +106,8 @@ object TwoStreamsJoin {
       }
     }
 
-    override def onTimer(
+    @Override
+public onTimer(
       timestamp: Long,
       ctx: CoProcessFunction[OrderEvent,
         PayEvent, (OrderEvent, PayEvent)]#OnTimerContext,

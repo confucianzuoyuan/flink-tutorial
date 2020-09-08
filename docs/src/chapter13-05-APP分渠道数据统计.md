@@ -2,7 +2,7 @@
 
 完整代码如下：
 
-```scala
+```java
 package com.atguigu
 
 import java.util.{Calendar, UUID}
@@ -33,7 +33,8 @@ object AppMarketingByChannel {
     val behaviorTypes = Seq("BROWSE", "CLICK")
     val rand = new Random
 
-    override def run(ctx: SourceContext[MarketingUserBehavior]): Unit = {
+    @Override
+public run(ctx: SourceContext[MarketingUserBehavior]): Unit = {
       while (running) {
         val userId = UUID.randomUUID().toString
         val behaviorType = behaviorTypes(rand.nextInt(behaviorTypes.size))
@@ -46,11 +47,12 @@ object AppMarketingByChannel {
       }
     }
 
-    override def cancel(): Unit = running = false
+    @Override
+public cancel(): Unit = running = false
   }
 
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     val stream = env
@@ -70,7 +72,8 @@ object AppMarketingByChannel {
   class MarketingCountByChannel
     extends ProcessWindowFunction[((String, String), Long),
       (String, Long, Long), (String, String), TimeWindow] {
-    override def process(key:  (String,String),
+    @Override
+public process(key:  (String,String),
                          context: Context,
                          elements: Iterable[((String, String), Long)],
                          out: Collector[(String, Long, Long)]): Unit = {

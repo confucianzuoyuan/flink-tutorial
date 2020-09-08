@@ -4,7 +4,7 @@
 
 下面的例子展示了如何定义基于窗口的Join。
 
-```scala
+```java
 input1.join(input2)
   .where(...)       // 为input1指定键值属性
   .equalTo(...)     // 为input2指定键值属性

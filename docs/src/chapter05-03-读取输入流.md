@@ -4,7 +4,7 @@
 
 在我们的例子里面，我们这样写：
 
-```scala
+```java
 val sensorData: DataStream[SensorReading] = env
   .addSource(new SensorSource)
 ```

@@ -24,14 +24,10 @@
 
 下面的例子展示了如何设置事件时间。
 
-```scala
-object AverageSensorReadings {
-  def main(args: Array[String]) {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-    val sensorData: DataStream[SensorReading] = env.addSource(...)
-  }
-}
+```java
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment;
+env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+DataStream<SensorReading> sensorData = env.addSource(...);
 ```
 
 如果要使用processing time，将`TimeCharacteristic.EventTime`替换为`TimeCharacteristic.ProcessingTIme`就可以了。

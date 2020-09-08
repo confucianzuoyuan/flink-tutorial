@@ -22,7 +22,7 @@ keyed state仅可用于KeyedStream。Flink支持以下数据类型的状态变�
 
 State.clear()是清空操作。
 
-```scala
+```java
 val sensorData: DataStream[SensorReading] = ...
 val keyedData: KeyedStream[SensorReading, String] = sensorData.keyBy(_.id)
 
@@ -33,14 +33,16 @@ class TemperatureAlertFunction(val threshold: Double)
   extends RichFlatMapFunction[SensorReading, (String, Double, Double)] {
   private var lastTempState: ValueState[Double] = _
 
-  override def open(parameters: Configuration): Unit = {
+  @Override
+public open(parameters: Configuration): Unit = {
     val lastTempDescriptor = new ValueStateDescriptor[Double](
       "lastTemp", classOf[Double])
 
     lastTempState = getRuntimeContext.getState[Double](lastTempDescriptor)
   }
 
-  override def flatMap(
+  @Override
+public flatMap(
     reading: SensorReading,
     out: Collector[(String, Double, Double)]
   ): Unit = {
@@ -65,14 +67,14 @@ class TemperatureAlertFunction(val threshold: Double)
 
 使用FlatMap with keyed ValueState的快捷方式flatMapWithState也可以实现以上需求。
 
-```scala
+```java
 val alerts: DataStream[(String, Double, Double)] = keyedSensorData
   .flatMapWithState[(String, Double, Double), Double] {
     case (in: SensorReading, None) =>
       // no previous temperature defined.
       // Just update the last temperature
       (List.empty, Some(in.temperature))
-    case (r: SensorReading, lastTemp: Some[Double]) =>
+    case (SensorReading r, lastTemp: Some[Double]) =>
       // compare temperature difference with threshold
       val tempDiff = (r.temperature - lastTemp.get).abs
       if (tempDiff > 1.7) {

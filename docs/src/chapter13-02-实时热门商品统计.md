@@ -21,7 +21,7 @@
 
 *程序主体*
 
-```scala
+```java
 // 把数据需要ETL成UserBehavior类型
 case class UserBehavior(userId: Long,
                         itemId: Long,
@@ -37,7 +37,7 @@ case class ItemViewCount(itemId: Long,
 object HotItems {
   def main(args: Array[String]): Unit = {
     // 创建一个 StreamExecutionEnvironment
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     // 设定Time类型为EventTime
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     // 为了打印到控制台的结果不乱序，
@@ -82,14 +82,18 @@ object HotItems {
 
 *增量聚合函数逻辑编写*
 
-```scala
+```java
 // COUNT统计的聚合函数实现，每出现一条记录就加一
 class CountAgg
   extends AggregateFunction[UserBehavior, Long, Long] {
-  override def createAccumulator(): Long = 0L
-  override def add(userBehavior: UserBehavior, acc: Long): Long = acc + 1
-  override def getResult(acc: Long): Long = acc
-  override def merge(acc1: Long, acc2: Long): Long = acc1 + acc2
+  @Override
+public createAccumulator(): Long = 0L
+  @Override
+public add(userBehavior: UserBehavior, acc: Long): Long = acc + 1
+  @Override
+public getResult(acc: Long): Long = acc
+  @Override
+public merge(acc1: Long, acc2: Long): Long = acc1 + acc2
 }
 ```
 
@@ -99,11 +103,12 @@ class CountAgg
 
 代码如下：
 
-```scala
+```java
 // 用于输出窗口的结果
 class WindowResultFunction
   extends ProcessWindowFunction[Long, ItemViewCount, String, TimeWindow] {
-  override def process(key: String,
+  @Override
+public process(key: String,
                         context: Context,
                         elements: Iterable[Long],
                         out: Collector[ItemViewCount]): Unit = {
@@ -116,7 +121,7 @@ class WindowResultFunction
 
 *计算最热门TopN商品*
 
-```scala
+```java
   class TopNHotItems(topSize: Int)
     extends KeyedProcessFunction[Long, ItemViewCount, String] {
     // 惰性赋值一个状态变量
@@ -125,7 +130,8 @@ class WindowResultFunction
     )
 
     // 来一条数据都会调用一次
-    override def processElement(value: ItemViewCount,
+    @Override
+public processElement(value: ItemViewCount,
                                 ctx: KeyedProcessFunction[Long,
                                   ItemViewCount, String]#Context,
                                 out: Collector[String]): Unit = {
@@ -134,7 +140,8 @@ class WindowResultFunction
     }
 
     // 定时器事件
-    override def onTimer(
+    @Override
+public onTimer(
       ts: Long,
       ctx: KeyedProcessFunction[Long, ItemViewCount, String]#OnTimerContext,
       out: Collector[String]
@@ -190,7 +197,7 @@ class WindowResultFunction
 
 编写代码：
 
-```scala
+```java
 val properties = new Properties()
 properties.setProperty("bootstrap.servers", "localhost:9092")
 properties.setProperty("group.id", "consumer-group")
@@ -204,7 +211,7 @@ properties.setProperty(
 )
 properties.setProperty("auto.offset.reset", "latest")
 
-val env = StreamExecutionEnvironment.getExecutionEnvironment
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
 env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 env.setParallelism(1)
 
@@ -232,7 +239,7 @@ val stream = env
 
 编写代码：
 
-```scala
+```java
 import java.util.Properties
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 

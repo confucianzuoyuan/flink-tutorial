@@ -156,14 +156,11 @@
                 <div id="content" class="content">
                     <main>
                         <h3><a class="header" href="#使用字段位置进行keyby" id="使用字段位置进行keyby">使用字段位置进行keyBy</a></h3>
-<pre><code class="language-scala">val input: DataStream[(Int, String, Long)] = ...
-val keyed = input.keyBy(1)
+<pre><code class="language-java">DataStream&lt;Tuple3(Integer, String, Long)&gt; input = ...
+KeyedStream&lt;Tuple3(Integer, String, Long), String&gt; keyed = input.keyBy(1);
 </code></pre>
-<blockquote>
-<p>注意，要么明确写清楚类型注释，要么让Scala去做类型推断，不要用IDEA的类型推断功能。</p>
-</blockquote>
 <p>如果我们想要用元组的第2个字段和第3个字段做keyBy，可以看下面的例子。</p>
-<pre><code class="language-scala">val keyed2 = input.keyBy(1, 2)
+<pre><code class="language-java">input.keyBy(1, 2);
 </code></pre>
 
                     </main>

@@ -1,6 +1,6 @@
 ### 使用Process Function实现订单超时需求
 
-```scala
+```java
 package com.atguigu.project
 
 import org.apache.flink.api.common.state.ValueStateDescriptor
@@ -17,7 +17,7 @@ object OrderTimeoutWIthoutCep {
                         eventTime: String)
 
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
@@ -40,7 +40,8 @@ object OrderTimeoutWIthoutCep {
       new ValueStateDescriptor[OrderEvent]("saved order", Types.of[OrderEvent])
     )
 
-    override def processElement(value: OrderEvent,
+    @Override
+public processElement(value: OrderEvent,
                                 ctx: KeyedProcessFunction[String, OrderEvent, String]#Context,
                                 out: Collector[String]): Unit = {
       if (value.eventType.equals("create")) {
@@ -56,7 +57,8 @@ object OrderTimeoutWIthoutCep {
       ctx.timerService().registerEventTimeTimer(value.eventTime.toLong * 1000 + 5000L)
     }
 
-    override def onTimer(timestamp: Long,
+    @Override
+public onTimer(timestamp: Long,
                          ctx: KeyedProcessFunction[String, OrderEvent, String]#OnTimerContext,
                          out: Collector[String]): Unit = {
       val savedOrder = orderState.value()

@@ -158,12 +158,12 @@
                         <h3><a class="header" href="#创建临时视图" id="创建临时视图">创建临时视图</a></h3>
 <p>创建临时视图的第一种方式，就是直接从DataStream转换而来。同样，可以直接对应字段转换；也可以在转换的时候，指定相应的字段。</p>
 <p>代码如下：</p>
-<pre><code class="language-scala">tableEnv.createTemporaryView(&quot;sensorView&quot;, dataStream)
+<pre><code class="language-java">tableEnv.createTemporaryView(&quot;sensorView&quot;, dataStream)
 tableEnv.createTemporaryView(&quot;sensorView&quot;,
   dataStream, $&quot;id&quot;, $&quot;temperature&quot;, $&quot;timestamp&quot; as &quot;ts&quot;)
 </code></pre>
 <p>另外，当然还可以基于Table创建视图：</p>
-<pre><code class="language-scala">tableEnv.createTemporaryView(&quot;sensorView&quot;, sensorTable)
+<pre><code class="language-java">tableEnv.createTemporaryView(&quot;sensorView&quot;, sensorTable)
 </code></pre>
 <p>View和Table的Schema完全相同。事实上，在Table API中，可以认为View和Table是等价的。</p>
 

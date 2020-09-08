@@ -157,8 +157,8 @@
                     <main>
                         <h3><a class="header" href="#匿名函数" id="匿名函数">匿名函数</a></h3>
 <p>匿名函数可以实现一些简单的逻辑，但无法实现一些高级功能，例如访问状态等等。</p>
-<pre><code class="language-scala">val tweets: DataStream[String] = ...
-val flinkTweets = tweets.filter(_.contains(&quot;flink&quot;))
+<pre><code class="language-java">DataStream&lt;String&gt; tweets = ...
+DataStream&lt;String&gt; flinkTweets = tweets.filter(r -&gt; r.contains(&quot;flink&quot;));
 </code></pre>
 
                     </main>

@@ -158,9 +158,8 @@
                         <h2><a class="header" href="#转换算子" id="转换算子">转换算子</a></h2>
 <p>在这一小节我们将大概看一下DataStream API的基本转换算子。与时间有关的操作符（例如窗口操作符和其他特殊的转换算子）将会在后面的章节叙述。一个流的转换操作将会应用在一个或者多个流上面，这些转换操作将流转换成一个或者多个输出流。编写一个DataStream API简单来说就是将这些转换算子组合在一起来构建一个数据流图，这个数据流图就实现了我们的业务逻辑。</p>
 <p>大部分的流转换操作都基于用户自定义函数UDF。UDF函数打包了一些业务逻辑并定义了输入流的元素如何转换成输出流的元素。像<code>MapFunction</code>这样的函数，将会被定义为类，这个类实现了Flink针对特定的转换操作暴露出来的接口。</p>
-<pre><code class="language-scala">class MyMapFunction extends MapFunction[Int, Int] {
-  override def map(value: Int): Int = value + 1
-}
+<pre><code class="language-java">DataStream&lt;String&gt; sensorIds = filteredReadings
+        .map(r -&gt; r.id);
 </code></pre>
 <p>函数接口定义了需要由用户实现的转换方法，例如上面例子中的<code>map()</code>方法。</p>
 <p>大部分函数接口被设计为<code>Single Abstract Method</code>（单独抽象方法）接口，并且接口可以使用Java 8匿名函数来实现。Scala DataStream API也内置了对匿名函数的支持。当讲解DataStream API的转换算子时，我们展示了针对所有函数类的接口，但为了简洁，大部分接口的实现使用匿名函数而不是函数类的方式。</p>

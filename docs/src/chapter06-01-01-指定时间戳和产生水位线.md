@@ -14,8 +14,8 @@ Flink暴露了TimestampAssigner接口供我们实现，使我们可以自定义�
 
 以下这种写法是可以的。
 
-```scala
-val stream = env
+```java
+DataStream<T> stream = env
   .addSource(...)
   .map(...)
   .filter(...)
@@ -25,16 +25,16 @@ val stream = env
 下面的例子展示了首先filter流，然后再分配时间戳和水位线。
 
 
-```scala
-val env = StreamExecutionEnvironment.getExecutionEnvironment
+```java
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment;
  
 // 从调用时刻开始给env创建的每一个stream追加时间特征
-env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
-val readings: DataStream[SensorReading] = env
+DataStream<SensorReading> readings = env
   .addSource(new SensorSource)
   .filter(r => r.temperature > 25)
-  .assignTimestampsAndWatermarks(new MyAssigner())
+  .assignTimestampsAndWatermarks(new MyAssigner());
 ```
 
 MyAssigner有两种类型

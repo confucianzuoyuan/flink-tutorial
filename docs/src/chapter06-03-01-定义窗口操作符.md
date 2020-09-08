@@ -10,7 +10,7 @@ Window算子可以在keyed stream或者nokeyed stream上面使用。
 
 下面的代码说明了如何使用窗口操作符。
 
-```scala
+```java
 stream
   .keyBy(...)
   .window(...)  // 指定window assigner

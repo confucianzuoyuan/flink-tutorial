@@ -2,7 +2,7 @@
 
 Apache Flink针对文件系统实现了一个可重置的source连接器，将文件看作流来读取数据。如下面的例子所示：
 
-```scala
+```java
 val lineReader = new TextInputFormat(null) 
 
 val lineStream: DataStream[String] = env.readFile[String](

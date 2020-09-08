@@ -4,15 +4,15 @@
 * FsStateBackend将状态存储在本地的文件系统或者远程的文件系统如HDFS。
 * RocksDBStateBackend将状态存储在RocksDB \footnote{Facebook开源的KV数据库} 中。
 
-```scala
-val env = StreamExecutionEnvironment.getExecutionEnvironment
+```java
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment;
 
-val checkpointPath: String = ???
+String checkpointPath = ???
 // configure path for checkpoints on the remote filesystem
 // env.setStateBackend(new FsStateBackend("file:///tmp/checkpoints"))
 
 val backend = new RocksDBStateBackend(checkpointPath)
 // configure the state backend
-env.setStateBackend(backend)
+env.setStateBackend(backend);
 ```
 

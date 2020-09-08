@@ -8,7 +8,7 @@
 
 下面的例子实现了一个温度报警应用，应用有可以动态设定的阈值，动态设定通过广播流来实现。
 
-```scala
+```java
 val sensorData: DataStream[SensorReading] = ...
 val thresholds: DataStream[ThresholdUpdate] = ...
 val keyedSensorData: KeyedStream[SensorReading, String] = sensorData
@@ -36,7 +36,7 @@ val alerts: DataStream[(String, Double, Double)] = keyedSensorData
 
 下面的例子实现了动态设定温度阈值的功能。
 
-```scala
+```java
 class UpdatableTemperatureAlertFunction()
     extends KeyedBroadcastProcessFunction[String,
       SensorReading, ThresholdUpdate, (String, Double, Double)] {
@@ -49,7 +49,8 @@ class UpdatableTemperatureAlertFunction()
   // the keyed state handle
   private var lastTempState: ValueState[Double] = _
 
-  override def open(parameters: Configuration): Unit = {
+  @Override
+public open(parameters: Configuration): Unit = {
     // create keyed state descriptor
     val lastTempDescriptor = new ValueStateDescriptor[Double](
       "lastTemp", classOf[Double])
@@ -58,7 +59,8 @@ class UpdatableTemperatureAlertFunction()
       .getState[Double](lastTempDescriptor)
   }
 
-  override def processBroadcastElement(
+  @Override
+public processBroadcastElement(
       update: ThresholdUpdate,
       ctx: KeyedBroadcastProcessFunction[String,
         SensorReading, ThresholdUpdate,
@@ -77,7 +79,8 @@ class UpdatableTemperatureAlertFunction()
     }
   }
 
-  override def processElement(
+  @Override
+public processElement(
       reading: SensorReading,
       readOnlyCtx: KeyedBroadcastProcessFunction
         [String, SensorReading, ThresholdUpdate, 

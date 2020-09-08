@@ -11,7 +11,7 @@
 
 编写`WordCount.scala`程序
 
-```scala
+```java
 package com.atguigu
 
 import org.apache.flink.streaming.api.scala._
@@ -23,7 +23,7 @@ object StreamingJob {
   def main(args: Array[String]) : Unit = {
 
     // get the execution environment
-    val env: StreamExecutionEnvironment = StreamExecutionEnvironment
+    StreamExecutionEnvironment env: StreamExecutionEnvironment = StreamExecutionEnvironment
       .getExecutionEnvironment
 
     // get input data by connecting to the socket

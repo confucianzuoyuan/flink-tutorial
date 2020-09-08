@@ -166,7 +166,7 @@
 <li>最好使用IDEA默认的Maven工具：Bundled（Maven 3），点击<code>Finish</code>，等待一会儿，项目就创建好了</li>
 </ol>
 <p>编写<code>WordCount.scala</code>程序</p>
-<pre><code class="language-scala">package com.atguigu
+<pre><code class="language-java">package com.atguigu
 
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
@@ -177,7 +177,7 @@ object StreamingJob {
   def main(args: Array[String]) : Unit = {
 
     // get the execution environment
-    val env: StreamExecutionEnvironment = StreamExecutionEnvironment
+    StreamExecutionEnvironment env: StreamExecutionEnvironment = StreamExecutionEnvironment
       .getExecutionEnvironment
 
     // get input data by connecting to the socket

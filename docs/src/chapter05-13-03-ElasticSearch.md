@@ -12,27 +12,32 @@
 
 在主函数中调用：
 
-```scala
-val httpHosts = new util.ArrayList[HttpHost]()
-httpHosts.add(new HttpHost("localhost", 9200))
-val esSinkBuilder = new ElasticsearchSink.Builder[SensorReading](
+```java
+List<HttpHost> httpHosts = new ArrayList<>();
+httpHosts.add(new HttpHost("127.0.0.1", 9200, "http"));
+ElasticsearchSink.Builder<String> esSinkBuilder = new ElasticsearchSink.Builder<>(
   httpHosts,
-  new ElasticsearchSinkFunction[SensorReading] {
-    override def process(t: SensorReading,
-                         runtimeContext: RuntimeContext,
-                         requestIndexer: RequestIndexer): Unit = {
-      println("saving data: " + t)
-      val json = new util.HashMap[String, String]()
-      json.put("data", t.toString)
-      val indexRequest = Requests
+  new ElasticsearchSinkFunction<SensorReading> {
+
+    @Override
+    public void process(SensorReading t,
+                        RuntimeContext runtimeContext,
+                        RequestIndexer requestIndexer) {
+      System.out.println("saving data: " + t);
+      Map<String, String> json = new util.HashMap<>();
+      json.put("data", t.toString());
+      IndexRequest indexRequest = Requests
         .indexRequest()
         .index("sensor")
-        .`type`("readingData")
-        .source(json)
-      requestIndexer.add(indexRequest)
-      println("saved successfully")
+        .source(json);
+      requestIndexer.add(indexRequest);
+      System.out.println("saved successfully");
     }
-  })
-dataStream.addSink(esSinkBuilder.build())
+  }
+)
+
+esSinkBuilder.setBulkFlushMaxActions(1);
+
+dataStream.addSink(esSinkBuilder.build());
 ```
 

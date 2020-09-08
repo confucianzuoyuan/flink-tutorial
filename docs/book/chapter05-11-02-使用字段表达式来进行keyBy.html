@@ -157,40 +157,12 @@
                     <main>
                         <h3><a class="header" href="#使用字段表达式来进行keyby" id="使用字段表达式来进行keyby">使用字段表达式来进行keyBy</a></h3>
 <p>对于样例类：</p>
-<pre><code class="language-scala">case class SensorReading(
-  id: String,
-  timestamp: Long,
-  temperature: Double
-)
-
-val sensorStream: DataStream[SensorReading] = ...
-val keyedSensors = sensorStream.keyBy(&quot;id&quot;)
+<pre><code class="language-java">DataStream&lt;SensorReading&gt; sensorStream = ...
+sensorStream.keyBy(&quot;id&quot;);
 </code></pre>
 <p>对于元组：</p>
-<pre><code class="language-scala">val input: DataStream[(Int, String, Long)] = ...
-val keyed1 = input.keyBy(&quot;2&quot;) // key by 3rd field
-val keyed2 = input.keyBy(&quot;_1&quot;) // key by 1st field
-
-DataStream&lt;Tuple3&lt;Integer, String, Long&gt;&gt; javaInput = ...
+<pre><code class="language-java">DataStream&lt;Tuple3&lt;Integer, String, Long&gt;&gt; javaInput = ...
 javaInput.keyBy(&quot;f2&quot;) // key Java tuple by 3rd field
-</code></pre>
-<p>对于存在嵌套的样例类：</p>
-<pre><code class="language-scala">case class Address (
-  address: String,
-  zip: String,
-  country: String
-)
-
-case class Person (
-  name: String,
-  birthday: (Int, Int, Int), // year, month, day
-  address: Address
-)
-
-val persons: DataStream[Person] = ...
-persons.keyBy(&quot;address.zip&quot;) // key by nested POJO field
-persons.keyBy(&quot;birthday._1&quot;) // key by field of nested tuple
-persons.keyBy(&quot;birthday._&quot;) // key by all fields of nested tuple
 </code></pre>
 
                     </main>

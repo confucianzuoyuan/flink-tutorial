@@ -22,7 +22,7 @@ TableEnvironment 可以通过静态方法 BatchTableEnvironment.create() 或者 
 
 基于blink版本的流处理环境（Blink-Streaming-Query）：
 
-```scala
+```java
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.EnvironmentSettings
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment

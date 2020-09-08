@@ -16,13 +16,14 @@
 
 在下面的代码中，我们定义自己的HashCode函数，在TableEnvironment中注册它，并在查询中调用它。
 
-```scala
+```java
 // 自定义一个标量函数
   class HashCodeFunction extends ScalarFunction {
 
     private var factor: Int = 0
 
-    override def open(context: FunctionContext): Unit = {
+    @Override
+public open(context: FunctionContext): Unit = {
       // 获取参数 "hashcode_factor"
       // 如果不存在，则使用默认值 "12"
       factor = context.getJobParameter("hashcode_factor", "12").toInt
@@ -36,7 +37,7 @@
 
 主函数中调用，计算sensor id的哈希值（前面部分照抄，流环境、表环境、读取source、建表）：
 
-```scala
+```java
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.api.scala._
 import org.apache.flink.table.api._
@@ -46,7 +47,7 @@ import org.apache.flink.types.Row
 
 object ScalarFunctionExample {
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
 
     val stream = env.addSource(new SensorSource)
@@ -84,7 +85,8 @@ object ScalarFunctionExample {
 
     private var factor: Int = 0
 
-    override def open(context: FunctionContext): Unit = {
+    @Override
+public open(context: FunctionContext): Unit = {
       // 获取参数 "hashcode_factor"
       // 如果不存在，则使用默认值 "12"
       factor = context.getJobParameter("hashcode_factor", "12").toInt
@@ -117,7 +119,7 @@ joinLateral算子，会将外部表中的每一行，与表函数（TableFunctio
 
 自定义TableFunction：
 
-```scala
+```java
 // 自定义TableFunction
   @FunctionHint(output = new DataTypeHint("ROW<word STRING, length INT>"))
   class SplitFunction extends TableFunction[Row] {
@@ -131,7 +133,7 @@ joinLateral算子，会将外部表中的每一行，与表函数（TableFunctio
 
 完整代码：
 
-```scala
+```java
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.api.scala._
 import org.apache.flink.table.annotation.{DataTypeHint, FunctionHint}
@@ -142,7 +144,7 @@ import org.apache.flink.types.Row
 
 object TableFunctionExample {
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
 
     val stream = env
@@ -231,7 +233,7 @@ AggregationFunction要求必须实现的方法：
 
 接下来我们写一个自定义AggregateFunction，计算一下每个sensor的平均温度值。
 
-```scala
+```java
 // 定义AggregateFunction的Accumulator
 class AvgTempAcc {
   var sum: Double = 0.0
@@ -239,9 +241,11 @@ class AvgTempAcc {
 }
 
 class AvgTemp extends AggregateFunction[Double, AvgTempAcc] {
-  override def getValue(accumulator: AvgTempAcc): Double = accumulator.sum / accumulator.count
+  @Override
+public getValue(accumulator: AvgTempAcc): Double = accumulator.sum / accumulator.count
 
-  override def createAccumulator(): AvgTempAcc = new AvgTempAcc
+  @Override
+public createAccumulator(): AvgTempAcc = new AvgTempAcc
 
   def accumulate(accumulator: AvgTempAcc, temp: Double): Unit ={
     accumulator.sum += temp
@@ -252,7 +256,7 @@ class AvgTemp extends AggregateFunction[Double, AvgTempAcc] {
 
 接下来就可以在代码中调用了。
 
-```scala
+```java
 // 创建一个聚合函数实例
 val avgTemp = new AvgTemp()
 // Table API的调用
@@ -309,7 +313,7 @@ AggregationFunction要求必须实现的方法：
 
 接下来我们写一个自定义TableAggregateFunction，用来提取每个sensor最高的两个温度值。
 
-```scala
+```java
 // 先定义一个 Accumulator
 class Top2TempAcc{
   var highestTemp: Double = Int.MinValue
@@ -319,7 +323,8 @@ class Top2TempAcc{
 // 自定义 TableAggregateFunction
 class Top2Temp extends TableAggregateFunction[(Double, Int), Top2TempAcc]{
 
-  override def createAccumulator(): Top2TempAcc = new Top2TempAcc
+  @Override
+public createAccumulator(): Top2TempAcc = new Top2TempAcc
 
   def accumulate(acc: Top2TempAcc, temp: Double): Unit ={
     if( temp > acc.highestTemp ){
@@ -339,7 +344,7 @@ class Top2Temp extends TableAggregateFunction[(Double, Int), Top2TempAcc]{
 
 接下来就可以在代码中调用了。
 
-```scala
+```java
 // 创建一个表聚合函数实例
 val top2Temp = new Top2Temp()
 // Table API的调用

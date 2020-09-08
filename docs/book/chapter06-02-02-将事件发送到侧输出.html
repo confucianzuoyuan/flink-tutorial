@@ -158,33 +158,36 @@
                         <h3><a class="header" href="#将事件发送到侧输出" id="将事件发送到侧输出">将事件发送到侧输出</a></h3>
 <p>大部分的DataStream API的算子的输出是单一输出，也就是某种数据类型的流。除了split算子，可以将一条流分成多条流，这些流的数据类型也都相同。process function的side outputs功能可以产生多条流，并且这些流的数据类型可以不一样。一个side output可以定义为OutputTag[X]对象，X是输出流的数据类型。process function可以通过Context对象发射一个事件到一个或者多个side outputs。</p>
 <p>例子</p>
-<pre><code class="language-scala">val monitoredReadings: DataStream[SensorReading] = readings
-  .process(new FreezingMonitor)
+<pre><code class="language-java">public class StreamingJob {
 
-monitoredReadings
-  .getSideOutput(new OutputTag[String](&quot;freezing-alarms&quot;))
-  .print()
+	private static OutputTag&lt;String&gt; outputTag = new OutputTag&lt;String&gt;(&quot;side-output&quot;){};
 
-readings.print()
-</code></pre>
-<p>接下来我们实现FreezingMonitor函数，用来监控传感器温度值，将温度值低于32F的温度输出到side output。</p>
-<pre><code class="language-scala">class FreezingMonitor extends ProcessFunction[SensorReading, SensorReading] {
-  // define a side output tag
-  // 定义一个侧输出标签
-  lazy val freezingAlarmOutput: OutputTag[String] =
-    new OutputTag[String](&quot;freezing-alarms&quot;)
+	public static void main(String[] args) throws Exception {
+		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-  override def processElement(r: SensorReading,
-                              ctx: ProcessFunction[SensorReading,
-                                SensorReading]#Context,
-                              out: Collector[SensorReading]): Unit = {
-    // emit freezing alarm if temperature is below 32F
-    if (r.temperature &lt; 32.0) {
-      ctx.output(freezingAlarmOutput, s&quot;Freezing Alarm for ${r.id}&quot;)
-    }
-    // forward all readings to the regular output
-    out.collect(r)
-  }
+		env.setParallelism(1);
+
+		DataStream&lt;SensorReading&gt; readings = env.addSource(new SensorSource());
+
+		SingleOutputStreamOperator&lt;SensorReading&gt; monitoredReadings = readings
+				.process(new FreezingMonitor());
+
+		monitoredReadings.getSideOutput(outputTag).print();
+
+		env.execute(&quot;Flink Streaming Java API Skeleton&quot;);
+	}
+
+	public static class FreezingMonitor extends ProcessFunction&lt;SensorReading, SensorReading&gt; {
+		// 定义一个侧输出标签
+
+		@Override
+		public void processElement(SensorReading r, Context ctx, Collector&lt;SensorReading&gt; out) throws Exception {
+			if (r.temperature &lt; 32.0) {
+				ctx.output(outputTag, &quot;Freezing Alarm for &quot; + r.id);
+			}
+			out.collect(r);
+		}
+	}
 }
 </code></pre>
 

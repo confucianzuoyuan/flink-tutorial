@@ -2,7 +2,7 @@
 
 在将流处理应用配置成exactly-once检查点机制，以及配置成所有源数据都能在故障的情况下可以重置，Flink的StreamingFileSink提供了端到端的恰好处理一次语义保证。下面的例子展示了StreamingFileSink的使用方式。
 
-```scala
+```java
 val input: DataStream[String] = …
 val sink: StreamingFileSink[String] = StreamingFileSink
   .forRowFormat(

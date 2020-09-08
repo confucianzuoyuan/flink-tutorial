@@ -171,7 +171,7 @@
 <p><em>数据准备</em></p>
 <p>将数据文件UserBehavior.csv复制到资源文件目录src/main/resources下。</p>
 <p><em>程序主体</em></p>
-<pre><code class="language-scala">// 把数据需要ETL成UserBehavior类型
+<pre><code class="language-java">// 把数据需要ETL成UserBehavior类型
 case class UserBehavior(userId: Long,
                         itemId: Long,
                         categoryId: Int,
@@ -186,7 +186,7 @@ case class ItemViewCount(itemId: Long,
 object HotItems {
   def main(args: Array[String]): Unit = {
     // 创建一个 StreamExecutionEnvironment
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     // 设定Time类型为EventTime
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     // 为了打印到控制台的结果不乱序，
@@ -230,22 +230,27 @@ object HotItems {
 <p>真实业务场景一般都是乱序的，所以一般不用<code>assignAscendingTimestamps</code>，而是使用<code>BoundedOutOfOrdernessTimestampExtractor</code>。</p>
 </blockquote>
 <p><em>增量聚合函数逻辑编写</em></p>
-<pre><code class="language-scala">// COUNT统计的聚合函数实现，每出现一条记录就加一
+<pre><code class="language-java">// COUNT统计的聚合函数实现，每出现一条记录就加一
 class CountAgg
   extends AggregateFunction[UserBehavior, Long, Long] {
-  override def createAccumulator(): Long = 0L
-  override def add(userBehavior: UserBehavior, acc: Long): Long = acc + 1
-  override def getResult(acc: Long): Long = acc
-  override def merge(acc1: Long, acc2: Long): Long = acc1 + acc2
+  @Override
+public createAccumulator(): Long = 0L
+  @Override
+public add(userBehavior: UserBehavior, acc: Long): Long = acc + 1
+  @Override
+public getResult(acc: Long): Long = acc
+  @Override
+public merge(acc1: Long, acc2: Long): Long = acc1 + acc2
 }
 </code></pre>
 <p><em>全窗口聚合函数逻辑编写</em></p>
 <p>其实就是将增量聚合的结果包上一层窗口信息和key的信息。</p>
 <p>代码如下：</p>
-<pre><code class="language-scala">// 用于输出窗口的结果
+<pre><code class="language-java">// 用于输出窗口的结果
 class WindowResultFunction
   extends ProcessWindowFunction[Long, ItemViewCount, String, TimeWindow] {
-  override def process(key: String,
+  @Override
+public process(key: String,
                         context: Context,
                         elements: Iterable[Long],
                         out: Collector[ItemViewCount]): Unit = {
@@ -255,7 +260,7 @@ class WindowResultFunction
 </code></pre>
 <p>现在我们就得到了每个商品在每个窗口的点击量的数据流。</p>
 <p><em>计算最热门TopN商品</em></p>
-<pre><code class="language-scala">  class TopNHotItems(topSize: Int)
+<pre><code class="language-java">  class TopNHotItems(topSize: Int)
     extends KeyedProcessFunction[Long, ItemViewCount, String] {
     // 惰性赋值一个状态变量
     lazy val itemState = getRuntimeContext.getListState(
@@ -263,7 +268,8 @@ class WindowResultFunction
     )
 
     // 来一条数据都会调用一次
-    override def processElement(value: ItemViewCount,
+    @Override
+public processElement(value: ItemViewCount,
                                 ctx: KeyedProcessFunction[Long,
                                   ItemViewCount, String]#Context,
                                 out: Collector[String]): Unit = {
@@ -272,7 +278,8 @@ class WindowResultFunction
     }
 
     // 定时器事件
-    override def onTimer(
+    @Override
+public onTimer(
       ts: Long,
       ctx: KeyedProcessFunction[Long, ItemViewCount, String]#OnTimerContext,
       out: Collector[String]
@@ -322,7 +329,7 @@ class WindowResultFunction
 &lt;/dependency&gt;
 </code></pre>
 <p>编写代码：</p>
-<pre><code class="language-scala">val properties = new Properties()
+<pre><code class="language-java">val properties = new Properties()
 properties.setProperty(&quot;bootstrap.servers&quot;, &quot;localhost:9092&quot;)
 properties.setProperty(&quot;group.id&quot;, &quot;consumer-group&quot;)
 properties.setProperty(
@@ -335,7 +342,7 @@ properties.setProperty(
 )
 properties.setProperty(&quot;auto.offset.reset&quot;, &quot;latest&quot;)
 
-val env = StreamExecutionEnvironment.getExecutionEnvironment
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
 env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 env.setParallelism(1)
 
@@ -356,7 +363,7 @@ val stream = env
 &lt;/dependency&gt;
 </code></pre>
 <p>编写代码：</p>
-<pre><code class="language-scala">import java.util.Properties
+<pre><code class="language-java">import java.util.Properties
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 
 object KafkaProducerUtil {

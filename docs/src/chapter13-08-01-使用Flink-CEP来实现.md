@@ -4,7 +4,7 @@
 
 我们将会利用CEP库来实现这个功能。我们先将事件流按照订单号orderId分流，然后定义这样的一个事件模式：在15分钟内，事件“create”与“pay”严格紧邻：
 
-```scala
+```java
 val orderPayPattern = Pattern.begin[OrderEvent]("begin")
   .where(_.eventType == "create")
   .next("next")
@@ -16,7 +16,7 @@ val orderPayPattern = Pattern.begin[OrderEvent]("begin")
 在src/main/scala下继续创建OrderTimeout.scala文件，新建一个单例对象。定义样例类OrderEvent，这是输入的订单事件流；另外还有OrderResult，这是输出显示的订单状态结果。由于没有现成的数据，我们还是用几条自定义的示例数据来做演示。
 完整代码如下：
 
-```scala
+```java
 import org.apache.flink.cep.scala.CEP
 import org.apache.flink.cep.scala.pattern.Pattern
 import org.apache.flink.streaming.api.scala._
@@ -31,7 +31,7 @@ object OrderTimeout {
 
   def main(args: Array[String]): Unit = {
 
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 

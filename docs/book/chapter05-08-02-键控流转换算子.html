@@ -167,11 +167,10 @@
 <p>如图5-4所示，把输入事件的颜色作为key，黑色的事件输出到了一个分区，其他颜色输出到了另一个分区。</p>
 <p><img src="images/spaf_0504.png" alt="" /></p>
 <p><code>keyBy()</code>方法接收一个参数，这个参数指定了key或者keys，有很多不同的方法来指定key。我们将在后面讲解。下面的代码声明了<code>id</code>这个字段为SensorReading流的key。</p>
-<pre><code class="language-scala">val readings: DataStream[SensorReading] = ...
-val keyed: KeyedStream[SensorReading, String] = readings
-  .keyBy(r =&gt; r.id)
+<pre><code class="language-java">KeyedStream&lt;SensorReading, String&gt; keyed = readings
+        .keyBy(r -&gt; r.id);
 </code></pre>
-<p>匿名函数<code>r =&gt; r.id</code>抽取了传感器读数SensorReading的id值。</p>
+<p>匿名函数<code>r -&gt; r.id</code>抽取了传感器读数SensorReading的id值。</p>
 <p><em>滚动聚合</em></p>
 <p>滚动聚合算子由<code>KeyedStream</code>调用，并生成一个聚合以后的DataStream，例如：sum，minimum，maximum。一个滚动聚合算子会为每一个观察到的key保存一个聚合的值。针对每一个输入事件，算子将会更新保存的聚合结果，并发送一个带有更新后的值的事件到下游算子。滚动聚合不需要用户自定义函数，但需要接受一个参数，这个参数指定了在哪一个字段上面做聚合操作。DataStream API提供了以下滚动聚合方法。</p>
 <blockquote>
@@ -186,10 +185,10 @@ val keyed: KeyedStream[SensorReading, String] = readings
 </ul>
 <p>滚动聚合算子无法组合起来使用，每次计算只能使用一个单独的滚动聚合算子。</p>
 <p>下面的例子根据第一个字段来对类型为<code>Tuple3[Int, Int, Int]</code>的流做分流操作，然后针对第二个字段做滚动求和操作。</p>
-<pre><code class="language-scala">val inputStream: DataStream[(Int, Int, Int)] = env.fromElements(
-  (1, 2, 2), (2, 3, 1), (2, 2, 4), (1, 5, 3))
+<pre><code class="language-java">DataStream[Tuple3(Integer, Integer, Integer)] inputStream = env.fromElements(
+  Tuple3(1, 2, 2), Tuple3(2, 3, 1), Tuple3(2, 2, 4), Tuple3(1, 5, 3))
 
-val resultStream: DataStream[(Int, Int, Int)] = inputStream
+DataStream[Tuple3(Integer, Integer, Integer)] resultStream = inputStream
   .keyBy(0) // key on first field of the tuple
   .sum(1)   // sum the second field of the tuple in place
 </code></pre>
@@ -205,12 +204,14 @@ ReduceFunction[T]
     &gt; reduce(T, T): T
 </code></pre>
 <p>下面的例子，流根据语言这个key来分区，输出结果为针对每一种语言都实时更新的单词列表。</p>
-<pre><code class="language-scala">val inputStream: DataStream[(String, List[String])] = env.fromElements(
-  (&quot;en&quot;, List(&quot;tea&quot;)), (&quot;fr&quot;, List(&quot;vin&quot;)), (&quot;en&quot;, List(&quot;cake&quot;)))
-
-val resultStream: DataStream[(String, List[String])] = inputStream
-  .keyBy(0)
-  .reduce((x, y) =&gt; (x._1, x._2 ::: y._2))
+<pre><code class="language-java">DataStream&lt;SensorReading&gt; maxTempPerSensor = keyed
+        .reduce((r1, r2) -&gt; {
+            if (r1.temperature &gt; r2.temperature) {
+                return r1;
+            } else {
+                return r2;
+            }
+        });
 </code></pre>
 <p>reduce匿名函数将连续两个tuple的第一个字段(key字段)继续发送出去，然后将两个tuple的第二个字段List[String]连接。</p>
 <blockquote>

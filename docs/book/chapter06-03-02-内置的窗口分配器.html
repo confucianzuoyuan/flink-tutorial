@@ -168,63 +168,63 @@
 <p>Flink创建的窗口类型是<code>TimeWindow</code>，包含开始时间和结束时间，区间是左闭右开的，也就是说包含开始时间戳，不包含结束时间戳。</p>
 <p><em>滚动窗口(tumbling windows)</em></p>
 <p><img src="images/spaf_0601.png" alt="" /></p>
-<pre><code class="language-scala">val sensorData: DataStream[SensorReading] = ...
+<pre><code class="language-java">DataStream&lt;SensorReading&gt; sensorData = ...
 
-val avgTemp = sensorData
-  .keyBy(_.id)
+DataStream&lt;T&gt; avgTemp = sensorData
+  .keyBy(r -&gt; r.id)
   // group readings in 1s event-time windows
   .window(TumblingEventTimeWindows.of(Time.seconds(1)))
-  .process(new TemperatureAverager)
+  .process(new TemperatureAverager);
 
-val avgTemp = sensorData
-  .keyBy(_.id)
+DataStream&lt;T&gt; avgTemp = sensorData
+  .keyBy(r -&gt; r.id)
   // group readings in 1s processing-time windows
   .window(TumblingProcessingTimeWindows.of(Time.seconds(1)))
-  .process(new TemperatureAverager)
+  .process(new TemperatureAverager);
 
 // 其实就是之前的
 // shortcut for window.(TumblingEventTimeWindows.of(size))
-val avgTemp = sensorData
-  .keyBy(_.id)
+DataStream&lt;T&gt; avgTemp = sensorData
+  .keyBy(r -&gt; r.id)
   .timeWindow(Time.seconds(1))
-  .process(new TemperatureAverager)
+  .process(new TemperatureAverager);
 </code></pre>
 <p>默认情况下，滚动窗口会和<code>1970-01-01-00:00:00.000</code>对齐，例如一个1小时的滚动窗口将会定义以下开始时间的窗口：00:00:00，01:00:00，02:00:00，等等。</p>
 <p><em>滑动窗口(sliding window)</em></p>
 <p>对于滑动窗口，我们需要指定窗口的大小和滑动的步长。当滑动步长小于窗口大小时，窗口将会出现重叠，而元素会被分配到不止一个窗口中去。当滑动步长大于窗口大小时，一些元素可能不会被分配到任何窗口中去，会被直接丢弃。</p>
 <p>下面的代码定义了窗口大小为1小时，滑动步长为15分钟的窗口。每一个元素将被分配到4个窗口中去。</p>
 <p><img src="images/spaf_0602.png" alt="" /></p>
-<pre><code class="language-scala">val slidingAvgTemp = sensorData
-  .keyBy(_.id)
+<pre><code class="language-java">DataStream&lt;T&gt; slidingAvgTemp = sensorData
+  .keyBy(r -&gt; r.id)
   .window(
     SlidingEventTimeWindows.of(Time.hours(1), Time.minutes(15))
   )
-  .process(new TemperatureAverager)
+  .process(new TemperatureAverager);
 
-val slidingAvgTemp = sensorData
-  .keyBy(_.id)
+DataStream&lt;T&gt; slidingAvgTemp = sensorData
+  .keyBy(r -&gt; r.id)
   .window(
     SlidingProcessingTimeWindows.of(Time.hours(1), Time.minutes(15))
   )
-  .process(new TemperatureAverager)
+  .process(new TemperatureAverager);
 
-val slidingAvgTemp = sensorData
-  .keyBy(_.id)
+DataStream&lt;T&gt; slidingAvgTemp = sensorData
+  .keyBy(r -&gt; r.id)
   .timeWindow(Time.hours(1), Time.minutes(15))
-  .process(new TemperatureAverager)
+  .process(new TemperatureAverager);
 </code></pre>
 <p><em>会话窗口(session windows)</em></p>
 <p>会话窗口不可能重叠，并且会话窗口的大小也不是固定的。不活跃的时间长度定义了会话窗口的界限。不活跃的时间是指这段时间没有元素到达。下图展示了元素如何被分配到会话窗口。</p>
 <p><img src="images/spaf_0603.png" alt="" /></p>
-<pre><code class="language-scala">val sessionWindows = sensorData
-  .keyBy(_.id)
+<pre><code class="language-java">DataStream&lt;T&gt; sessionWindows = sensorData
+  .keyBy(r -&gt; r.id)
   .window(EventTimeSessionWindows.withGap(Time.minutes(15)))
-  .process(...)
+  .process(...);
 
-val sessionWindows = sensorData
-  .keyBy(_.id)
+DataStream&lt;T&gt; sessionWindows = sensorData
+  .keyBy(r -&gt; r.id)
   .window(ProcessingTimeSessionWindows.withGap(Time.minutes(15)))
-  .process(...)
+  .process(...);
 </code></pre>
 <p>由于会话窗口的开始时间和结束时间取决于接收到的元素，所以窗口分配器无法立即将所有的元素分配到正确的窗口中去。相反，会话窗口分配器最开始时先将每一个元素分配到它自己独有的窗口中去，窗口开始时间是这个元素的时间戳，窗口大小是session gap的大小。接下来，会话窗口分配器会将出现重叠的窗口合并成一个窗口。</p>
 

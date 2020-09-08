@@ -4,7 +4,7 @@
 
 例子
 
-```scala
+```java
 val readings = env
   .socketTextStream("localhost", 9999, '\n')
   .map(line => {
@@ -31,10 +31,11 @@ lateStream.print()
 
 实现`CountFunction`:
 
-```scala
+```java
 class CountFunction extends ProcessWindowFunction[(String, Long),
   String, String, TimeWindow] {
-  override def process(key: String,
+  @Override
+public process(key: String,
                        context: Context,
                        elements: Iterable[(String, Long)],
                        out: Collector[String]): Unit = {
@@ -45,7 +46,7 @@ class CountFunction extends ProcessWindowFunction[(String, Long),
 
 下面这个例子展示了ProcessFunction如何过滤掉迟到的元素然后将迟到的元素发送到侧输出流中去。
 
-```scala
+```java
 val readings: DataStream[SensorReading] = ???
 val filteredReadings: DataStream[SensorReading] = readings
   .process(new LateReadingsFilter)
@@ -62,8 +63,9 @@ class LateReadingsFilter
 
   val lateReadingsOut = new OutputTag[SensorReading]("late-readings")
 
-  override def processElement(
-      r: SensorReading,
+  @Override
+public processElement(
+      SensorReading r,
       ctx: ProcessFunction[SensorReading, SensorReading]#Context,
       out: Collector[SensorReading]): Unit = {
 

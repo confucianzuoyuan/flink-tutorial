@@ -10,7 +10,7 @@ Flink允许我们把Table和DataStream做转换：我们可以基于一个DataSt
 
 代码具体如下：
 
-```scala
+```java
 val inputStream: DataStream[String] = env.readTextFile("sensor.txt")
 val dataStream: DataStream[SensorReading] = inputStream
   .map(data => {
@@ -31,14 +31,14 @@ val sensorTable2 = tableEnv.fromDataStream(dataStream, 'id, 'timestamp as 'ts)
 
 基于名称的对应：
 
-```scala
+```java
 val sensorTable = tableEnv
   .fromDataStream(dataStream, $"timestamp" as "ts", $"id" as "myId", "temperature")
 ```
 
 基于位置的对应：
 
-```scala
+```java
 val sensorTable = tableEnv
   .fromDataStream(dataStream, $"myId", $"ts")
 ```

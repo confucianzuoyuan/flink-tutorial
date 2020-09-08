@@ -165,7 +165,7 @@
 <h4><a class="header" href="#创建表" id="创建表">创建表</a></h4>
 <h5><a class="header" href="#虚拟表" id="虚拟表">虚拟表</a></h5>
 <p>在 SQL 的术语中，Table API 的对象对应于视图（虚拟表）。它封装了一个逻辑查询计划。它可以通过以下方法在 catalog 中创建：</p>
-<pre><code class="language-scala">// get a TableEnvironment
+<pre><code class="language-java">// get a TableEnvironment
 val tableEnv = ... // see &quot;Create a TableEnvironment&quot; section
 
 // table is the result of a simple projection query
@@ -178,7 +178,7 @@ tableEnv.createTemporaryView(&quot;projectedTable&quot;, projTable)
 <p>表总是通过三元标识符注册，包括 catalog 名、数据库名和表名。</p>
 <p>用户可以指定一个 catalog 和数据库作为 “当前catalog” 和”当前数据库”。有了这些，那么刚刚提到的三元标识符的前两个部分就可以被省略了。如果前两部分的标识符没有指定， 那么会使用当前的 catalog 和当前数据库。用户也可以通过 Table API 或 SQL 切换当前的 catalog 和当前的数据库。</p>
 <p>标识符遵循 SQL 标准，因此使用时需要用反引号（`）进行转义。</p>
-<pre><code class="language-scala">// get a TableEnvironment
+<pre><code class="language-java">// get a TableEnvironment
 val tEnv: TableEnvironment = ...;
 tEnv.useCatalog(&quot;custom_catalog&quot;)
 tEnv.useDatabase(&quot;custom_database&quot;)

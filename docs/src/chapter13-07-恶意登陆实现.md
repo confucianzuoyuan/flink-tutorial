@@ -1,6 +1,6 @@
 ## 恶意登陆实现
 
-```scala
+```java
 package com.atguigu
 
 import com.atguigu.FlinkCepExample.LoginEvent
@@ -16,7 +16,7 @@ import scala.collection.mutable.ListBuffer
 
 object LoginFailWithoutCEP {
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
@@ -45,7 +45,8 @@ object LoginFailWithoutCEP {
       new ValueStateDescriptor[Long]("ts", Types.of[Long])
     )
 
-    override def processElement(
+    @Override
+public processElement(
       value: LoginEvent,
       ctx: KeyedProcessFunction[String, LoginEvent, String]#Context,
       out: Collector[String]
@@ -68,7 +69,8 @@ object LoginFailWithoutCEP {
       }
     }
 
-    override def onTimer(
+    @Override
+public onTimer(
       ts: Long,
       ctx: KeyedProcessFunction[String, LoginEvent, String]#OnTimerContext,
       out: Collector[String]

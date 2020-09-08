@@ -162,7 +162,7 @@
 <li>外部系统支持针对每个key的更新，例如关系型数据库或者key-value存储。</li>
 </ul>
 <p>下面的例子展示了如何实现一个针对JDBC数据库的幂等写入sink连接器，这里使用的是Apache Derby数据库。</p>
-<pre><code class="language-scala">val readings: DataStream[SensorReading] = ...
+<pre><code class="language-java">val readings: DataStream[SensorReading] = ...
 
 // write the sensor readings to a Derby table
 readings.addSink(new DerbyUpsertSink)
@@ -174,7 +174,8 @@ class DerbyUpsertSink extends RichSinkFunction[SensorReading] {
   var insertStmt: PreparedStatement = _
   var updateStmt: PreparedStatement = _
 
-  override def open(parameters: Configuration): Unit = {
+  @Override
+public open(parameters: Configuration): Unit = {
     // connect to embedded in-memory Derby
     conn = DriverManager.getConnection(
        &quot;jdbc:derby:memory:flinkExample&quot;,
@@ -186,7 +187,8 @@ class DerbyUpsertSink extends RichSinkFunction[SensorReading] {
       &quot;UPDATE Temperatures SET temp = ? WHERE sensor = ?&quot;)
   }
 
-  override def invoke(r: SensorReading, context: Context[_]): Unit = {
+  @Override
+public invoke(SensorReading r, context: Context[_]): Unit = {
     // set parameters for update statement and execute it
     updateStmt.setDouble(1, r.temperature)
     updateStmt.setString(2, r.id)
@@ -202,7 +204,8 @@ class DerbyUpsertSink extends RichSinkFunction[SensorReading] {
     }
   }
 
-  override def close(): Unit = {
+  @Override
+public close(): Unit = {
     insertStmt.close()
     updateStmt.close()
     conn.close()

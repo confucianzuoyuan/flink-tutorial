@@ -8,7 +8,7 @@
 
 基于间隔的Join目前只支持事件时间以及INNER JOIN语义（无法发出未匹配成功的事件）。下面的例子定义了一个基于间隔的Join。
 
-```scala
+```java
 input1
   .keyBy(...)
   .between(<lower-bound>, <upper-bound>) // 相对于input1的上下界
@@ -21,7 +21,7 @@ Join成功的事件对会发送给ProcessJoinFunction。下界和上界分别由
 
 例子：每个用户的点击Join这个用户最近10分钟内的浏览
 
-```scala
+```java
 package com.atguigu.course
 
 import org.apache.flink.streaming.api.TimeCharacteristic
@@ -59,7 +59,7 @@ object IntervalJoinExample {
                            productPrice: String)
 
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
@@ -69,7 +69,8 @@ object IntervalJoinExample {
       )
       .assignTimestampsAndWatermarks(
         new BoundedOutOfOrdernessTimestampExtractor[UserClickLog](Time.seconds(0)) {
-          override def extractTimestamp(t: UserClickLog): Long = {
+          @Override
+public extractTimestamp(t: UserClickLog): Long = {
             val dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")
             val dateTime = DateTime.parse(t.eventTime, dateTimeFormatter)
             dateTime.getMillis
@@ -88,7 +89,8 @@ object IntervalJoinExample {
       )
       .assignTimestampsAndWatermarks(
         new BoundedOutOfOrdernessTimestampExtractor[UserBrowseLog](Time.seconds(0)) {
-          override def extractTimestamp(t: UserBrowseLog): Long = {
+          @Override
+public extractTimestamp(t: UserBrowseLog): Long = {
             val dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")
             val dateTime = DateTime.parse(t.eventTime, dateTimeFormatter)
             dateTime.getMillis
@@ -108,7 +110,8 @@ object IntervalJoinExample {
 
   class MyIntervalJoin
     extends ProcessJoinFunction[UserClickLog, UserBrowseLog, String] {
-    override def processElement(
+    @Override
+public processElement(
       left: UserClickLog,
       right: UserBrowseLog,
       context: ProcessJoinFunction[UserClickLog, UserBrowseLog, String]#Context,

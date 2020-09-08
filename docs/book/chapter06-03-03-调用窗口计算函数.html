@@ -167,7 +167,7 @@
 </ol>
 <p><em>ReduceFunction</em></p>
 <p>例子: 计算每个传感器15s窗口中的温度最小值</p>
-<pre><code class="language-scala">val minTempPerWindow: DataStream[(String, Double)] = sensorData
+<pre><code class="language-java">DataStream&lt;(String, Double)&gt; minTempPerWindow = sensorData
   .map(r =&gt; (r.id, r.temperature))
   .keyBy(_._1)
   .timeWindow(Time.seconds(15))
@@ -193,7 +193,7 @@
 </code></pre>
 <p>IN是输入元素的类型，ACC是累加器的类型，OUT是输出元素的类型。</p>
 <p>例子</p>
-<pre><code class="language-scala">val avgTempPerWindow: DataStream[(String, Double)] = sensorData
+<pre><code class="language-java">val avgTempPerWindow: DataStream[(String, Double)] = sensorData
   .map(r =&gt; (r.id, r.temperature))
   .keyBy(_._1)
   .timeWindow(Time.seconds(15))
@@ -205,19 +205,23 @@ class AvgTempFunction
   extends AggregateFunction[(String, Double),
     (String, Double, Int), (String, Double)] {
 
-  override def createAccumulator() = {
+  @Override
+public createAccumulator() = {
     (&quot;&quot;, 0.0, 0)
   }
 
-  override def add(in: (String, Double), acc: (String, Double, Int)) = {
+  @Override
+public add(in: (String, Double), acc: (String, Double, Int)) = {
     (in._1, in._2 + acc._2, 1 + acc._3)
   }
 
-  override def getResult(acc: (String, Double, Int)) = {
+  @Override
+public getResult(acc: (String, Double, Int)) = {
     (acc._1, acc._2 / acc._3)
   }
 
-  override def merge(acc1: (String, Double, Int),
+  @Override
+public merge(acc1: (String, Double, Int),
     acc2: (String, Double, Int)) = {
     (acc1._1, acc1._2 + acc2._2, acc1._3 + acc2._3)
   }
@@ -264,7 +268,7 @@ class AvgTempFunction
 <li>per-key global state: 同一个key，也就是在一条KeyedStream上，不同的window可以访问per-key global state保存的值。</li>
 </ul>
 <p>例子：计算5s滚动窗口中的最低和最高的温度。输出的元素包含了(流的Key, 最低温度, 最高温度, 窗口结束时间)。</p>
-<pre><code class="language-scala">val minMaxTempPerWindow: DataStream[MinMaxTemp] = sensorData
+<pre><code class="language-java">val minMaxTempPerWindow: DataStream[MinMaxTemp] = sensorData
   .keyBy(_.id)
   .timeWindow(Time.seconds(5))
   .process(new HighAndLowTempProcessFunction)
@@ -274,7 +278,8 @@ case class MinMaxTemp(id: String, min: Double, max: Double, endTs: Long)
 class HighAndLowTempProcessFunction
   extends ProcessWindowFunction[SensorReading,
     MinMaxTemp, String, TimeWindow] {
-  override def process(key: String,
+  @Override
+public process(key: String,
                        ctx: Context,
                        vals: Iterable[SensorReading],
                        out: Collector[MinMaxTemp]): Unit = {
@@ -287,7 +292,7 @@ class HighAndLowTempProcessFunction
 </code></pre>
 <p>我们还可以将ReduceFunction/AggregateFunction和ProcessWindowFunction结合起来使用。ReduceFunction/AggregateFunction做增量聚合，ProcessWindowFunction提供更多的对数据流的访问权限。如果只使用ProcessWindowFunction(底层的实现为将事件都保存在ListState中)，将会非常占用空间。分配到某个窗口的元素将被提前聚合，而当窗口的trigger触发时，也就是窗口收集完数据关闭时，将会把聚合结果发送到ProcessWindowFunction中，这时Iterable参数将会只有一个值，就是前面聚合的值。</p>
 <p>例子</p>
-<pre><code class="language-scala">input
+<pre><code class="language-java">input
   .keyBy(...)
   .timeWindow(...)
   .reduce(
@@ -302,7 +307,7 @@ input
     windowFunction: ProcessWindowFunction[V, OUT, K, W])
 </code></pre>
 <p>我们把之前的需求重新使用以上两种方法实现一下。</p>
-<pre><code class="language-scala">case class MinMaxTemp(id: String, min: Double, max: Double, endTs: Long)
+<pre><code class="language-java">case class MinMaxTemp(id: String, min: Double, max: Double, endTs: Long)
 
 val minMaxTempPerWindow2: DataStream[MinMaxTemp] = sensorData
   .map(r =&gt; (r.id, r.temperature, r.temperature))
@@ -318,7 +323,8 @@ val minMaxTempPerWindow2: DataStream[MinMaxTemp] = sensorData
 class AssignWindowEndProcessFunction
   extends ProcessWindowFunction[(String, Double, Double),
     MinMaxTemp, String, TimeWindow] {
-  override def process(key: String,
+  @Override
+public process(key: String,
                        ctx: Context,
                        minMaxIt: Iterable[(String, Double, Double)],
                        out: Collector[MinMaxTemp]): Unit = {

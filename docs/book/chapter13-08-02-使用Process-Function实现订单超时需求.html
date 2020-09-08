@@ -156,7 +156,7 @@
                 <div id="content" class="content">
                     <main>
                         <h3><a class="header" href="#使用process-function实现订单超时需求" id="使用process-function实现订单超时需求">使用Process Function实现订单超时需求</a></h3>
-<pre><code class="language-scala">package com.atguigu.project
+<pre><code class="language-java">package com.atguigu.project
 
 import org.apache.flink.api.common.state.ValueStateDescriptor
 import org.apache.flink.api.scala.typeutils.Types
@@ -172,7 +172,7 @@ object OrderTimeoutWIthoutCep {
                         eventTime: String)
 
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
@@ -195,7 +195,8 @@ object OrderTimeoutWIthoutCep {
       new ValueStateDescriptor[OrderEvent](&quot;saved order&quot;, Types.of[OrderEvent])
     )
 
-    override def processElement(value: OrderEvent,
+    @Override
+public processElement(value: OrderEvent,
                                 ctx: KeyedProcessFunction[String, OrderEvent, String]#Context,
                                 out: Collector[String]): Unit = {
       if (value.eventType.equals(&quot;create&quot;)) {
@@ -211,7 +212,8 @@ object OrderTimeoutWIthoutCep {
       ctx.timerService().registerEventTimeTimer(value.eventTime.toLong * 1000 + 5000L)
     }
 
-    override def onTimer(timestamp: Long,
+    @Override
+public onTimer(timestamp: Long,
                          ctx: KeyedProcessFunction[String, OrderEvent, String]#OnTimerContext,
                          out: Collector[String]): Unit = {
       val savedOrder = orderState.value()

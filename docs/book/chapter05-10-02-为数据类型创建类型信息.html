@@ -169,17 +169,6 @@ TypeInformation&lt;Tuple2&lt;Long, String&gt;&gt; tupleType = Types
 TypeInformation&lt;Person&gt; personType = Types
   .POJO(Person.class);
 </code></pre>
-<p>在Scala中，类是 <code>org.apache.flink.api.scala.typeutils.Types</code> ，举个例子：</p>
-<pre><code class="language-scala">// TypeInformation for primitive types
-val stringType: TypeInformation[String] = Types.STRING
-// TypeInformation for Scala Tuples
-val tupleType: TypeInformation[(Int, Long)] = Types.TUPLE[(Int, Long)]
-// TypeInformation for case classes
-val caseClassType: TypeInformation[Person] = Types.CASE_CLASS[Person]
-</code></pre>
-<blockquote>
-<p>别忘了导入<code>import org.apache.flink.streaming.api.scala._</code></p>
-</blockquote>
 
                     </main>
 

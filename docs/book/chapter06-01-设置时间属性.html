@@ -176,13 +176,9 @@
 <p>IngestionTime没什么价值，既有EventTime的执行效率（比较低），有没有EventTime计算结果的准确性。</p>
 </blockquote>
 <p>下面的例子展示了如何设置事件时间。</p>
-<pre><code class="language-scala">object AverageSensorReadings {
-  def main(args: Array[String]) {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-    val sensorData: DataStream[SensorReading] = env.addSource(...)
-  }
-}
+<pre><code class="language-java">StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment;
+env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+DataStream&lt;SensorReading&gt; sensorData = env.addSource(...);
 </code></pre>
 <p>如果要使用processing time，将<code>TimeCharacteristic.EventTime</code>替换为<code>TimeCharacteristic.ProcessingTIme</code>就可以了。</p>
 

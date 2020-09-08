@@ -24,7 +24,7 @@ evictor是一个可选的组件，可以被注入到ProcessWindowFunction之前�
 
 下面的代码说明了如果使用自定义的trigger和evictor定义一个window operator：
 
-```scala
+```java
 stream
   .keyBy(...)
   .window(...)
@@ -87,13 +87,14 @@ WindowAssigner有两个泛型参数：
 
 下面的代码创建了一个自定义窗口分配器，是一个30秒的滚动事件时间窗口。
 
-```scala
+```java
 class ThirtySecondsWindows
     extends WindowAssigner[Object, TimeWindow] {
 
   val windowSize: Long = 30 * 1000L
 
-  override def assignWindows(
+  @Override
+public assignWindows(
     o: Object,
     ts: Long,
     ctx: WindowAssigner.WindowAssignerContext
@@ -104,19 +105,22 @@ class ThirtySecondsWindows
     Collections.singletonList(new TimeWindow(startTime, endTime))
   }
 
-  override def getDefaultTrigger(
+  @Override
+public getDefaultTrigger(
     env: environment.StreamExecutionEnvironment
   ): Trigger[Object, TimeWindow] = {
       EventTimeTrigger.create()
   }
 
-  override def getWindowSerializer(
+  @Override
+public getWindowSerializer(
     executionConfig: ExecutionConfig
   ): TypeSerializer[TimeWindow] = {
     new TimeWindow.Serializer
   }
 
-  override def isEventTime = true
+  @Override
+public isEventTime = true
 }
 ```
 
@@ -214,12 +218,13 @@ public interface OnMergeContext extends TriggerContext {
 
 下面的例子展示了一个触发器在窗口结束时间之前触发。当第一个事件被分配到窗口时，这个触发器注册了一个定时器，定时时间为水位线之前一秒钟。当定时事件执行，将会注册一个新的定时事件，这样，这个触发器每秒钟最多触发一次。
 
-```scala
+```java
 class OneSecondIntervalTrigger
     extends Trigger[SensorReading, TimeWindow] {
 
-  override def onElement(
-    r: SensorReading,
+  @Override
+public onElement(
+    SensorReading r,
     timestamp: Long,
     window: TimeWindow,
     ctx: Trigger.TriggerContext
@@ -242,7 +247,8 @@ class OneSecondIntervalTrigger
     TriggerResult.CONTINUE
   }
 
-  override def onEventTime(
+  @Override
+public onEventTime(
     timestamp: Long,
     window: TimeWindow,
     ctx: Trigger.TriggerContext
@@ -259,7 +265,8 @@ class OneSecondIntervalTrigger
     }
   }
 
-  override def onProcessingTime(
+  @Override
+public onProcessingTime(
     timestamp: Long,
     window: TimeWindow,
     ctx: Trigger.TriggerContext
@@ -267,7 +274,8 @@ class OneSecondIntervalTrigger
     TriggerResult.CONTINUE
   }
 
-  override def clear(
+  @Override
+public clear(
     window: TimeWindow,
     ctx: Trigger.TriggerContext
   ): Unit = {

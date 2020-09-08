@@ -158,7 +158,7 @@
                         <h3><a class="header" href="#基于窗口的join" id="基于窗口的join">基于窗口的Join</a></h3>
 <p>顾名思义，基于窗口的Join需要用到Flink中的窗口机制。其原理是将两条输入流中的元素分配到公共窗口中并在窗口完成时进行Join（或Cogroup）。</p>
 <p>下面的例子展示了如何定义基于窗口的Join。</p>
-<pre><code class="language-scala">input1.join(input2)
+<pre><code class="language-java">input1.join(input2)
   .where(...)       // 为input1指定键值属性
   .equalTo(...)     // 为input2指定键值属性
   .window(...)      // 指定WindowAssigner

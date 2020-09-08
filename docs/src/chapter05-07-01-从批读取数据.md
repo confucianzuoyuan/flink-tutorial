@@ -1,6 +1,6 @@
 ### 从批读取数据
 
-```scala
+```java
 val stream = env
   .fromCollection(List(
     SensorReading("sensor_1", 1547718199, 35.80018327300259),

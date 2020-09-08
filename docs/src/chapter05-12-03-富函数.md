@@ -16,23 +16,26 @@ DataStream API提供的所有转换操作函数，都拥有它们的“富”版
 
 另外，getRuntimeContext()方法提供了函数的RuntimeContext的一些信息，例如函数执行的并行度，当前子任务的索引，当前子任务的名字。同时还它还包含了访问**分区状态**的方法。下面看一个例子：
 
-```scala
-class MyFlatMap extends RichFlatMapFunction[Int, (Int, Int)] {
-  var subTaskIndex = 0
+```java
+public static class MyFlatMap extends RichFlatMapFunction<Integer, Tuple2<Integer, Integer>> {
+  private int subTaskIndex = 0;
 
-  override def open(configuration: Configuration): Unit = {
-    subTaskIndex = getRuntimeContext.getIndexOfThisSubtask
+  @Override
+  public void open(Configuration configuration) {
+    int subTaskIndex = getRuntimeContext.getIndexOfThisSubtask;
     // 做一些初始化工作
     // 例如建立一个和HDFS的连接
   }
 
-  override def flatMap(in: Int, out: Collector[(Int, Int)]): Unit = {
+  @Override
+  public void flatMap(Integer in, Collector<Tuple2<Integer, Integer>> out) {
     if (in % 2 == subTaskIndex) {
-      out.collect((subTaskIndex, in))
+      out.collect((subTaskIndex, in));
     }
   }
 
-  override def close(): Unit = {
+  @Override
+  public void close() {
     // 清理工作，断开和HDFS的连接。
   }
 }

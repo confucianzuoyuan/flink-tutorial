@@ -178,7 +178,7 @@
 hdfs dfs -put /home/parallels/flink/checkpoint hdfs://localhost:9000/flink
 </code></pre>
 <p>然后在代码中添加：</p>
-<pre><code class="language-scala">env.enableCheckpointing(5000)
+<pre><code class="language-java">env.enableCheckpointing(5000)
 env.setStateBackend(new FsStateBackend(&quot;hdfs://localhost:9000/flink&quot;))
 </code></pre>
 <p>检查一下检查点正确保存了没有：</p>

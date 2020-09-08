@@ -2,16 +2,16 @@
 
 操作符的最大并行度定义了操作符的keyed state可以被分到多少个key groups中。
 
-```scala
-val env = StreamExecutionEnvironment.getExecutionEnvironment
+```java
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment;
 
 // set the maximum parallelism for this application
-env.setMaxParallelism(512)
+env.setMaxParallelism(512);
 
-val alerts: DataStream[(String, Double, Double)] = keyedSensorData
+DataStream<Tuple3<String, Double, Double>> alerts = keyedSensorData
   .flatMap(new TemperatureAlertFunction(1.1))
   // set the maximum parallelism for this operator and
   // override the application-wide value
-  .setMaxParallelism(1024)
+  .setMaxParallelism(1024);
 ```
 

@@ -4,7 +4,7 @@
 
 代码如下：
 
-```scala
+```java
 tableEnv.createTemporaryView("sensorView", dataStream)
 tableEnv.createTemporaryView("sensorView",
   dataStream, $"id", $"temperature", $"timestamp" as "ts")
@@ -12,7 +12,7 @@ tableEnv.createTemporaryView("sensorView",
 
 另外，当然还可以基于Table创建视图：
 
-```scala
+```java
 tableEnv.createTemporaryView("sensorView", sensorTable)
 ```
 

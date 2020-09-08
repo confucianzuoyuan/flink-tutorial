@@ -10,8 +10,8 @@ window functions定义了窗口中数据的计算逻辑。有两种计算逻辑�
 
 例子: 计算每个传感器15s窗口中的温度最小值
 
-```scala
-val minTempPerWindow: DataStream[(String, Double)] = sensorData
+```java
+DataStream<(String, Double)> minTempPerWindow = sensorData
   .map(r => (r.id, r.temperature))
   .keyBy(_._1)
   .timeWindow(Time.seconds(15))
@@ -44,7 +44,7 @@ IN是输入元素的类型，ACC是累加器的类型，OUT是输出元素的类
 
 例子
 
-```scala
+```java
 val avgTempPerWindow: DataStream[(String, Double)] = sensorData
   .map(r => (r.id, r.temperature))
   .keyBy(_._1)
@@ -57,19 +57,23 @@ class AvgTempFunction
   extends AggregateFunction[(String, Double),
     (String, Double, Int), (String, Double)] {
 
-  override def createAccumulator() = {
+  @Override
+public createAccumulator() = {
     ("", 0.0, 0)
   }
 
-  override def add(in: (String, Double), acc: (String, Double, Int)) = {
+  @Override
+public add(in: (String, Double), acc: (String, Double, Int)) = {
     (in._1, in._2 + acc._2, 1 + acc._3)
   }
 
-  override def getResult(acc: (String, Double, Int)) = {
+  @Override
+public getResult(acc: (String, Double, Int)) = {
     (acc._1, acc._2 / acc._3)
   }
 
-  override def merge(acc1: (String, Double, Int),
+  @Override
+public merge(acc1: (String, Double, Int),
     acc2: (String, Double, Int)) = {
     (acc1._1, acc1._2 + acc2._2, acc1._3 + acc2._3)
   }
@@ -123,7 +127,7 @@ process()方法接受的参数为：window的key，Iterable迭代器包含窗口
 
 例子：计算5s滚动窗口中的最低和最高的温度。输出的元素包含了(流的Key, 最低温度, 最高温度, 窗口结束时间)。
 
-```scala
+```java
 val minMaxTempPerWindow: DataStream[MinMaxTemp] = sensorData
   .keyBy(_.id)
   .timeWindow(Time.seconds(5))
@@ -134,7 +138,8 @@ case class MinMaxTemp(id: String, min: Double, max: Double, endTs: Long)
 class HighAndLowTempProcessFunction
   extends ProcessWindowFunction[SensorReading,
     MinMaxTemp, String, TimeWindow] {
-  override def process(key: String,
+  @Override
+public process(key: String,
                        ctx: Context,
                        vals: Iterable[SensorReading],
                        out: Collector[MinMaxTemp]): Unit = {
@@ -150,7 +155,7 @@ class HighAndLowTempProcessFunction
 
 例子
 
-```scala
+```java
 input
   .keyBy(...)
   .timeWindow(...)
@@ -168,7 +173,7 @@ input
 
 我们把之前的需求重新使用以上两种方法实现一下。
 
-```scala
+```java
 case class MinMaxTemp(id: String, min: Double, max: Double, endTs: Long)
 
 val minMaxTempPerWindow2: DataStream[MinMaxTemp] = sensorData
@@ -185,7 +190,8 @@ val minMaxTempPerWindow2: DataStream[MinMaxTemp] = sensorData
 class AssignWindowEndProcessFunction
   extends ProcessWindowFunction[(String, Double, Double),
     MinMaxTemp, String, TimeWindow] {
-  override def process(key: String,
+  @Override
+public process(key: String,
                        ctx: Context,
                        minMaxIt: Iterable[(String, Double, Double)],
                        out: Collector[MinMaxTemp]): Unit = {

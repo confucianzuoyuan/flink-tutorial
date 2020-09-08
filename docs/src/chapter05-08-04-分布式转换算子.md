@@ -30,18 +30,5 @@
 
 *Custom*
 
-当Flink提供的分区策略都不适用时，我们可以使用`partitionCustom()`方法来自定义分区策略。这个方法接收一个`Partitioner`对象，这个对象需要实现分区逻辑以及定义针对流的哪一个字段或者key来进行分区。下面的例子将一条整数流做partition，使得所有的负整数都发送到第一个任务中，剩下的数随机分配。
-
-```scala
-val numbers: DataStream[(Int)] = ...
-numbers.partitionCustom(myPartitioner, 0)
-
-object myPartitioner extends Partitioner[Int] {
-  val r = scala.util.Random
-
-  override def partition(key: Int, numPartitions: Int): Int = {
-    if (key < 0) 0 else r.nextInt(numPartitions)
-  }
-}
-```
+当Flink提供的分区策略都不适用时，我们可以使用`partitionCustom()`方法来自定义分区策略。这个方法接收一个`Partitioner`对象，这个对象需要实现分区逻辑以及定义针对流的哪一个字段或者key来进行分区。
 

@@ -4,23 +4,37 @@
 
 首先让我们看一下表示传感器读数的数据结构：
 
-```scala
-case class SensorReading(
-  id: String,
-  timestamp: Long,
-  temperature: Double)
+```java
+public class SensorReading {
+
+    public String id;
+    public long timestamp;
+    public double temperature;
+
+    public SensorReading() { }
+
+    public SensorReading(String id, long timestamp, double temperature) {
+        this.id = id;
+        this.timestamp = timestamp;
+        this.temperature = temperature;
+    }
+
+    public String toString() {
+        return "(" + this.id + ", " + this.timestamp + ", " + this.temperature + ")";
+    }
+}
 ```
 
 示例程序5-1将温度从华氏温度读数转换成摄氏温度读数，然后针对每一个传感器，每5秒钟计算一次平均温度纸。
 
-```scala
+```java
 // Scala object that defines
 // the DataStream program in the main() method.
 object AverageSensorReadings {
   // main() defines and executes the DataStream program
   def main(args: Array[String]) {
     // set up the streaming execution environment
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     // use event time for the application
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     // create a DataStream[SensorReading] from a stream source

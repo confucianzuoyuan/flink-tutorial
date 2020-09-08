@@ -10,31 +10,37 @@
 
 定义一个redis的mapper类，用于定义保存到redis时调用的命令：
 
-```scala
-object WriteToRedis {
-  def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setParallelism(1)
+```java
+public class WriteToRedis {
+  public static void main(String[] args) throws Exception {
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment;
+    env.setParallelism(1);
 
-    val stream = env.addSource(new SensorSource)
+    DataStream<SensorReading> stream = env.addSource(new SensorSource());
 
-    val conf = new FlinkJedisPoolConfig.Builder().setHost("localhost").build()
+    FlinkJedisPoolConfig conf = new FlinkJedisPoolConfig.Builder().setHost("localhost").build();
 
-    stream.addSink(new RedisSink[SensorReading](conf, new MyRedisMapper))
+    stream.addSink(new RedisSink<SensorReading>(conf, new MyRedisMapper()));
 
-    env.execute()
-
+    env.execute();
   }
 
-  class MyRedisMapper extends RedisMapper[SensorReading] {
+  public static class MyRedisMapper implements RedisMapper<SensorReading> {
     // 使用id作为key
-    override def getKeyFromData(t: SensorReading): String = t.id
+    @Override
+    public String getKeyFromData(SensorReading t) {
+      return t.id;
+    }
 
     // 使用温度作为value
-    override def getValueFromData(t: SensorReading): String = t.temperature.toString
+    @Override
+    public String getValueFromData(SensorReading t) {
+      return t.temperature.toString();
+    }
 
-    override def getCommandDescription: RedisCommandDescription = {
-      new RedisCommandDescription(RedisCommand.HSET, "sensor")
+    @Override
+    public RedisCommandDescription getCommandDescription() {
+      return new RedisCommandDescription(RedisCommand.HSET, "sensor");
     }
   }
 }

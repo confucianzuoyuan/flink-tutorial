@@ -167,22 +167,12 @@
 <p>接下来让我们一探究竟。</p>
 <p><em>Primitives</em></p>
 <p>Java和Scala提供的所有原始数据类型都支持，例如<code>Int</code>(Java的<code>Integer</code>)，String，Double等等。下面举一个例子：</p>
-<pre><code class="language-scala">val numbers: DataStream[Long] = env.fromElements(1L, 2L, 3L, 4L)
-numbers.map(n =&gt; n + 1)
+<pre><code class="language-java">DataStream[Long] numbers = env.fromElements(1L, 2L, 3L, 4L);
+numbers.map(n -&gt; n + 1);
 </code></pre>
 <p><em>Tuples</em></p>
 <p>元组是一种组合数据类型，由固定数量的元素组成。</p>
-<p>DataStream的Scala API直接使用Scala内置的Tuple。举个例子：</p>
-<pre><code class="language-scala">val persons: DataStream[(String, Integer)] =
-env.fromElements(
-  (&quot;Adam&quot;, 17),
-  (&quot;Sarah&quot;, 23)
-)
-
-persons.filter(p =&gt; p._2 &gt; 18)
-</code></pre>
-<p>Flink为Java的Tuple同样提供了高效的实现。Flink实现的Java Tuple最多可以有25个元素，根据元素数量的不同，Tuple都被实现成了不同的类：Tuple1，Tuple2，一直到Tuple25。Tuple类是强类型。</p>
-<p>我们可以将上面的例子用Java的DataStream API重写：</p>
+<p>Flink为Java的Tuple提供了高效的实现。Flink实现的Java Tuple最多可以有25个元素，根据元素数量的不同，Tuple都被实现成了不同的类：Tuple1，Tuple2，一直到Tuple25。Tuple类是强类型。</p>
 <pre><code class="language-java">DataStream&lt;Tuple2&lt;String, Integer&gt;&gt; persons = env
   .fromElements(
     Tuple2.of(&quot;Adam&quot;, 17),
@@ -191,7 +181,7 @@ persons.filter(p =&gt; p._2 &gt; 18)
 
 persons.filter(p -&gt; p.f1 &gt; 18);
 </code></pre>
-<p>Tuple的元素可以通过它们的public属性访问--f0，f1，f2等等。或者使用<code>getField(int pos)</code>方法来访问，元素下标从0开始：</p>
+<p>Tuple的元素可以通过它们的public属性访问——f0，f1，f2等等。或者使用<code>getField(int pos)</code>方法来访问，元素下标从0开始：</p>
 <pre><code class="language-java">import org.apache.flink.api.java.tuple.Tuple2
 
 Tuple2&lt;String, Integer&gt; personTuple = Tuple2.of(&quot;Alex&quot;, 42);
@@ -200,16 +190,6 @@ Integer age = personTuple.getField(1); // age = 42
 <p>不同于Scala的Tuple，Java的Tuple是可变数据结构，所以Tuple中的元素可以重新进行赋值。重复利用Java的Tuple可以减轻垃圾收集的压力。举个例子：</p>
 <pre><code class="language-java">personTuple.f1 = 42; // set the 2nd field to 42
 personTuple.setField(43, 1); // set the 2nd field to 43
-</code></pre>
-<p><em>Scala case classes</em></p>
-<pre><code class="language-scala">case class Person(name: String, age: Int)
-
-val persons: DataStream[Person] = env.fromElements(
-  Person(&quot;Adam&quot;, 17),
-  Person(&quot;Sarah&quot;, 23)
-)
-
-persons.filter(p =&gt; p.age &gt; 18)
 </code></pre>
 <p><em>POJO</em></p>
 <p>POJO类的定义：</p>
@@ -241,7 +221,6 @@ DataStream&lt;Person&gt; persons = env.fromElements(
 <ul>
 <li>Array, ArrayList, HashMap, Enum</li>
 <li>Hadoop Writable types</li>
-<li>Either, Option, Try</li>
 </ul>
 
                     </main>

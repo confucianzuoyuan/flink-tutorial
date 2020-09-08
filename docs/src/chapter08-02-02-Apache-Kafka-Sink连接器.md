@@ -12,7 +12,7 @@
 
 下面的例子展示了如何创建一个Kafka sink
 
-```scala
+```java
 val stream: DataStream[String] = ...
 
 val myProducer = new FlinkKafkaProducer[String](

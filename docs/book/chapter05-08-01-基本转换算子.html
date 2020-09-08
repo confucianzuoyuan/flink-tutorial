@@ -167,16 +167,19 @@ MapFunction[T, O]
     &gt; map(T): O
 </code></pre>
 <p>下面的代码实现了将SensorReading中的id字段抽取出来的功能。</p>
-<pre><code class="language-scala">val readings: DataStream[SensorReading] = ...
-val sensorIds: DataStream[String] = readings.map(new MyMapFunction)
+<pre><code class="language-java">DataStream[SensorReading] readings = ...
+DataStream[String] sensorIds = readings.map(new IdExtractor)
 
-class MyMapFunction extends MapFunction[SensorReading, String] {
-  override def map(r: SensorReading): String = r.id
+public static class IdExtractor implements MapFunction&lt;SensorReading, String&gt; {
+    @Override
+    public String map(SensorReading r) throws Exception {
+        return r.id;
+    }
 }
 </code></pre>
 <p>当然我们更推荐匿名函数的写法。</p>
-<pre><code class="language-scala">val readings: DataStream[SensorReading] = ...
-val sensorIds: DataStream[String] = readings.map(r =&gt; r.id)
+<pre><code class="language-java">DataStream&lt;String&gt; sensorIds = filteredReadings
+        .map(r -&gt; r.id);
 </code></pre>
 <p><em>FILTER</em></p>
 <p><code>filter</code>转换算子通过在每个输入事件上对一个布尔条件进行求值来过滤掉一些元素，然后将剩下的元素继续发送。一个<code>true</code>的求值结果将会把输入事件保留下来并发送到输出，而如果求值结果为<code>false</code>，则输入事件会被抛弃掉。我们通过调用<code>DataStream.filter()</code>来指定流的<code>filter</code>算子，<code>filter</code>操作将产生一条新的流，其类型和输入流中的事件类型是一样的。图5-2展示了只产生白色方框的<code>filter</code>操作。</p>
@@ -187,8 +190,8 @@ FilterFunction[T]
     &gt; filter(T): Boolean
 </code></pre>
 <p>下面的例子展示了如何使用filter来从传感器数据中过滤掉温度值小于25华氏温度的读数。</p>
-<pre><code class="language-scala">val readings: DataStream[SensorReading] = ...
-val filteredSensors = readings.filter(r =&gt; r.temperature &gt;= 25)
+<pre><code class="language-java">DataStream&lt;SensorReading&gt; filteredReadings = readings
+        .filter(r -&gt; r.temperature &gt;= 25);
 </code></pre>
 <p><em>FLATMAP</em></p>
 <p><code>flatMap</code>算子和<code>map</code>算子很类似，不同之处在于针对每一个输入事件<code>flatMap</code>可以生成0个、1个或者多个输出元素。事实上，<code>flatMap</code>转换算子是<code>filter</code>和<code>map</code>的泛化。所以<code>flatMap</code>可以实现<code>map</code>和<code>filter</code>算子的功能。图5-3展示了<code>flatMap</code>如何根据输入事件的颜色来做不同的处理。如果输入事件是白色方框，则直接输出。输入元素是黑框，则复制输入。灰色方框会被过滤掉。</p>
@@ -199,10 +202,25 @@ val filteredSensors = readings.filter(r =&gt; r.temperature &gt;= 25)
 FlatMapFunction[T, O]
     &gt; flatMap(T, Collector[O]): Unit
 </code></pre>
-<p>下面的例子展示了在数据分析教程中经常用到的例子，我们用<code>flatMap</code>来实现。这个函数应用在一个语句流上面，将每个句子用空格切分，然后把切分出来的单词作为单独的事件发送出去。</p>
-<pre><code class="language-scala">val sentences: DataStream[String] = ...
-val words: DataStream[String] = sentences
-  .flatMap(id =&gt; id.split(&quot; &quot;))
+<p>下面的例子展示了在数据分析教程中经常用到的例子，我们用<code>flatMap</code>来实现。使用<code>_</code>来切割传感器ID，比如<code>sensor_1</code>。</p>
+<pre><code class="language-java">public static class IdSplitter implements FlatMapFunction&lt;String, String&gt; {
+    @Override
+    public void flatMap(String id, Collector&lt;String&gt; out) {
+
+        String[] splits = id.split(&quot;_&quot;);
+
+        for (String split : splits) {
+            out.collect(split);
+        }
+    }
+}
+</code></pre>
+<p>匿名函数写法：</p>
+<pre><code class="language-java">DataStream&lt;String&gt; splitIds = sensorIds
+        .flatMap((FlatMapFunction&lt;String, String&gt;)
+                (id, out) -&gt; { for (String s: id.split(&quot;_&quot;)) { out.collect(s);}})
+        // provide result type because Java cannot infer return type of lambda function
+        .returns(Types.STRING);
 </code></pre>
 
                     </main>

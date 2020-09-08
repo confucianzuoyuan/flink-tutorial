@@ -8,7 +8,7 @@
 
 我们之前实现过这个需求，但没有清理掉状态数据。比如一小时内不再产生温度数据的传感器对应的状态数据就可以清理掉了。
 
-```scala
+```java
 class SelfCleaningTemperatureAlertFunction(val threshold: Double)
     extends KeyedProcessFunction[String,
       SensorReading, (String, Double, Double)] {
@@ -18,7 +18,8 @@ class SelfCleaningTemperatureAlertFunction(val threshold: Double)
   // the keyed state handle for the last registered timer
   private var lastTimerState: ValueState[Long] = _
 
-  override def open(parameters: Configuration): Unit = {
+  @Override
+public open(parameters: Configuration): Unit = {
     // register state for last temperature
     val lastTempDesc = new ValueStateDescriptor[Double](
       "lastTemp", classOf[Double])
@@ -31,7 +32,8 @@ class SelfCleaningTemperatureAlertFunction(val threshold: Double)
       .getState(timestampDescriptor)
   }
 
-  override def processElement(
+  @Override
+public processElement(
       reading: SensorReading,
       ctx: KeyedProcessFunction
         [String, SensorReading, (String, Double, Double)]#Context,
@@ -61,7 +63,8 @@ class SelfCleaningTemperatureAlertFunction(val threshold: Double)
     this.lastTempState.update(reading.temperature)
   }
 
-  override def onTimer(
+  @Override
+public onTimer(
       timestamp: Long,
       ctx: KeyedProcessFunction[String,
         SensorReading, (String, Double, Double)]#OnTimerContext,

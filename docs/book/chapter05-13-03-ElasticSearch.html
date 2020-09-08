@@ -164,27 +164,32 @@
 &lt;/dependency&gt;
 </code></pre>
 <p>在主函数中调用：</p>
-<pre><code class="language-scala">val httpHosts = new util.ArrayList[HttpHost]()
-httpHosts.add(new HttpHost(&quot;localhost&quot;, 9200))
-val esSinkBuilder = new ElasticsearchSink.Builder[SensorReading](
+<pre><code class="language-java">List&lt;HttpHost&gt; httpHosts = new ArrayList&lt;&gt;();
+httpHosts.add(new HttpHost(&quot;127.0.0.1&quot;, 9200, &quot;http&quot;));
+ElasticsearchSink.Builder&lt;String&gt; esSinkBuilder = new ElasticsearchSink.Builder&lt;&gt;(
   httpHosts,
-  new ElasticsearchSinkFunction[SensorReading] {
-    override def process(t: SensorReading,
-                         runtimeContext: RuntimeContext,
-                         requestIndexer: RequestIndexer): Unit = {
-      println(&quot;saving data: &quot; + t)
-      val json = new util.HashMap[String, String]()
-      json.put(&quot;data&quot;, t.toString)
-      val indexRequest = Requests
+  new ElasticsearchSinkFunction&lt;SensorReading&gt; {
+
+    @Override
+    public void process(SensorReading t,
+                        RuntimeContext runtimeContext,
+                        RequestIndexer requestIndexer) {
+      System.out.println(&quot;saving data: &quot; + t);
+      Map&lt;String, String&gt; json = new util.HashMap&lt;&gt;();
+      json.put(&quot;data&quot;, t.toString());
+      IndexRequest indexRequest = Requests
         .indexRequest()
         .index(&quot;sensor&quot;)
-        .`type`(&quot;readingData&quot;)
-        .source(json)
-      requestIndexer.add(indexRequest)
-      println(&quot;saved successfully&quot;)
+        .source(json);
+      requestIndexer.add(indexRequest);
+      System.out.println(&quot;saved successfully&quot;);
     }
-  })
-dataStream.addSink(esSinkBuilder.build())
+  }
+)
+
+esSinkBuilder.setBulkFlushMaxActions(1);
+
+dataStream.addSink(esSinkBuilder.build());
 </code></pre>
 
                     </main>

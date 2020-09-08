@@ -171,7 +171,7 @@
 <p>当window operator接收一个增量聚合函数和一个全窗口函数作为参数时：</p>
 <p>evictor是一个可选的组件，可以被注入到ProcessWindowFunction之前或者之后调用。evictor可以清除掉window中收集的元素。由于evictor需要迭代所有的元素，所以evictor只能使用在没有增量聚合函数作为参数的情况下。</p>
 <p>下面的代码说明了如果使用自定义的trigger和evictor定义一个window operator：</p>
-<pre><code class="language-scala">stream
+<pre><code class="language-java">stream
   .keyBy(...)
   .window(...)
  [.trigger(...)]
@@ -229,12 +229,13 @@
 <li>W: 窗口的类型</li>
 </ul>
 <p>下面的代码创建了一个自定义窗口分配器，是一个30秒的滚动事件时间窗口。</p>
-<pre><code class="language-scala">class ThirtySecondsWindows
+<pre><code class="language-java">class ThirtySecondsWindows
     extends WindowAssigner[Object, TimeWindow] {
 
   val windowSize: Long = 30 * 1000L
 
-  override def assignWindows(
+  @Override
+public assignWindows(
     o: Object,
     ts: Long,
     ctx: WindowAssigner.WindowAssignerContext
@@ -245,19 +246,22 @@
     Collections.singletonList(new TimeWindow(startTime, endTime))
   }
 
-  override def getDefaultTrigger(
+  @Override
+public getDefaultTrigger(
     env: environment.StreamExecutionEnvironment
   ): Trigger[Object, TimeWindow] = {
       EventTimeTrigger.create()
   }
 
-  override def getWindowSerializer(
+  @Override
+public getWindowSerializer(
     executionConfig: ExecutionConfig
   ): TypeSerializer[TimeWindow] = {
     new TimeWindow.Serializer
   }
 
-  override def isEventTime = true
+  @Override
+public isEventTime = true
 }
 </code></pre>
 <p>增量聚合示意图</p>
@@ -337,11 +341,12 @@ public interface OnMergeContext extends TriggerContext {
 <p>当在触发器中使用per-window state时，这里我们需要保证当窗口被删除时state也要被删除，否则随着时间的推移，window operator将会积累越来越多的数据，最终可能使应用崩溃。</p>
 <p>当窗口被删除时，为了清空所有状态，触发器的clear()方法需要需要删掉所有的自定义per-window state，以及使用TriggerContext对象将处理时间和事件时间的定时器都删除。</p>
 <p>下面的例子展示了一个触发器在窗口结束时间之前触发。当第一个事件被分配到窗口时，这个触发器注册了一个定时器，定时时间为水位线之前一秒钟。当定时事件执行，将会注册一个新的定时事件，这样，这个触发器每秒钟最多触发一次。</p>
-<pre><code class="language-scala">class OneSecondIntervalTrigger
+<pre><code class="language-java">class OneSecondIntervalTrigger
     extends Trigger[SensorReading, TimeWindow] {
 
-  override def onElement(
-    r: SensorReading,
+  @Override
+public onElement(
+    SensorReading r,
     timestamp: Long,
     window: TimeWindow,
     ctx: Trigger.TriggerContext
@@ -364,7 +369,8 @@ public interface OnMergeContext extends TriggerContext {
     TriggerResult.CONTINUE
   }
 
-  override def onEventTime(
+  @Override
+public onEventTime(
     timestamp: Long,
     window: TimeWindow,
     ctx: Trigger.TriggerContext
@@ -381,7 +387,8 @@ public interface OnMergeContext extends TriggerContext {
     }
   }
 
-  override def onProcessingTime(
+  @Override
+public onProcessingTime(
     timestamp: Long,
     window: TimeWindow,
     ctx: Trigger.TriggerContext
@@ -389,7 +396,8 @@ public interface OnMergeContext extends TriggerContext {
     TriggerResult.CONTINUE
   }
 
-  override def clear(
+  @Override
+public clear(
     window: TimeWindow,
     ctx: Trigger.TriggerContext
   ): Unit = {

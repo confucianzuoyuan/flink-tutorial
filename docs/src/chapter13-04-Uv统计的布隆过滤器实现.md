@@ -2,7 +2,7 @@
 
 完整代码如下：
 
-```scala
+```java
 package com.atguigu.proj
 
 import java.lang
@@ -34,7 +34,7 @@ object BloomFilterGuava {
                           timestamp: Long)
 
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
@@ -56,9 +56,11 @@ object BloomFilterGuava {
   }
 
   class UvAggFunc extends AggregateFunction[(String,Long),(Long,BloomFilter[lang.Long]),Long]{
-    override def createAccumulator(): (Long, BloomFilter[lang.Long]) = (0,BloomFilter.create(Funnels.longFunnel(), 100000000, 0.01))
+    @Override
+public createAccumulator(): (Long, BloomFilter[lang.Long]) = (0,BloomFilter.create(Funnels.longFunnel(), 100000000, 0.01))
 
-    override def add(value: (String, Long), accumulator: (Long, BloomFilter[lang.Long])): (Long, BloomFilter[lang.Long]) = {
+    @Override
+public add(value: (String, Long), accumulator: (Long, BloomFilter[lang.Long])): (Long, BloomFilter[lang.Long]) = {
       var bloom = accumulator._2
       var uvCount = accumulator._1
       if(!bloom.mightContain(value._2)){
@@ -68,13 +70,16 @@ object BloomFilterGuava {
       (uvCount,bloom)
     }
 
-    override def getResult(accumulator: (Long, BloomFilter[lang.Long])): Long = accumulator._1
+    @Override
+public getResult(accumulator: (Long, BloomFilter[lang.Long])): Long = accumulator._1
 
-    override def merge(a: (Long, BloomFilter[lang.Long]), b: (Long, BloomFilter[lang.Long])): (Long, BloomFilter[lang.Long]) = ???
+    @Override
+public merge(a: (Long, BloomFilter[lang.Long]), b: (Long, BloomFilter[lang.Long])): (Long, BloomFilter[lang.Long]) = ???
   }
   class UvProcessFunc extends ProcessWindowFunction[Long, String, String, TimeWindow] {
     // 连接到redis
-    override def process(key: String, context: Context, elements: Iterable[Long], out: Collector[String]): Unit = {
+    @Override
+public process(key: String, context: Context, elements: Iterable[Long], out: Collector[String]): Unit = {
       // 窗口结束时间 ==> UV数
       // 窗口结束时间 ==> bit数组
 

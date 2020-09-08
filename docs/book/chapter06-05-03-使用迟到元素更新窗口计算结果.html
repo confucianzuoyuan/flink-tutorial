@@ -161,7 +161,7 @@
 <p>window operator API提供了方法来明确声明我们要等待迟到元素。当使用event-time window，我们可以指定一个时间段叫做allowed lateness。window operator如果设置了allowed lateness，这个window operator在水位线没过窗口结束时间时也将不会删除窗口和窗口中的状态。窗口会在一段时间内(allowed lateness设置的)保留所有的元素。</p>
 <p>当迟到元素在allowed lateness时间内到达时，这个迟到元素会被实时处理并发送到触发器(trigger)。当水位线没过了窗口结束时间+allowed lateness时间时，窗口会被删除，并且所有后来的迟到的元素都会被丢弃。</p>
 <p>Allowed lateness可以使用allowedLateness()方法来指定，如下所示：</p>
-<pre><code class="language-scala">val readings: DataStream[SensorReading] = ...
+<pre><code class="language-java">val readings: DataStream[SensorReading] = ...
 
 val countPer10Secs: DataStream[(String, Long, Int, String)] = readings
   .keyBy(_.id)
@@ -177,7 +177,8 @@ class UpdatingWindowCountFunction
     extends ProcessWindowFunction[SensorReading,
       (String, Long, Int, String), String, TimeWindow] {
 
-  override def process(
+  @Override
+public process(
       id: String,
       ctx: Context,
       elements: Iterable[SensorReading],

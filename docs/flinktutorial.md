@@ -791,7 +791,7 @@ Flink中一个最有价值，也是最独特的功能是保存点（savepoints�
 
 编写`WordCount.scala`程序
 
-```scala
+```java
 package com.atguigu
 
 import org.apache.flink.streaming.api.scala._
@@ -803,7 +803,7 @@ object StreamingJob {
   def main(args: Array[String]) : Unit = {
 
     // get the execution environment
-    val env: StreamExecutionEnvironment = StreamExecutionEnvironment
+    StreamExecutionEnvironment env: StreamExecutionEnvironment = StreamExecutionEnvironment
       .getExecutionEnvironment
 
     // get input data by connecting to the socket
@@ -889,7 +889,7 @@ $ cd flink-1.11.0/log
 
 首先让我们看一下表示传感器读数的数据结构：
 
-```scala
+```java
 case class SensorReading(
   id: String,
   timestamp: Long,
@@ -898,14 +898,14 @@ case class SensorReading(
 
 示例程序5-1将温度从华氏温度读数转换成摄氏温度读数，然后针对每一个传感器，每5秒钟计算一次平均温度纸。
 
-```scala
+```java
 // Scala object that defines
 // the DataStream program in the main() method.
 object AverageSensorReadings {
   // main() defines and executes the DataStream program
   def main(args: Array[String]) {
     // set up the streaming execution environment
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     // use event time for the application
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     // create a DataStream[SensorReading] from a stream source
@@ -951,7 +951,7 @@ Flink流处理程序的结构如下：
 
 也可以用下面的方法来显式的创建本地或者远程执行环境：
 
-```scala
+```java
 // create a local stream execution environment
 val localEnv = StreamExecutionEnvironment
   .createLocalEnvironment()
@@ -972,7 +972,7 @@ val remoteEnv = StreamExecutionEnvironment
 
 在我们的例子里面，我们这样写：
 
-```scala
+```java
 val sensorData: DataStream[SensorReading] = env
   .addSource(new SensorSource)
 ```
@@ -985,7 +985,7 @@ val sensorData: DataStream[SensorReading] = env
 
 在我们的例子中，我们首先使用`map()`转换算子将传感器的温度值转换成了摄氏温度单位。然后，我们使用`keyBy()`转换算子将传感器读数流按照传感器ID进行分区。接下来，我们定义了一个`timeWindow()`转换算子，这个算子将每个传感器ID所对应的分区的传感器读数分配到了5秒钟的滚动窗口中。
 
-```scala
+```java
 val avgTemp: DataStream[SensorReading] = sensorData
   .map(r => {
     val celsius = (r.temperature - 32) * (5.0 / 9.0)
@@ -1004,7 +1004,7 @@ val avgTemp: DataStream[SensorReading] = sensorData
 
 在我们的例子中，计算结果是一个`DataStream[SensorReading]`数据记录。每一条数据记录包含了一个传感器在5秒钟的周期里面的平均温度。计算结果组成的数据流将会调用`print()`将计算结果写到标准输出。
 
-```scala
+```java
 avgTemp.print()
 ```
 
@@ -1014,7 +1014,7 @@ avgTemp.print()
 
 当应用程序完全写好时，我们可以调用`StreamExecutionEnvironment.execute()`来执行应用程序。在我们的例子中就是我们的最后一行调用：
 
-```scala
+```java
 env.execute("Compute average sensor temperature")
 ```
 
@@ -1026,7 +1026,7 @@ Flink程序是惰性执行的。也就是说创建数据源和转换算子的API
 
 ### 从批读取数据
 
-```scala
+```java
 val stream = env
   .fromCollection(List(
     SensorReading("sensor_1", 1547718199, 35.80018327300259),
@@ -1038,13 +1038,13 @@ val stream = env
 
 ### 从文件读取数据
 
-```scala
+```java
 val stream = env.readTextFile(filePath)
 ```
 
 ### 以Kafka消息队列的数据为数据来源
 
-```scala
+```java
 val properties = new Properties()
 properties.setProperty("bootstrap.servers", "localhost:9092")
 properties.setProperty("group.id", "consumer-group")
@@ -1057,7 +1057,7 @@ properties.setProperty(
   "org.apache.kafka.common.serialization.StringDeserializer"
 )
 properties.setProperty("auto.offset.reset", "latest")
-val env = StreamExecutionEnvironment.getExecutionEnvironment
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
 env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 env.setParallelism(1)
 val stream = env
@@ -1073,7 +1073,7 @@ val stream = env
 
 ### 自定义数据源
 
-```scala
+```java
 import java.util.Calendar
 
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction
@@ -1094,7 +1094,8 @@ class SensorSource
 
   // run()函数连续的发送SensorReading数据，使用SourceContext
   // 需要override
-  override def run(srcCtx: SourceContext[SensorReading]): Unit = {
+  @Override
+public run(srcCtx: SourceContext[SensorReading]): Unit = {
 
     // initialize random number generator
     // 初始化随机数发生器
@@ -1132,7 +1133,8 @@ class SensorSource
   }
 
   // override cancel函数
-  override def cancel(): Unit = {
+  @Override
+public cancel(): Unit = {
     running = false
   }
 
@@ -1141,7 +1143,7 @@ class SensorSource
 
 使用方法
 
-```scala
+```java
 // ingest sensor stream
 val sensorData: DataStream[SensorReading] = env
   // SensorSource generates random temperature readings
@@ -1156,9 +1158,10 @@ val sensorData: DataStream[SensorReading] = env
 
 大部分的流转换操作都基于用户自定义函数UDF。UDF函数打包了一些业务逻辑并定义了输入流的元素如何转换成输出流的元素。像`MapFunction`这样的函数，将会被定义为类，这个类实现了Flink针对特定的转换操作暴露出来的接口。
 
-```scala
+```java
 class MyMapFunction extends MapFunction[Int, Int] {
-  override def map(value: Int): Int = value + 1
+  @Override
+public map(value: Int): Int = value + 1
 }
 ```
 
@@ -1194,18 +1197,19 @@ MapFunction[T, O]
 
 下面的代码实现了将SensorReading中的id字段抽取出来的功能。
 
-```scala
+```java
 val readings: DataStream[SensorReading] = ...
 val sensorIds: DataStream[String] = readings.map(new MyMapFunction)
 
 class MyMapFunction extends MapFunction[SensorReading, String] {
-  override def map(r: SensorReading): String = r.id
+  @Override
+public map(SensorReading r): String = r.id
 }
 ```
 
 当然我们更推荐匿名函数的写法。
 
-```scala
+```java
 val readings: DataStream[SensorReading] = ...
 val sensorIds: DataStream[String] = readings.map(r => r.id)
 ```
@@ -1226,7 +1230,7 @@ FilterFunction[T]
 
 下面的例子展示了如何使用filter来从传感器数据中过滤掉温度值小于25华氏温度的读数。
 
-```scala
+```java
 val readings: DataStream[SensorReading] = ...
 val filteredSensors = readings.filter(r => r.temperature >= 25)
 ```
@@ -1248,7 +1252,7 @@ FlatMapFunction[T, O]
 
 下面的例子展示了在数据分析教程中经常用到的例子，我们用`flatMap`来实现。这个函数应用在一个语句流上面，将每个句子用空格切分，然后把切分出来的单词作为单独的事件发送出去。
 
-```scala
+```java
 val sentences: DataStream[String] = ...
 val words: DataStream[String] = sentences
   .flatMap(id => id.split(" "))
@@ -1274,7 +1278,7 @@ keyBy通过指定key来将DataStream转换成KeyedStream。基于不同的key，
 
 `keyBy()`方法接收一个参数，这个参数指定了key或者keys，有很多不同的方法来指定key。我们将在后面讲解。下面的代码声明了`id`这个字段为SensorReading流的key。
 
-```scala
+```java
 val readings: DataStream[SensorReading] = ...
 val keyed: KeyedStream[SensorReading, String] = readings
   .keyBy(r => r.id)
@@ -1298,7 +1302,7 @@ val keyed: KeyedStream[SensorReading, String] = readings
 
 下面的例子根据第一个字段来对类型为`Tuple3[Int, Int, Int]`的流做分流操作，然后针对第二个字段做滚动求和操作。
 
-```scala
+```java
 val inputStream: DataStream[(Int, Int, Int)] = env.fromElements(
   (1, 2, 2), (2, 3, 1), (2, 2, 4), (1, 5, 3))
 
@@ -1325,7 +1329,7 @@ ReduceFunction[T]
 
 下面的例子，流根据语言这个key来分区，输出结果为针对每一种语言都实时更新的单词列表。
 
-```scala
+```java
 val inputStream: DataStream[(String, List[String])] = env.fromElements(
   ("en", List("tea")), ("fr", List("vin")), ("en", List("cake")))
 
@@ -1352,7 +1356,7 @@ DataStream.union()方法将两条或者多条DataStream合并成一条具有与�
 
 下面的例子展示了如何将三条类型为SensorReading的数据流合并成一条流。
 
-```scala
+```java
 val parisStream: DataStream[SensorReading] = ...
 val tokyoStream: DataStream[SensorReading] = ...
 val rioStream: DataStream[SensorReading] = ...
@@ -1366,7 +1370,7 @@ val allCities: DataStream[SensorReading] = parisStream
 
 DataStream API提供了`connect`操作来支持以上的应用场景。`DataStream.connect()`方法接收一条`DataStream`，然后返回一个`ConnectedStreams`类型的对象，这个对象表示了两条连接的流。
 
-```scala
+```java
 // first stream
 val first: DataStream[Int] = ...
 // second stream
@@ -1397,7 +1401,7 @@ CoFlatMapFunction[IN1, IN2, OUT]
 
 对两条流做连接查询通常需要这两条流基于某些条件被确定性的路由到操作符中相同的并行实例里面去。在默认情况下，connect()操作将不会对两条流的事件建立任何关系，所以两条流的事件将会随机的被发送到下游的算子实例里面去。这样的行为会产生不确定性的计算结果，显然不是我们想要的。为了针对ConnectedStreams进行确定性的转换操作，connect()方法可以和keyBy()或者broadcast()组合起来使用。我们首先看一下keyBy()的示例。
 
-```scala
+```java
 val one: DataStream[(Int, Long)] = ...
 val two: DataStream[(Int, String)] = ...
 
@@ -1416,7 +1420,7 @@ val keyedConnect2: ConnectedStreams[(Int, Long), (Int, String)] = one
 
 下面的例子展示了如何连接一条DataStream和广播过的流。
 
-```scala
+```java
 val first: DataStream[(Int, Long)] = ...
 val second: DataStream[(Int, String)] = ...
 
@@ -1462,14 +1466,15 @@ val keyedConnect: ConnectedStreams[(Int, Long), (Int, String)] = first
 
 当Flink提供的分区策略都不适用时，我们可以使用`partitionCustom()`方法来自定义分区策略。这个方法接收一个`Partitioner`对象，这个对象需要实现分区逻辑以及定义针对流的哪一个字段或者key来进行分区。下面的例子将一条整数流做partition，使得所有的负整数都发送到第一个任务中，剩下的数随机分配。
 
-```scala
+```java
 val numbers: DataStream[(Int)] = ...
 numbers.partitionCustom(myPartitioner, 0)
 
 object myPartitioner extends Partitioner[Int] {
   val r = scala.util.Random
 
-  override def partition(key: Int, numPartitions: Int): Int = {
+  @Override
+public partition(key: Int, numPartitions: Int): Int = {
     if (key < 0) 0 else r.nextInt(numPartitions)
   }
 }
@@ -1487,8 +1492,8 @@ Flink应用程序在一个像集群这样的分布式环境中并行执行。当
 
 算子默认的并行度也可以通过重写来明确指定。在下面的例子里面，数据源的操作符将会按照环境默认的并行度来并行执行，map操作符的并行度将会是默认并行度的2倍，sink操作符的并行度为2。
 
-```scala
-val env = StreamExecutionEnvironment.getExecutionEnvironment
+```java
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
 val defaultP = env.getParallelism
 val result = env.addSource(new CustomSource)
   .map(new MyMapper).setParallelism(defaultP * 2)
@@ -1525,7 +1530,7 @@ Flink支持Java和Scala提供的所有普通数据类型。最常用的数据类
 
 Java和Scala提供的所有原始数据类型都支持，例如`Int`(Java的`Integer`)，String，Double等等。下面举一个例子：
 
-```scala
+```java
 val numbers: DataStream[Long] = env.fromElements(1L, 2L, 3L, 4L)
 numbers.map(n => n + 1)
 ```
@@ -1536,7 +1541,7 @@ numbers.map(n => n + 1)
 
 DataStream的Scala API直接使用Scala内置的Tuple。举个例子：
 
-```scala
+```java
 val persons: DataStream[(String, Integer)] =
 env.fromElements(
   ("Adam", 17),
@@ -1581,7 +1586,7 @@ personTuple.setField(43, 1); // set the 2nd field to 43
 
 *Scala case classes*
 
-```scala
+```java
 case class Person(name: String, age: Int)
 
 val persons: DataStream[Person] = env.fromElements(
@@ -1652,7 +1657,7 @@ TypeInformation<Person> personType = Types
 
 在Scala中，类是 `org.apache.flink.api.scala.typeutils.Types` ，举个例子：
 
-```scala
+```java
 // TypeInformation for primitive types
 val stringType: TypeInformation[String] = Types.STRING
 // TypeInformation for Scala Tuples
@@ -1669,7 +1674,7 @@ val caseClassType: TypeInformation[Person] = Types.CASE_CLASS[Person]
 
 ### 使用字段位置进行keyBy
 
-```scala
+```java
 val input: DataStream[(Int, String, Long)] = ...
 val keyed = input.keyBy(1)
 ```
@@ -1678,7 +1683,7 @@ val keyed = input.keyBy(1)
 
 如果我们想要用元组的第2个字段和第3个字段做keyBy，可以看下面的例子。
 
-```scala
+```java
 val keyed2 = input.keyBy(1, 2)
 ```
 
@@ -1686,7 +1691,7 @@ val keyed2 = input.keyBy(1, 2)
 
 对于样例类：
 
-```scala
+```java
 case class SensorReading(
   id: String,
   timestamp: Long,
@@ -1699,7 +1704,7 @@ val keyedSensors = sensorStream.keyBy("id")
 
 对于元组：
 
-```scala
+```java
 val input: DataStream[(Int, String, Long)] = ...
 val keyed1 = input.keyBy("2") // key by 3rd field
 val keyed2 = input.keyBy("_1") // key by 1st field
@@ -1710,7 +1715,7 @@ javaInput.keyBy("f2") // key Java tuple by 3rd field
 
 对于存在嵌套的样例类：
 
-```scala
+```java
 case class Address (
   address: String,
   zip: String,
@@ -1740,12 +1745,12 @@ KeySelector[IN, KEY]
 
 两个例子
 
-```scala
+```java
 val sensorData: DataStream[SensorReading] = ...
 val byId: KeyedStream[SensorReading, String] = sensorData.keyBy(r => r.id)
 ```
 
-```scala
+```java
 val input: DataStream[(Int, Int)] = ...
 val keyedStream = input.keyBy(value => math.max(value._1, value._2))
 ```
@@ -1758,9 +1763,10 @@ Flink暴露了所有udf函数的接口(实现方式为接口或者抽象类)。�
 
 例子实现了FilterFunction接口
 
-```scala
+```java
 class FilterFilter extends FilterFunction[String] {
-  override def filter(value: String): Boolean = {
+  @Override
+public filter(value: String): Boolean = {
     value.contains("flink")
   }
 }
@@ -1770,10 +1776,11 @@ val flinkTweets = tweets.filter(new FlinkFilter)
 
 还可以将函数实现成匿名类
 
-```scala
+```java
 val flinkTweets = tweets.filter(
   new RichFilterFunction[String] {
-    override def filter(value: String): Boolean = {
+    @Override
+public filter(value: String): Boolean = {
       value.contains("flink")
     }
   }
@@ -1782,12 +1789,13 @@ val flinkTweets = tweets.filter(
 
 我们filter的字符串"flink"还可以当作参数传进去。
 
-```scala
+```java
 val tweets: DataStream[String] = ...
 val flinkTweets = tweets.filter(new KeywordFilter("flink"))
 
 class KeywordFilter(keyWord: String) extends FilterFunction[String] {
-  override def filter(value: String): Boolean = {
+  @Override
+public filter(value: String): Boolean = {
     value.contains(keyWord)
   }
 }
@@ -1797,7 +1805,7 @@ class KeywordFilter(keyWord: String) extends FilterFunction[String] {
 
 匿名函数可以实现一些简单的逻辑，但无法实现一些高级功能，例如访问状态等等。
 
-```scala
+```java
 val tweets: DataStream[String] = ...
 val flinkTweets = tweets.filter(_.contains("flink"))
 ```
@@ -1820,23 +1828,26 @@ DataStream API提供的所有转换操作函数，都拥有它们的“富”版
 
 另外，getRuntimeContext()方法提供了函数的RuntimeContext的一些信息，例如函数执行的并行度，当前子任务的索引，当前子任务的名字。同时还它还包含了访问**分区状态**的方法。下面看一个例子：
 
-```scala
+```java
 class MyFlatMap extends RichFlatMapFunction[Int, (Int, Int)] {
   var subTaskIndex = 0
 
-  override def open(configuration: Configuration): Unit = {
+  @Override
+public open(configuration: Configuration): Unit = {
     subTaskIndex = getRuntimeContext.getIndexOfThisSubtask
     // 做一些初始化工作
     // 例如建立一个和HDFS的连接
   }
 
-  override def flatMap(in: Int, out: Collector[(Int, Int)]): Unit = {
+  @Override
+public flatMap(in: Int, out: Collector[(Int, Int)]): Unit = {
     if (in % 2 == subTaskIndex) {
       out.collect((subTaskIndex, in))
     }
   }
 
-  override def close(): Unit = {
+  @Override
+public close(): Unit = {
     // 清理工作，断开和HDFS的连接。
   }
 }
@@ -1846,7 +1857,7 @@ class MyFlatMap extends RichFlatMapFunction[Int, (Int, Int)] {
 
 Flink没有类似于spark中foreach方法，让用户进行迭代的操作。所有对外的输出操作都要利用Sink完成。最后通过类似如下方式完成整个任务最终输出操作。
 
-```scala
+```java
 stream.addSink(new MySink(xxxx))
 ```
 
@@ -1876,7 +1887,7 @@ Kafka版本为2.0以上
 
 主函数中添加sink：
 
-```scala
+```java
 val union = high
   .union(low)
   .map(_.temperature.toString)
@@ -1902,10 +1913,10 @@ union.addSink(
 
 定义一个redis的mapper类，用于定义保存到redis时调用的命令：
 
-```scala
+```java
 object WriteToRedis {
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
 
     val stream = env.addSource(new SensorSource)
@@ -1920,12 +1931,15 @@ object WriteToRedis {
 
   class MyRedisMapper extends RedisMapper[SensorReading] {
     // 使用id作为key
-    override def getKeyFromData(t: SensorReading): String = t.id
+    @Override
+public getKeyFromData(t: SensorReading): String = t.id
 
     // 使用温度作为value
-    override def getValueFromData(t: SensorReading): String = t.temperature.toString
+    @Override
+public getValueFromData(t: SensorReading): String = t.temperature.toString
 
-    override def getCommandDescription: RedisCommandDescription = {
+    @Override
+public getCommandDescription: RedisCommandDescription = {
       new RedisCommandDescription(RedisCommand.HSET, "sensor")
     }
   }
@@ -1946,13 +1960,14 @@ object WriteToRedis {
 
 在主函数中调用：
 
-```scala
+```java
 val httpHosts = new util.ArrayList[HttpHost]()
 httpHosts.add(new HttpHost("localhost", 9200))
 val esSinkBuilder = new ElasticsearchSink.Builder[SensorReading](
   httpHosts,
   new ElasticsearchSinkFunction[SensorReading] {
-    override def process(t: SensorReading,
+    @Override
+public process(t: SensorReading,
                          runtimeContext: RuntimeContext,
                          requestIndexer: RequestIndexer): Unit = {
       println("saving data: " + t)
@@ -1982,13 +1997,14 @@ dataStream.addSink(esSinkBuilder.build())
 
 添加MyJdbcSink
 
-```scala
+```java
 class MyJdbcSink() extends RichSinkFunction[SensorReading]{
   var conn: Connection = _
   var insertStmt: PreparedStatement = _
   var updateStmt: PreparedStatement = _
   // open 主要是创建连接
-  override def open(parameters: Configuration): Unit = {
+  @Override
+public open(parameters: Configuration): Unit = {
     super.open(parameters)
     conn = DriverManager.getConnection(
       "jdbc:mysql://localhost:3306/test",
@@ -2002,7 +2018,8 @@ class MyJdbcSink() extends RichSinkFunction[SensorReading]{
     )
   }
   // 调用连接，执行sql
-  override def invoke(value: SensorReading,
+  @Override
+public invoke(value: SensorReading,
                       context: SinkFunction.Context[_]): Unit = {
     updateStmt.setDouble(1, value.temperature)
     updateStmt.setString(2, value.id)
@@ -2015,7 +2032,8 @@ class MyJdbcSink() extends RichSinkFunction[SensorReading]{
     }
   }
   
-  override def close(): Unit = {
+  @Override
+public close(): Unit = {
     insertStmt.close()
     updateStmt.close()
     conn.close()
@@ -2025,7 +2043,7 @@ class MyJdbcSink() extends RichSinkFunction[SensorReading]{
 
 在main方法中增加，把明细保存到mysql中
 
-```scala
+```java
 dataStream.addSink(new MyJdbcSink())
 ```
 
@@ -2061,10 +2079,10 @@ dataStream.addSink(new MyJdbcSink())
 
 下面的例子展示了如何设置事件时间。
 
-```scala
+```java
 object AverageSensorReadings {
   def main(args: Array[String]) {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     val sensorData: DataStream[SensorReading] = env.addSource(...)
   }
@@ -2089,7 +2107,7 @@ Flink暴露了TimestampAssigner接口供我们实现，使我们可以自定义�
 
 以下这种写法是可以的。
 
-```scala
+```java
 val stream = env
   .addSource(...)
   .map(...)
@@ -2100,8 +2118,8 @@ val stream = env
 下面的例子展示了首先filter流，然后再分配时间戳和水位线。
 
 
-```scala
-val env = StreamExecutionEnvironment.getExecutionEnvironment
+```java
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
  
 // 从调用时刻开始给env创建的每一个stream追加时间特征
 env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
@@ -2127,8 +2145,8 @@ MyAssigner有两种类型
 
 可以使用`ExecutionConfig.setAutoWatermarkInterval()`方法进行设置。
 
-```scala
-val env = StreamExecutionEnvironment.getExecutionEnvironment
+```java
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
 env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 // 每隔5秒产生一个水位线
 env.getConfig.setAutoWatermarkInterval(5000)
@@ -2138,17 +2156,19 @@ env.getConfig.setAutoWatermarkInterval(5000)
 
 例子，自定义一个周期性的时间戳抽取
 
-```scala
+```java
 class PeriodicAssigner
   extends AssignerWithPeriodicWatermarks[SensorReading] {
   val bound: Long = 60 * 1000 // 延时为1分钟
   var maxTs: Long = Long.MinValue + bound // 观察到的最大时间戳
 
-  override def getCurrentWatermark: Watermark = {
+  @Override
+public getCurrentWatermark: Watermark = {
     new Watermark(maxTs - bound)
   }
 
-  override def extractTimestamp(r: SensorReading, previousTS: Long) = {
+  @Override
+public extractTimestamp(SensorReading r, previousTS: Long) = {
     maxTs = maxTs.max(r.timestamp)
     r.timestamp
   }
@@ -2157,7 +2177,7 @@ class PeriodicAssigner
 
 如果我们事先得知数据流的时间戳是单调递增的，也就是说没有乱序。我们可以使用assignAscendingTimestamps，方法会直接使用数据的时间戳生成水位线。
 
-```scala
+```java
 val stream: DataStream[SensorReading] = ...
 val withTimestampsAndWatermarks = stream
   .assignAscendingTimestamps(e => e.timestamp)
@@ -2167,7 +2187,7 @@ val withTimestampsAndWatermarks = stream
 
 >最大延迟时间就是当前到达的事件的事件时间和之前所有到达的事件中最大时间戳的差。
 
-```scala
+```java
 val stream: DataStream[SensorReading] = ...
 val withTimestampsAndWatermarks = stream.assignTimestampsAndWatermarks(
   new SensorTimeAssigner 
@@ -2178,7 +2198,8 @@ class SensorTimeAssigner
     Time.seconds(5)
   ) {
     // 抽取时间戳
-    override def extractTimestamp(r: SensorReading): Long = r.timestamp
+    @Override
+public extractTimestamp(SensorReading r): Long = r.timestamp
 }
 ```
 
@@ -2188,14 +2209,15 @@ class SensorTimeAssigner
 
 有时候输入流中会包含一些用于指示系统进度的特殊元组或标记。Flink为此类情形以及可根据输入元素生成水位线的情形提供了`AssignerWithPunctuatedWatermarks`接口。该接口中的`checkAndGetNextWatermark()`方法会在针对每个事件的`extractTimestamp()`方法后立即调用。它可以决定是否生成一个新的水位线。如果该方法返回一个非空、且大于之前值的水位线，算子就会将这个新水位线发出。
 
-```scala
+```java
 class PunctuatedAssigner
   extends AssignerWithPunctuatedWatermarks[SensorReading] {
   val bound: Long = 60 * 1000
 
   // 每来一条数据就调用一次
   // 紧跟`extractTimestamp`函数调用
-  override def checkAndGetNextWatermark(r: SensorReading,
+  @Override
+public checkAndGetNextWatermark(SensorReading r,
                                         extractedTS: Long): Watermark = {
     if (r.id == "sensor_1") {
       // 抽取的时间戳 - 最大延迟时间
@@ -2206,7 +2228,8 @@ class PunctuatedAssigner
   }
 
   // 每来一条数据就调用一次
-  override def extractTimestamp(r: SensorReading,
+  @Override
+public extractTimestamp(SensorReading r,
                                 previousTS: Long): Long = {
     r.timestamp
   }
@@ -2271,7 +2294,7 @@ Context和OnTimerContext所持有的TimerService对象拥有以下方法:
 
 下面的程序展示了如何监控温度传感器的温度值，如果温度值在一秒钟之内(processing time)连续上升，报警。
 
-```scala
+```java
 val warnings = readings
   // key by sensor id
   .keyBy(_.id)
@@ -2281,7 +2304,7 @@ val warnings = readings
 
 看一下TempIncreaseAlertFunction如何实现, 程序中使用了ValueState这样一个状态变量, 后面会详细讲解。
 
-```scala
+```java
 class TempIncreaseAlertFunction
   extends KeyedProcessFunction[String, SensorReading, String] {
   // 保存上一个传感器温度值
@@ -2294,7 +2317,8 @@ class TempIncreaseAlertFunction
     new ValueStateDescriptor[Long]("timer", Types.of[Long])
   )
 
-  override def processElement(r: SensorReading,
+  @Override
+public processElement(SensorReading r,
                               ctx: KeyedProcessFunction[String,
                                 SensorReading, String]#Context,
                               out: Collector[String]): Unit = {
@@ -2323,7 +2347,8 @@ class TempIncreaseAlertFunction
     }
   }
 
-  override def onTimer(ts: Long,
+  @Override
+public onTimer(ts: Long,
                        ctx: KeyedProcessFunction[String,
                         SensorReading, String]#OnTimerContext,
                        out: Collector[String]): Unit = {
@@ -2341,7 +2366,7 @@ class TempIncreaseAlertFunction
 
 例子
 
-```scala
+```java
 val monitoredReadings: DataStream[SensorReading] = readings
   .process(new FreezingMonitor)
 
@@ -2354,14 +2379,15 @@ readings.print()
 
 接下来我们实现FreezingMonitor函数，用来监控传感器温度值，将温度值低于32F的温度输出到side output。
 
-```scala
+```java
 class FreezingMonitor extends ProcessFunction[SensorReading, SensorReading] {
   // define a side output tag
   // 定义一个侧输出标签
   lazy val freezingAlarmOutput: OutputTag[String] =
     new OutputTag[String]("freezing-alarms")
 
-  override def processElement(r: SensorReading,
+  @Override
+public processElement(SensorReading r,
                               ctx: ProcessFunction[SensorReading,
                                 SensorReading]#Context,
                               out: Collector[SensorReading]): Unit = {
@@ -2379,7 +2405,7 @@ class FreezingMonitor extends ProcessFunction[SensorReading, SensorReading] {
 
 对于两条输入流，DataStream API提供了CoProcessFunction这样的low-level操作。CoProcessFunction提供了操作每一个输入流的方法: processElement1()和processElement2()。类似于ProcessFunction，这两种方法都通过Context对象来调用。这个Context对象可以访问事件数据，定时器时间戳，TimerService，以及side outputs。CoProcessFunction也提供了onTimer()回调函数。下面的例子展示了如何使用CoProcessFunction来合并两条流。
 
-```scala
+```java
 // ingest sensor stream
 val readings: DataStream[SensorReading] = ...
 
@@ -2399,7 +2425,7 @@ val forwardedReadings = readings
   .process(new ReadingFilter)
 ```
 
-```scala
+```java
 class ReadingFilter
   extends CoProcessFunction[SensorReading,
     (String, Long), SensorReading] {
@@ -2416,7 +2442,8 @@ class ReadingFilter
       new ValueStateDescriptor[Long]("timer", Types.of[Long])
     )
 
-  override def processElement1(reading: SensorReading,
+  @Override
+public processElement1(reading: SensorReading,
                                ctx: CoProcessFunction[SensorReading,
                                 (String, Long), SensorReading]#Context,
                                out: Collector[SensorReading]): Unit = {
@@ -2427,7 +2454,8 @@ class ReadingFilter
     }
   }
 
-  override def processElement2(switch: (String, Long),
+  @Override
+public processElement2(switch: (String, Long),
                                ctx: CoProcessFunction[SensorReading,
                                 (String, Long), SensorReading]#Context,
                                out: Collector[SensorReading]): Unit = {
@@ -2448,7 +2476,8 @@ class ReadingFilter
     }
   }
 
-  override def onTimer(ts: Long,
+  @Override
+public onTimer(ts: Long,
                        ctx: CoProcessFunction[SensorReading,
                         (String, Long), SensorReading]#OnTimerContext,
                        out: Collector[SensorReading]): Unit = {
@@ -2477,7 +2506,7 @@ Window算子可以在keyed stream或者nokeyed stream上面使用。
 
 下面的代码说明了如何使用窗口操作符。
 
-```scala
+```java
 stream
   .keyBy(...)
   .window(...)  // 指定window assigner
@@ -2507,7 +2536,7 @@ Flink创建的窗口类型是`TimeWindow`，包含开始时间和结束时间，
 
 ![](images/spaf_0601.png)
 
-```scala
+```java
 val sensorData: DataStream[SensorReading] = ...
 
 val avgTemp = sensorData
@@ -2540,7 +2569,7 @@ val avgTemp = sensorData
 
 ![](images/spaf_0602.png)
 
-```scala
+```java
 val slidingAvgTemp = sensorData
   .keyBy(_.id)
   .window(
@@ -2567,7 +2596,7 @@ val slidingAvgTemp = sensorData
 
 ![](images/spaf_0603.png)
 
-```scala
+```java
 val sessionWindows = sensorData
   .keyBy(_.id)
   .window(EventTimeSessionWindows.withGap(Time.minutes(15)))
@@ -2593,7 +2622,7 @@ window functions定义了窗口中数据的计算逻辑。有两种计算逻辑�
 
 例子: 计算每个传感器15s窗口中的温度最小值
 
-```scala
+```java
 val minTempPerWindow: DataStream[(String, Double)] = sensorData
   .map(r => (r.id, r.temperature))
   .keyBy(_._1)
@@ -2627,7 +2656,7 @@ IN是输入元素的类型，ACC是累加器的类型，OUT是输出元素的类
 
 例子
 
-```scala
+```java
 val avgTempPerWindow: DataStream[(String, Double)] = sensorData
   .map(r => (r.id, r.temperature))
   .keyBy(_._1)
@@ -2640,19 +2669,23 @@ class AvgTempFunction
   extends AggregateFunction[(String, Double),
     (String, Double, Int), (String, Double)] {
 
-  override def createAccumulator() = {
+  @Override
+public createAccumulator() = {
     ("", 0.0, 0)
   }
 
-  override def add(in: (String, Double), acc: (String, Double, Int)) = {
+  @Override
+public add(in: (String, Double), acc: (String, Double, Int)) = {
     (in._1, in._2 + acc._2, 1 + acc._3)
   }
 
-  override def getResult(acc: (String, Double, Int)) = {
+  @Override
+public getResult(acc: (String, Double, Int)) = {
     (acc._1, acc._2 / acc._3)
   }
 
-  override def merge(acc1: (String, Double, Int),
+  @Override
+public merge(acc1: (String, Double, Int),
     acc2: (String, Double, Int)) = {
     (acc1._1, acc1._2 + acc2._2, acc1._3 + acc2._3)
   }
@@ -2706,7 +2739,7 @@ process()方法接受的参数为：window的key，Iterable迭代器包含窗口
 
 例子：计算5s滚动窗口中的最低和最高的温度。输出的元素包含了(流的Key, 最低温度, 最高温度, 窗口结束时间)。
 
-```scala
+```java
 val minMaxTempPerWindow: DataStream[MinMaxTemp] = sensorData
   .keyBy(_.id)
   .timeWindow(Time.seconds(5))
@@ -2717,7 +2750,8 @@ case class MinMaxTemp(id: String, min: Double, max: Double, endTs: Long)
 class HighAndLowTempProcessFunction
   extends ProcessWindowFunction[SensorReading,
     MinMaxTemp, String, TimeWindow] {
-  override def process(key: String,
+  @Override
+public process(key: String,
                        ctx: Context,
                        vals: Iterable[SensorReading],
                        out: Collector[MinMaxTemp]): Unit = {
@@ -2733,7 +2767,7 @@ class HighAndLowTempProcessFunction
 
 例子
 
-```scala
+```java
 input
   .keyBy(...)
   .timeWindow(...)
@@ -2751,7 +2785,7 @@ input
 
 我们把之前的需求重新使用以上两种方法实现一下。
 
-```scala
+```java
 case class MinMaxTemp(id: String, min: Double, max: Double, endTs: Long)
 
 val minMaxTempPerWindow2: DataStream[MinMaxTemp] = sensorData
@@ -2768,7 +2802,8 @@ val minMaxTempPerWindow2: DataStream[MinMaxTemp] = sensorData
 class AssignWindowEndProcessFunction
   extends ProcessWindowFunction[(String, Double, Double),
     MinMaxTemp, String, TimeWindow] {
-  override def process(key: String,
+  @Override
+public process(key: String,
                        ctx: Context,
                        minMaxIt: Iterable[(String, Double, Double)],
                        out: Collector[MinMaxTemp]): Unit = {
@@ -2805,7 +2840,7 @@ evictor是一个可选的组件，可以被注入到ProcessWindowFunction之前�
 
 下面的代码说明了如果使用自定义的trigger和evictor定义一个window operator：
 
-```scala
+```java
 stream
   .keyBy(...)
   .window(...)
@@ -2868,13 +2903,14 @@ WindowAssigner有两个泛型参数：
 
 下面的代码创建了一个自定义窗口分配器，是一个30秒的滚动事件时间窗口。
 
-```scala
+```java
 class ThirtySecondsWindows
     extends WindowAssigner[Object, TimeWindow] {
 
   val windowSize: Long = 30 * 1000L
 
-  override def assignWindows(
+  @Override
+public assignWindows(
     o: Object,
     ts: Long,
     ctx: WindowAssigner.WindowAssignerContext
@@ -2885,19 +2921,22 @@ class ThirtySecondsWindows
     Collections.singletonList(new TimeWindow(startTime, endTime))
   }
 
-  override def getDefaultTrigger(
+  @Override
+public getDefaultTrigger(
     env: environment.StreamExecutionEnvironment
   ): Trigger[Object, TimeWindow] = {
       EventTimeTrigger.create()
   }
 
-  override def getWindowSerializer(
+  @Override
+public getWindowSerializer(
     executionConfig: ExecutionConfig
   ): TypeSerializer[TimeWindow] = {
     new TimeWindow.Serializer
   }
 
-  override def isEventTime = true
+  @Override
+public isEventTime = true
 }
 ```
 
@@ -2995,12 +3034,13 @@ public interface OnMergeContext extends TriggerContext {
 
 下面的例子展示了一个触发器在窗口结束时间之前触发。当第一个事件被分配到窗口时，这个触发器注册了一个定时器，定时时间为水位线之前一秒钟。当定时事件执行，将会注册一个新的定时事件，这样，这个触发器每秒钟最多触发一次。
 
-```scala
+```java
 class OneSecondIntervalTrigger
     extends Trigger[SensorReading, TimeWindow] {
 
-  override def onElement(
-    r: SensorReading,
+  @Override
+public onElement(
+    SensorReading r,
     timestamp: Long,
     window: TimeWindow,
     ctx: Trigger.TriggerContext
@@ -3023,7 +3063,8 @@ class OneSecondIntervalTrigger
     TriggerResult.CONTINUE
   }
 
-  override def onEventTime(
+  @Override
+public onEventTime(
     timestamp: Long,
     window: TimeWindow,
     ctx: Trigger.TriggerContext
@@ -3040,7 +3081,8 @@ class OneSecondIntervalTrigger
     }
   }
 
-  override def onProcessingTime(
+  @Override
+public onProcessingTime(
     timestamp: Long,
     window: TimeWindow,
     ctx: Trigger.TriggerContext
@@ -3048,7 +3090,8 @@ class OneSecondIntervalTrigger
     TriggerResult.CONTINUE
   }
 
-  override def clear(
+  @Override
+public clear(
     window: TimeWindow,
     ctx: Trigger.TriggerContext
   ): Unit = {
@@ -3115,7 +3158,7 @@ evictor也经常被用在GlobalWindow上，用来清除部分元素，而不是�
 
 基于间隔的Join目前只支持事件时间以及INNER JOIN语义（无法发出未匹配成功的事件）。下面的例子定义了一个基于间隔的Join。
 
-```scala
+```java
 input1
   .keyBy(...)
   .between(<lower-bound>, <upper-bound>) // 相对于input1的上下界
@@ -3128,7 +3171,7 @@ Join成功的事件对会发送给ProcessJoinFunction。下界和上界分别由
 
 例子：每个用户的点击Join这个用户最近10分钟内的浏览
 
-```scala
+```java
 package com.atguigu.course
 
 import org.apache.flink.streaming.api.TimeCharacteristic
@@ -3166,7 +3209,7 @@ object IntervalJoinExample {
                            productPrice: String)
 
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
@@ -3176,7 +3219,8 @@ object IntervalJoinExample {
       )
       .assignTimestampsAndWatermarks(
         new BoundedOutOfOrdernessTimestampExtractor[UserClickLog](Time.seconds(0)) {
-          override def extractTimestamp(t: UserClickLog): Long = {
+          @Override
+public extractTimestamp(t: UserClickLog): Long = {
             val dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")
             val dateTime = DateTime.parse(t.eventTime, dateTimeFormatter)
             dateTime.getMillis
@@ -3195,7 +3239,8 @@ object IntervalJoinExample {
       )
       .assignTimestampsAndWatermarks(
         new BoundedOutOfOrdernessTimestampExtractor[UserBrowseLog](Time.seconds(0)) {
-          override def extractTimestamp(t: UserBrowseLog): Long = {
+          @Override
+public extractTimestamp(t: UserBrowseLog): Long = {
             val dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")
             val dateTime = DateTime.parse(t.eventTime, dateTimeFormatter)
             dateTime.getMillis
@@ -3215,7 +3260,8 @@ object IntervalJoinExample {
 
   class MyIntervalJoin
     extends ProcessJoinFunction[UserClickLog, UserBrowseLog, String] {
-    override def processElement(
+    @Override
+public processElement(
       left: UserClickLog,
       right: UserBrowseLog,
       context: ProcessJoinFunction[UserClickLog, UserBrowseLog, String]#Context,
@@ -3233,7 +3279,7 @@ object IntervalJoinExample {
 
 下面的例子展示了如何定义基于窗口的Join。
 
-```scala
+```java
 input1.join(input2)
   .where(...)       // 为input1指定键值属性
   .equalTo(...)     // 为input2指定键值属性
@@ -3277,7 +3323,7 @@ process function可以通过比较迟到元素的时间戳和当前水位线的�
 
 例子
 
-```scala
+```java
 val readings = env
   .socketTextStream("localhost", 9999, '\n')
   .map(line => {
@@ -3304,10 +3350,11 @@ lateStream.print()
 
 实现`CountFunction`:
 
-```scala
+```java
 class CountFunction extends ProcessWindowFunction[(String, Long),
   String, String, TimeWindow] {
-  override def process(key: String,
+  @Override
+public process(key: String,
                        context: Context,
                        elements: Iterable[(String, Long)],
                        out: Collector[String]): Unit = {
@@ -3318,7 +3365,7 @@ class CountFunction extends ProcessWindowFunction[(String, Long),
 
 下面这个例子展示了ProcessFunction如何过滤掉迟到的元素然后将迟到的元素发送到侧输出流中去。
 
-```scala
+```java
 val readings: DataStream[SensorReading] = ???
 val filteredReadings: DataStream[SensorReading] = readings
   .process(new LateReadingsFilter)
@@ -3335,8 +3382,9 @@ class LateReadingsFilter
 
   val lateReadingsOut = new OutputTag[SensorReading]("late-readings")
 
-  override def processElement(
-      r: SensorReading,
+  @Override
+public processElement(
+      SensorReading r,
       ctx: ProcessFunction[SensorReading, SensorReading]#Context,
       out: Collector[SensorReading]): Unit = {
 
@@ -3363,7 +3411,7 @@ window operator API提供了方法来明确声明我们要等待迟到元素。�
 
 Allowed lateness可以使用allowedLateness()方法来指定，如下所示：
 
-```scala
+```java
 val readings: DataStream[SensorReading] = ...
 
 val countPer10Secs: DataStream[(String, Long, Int, String)] = readings
@@ -3380,7 +3428,8 @@ class UpdatingWindowCountFunction
     extends ProcessWindowFunction[SensorReading,
       (String, Long, Int, String), String, TimeWindow] {
 
-  override def process(
+  @Override
+public process(
       id: String,
       ctx: Context,
       elements: Iterable[SensorReading],
@@ -3442,7 +3491,7 @@ keyed state仅可用于KeyedStream。Flink支持以下数据类型的状态变�
 
 State.clear()是清空操作。
 
-```scala
+```java
 val sensorData: DataStream[SensorReading] = ...
 val keyedData: KeyedStream[SensorReading, String] = sensorData.keyBy(_.id)
 
@@ -3453,14 +3502,16 @@ class TemperatureAlertFunction(val threshold: Double)
   extends RichFlatMapFunction[SensorReading, (String, Double, Double)] {
   private var lastTempState: ValueState[Double] = _
 
-  override def open(parameters: Configuration): Unit = {
+  @Override
+public open(parameters: Configuration): Unit = {
     val lastTempDescriptor = new ValueStateDescriptor[Double](
       "lastTemp", classOf[Double])
 
     lastTempState = getRuntimeContext.getState[Double](lastTempDescriptor)
   }
 
-  override def flatMap(
+  @Override
+public flatMap(
     reading: SensorReading,
     out: Collector[(String, Double, Double)]
   ): Unit = {
@@ -3485,14 +3536,14 @@ class TemperatureAlertFunction(val threshold: Double)
 
 使用FlatMap with keyed ValueState的快捷方式flatMapWithState也可以实现以上需求。
 
-```scala
+```java
 val alerts: DataStream[(String, Double, Double)] = keyedSensorData
   .flatMapWithState[(String, Double, Double), Double] {
     case (in: SensorReading, None) =>
       // no previous temperature defined.
       // Just update the last temperature
       (List.empty, Some(in.temperature))
-    case (r: SensorReading, lastTemp: Some[Double]) =>
+    case (SensorReading r, lastTemp: Some[Double]) =>
       // compare temperature difference with threshold
       val tempDiff = (r.temperature - lastTemp.get).abs
       if (tempDiff > 1.7) {
@@ -3512,7 +3563,7 @@ val alerts: DataStream[(String, Double, Double)] = keyedSensorData
 
 一个函数可以实现ListCheckpointed接口来处理操作符的list state。ListCheckpointed接口无法处理ValueState和ListState，因为这些状态是注册在状态后端的。操作符状态类似于成员变量，和状态后端的交互通过ListCheckpointed接口的回调函数实现。接口提供了两个方法：
 
-```scala
+```java
 // 返回函数状态的快照，返回值为列表
 snapshotState(checkpointId: Long, timestamp: Long): java.util.List[T]
 // 从列表恢复函数状态
@@ -3525,7 +3576,7 @@ restoreState(java.util.List[T] state): Unit
 
 下面的例子展示了如何实现ListCheckpointed接口。业务场景为：一个对每一个并行实例的超过阈值的温度的计数程序。
 
-```scala
+```java
 class HighTempCounter(val threshold: Double)
     extends RichFlatMapFunction[SensorReading, (Int, Long)]
     with ListCheckpointed[java.lang.Long] {
@@ -3536,7 +3587,8 @@ class HighTempCounter(val threshold: Double)
   // local count variable
   private var highTempCnt = 0L
 
-  override def flatMap(
+  @Override
+public flatMap(
       in: SensorReading, 
       out: Collector[(Int, Long)]): Unit = {
     if (in.temperature > threshold) {
@@ -3547,7 +3599,8 @@ class HighTempCounter(val threshold: Double)
     }
   }
 
-  override def restoreState(
+  @Override
+public restoreState(
       state: util.List[java.lang.Long]): Unit = {
     highTempCnt = 0
     // restore state by adding all longs of the list
@@ -3556,7 +3609,8 @@ class HighTempCounter(val threshold: Double)
     }
   }
 
-  override def snapshotState(
+  @Override
+public snapshotState(
       chkpntId: Long, 
       ts: Long): java.util.List[java.lang.Long] = {
     // snapshot state as list with a single count
@@ -3573,8 +3627,9 @@ class HighTempCounter(val threshold: Double)
 
 再来看一下上面的程序，我们可以看到操作符的每一个并行实例都暴露了一个状态对象的列表。如果我们增加操作符的并行度，那么一些并行任务将会从0开始计数。为了获得更好的状态分区的行为，当HighTempCounter函数扩容时，我们可以按照下面的程序来实现snapshotState()方法，这样就可以把计数值分配到不同的并行计数中去了。
 
-```scala
-override def snapshotState(
+```java
+@Override
+public snapshotState(
     chkpntId: Long, 
     ts: Long): java.util.List[java.lang.Long] = {
   // split count into ten partial counts
@@ -3596,7 +3651,7 @@ override def snapshotState(
 
 下面的例子实现了一个温度报警应用，应用有可以动态设定的阈值，动态设定通过广播流来实现。
 
-```scala
+```java
 val sensorData: DataStream[SensorReading] = ...
 val thresholds: DataStream[ThresholdUpdate] = ...
 val keyedSensorData: KeyedStream[SensorReading, String] = sensorData
@@ -3624,7 +3679,7 @@ val alerts: DataStream[(String, Double, Double)] = keyedSensorData
 
 下面的例子实现了动态设定温度阈值的功能。
 
-```scala
+```java
 class UpdatableTemperatureAlertFunction()
     extends KeyedBroadcastProcessFunction[String,
       SensorReading, ThresholdUpdate, (String, Double, Double)] {
@@ -3637,7 +3692,8 @@ class UpdatableTemperatureAlertFunction()
   // the keyed state handle
   private var lastTempState: ValueState[Double] = _
 
-  override def open(parameters: Configuration): Unit = {
+  @Override
+public open(parameters: Configuration): Unit = {
     // create keyed state descriptor
     val lastTempDescriptor = new ValueStateDescriptor[Double](
       "lastTemp", classOf[Double])
@@ -3646,7 +3702,8 @@ class UpdatableTemperatureAlertFunction()
       .getState[Double](lastTempDescriptor)
   }
 
-  override def processBroadcastElement(
+  @Override
+public processBroadcastElement(
       update: ThresholdUpdate,
       ctx: KeyedBroadcastProcessFunction[String,
         SensorReading, ThresholdUpdate,
@@ -3665,7 +3722,8 @@ class UpdatableTemperatureAlertFunction()
     }
   }
 
-  override def processElement(
+  @Override
+public processElement(
       reading: SensorReading,
       readOnlyCtx: KeyedBroadcastProcessFunction
         [String, SensorReading, ThresholdUpdate, 
@@ -3699,8 +3757,8 @@ class UpdatableTemperatureAlertFunction()
 
 10秒钟保存一次检查点。
 
-```scala
-val env = StreamExecutionEnvironment.getExecutionEnvironment
+```java
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
 
 // set checkpointing interval to 10 seconds (10000 milliseconds)
 env.enableCheckpointing(10000L)
@@ -3739,7 +3797,7 @@ hdfs dfs -put /home/parallels/flink/checkpoint hdfs://localhost:9000/flink
 
 然后在代码中添加：
 
-```scala
+```java
 env.enableCheckpointing(5000)
 env.setStateBackend(new FsStateBackend("hdfs://localhost:9000/flink"))
 ```
@@ -3758,7 +3816,7 @@ hdfs dfs -ls hdfs://localhost:9000/flink
 
 强烈建议为应用的每一个操作符定义唯一标识符。例子：
 
-```scala
+```java
 val alerts: DataStream[(String, Double, Double)] = keyedSensorData
   .flatMap(new TemperatureAlertFunction(1.1))  
   .uid("TempAlert")
@@ -3768,8 +3826,8 @@ val alerts: DataStream[(String, Double, Double)] = keyedSensorData
 
 操作符的最大并行度定义了操作符的keyed state可以被分到多少个key groups中。
 
-```scala
-val env = StreamExecutionEnvironment.getExecutionEnvironment
+```java
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
 
 // set the maximum parallelism for this application
 env.setMaxParallelism(512)
@@ -3789,8 +3847,8 @@ val alerts: DataStream[(String, Double, Double)] = keyedSensorData
 * FsStateBackend将状态存储在本地的文件系统或者远程的文件系统如HDFS。
 * RocksDBStateBackend将状态存储在RocksDB \footnote{Facebook开源的KV数据库} 中。
 
-```scala
-val env = StreamExecutionEnvironment.getExecutionEnvironment
+```java
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
 
 val checkpointPath: String = ???
 // configure path for checkpoints on the remote filesystem
@@ -3811,7 +3869,7 @@ env.setStateBackend(backend)
 
 我们之前实现过这个需求，但没有清理掉状态数据。比如一小时内不再产生温度数据的传感器对应的状态数据就可以清理掉了。
 
-```scala
+```java
 class SelfCleaningTemperatureAlertFunction(val threshold: Double)
     extends KeyedProcessFunction[String,
       SensorReading, (String, Double, Double)] {
@@ -3821,7 +3879,8 @@ class SelfCleaningTemperatureAlertFunction(val threshold: Double)
   // the keyed state handle for the last registered timer
   private var lastTimerState: ValueState[Long] = _
 
-  override def open(parameters: Configuration): Unit = {
+  @Override
+public open(parameters: Configuration): Unit = {
     // register state for last temperature
     val lastTempDesc = new ValueStateDescriptor[Double](
       "lastTemp", classOf[Double])
@@ -3834,7 +3893,8 @@ class SelfCleaningTemperatureAlertFunction(val threshold: Double)
       .getState(timestampDescriptor)
   }
 
-  override def processElement(
+  @Override
+public processElement(
       reading: SensorReading,
       ctx: KeyedProcessFunction
         [String, SensorReading, (String, Double, Double)]#Context,
@@ -3864,7 +3924,8 @@ class SelfCleaningTemperatureAlertFunction(val threshold: Double)
     this.lastTempState.update(reading.temperature)
   }
 
-  override def onTimer(
+  @Override
+public onTimer(
       timestamp: Long,
       ctx: KeyedProcessFunction[String,
         SensorReading, (String, Double, Double)]#OnTimerContext,
@@ -3950,7 +4011,7 @@ Flink Kafka连接器并行的摄入事件流。每一个并行source任务可以
 
 Kafka source连接器使用如下代码创建
 
-```scala
+```java
 val properties = new Properties()
 properties.setProperty("bootstrap.servers", "localhost:9092")
 properties.setProperty("group.id", "test")
@@ -3970,7 +4031,7 @@ val stream: DataStream[String] = env.addSource(
 
 为了抽取事件时间的时间戳然后产生水印，我们可以通过调用
 
-```scala
+```java
 FlinkKafkaConsumer.assignTimestampsAndWatermark()
 ```
 
@@ -3990,7 +4051,7 @@ FlinkKafkaConsumer.assignTimestampsAndWatermark()
 
 下面的例子展示了如何创建一个Kafka sink
 
-```scala
+```java
 val stream: DataStream[String] = ...
 
 val myProducer = new FlinkKafkaProducer[String](
@@ -4021,7 +4082,7 @@ Kafka 0.11版本引入了事务写特性。由于这个新特性，Flink Kafka s
 
 Apache Flink针对文件系统实现了一个可重置的source连接器，将文件看作流来读取数据。如下面的例子所示：
 
-```scala
+```java
 val lineReader = new TextInputFormat(null) 
 
 val lineStream: DataStream[String] = env.readFile[String](
@@ -4049,7 +4110,7 @@ DataStream应用中使用的FileInputFormat需要实现CheckpointableInputFormat
 
 在将流处理应用配置成exactly-once检查点机制，以及配置成所有源数据都能在故障的情况下可以重置，Flink的StreamingFileSink提供了端到端的恰好处理一次语义保证。下面的例子展示了StreamingFileSink的使用方式。
 
-```scala
+```java
 val input: DataStream[String] = …
 val sink: StreamingFileSink[String] = StreamingFileSink
   .forRowFormat(
@@ -4086,11 +4147,12 @@ run()方法用来读取或者接收数据然后将数据摄入到Flink应用中�
 
 当应用被取消或者关闭时，cancel()方法会被Flink调用。为了优雅的关闭Flink应用，run()方法需要在cancel()被调用以后，立即终止执行。下面的例子显示了一个简单的源函数的例子：从0数到Long.MaxValue。
 
-```scala
+```java
 class CountSource extends SourceFunction[Long] {
   var isRunning: Boolean = true
 
-  override def run(ctx: SourceFunction.SourceContext[Long]) = {
+  @Override
+public run(ctx: SourceFunction.SourceContext[Long]) = {
 
     var cnt: Long = -1
     while (isRunning && cnt < Long.MaxValue) {
@@ -4099,7 +4161,8 @@ class CountSource extends SourceFunction[Long] {
     }
   }
 
-  override def cancel() = isRunning = false
+  @Override
+public cancel() = isRunning = false
 }
 ```
 
@@ -4111,7 +4174,7 @@ class CountSource extends SourceFunction[Long] {
 
 下面的例子将CountSource重写为可重置的数据源。
 
-```scala
+```java
 class ResettableCountSource
     extends SourceFunction[Long] with CheckpointedFunction {
 
@@ -4119,7 +4182,8 @@ class ResettableCountSource
   var cnt: Long = _
   var offsetState: ListState[Long] = _
 
-  override def run(ctx: SourceFunction.SourceContext[Long]) = {
+  @Override
+public run(ctx: SourceFunction.SourceContext[Long]) = {
     while (isRunning && cnt < Long.MaxValue) {
       // synchronize data emission and checkpoints
       ctx.getCheckpointLock.synchronized {
@@ -4129,9 +4193,11 @@ class ResettableCountSource
     }
   }
 
-  override def cancel() = isRunning = false
+  @Override
+public cancel() = isRunning = false
 
-  override def snapshotState(
+  @Override
+public snapshotState(
     snapshotCtx: FunctionSnapshotContext
   ): Unit = {
     // remove previous cnt
@@ -4140,7 +4206,8 @@ class ResettableCountSource
     offsetState.add(cnt)
   }
 
-  override def initializeState(
+  @Override
+public initializeState(
       initCtx: FunctionInitializationContext): Unit = {
  
     val desc = new ListStateDescriptor[Long](
@@ -4163,7 +4230,7 @@ class ResettableCountSource
 
 DataStream API中，任何运算符或者函数都可以向外部系统发送数据。DataStream不需要最终流向sink运算符。例如，我们可能实现了一个FlatMapFunction，这个函数将每一个接收到的数据通过HTTP POST请求发送出去，而不使用Collector发送到下一个运算符。DataStream API也提供了SinkFunction接口以及对应的rich版本RichSinkFunction抽象类。SinkFunction接口提供了一个方法：
 
-```scala
+```java
 void invode(IN value, Context ctx)
 ```
 
@@ -4171,7 +4238,7 @@ SinkFunction的Context可以访问当前处理时间，当前水位线，以及�
 
 下面的例子展示了一个简单的SinkFunction，可以将传感器读数写入到socket中去。需要注意的是，我们需要在启动Flink程序前启动一个监听相关端口的进程。否则将会抛出ConnectException异常。可以运行“nc -l localhost 9191”命令。
 
-```scala
+```java
 val readings: DataStream[SensorReading] = ...
 
 // write the sensor readings to a socket
@@ -4187,13 +4254,15 @@ class SimpleSocketSink(val host: String, val port: Int)
   var socket: Socket = _
   var writer: PrintStream = _
 
-  override def open(config: Configuration): Unit = {
+  @Override
+public open(config: Configuration): Unit = {
     // open socket and writer
     socket = new Socket(InetAddress.getByName(host), port)
     writer = new PrintStream(socket.getOutputStream)
   }
 
-  override def invoke(
+  @Override
+public invoke(
       value: SensorReading,
       ctx: SinkFunction.Context[_]): Unit = {
     // write sensor reading to socket
@@ -4201,7 +4270,8 @@ class SimpleSocketSink(val host: String, val port: Int)
     writer.flush()
   }
 
-  override def close(): Unit = {
+  @Override
+public close(): Unit = {
     // close writer and socket
     writer.close()
     socket.close()
@@ -4220,7 +4290,7 @@ class SimpleSocketSink(val host: String, val port: Int)
 
 下面的例子展示了如何实现一个针对JDBC数据库的幂等写入sink连接器，这里使用的是Apache Derby数据库。
 
-```scala
+```java
 val readings: DataStream[SensorReading] = ...
 
 // write the sensor readings to a Derby table
@@ -4233,7 +4303,8 @@ class DerbyUpsertSink extends RichSinkFunction[SensorReading] {
   var insertStmt: PreparedStatement = _
   var updateStmt: PreparedStatement = _
 
-  override def open(parameters: Configuration): Unit = {
+  @Override
+public open(parameters: Configuration): Unit = {
     // connect to embedded in-memory Derby
     conn = DriverManager.getConnection(
        "jdbc:derby:memory:flinkExample",
@@ -4245,7 +4316,8 @@ class DerbyUpsertSink extends RichSinkFunction[SensorReading] {
       "UPDATE Temperatures SET temp = ? WHERE sensor = ?")
   }
 
-  override def invoke(r: SensorReading, context: Context[_]): Unit = {
+  @Override
+public invoke(SensorReading r, context: Context[_]): Unit = {
     // set parameters for update statement and execute it
     updateStmt.setDouble(1, r.temperature)
     updateStmt.setString(2, r.id)
@@ -4261,7 +4333,8 @@ class DerbyUpsertSink extends RichSinkFunction[SensorReading] {
     }
   }
 
-  override def close(): Unit = {
+  @Override
+public close(): Unit = {
     insertStmt.close()
     updateStmt.close()
     conn.close()
@@ -4306,7 +4379,7 @@ boolean sendValues(Iterable<IN> values, long chkpntId, long timestamp)
 
 下面的例子展示了如何实现一个写入到标准输出的write-ahead sink。它使用了FileCheckpointCommitter。
 
-```scala
+```java
 val readings: DataStream[SensorReading] = ???
 
 // write the sensor readings to the standard out via a write-ahead log
@@ -4325,7 +4398,8 @@ class StdOutWriteAheadSink extends GenericWriteAheadSink[SensorReading](
     // Random JobID used by the CheckpointCommitter
     UUID.randomUUID.toString) {
 
-  override def sendValues(
+  @Override
+public sendValues(
       readings: Iterable[SensorReading],
       checkpointId: Long,
       timestamp: Long): Boolean = {
@@ -4364,7 +4438,7 @@ TwoPhaseCommitSinkFunction实现了以下协议。在sink任务发送出第一�
 
 下面的例子可能会让上面的一些概念好理解一些。
 
-```scala
+```java
 class TransactionalFileSink(val targetPath: String, val tempPath: String)
     extends TwoPhaseCommitSinkFunction[(String, Double), String, Void](
       createTypeInformation[String].createSerializer(new ExecutionConfig),
@@ -4374,7 +4448,8 @@ class TransactionalFileSink(val targetPath: String, val tempPath: String)
 
   // Creates a temporary file for a transaction into
   // which the records are written.
-  override def beginTransaction(): String = {
+  @Override
+public beginTransaction(): String = {
     // path of transaction file
     // is built from current time and task index
     val timeNow = LocalDateTime.now(ZoneId.of("UTC"))
@@ -4393,7 +4468,8 @@ class TransactionalFileSink(val targetPath: String, val tempPath: String)
   }
 
   /** Write record into the current transaction file. */
-  override def invoke(
+  @Override
+public invoke(
       transaction: String,
       value: (String, Double),
       context: Context[_]): Unit = {
@@ -4402,7 +4478,8 @@ class TransactionalFileSink(val targetPath: String, val tempPath: String)
   }
 
   /** Flush and close the current transaction file. */
-  override def preCommit(transaction: String): Unit = {
+  @Override
+public preCommit(transaction: String): Unit = {
     transactionWriter.flush()
     transactionWriter.close()
   }
@@ -4410,7 +4487,8 @@ class TransactionalFileSink(val targetPath: String, val tempPath: String)
   // Commit a transaction by moving
   // the precommitted transaction file
   // to the target directory.
-  override def commit(transaction: String): Unit = {
+  @Override
+public commit(transaction: String): Unit = {
     val tFilePath = Paths.get(s"$tempPath/$transaction")
     // check if the file exists to ensure
     // that the commit is idempotent
@@ -4421,7 +4499,8 @@ class TransactionalFileSink(val targetPath: String, val tempPath: String)
   }
 
   // Aborts a transaction by deleting the transaction file.
-  override def abort(transaction: String): Unit = {
+  @Override
+public abort(transaction: String): Unit = {
     val tFilePath = Paths.get(s"$tempPath/$transaction")
     if (Files.exists(tFilePath)) {
       Files.delete(tFilePath)
@@ -4718,13 +4797,13 @@ Flink为CEP提供了专门的Flink CEP library，它包含如下组件：
 
 登录事件流
 
-```scala
+```java
 case class LoginEvent(userId: String,
                       ip: String,
                       eventType: String,
                       eventTime: String)
 
-val env = StreamExecutionEnvironment.getExecutionEnvironment
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
 env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 env.setParallelism(1)
 
@@ -4742,7 +4821,7 @@ val loginEventStream = env
 
 每个Pattern都应该包含几个步骤，或者叫做state。从一个state到另一个state，通常我们需要定义一些条件，例如下列的代码：
 
-```scala
+```java
 val loginFailPattern = Pattern.begin[LoginEvent]("begin")
   .where(_.eventType.equals("fail"))
   .next("next")
@@ -4760,26 +4839,26 @@ val loginFailPattern = Pattern.begin[LoginEvent]("begin")
 
 我们也可以通过subtype来限制event的子类型：
 
-```scala
+```java
 start.subtype(SubEvent.class).where(...);
 ```
 
 事实上，你可以多次调用subtype和where方法；而且如果where条件是不相关的，你可以通过or来指定一个单独的filter函数：
 
-```scala
+```java
 pattern.where(...).or(...);
 ```
 
 之后，我们可以在此条件基础上，通过next或者followedBy方法切换到下一个state，next的意思是说上一步符合条件的元素之后紧挨着的元素；而followedBy并不要求一定是挨着的元素。这两者分别称为严格近邻和非严格近邻。
 
-```scala
+```java
 val strictNext = start.next("middle")
 val nonStrictNext = start.followedBy("middle")
 ```
 
 最后，我们可以将所有的Pattern的条件限定在一定的时间范围内：
 
-```scala
+```java
 next.within(Time.seconds(10))
 ```
 
@@ -4789,14 +4868,14 @@ next.within(Time.seconds(10))
 
 通过一个input DataStream以及刚刚我们定义的Pattern，我们可以创建一个PatternStream：
 
-```scala
+```java
 val input = ...
 val pattern = ...
 
 val patternStream = CEP.pattern(input, pattern)
 ```
 
-```scala
+```java
 val patternStream = CEP
   .pattern(
     loginEventStream.keyBy(_.userId), loginFailPattern
@@ -4809,7 +4888,7 @@ val patternStream = CEP
 
 select方法需要实现一个PatternSelectFunction，通过select方法来输出需要的警告。它接受一个Map对，包含string/event，其中key为state的名字，event则为真是的Event。
 
-```scala
+```java
 val loginFailDataStream = patternStream
   .select((pattern: Map[String, Iterable[LoginEvent]]) => {
     val first = pattern.getOrElse("begin", null).iterator.next()
@@ -4829,7 +4908,7 @@ val loginFailDataStream = patternStream
 
 通过within方法，我们的parttern规则限定在一定的窗口范围内。当有超过窗口时间后还到达的event，我们可以通过在select或flatSelect中，实现PatternTimeoutFunction/PatternFlatTimeoutFunction来处理这种情况。
 
-```scala
+```java
 val complexResult = patternStream.select(orderTimeoutOutput) {
   (pattern: Map[String, Iterable[OrderEvent]], timestamp: Long) => {
     val createOrder = pattern.get("begin")
@@ -4850,7 +4929,7 @@ timeoutResult.print()
 
 完整例子:
 
-```scala
+```java
 import org.apache.flink.cep.scala.CEP
 import org.apache.flink.cep.scala.pattern.Pattern
 import org.apache.flink.streaming.api.TimeCharacteristic
@@ -4863,7 +4942,7 @@ object ScalaFlinkLoginFail {
 
   def main(args: Array[String]): Unit = {
 
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
@@ -4960,7 +5039,7 @@ Table API 和 SQL 的程序结构，与流式处理的程序结构类似；也�
 
 具体操作流程如下：
 
-```scala
+```java
 val tableEnv = ...  // 创建表的执行环境
 
 // 创建一张表，用于读取数据
@@ -4980,7 +5059,7 @@ result.insertInto("outputTable")
 
 创建表环境最简单的方式，就是基于流处理执行环境，调create方法直接创建：
 
-```scala
+```java
 val tableEnv = StreamTableEnvironment.create(env)
 ```
 
@@ -4997,7 +5076,7 @@ val tableEnv = StreamTableEnvironment.create(env)
 
 比如，配置老版本的流式查询（Flink-Streaming-Query）：
 
-```scala
+```java
 val settings = EnvironmentSettings
   .newInstance()
   .useOldPlanner()      // 使用老版本planner
@@ -5009,14 +5088,14 @@ val tableEnv = StreamTableEnvironment.create(env, settings)
 
 基于老版本的批处理环境（Flink-Batch-Query）：
 
-```scala
+```java
 val batchEnv = ExecutionEnvironment.getExecutionEnvironment
 val batchTableEnv = BatchTableEnvironment.create(batchEnv)
 ```
 
 基于blink版本的流处理环境（Blink-Streaming-Query）：
 
-```scala
+```java
 val bsSettings = EnvironmentSettings
   .newInstance()
   .useBlinkPlanner()
@@ -5028,7 +5107,7 @@ val bsTableEnv = StreamTableEnvironment.create(env, bsSettings)
 
 基于blink版本的批处理环境（Blink-Batch-Query）：
 
-```scala
+```java
 val bbSettings = EnvironmentSettings
   .newInstance()
   .useBlinkPlanner()
@@ -5053,7 +5132,7 @@ TableEnvironment可以注册目录Catalog，并可以基于Catalog注册表。�
 
 代码如下：
 
-```scala
+```java
 tableEnv
   .connect(new FileSystem().path("sensor.txt"))  // 定义表数据来源，外部连接
   .withFormat(new OldCsv())    // 定义从外部系统读取数据之后的格式化方法
@@ -5082,7 +5161,7 @@ tableEnv
 
 kafka的连接器flink-kafka-connector中，1.11版本的已经提供了Table API的支持。我们可以在 connect方法中直接传入一个叫做Kafka的类，这就是kafka连接器的描述器ConnectorDescriptor。
 
-```scala
+```java
 tableEnv
   .connect(
     new Kafka()
@@ -5117,7 +5196,7 @@ Table API基于代表一张“表”的Table类，并提供一整套操作处理
 
 代码中的实现如下：
 
-```scala
+```java
 val sensorTable: Table = tableEnv.from("inputTable")
 
 val resultTable: Table = senorTable
@@ -5131,14 +5210,14 @@ Flink的SQL集成，基于的是Apache Calcite，它实现了SQL标准。在Flin
 
 代码实现如下：
 
-```scala
+```java
 val resultSqlTable: Table = tableEnv
   .sqlQuery("select id, temperature from inputTable where id ='sensor_1'")
 ```
 
 或者：
 
-```scala
+```java
 val resultSqlTable: Table = tableEnv.sqlQuery(
   """
     |select id, temperature
@@ -5149,7 +5228,7 @@ val resultSqlTable: Table = tableEnv.sqlQuery(
 
 当然，也可以加上聚合操作，比如我们统计每个sensor温度数据出现的个数，做个count统计：
 
-```scala
+```java
 val aggResultTable = sensorTable
   .groupBy('id)
   .select('id, 'id.count as 'count)
@@ -5157,7 +5236,7 @@ val aggResultTable = sensorTable
 
 SQL的实现：
 
-```scala
+```java
 val aggResultSqlTable = tableEnv
   .sqlQuery("select id, count(id) as cnt from inputTable group by id")
 ```
@@ -5178,7 +5257,7 @@ Flink允许我们把Table和DataStream做转换：我们可以基于一个DataSt
 
 代码具体如下：
 
-```scala
+```java
 val inputStream: DataStream[String] = env.readTextFile("sensor.txt")
 val dataStream: DataStream[SensorReading] = inputStream
   .map(data => {
@@ -5199,14 +5278,14 @@ val sensorTable2 = tableEnv.fromDataStream(dataStream, 'id, 'timestamp as 'ts)
 
 基于名称的对应：
 
-```scala
+```java
 val sensorTable = tableEnv
   .fromDataStream(dataStream, 'timestamp as 'ts, 'id as 'myId, 'temperature)
 ```
 
 基于位置的对应：
 
-```scala
+```java
 val sensorTable = tableEnv
   .fromDataStream(dataStream, 'myId, 'ts)
 ```
@@ -5225,7 +5304,7 @@ Flink的DataStream和 DataSet API支持多种类型。
 
 代码如下：
 
-```scala
+```java
 tableEnv.createTemporaryView("sensorView", dataStream)
 tableEnv.createTemporaryView("sensorView",
   dataStream, 'id, 'temperature, 'timestamp as 'ts)
@@ -5233,7 +5312,7 @@ tableEnv.createTemporaryView("sensorView",
 
 另外，当然还可以基于Table创建视图：
 
-```scala
+```java
 tableEnv.createTemporaryView("sensorView", sensorTable)
 ```
 
@@ -5249,7 +5328,7 @@ View和Table的Schema完全相同。事实上，在Table API中，可以认为Vi
 
 代码如下：
 
-```scala
+```java
 // 注册输出表
 tableEnv.connect(
     new FileSystem().path("…\\resources\\out.txt")
@@ -5304,7 +5383,7 @@ Flink Table API中的更新模式有以下三种：
 
 代码如下：
 
-```scala
+```java
 // 输出到 kafka
 tableEnv.connect(
   new Kafka()
@@ -5342,7 +5421,7 @@ es目前支持的数据格式，只有Json，而flink本身并没有对应的支
 
 代码实现如下：
 
-```scala
+```java
 // 输出到es
 tableEnv.connect(
   new Elasticsearch()
@@ -5379,7 +5458,7 @@ jdbc连接的代码实现比较特殊，因为没有对应的java/scala类实现
 
 对于jdbc的创建表操作，天生就适合直接写DDL来实现，所以我们的代码可以这样写：
 
-```scala
+```java
 // 输出到 Mysql
 val sinkDDL: String =
   """
@@ -5422,7 +5501,7 @@ Table API中表到DataStream有两种模式：
 
 代码实现如下：
 
-```scala
+```java
 val resultStream: DataStream[Row] = tableEnv
   .toAppendStream[Row](resultTable)
 
@@ -5447,7 +5526,7 @@ explain方法会返回一个字符串，描述三个计划：
 
 我们可以在代码中查看执行计划：
 
-```scala
+```java
 val explaination: String = tableEnv.explain(resultTable)
 println(explaination)
 ```
@@ -5582,7 +5661,7 @@ Upsert流包含两种类型的消息：Upsert消息和delete消息。转换为up
 
 代码如下：
 
-```scala
+```java
 // 定义好 DataStream
 val inputStream: DataStream[String] = env.readTextFile("\\sensor.txt")
 val dataStream: DataStream[SensorReading] = inputStream
@@ -5602,7 +5681,7 @@ val sensorTable = tableEnv
 
 代码如下：
 
-```scala
+```java
 tableEnv
   .connect(
     new FileSystem().path("..\\sensor.txt"))
@@ -5624,7 +5703,7 @@ tableEnv
 
 代码如下：
 
-```scala
+```java
 val sinkDDL: String =
   """
     |create table dataTable (
@@ -5663,7 +5742,7 @@ tableEnv.sqlUpdate(sinkDDL) // 执行 DDL
 
 代码如下：
 
-```scala
+```java
 val inputStream: DataStream[String] = env.readTextFile("\\sensor.txt")
 val dataStream: DataStream[SensorReading] = inputStream
   .map(data => {
@@ -5686,7 +5765,7 @@ val sensorTable2 = tableEnv
 
 代码如下：
 
-```scala
+```java
 tableEnv
   .connect(new FileSystem().path("sensor.txt"))
   .withFormat(new Csv())
@@ -5710,7 +5789,7 @@ tableEnv
 
 代码如下：
 
-```scala
+```java
 val sinkDDL: String =
   """
     |create table dataTable (
@@ -5743,7 +5822,7 @@ tableEnv.sqlUpdate(sinkDDL) // 执行 DDL
 
 Table API中的Group Windows都是使用.window（w:GroupWindow）子句定义的，并且必须由as子句指定一个别名。为了按窗口对表进行分组，窗口的别名必须在group by子句中，像常规的分组字段一样引用。
 
-```scala
+```java
 val table = input
   .window([w: GroupWindow] as 'w) // 定义窗口，别名 w
   .groupBy('w, 'a)  // 以属性a和窗口w作为分组的key
@@ -5752,7 +5831,7 @@ val table = input
 
 或者，还可以把窗口的相关信息，作为字段添加到结果表中：
 
-```scala
+```java
 val table = input
   .window([w: GroupWindow] as 'w)
   .groupBy('w, 'a) 
@@ -5773,7 +5852,7 @@ Table API支持的窗口定义，和我们熟悉的一样，主要也是三种�
 
 代码如下：
 
-```scala
+```java
 // Tumbling Event-time Window（事件时间字段rowtime
 .window(Tumble over 10.minutes on 'rowtime as 'w)
 // Tumbling Processing-time Window（处理时间字段proctime）
@@ -5793,7 +5872,7 @@ Table API支持的窗口定义，和我们熟悉的一样，主要也是三种�
 
 代码如下：
 
-```scala
+```java
 // Sliding Event-time Window
 .window(Slide over 10.minutes every 5.minutes on 'rowtime as 'w)
 // Sliding Processing-time window
@@ -5825,7 +5904,7 @@ Over window聚合是标准SQL中已有的（Over子句），可以在查询的SE
 
 比如这样：
 
-```scala
+```java
 val table = input
   .window([w: OverWindow] as 'w)
   .select('a, 'b.sum over 'w, 'c.min over 'w)
@@ -5839,7 +5918,7 @@ Table API提供了Over类，来配置Over窗口的属性。可以在事件时间
 
 1. 无界的 over window
 
-```scala
+```java
 // 无界的事件时间over window (时间字段 "rowtime")
 .window(Over partitionBy 'a orderBy 'rowtime preceding UNBOUNDED_RANGE as 'w)
 //无界的处理时间over window (时间字段"proctime")
@@ -5852,7 +5931,7 @@ Table API提供了Over类，来配置Over窗口的属性。可以在事件时间
 
 2. 有界的over window
 
-```scala
+```java
 // 有界的事件时间over window (时间字段 "rowtime"，之前1分钟)
 .window(Over partitionBy 'a orderBy 'rowtime preceding 1.minutes as 'w)
 // 有界的处理时间over window (时间字段 "rowtime"，之前1分钟)
@@ -5924,9 +6003,9 @@ WINDOW w AS (
 
 代码如下：
 
-```scala
+```java
 def main(args: Array[String]): Unit = {
-  val env = StreamExecutionEnvironment.getExecutionEnvironment
+  StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
   env.setParallelism(1)
   env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
@@ -5941,7 +6020,8 @@ def main(args: Array[String]): Unit = {
       new BoundedOutOfOrdernessTimestampExtractor[SensorReading](
         Time.seconds(1)
       ) {
-        override def extractTimestamp(
+        @Override
+public extractTimestamp(
           element: SensorReading
         ): Long = element.timestamp * 1000L
     })
@@ -6112,7 +6192,7 @@ FIELD.sum0
 
 在下面的代码中，我们定义自己的HashCode函数，在TableEnvironment中注册它，并在查询中调用它。
 
-```scala
+```java
 // 自定义一个标量函数
 class HashCode( factor: Int ) extends ScalarFunction {
   def eval( s: String ): Int = {
@@ -6123,7 +6203,7 @@ class HashCode( factor: Int ) extends ScalarFunction {
 
 主函数中调用，计算sensor id的哈希值（前面部分照抄，流环境、表环境、读取source、建表）：
 
-```scala
+```java
 package com.atguigu.course
 
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
@@ -6134,7 +6214,7 @@ import org.apache.flink.table.functions.ScalarFunction
 
 object TableUDFExample1 {
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     val settings = EnvironmentSettings.newInstance()
       .useBlinkPlanner()
       .inStreamingMode()
@@ -6190,7 +6270,7 @@ joinLateral算子，会将外部表中的每一行，与表函数（TableFunctio
 
 自定义TableFunction：
 
-```scala
+```java
 // 自定义TableFunction
 class Split(separator: String) extends TableFunction[(String, Int)]{
   def eval(str: String): Unit = {
@@ -6203,7 +6283,7 @@ class Split(separator: String) extends TableFunction[(String, Int)]{
 
 接下来，就是在代码中调用。首先是Table API的方式：
 
-```scala
+```java
 // Table API中调用，需要用joinLateral
 val resultTable = sensorTable
   .joinLateral(split('id) as ('word, 'length))   // as对输出行的字段重命名
@@ -6221,7 +6301,7 @@ resultTable2.toAppendStream[Row].print("2")
 
 然后是SQL的方式：
 
-```scala
+```java
 tableEnv.createTemporaryView("sensor", sensorTable)
 tableEnv.registerFunction("split", split)
 
@@ -6278,7 +6358,7 @@ AggregationFunction要求必须实现的方法：
 
 接下来我们写一个自定义AggregateFunction，计算一下每个sensor的平均温度值。
 
-```scala
+```java
 // 定义AggregateFunction的Accumulator
 class AvgTempAcc {
   var sum: Double = 0.0
@@ -6286,9 +6366,11 @@ class AvgTempAcc {
 }
 
 class AvgTemp extends AggregateFunction[Double, AvgTempAcc] {
-  override def getValue(accumulator: AvgTempAcc): Double = accumulator.sum / accumulator.count
+  @Override
+public getValue(accumulator: AvgTempAcc): Double = accumulator.sum / accumulator.count
 
-  override def createAccumulator(): AvgTempAcc = new AvgTempAcc
+  @Override
+public createAccumulator(): AvgTempAcc = new AvgTempAcc
   
   def accumulate(accumulator: AvgTempAcc, temp: Double): Unit ={
     accumulator.sum += temp
@@ -6299,7 +6381,7 @@ class AvgTemp extends AggregateFunction[Double, AvgTempAcc] {
 
 接下来就可以在代码中调用了。
 
-```scala
+```java
 // 创建一个聚合函数实例
 val avgTemp = new AvgTemp()
 // Table API的调用
@@ -6356,7 +6438,7 @@ AggregationFunction要求必须实现的方法：
 
 接下来我们写一个自定义TableAggregateFunction，用来提取每个sensor最高的两个温度值。
 
-```scala
+```java
 // 先定义一个 Accumulator
 class Top2TempAcc{
   var highestTemp: Double = Int.MinValue
@@ -6366,7 +6448,8 @@ class Top2TempAcc{
 // 自定义 TableAggregateFunction
 class Top2Temp extends TableAggregateFunction[(Double, Int), Top2TempAcc]{
   
-  override def createAccumulator(): Top2TempAcc = new Top2TempAcc
+  @Override
+public createAccumulator(): Top2TempAcc = new Top2TempAcc
   
   def accumulate(acc: Top2TempAcc, temp: Double): Unit ={
     if( temp > acc.highestTemp ){
@@ -6386,7 +6469,7 @@ class Top2Temp extends TableAggregateFunction[(Double, Int), Top2TempAcc]{
 
 接下来就可以在代码中调用了。
 
-```scala
+```java
 // 创建一个表聚合函数实例
 val top2Temp = new Top2Temp()
 // Table API的调用
@@ -6402,7 +6485,7 @@ resultSqlTable.toRetractStream[Row].print("agg temp sql")
 
 ## 使用Table API结合SQL实现TopN需求
 
-```scala
+```java
 package com.atguigu.project.topnhotitems
 
 import java.sql.Timestamp
@@ -6418,7 +6501,7 @@ object HotItemsTable {
 
   def main(args: Array[String]): Unit = {
 
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     // 有关Blink的配置，样板代码
     val settings = EnvironmentSettings.newInstance()
       .useBlinkPlanner()
@@ -6477,7 +6560,7 @@ object HotItemsTable {
 
 代码
 
-```scala
+```java
 package com.atguigu.project.topnhotitems
 
 import java.sql.Timestamp
@@ -6493,7 +6576,7 @@ object HotItemsSQL {
 
   def main(args: Array[String]): Unit = {
 
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     val settings = EnvironmentSettings.newInstance()
       .useBlinkPlanner()
       .inStreamingMode()
@@ -6585,7 +6668,7 @@ object HotItemsSQL {
 
 *程序主体*
 
-```scala
+```java
 // 把数据需要ETL成UserBehavior类型
 case class UserBehavior(userId: Long,
                         itemId: Long,
@@ -6601,7 +6684,7 @@ case class ItemViewCount(itemId: Long,
 object HotItems {
   def main(args: Array[String]): Unit = {
     // 创建一个 StreamExecutionEnvironment
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     // 设定Time类型为EventTime
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     // 为了打印到控制台的结果不乱序，
@@ -6646,14 +6729,18 @@ object HotItems {
 
 *增量聚合函数逻辑编写*
 
-```scala
+```java
 // COUNT统计的聚合函数实现，每出现一条记录就加一
 class CountAgg
   extends AggregateFunction[UserBehavior, Long, Long] {
-  override def createAccumulator(): Long = 0L
-  override def add(userBehavior: UserBehavior, acc: Long): Long = acc + 1
-  override def getResult(acc: Long): Long = acc
-  override def merge(acc1: Long, acc2: Long): Long = acc1 + acc2
+  @Override
+public createAccumulator(): Long = 0L
+  @Override
+public add(userBehavior: UserBehavior, acc: Long): Long = acc + 1
+  @Override
+public getResult(acc: Long): Long = acc
+  @Override
+public merge(acc1: Long, acc2: Long): Long = acc1 + acc2
 }
 ```
 
@@ -6663,11 +6750,12 @@ class CountAgg
 
 代码如下：
 
-```scala
+```java
 // 用于输出窗口的结果
 class WindowResultFunction
   extends ProcessWindowFunction[Long, ItemViewCount, String, TimeWindow] {
-  override def process(key: String,
+  @Override
+public process(key: String,
                         context: Context,
                         elements: Iterable[Long],
                         out: Collector[ItemViewCount]): Unit = {
@@ -6680,7 +6768,7 @@ class WindowResultFunction
 
 *计算最热门TopN商品*
 
-```scala
+```java
   class TopNHotItems(topSize: Int)
     extends KeyedProcessFunction[Long, ItemViewCount, String] {
     // 惰性赋值一个状态变量
@@ -6689,7 +6777,8 @@ class WindowResultFunction
     )
 
     // 来一条数据都会调用一次
-    override def processElement(value: ItemViewCount,
+    @Override
+public processElement(value: ItemViewCount,
                                 ctx: KeyedProcessFunction[Long,
                                   ItemViewCount, String]#Context,
                                 out: Collector[String]): Unit = {
@@ -6698,7 +6787,8 @@ class WindowResultFunction
     }
 
     // 定时器事件
-    override def onTimer(
+    @Override
+public onTimer(
       ts: Long,
       ctx: KeyedProcessFunction[Long, ItemViewCount, String]#OnTimerContext,
       out: Collector[String]
@@ -6754,7 +6844,7 @@ class WindowResultFunction
 
 编写代码：
 
-```scala
+```java
 val properties = new Properties()
 properties.setProperty("bootstrap.servers", "localhost:9092")
 properties.setProperty("group.id", "consumer-group")
@@ -6768,7 +6858,7 @@ properties.setProperty(
 )
 properties.setProperty("auto.offset.reset", "latest")
 
-val env = StreamExecutionEnvironment.getExecutionEnvironment
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
 env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 env.setParallelism(1)
 
@@ -6796,7 +6886,7 @@ val stream = env
 
 编写代码：
 
-```scala
+```java
 import java.util.Properties
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 
@@ -6849,7 +6939,7 @@ object KafkaProducerUtil {
 
 完整代码如下：
 
-```scala
+```java
 package com.atguigu.project
 
 import java.sql.Timestamp
@@ -6885,7 +6975,7 @@ object ApacheLogAnalysis {
                           count: Long)
 
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
     val stream = env
@@ -6906,7 +6996,8 @@ object ApacheLogAnalysis {
         new BoundedOutOfOrdernessTimestampExtractor[ApacheLogEvent](
           Time.milliseconds(1000)
         ) {
-          override def extractTimestamp(t: ApacheLogEvent): Long = {
+          @Override
+public extractTimestamp(t: ApacheLogEvent): Long = {
             t.eventTime
           }
         }
@@ -6922,15 +7013,20 @@ object ApacheLogAnalysis {
   }
 
   class CountAgg extends AggregateFunction[ApacheLogEvent, Long, Long] {
-    override def createAccumulator(): Long = 0L
-    override def add(apacheLogEvent: ApacheLogEvent, acc: Long): Long = acc + 1
-    override def getResult(acc: Long): Long = acc
-    override def merge(acc1: Long, acc2: Long): Long = acc1 + acc2
+    @Override
+public createAccumulator(): Long = 0L
+    @Override
+public add(apacheLogEvent: ApacheLogEvent, acc: Long): Long = acc + 1
+    @Override
+public getResult(acc: Long): Long = acc
+    @Override
+public merge(acc1: Long, acc2: Long): Long = acc1 + acc2
   }
 
   class WindowResultFunction
     extends ProcessWindowFunction[Long, UrlViewCount, String, TimeWindow] {
-    override def process(key: String, context: Context, elements: Iterable[Long], out: Collector[UrlViewCount]): Unit = {
+    @Override
+public process(key: String, context: Context, elements: Iterable[Long], out: Collector[UrlViewCount]): Unit = {
       out.collect(UrlViewCount(key, context.window.getEnd, elements.iterator.next()))
     }
   }
@@ -6945,7 +7041,8 @@ object ApacheLogAnalysis {
       )
     )
 
-    override def processElement(
+    @Override
+public processElement(
       input: UrlViewCount,
       context: KeyedProcessFunction[Long, UrlViewCount, String]#Context,
       collector: Collector[String]
@@ -6957,7 +7054,8 @@ object ApacheLogAnalysis {
         .registerEventTimeTimer(input.windowEnd + 1)
     }
 
-    override def onTimer(
+    @Override
+public onTimer(
       timestamp: Long,
       ctx: KeyedProcessFunction[Long, UrlViewCount, String]#OnTimerContext,
       out: Collector[String]
@@ -7008,7 +7106,7 @@ object ApacheLogAnalysis {
 
 完整代码如下：
 
-```scala
+```java
 package com.atguigu.proj
 
 import java.lang
@@ -7040,7 +7138,7 @@ object BloomFilterGuava {
                           timestamp: Long)
 
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
@@ -7062,9 +7160,11 @@ object BloomFilterGuava {
   }
 
   class UvAggFunc extends AggregateFunction[(String,Long),(Long,BloomFilter[lang.Long]),Long]{
-    override def createAccumulator(): (Long, BloomFilter[lang.Long]) = (0,BloomFilter.create(Funnels.longFunnel(), 100000000, 0.01))
+    @Override
+public createAccumulator(): (Long, BloomFilter[lang.Long]) = (0,BloomFilter.create(Funnels.longFunnel(), 100000000, 0.01))
 
-    override def add(value: (String, Long), accumulator: (Long, BloomFilter[lang.Long])): (Long, BloomFilter[lang.Long]) = {
+    @Override
+public add(value: (String, Long), accumulator: (Long, BloomFilter[lang.Long])): (Long, BloomFilter[lang.Long]) = {
       var bloom = accumulator._2
       var uvCount = accumulator._1
       if(!bloom.mightContain(value._2)){
@@ -7074,13 +7174,16 @@ object BloomFilterGuava {
       (uvCount,bloom)
     }
 
-    override def getResult(accumulator: (Long, BloomFilter[lang.Long])): Long = accumulator._1
+    @Override
+public getResult(accumulator: (Long, BloomFilter[lang.Long])): Long = accumulator._1
 
-    override def merge(a: (Long, BloomFilter[lang.Long]), b: (Long, BloomFilter[lang.Long])): (Long, BloomFilter[lang.Long]) = ???
+    @Override
+public merge(a: (Long, BloomFilter[lang.Long]), b: (Long, BloomFilter[lang.Long])): (Long, BloomFilter[lang.Long]) = ???
   }
   class UvProcessFunc extends ProcessWindowFunction[Long, String, String, TimeWindow] {
     // 连接到redis
-    override def process(key: String, context: Context, elements: Iterable[Long], out: Collector[String]): Unit = {
+    @Override
+public process(key: String, context: Context, elements: Iterable[Long], out: Collector[String]): Unit = {
       // 窗口结束时间 ==> UV数
       // 窗口结束时间 ==> bit数组
 
@@ -7097,7 +7200,7 @@ object BloomFilterGuava {
 
 完整代码如下：
 
-```scala
+```java
 package com.atguigu
 
 import java.util.{Calendar, UUID}
@@ -7128,7 +7231,8 @@ object AppMarketingByChannel {
     val behaviorTypes = Seq("BROWSE", "CLICK")
     val rand = new Random
 
-    override def run(ctx: SourceContext[MarketingUserBehavior]): Unit = {
+    @Override
+public run(ctx: SourceContext[MarketingUserBehavior]): Unit = {
       while (running) {
         val userId = UUID.randomUUID().toString
         val behaviorType = behaviorTypes(rand.nextInt(behaviorTypes.size))
@@ -7141,11 +7245,12 @@ object AppMarketingByChannel {
       }
     }
 
-    override def cancel(): Unit = running = false
+    @Override
+public cancel(): Unit = running = false
   }
 
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     val stream = env
@@ -7165,7 +7270,8 @@ object AppMarketingByChannel {
   class MarketingCountByChannel
     extends ProcessWindowFunction[((String, String), Long),
       (String, Long, Long), (String, String), TimeWindow] {
-    override def process(key:  (String,String),
+    @Override
+public process(key:  (String,String),
                          context: Context,
                          elements: Iterable[((String, String), Long)],
                          out: Collector[(String, Long, Long)]): Unit = {
@@ -7179,7 +7285,7 @@ object AppMarketingByChannel {
 
 完整代码如下：
 
-```scala
+```java
 package com.atguigu
 
 import com.atguigu.AppMarketingByChannel.SimulatedEventSource
@@ -7192,7 +7298,7 @@ import org.apache.flink.util.Collector
 
 object AppMarketingStatistics {
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     val stream = env
@@ -7212,7 +7318,8 @@ object AppMarketingStatistics {
   class MarketingCountTotal
     extends ProcessWindowFunction[(String, Long),
       (String, Long, Long), String, TimeWindow] {
-    override def process(key: String,
+    @Override
+public process(key: String,
                          context: Context,
                          elements: Iterable[(String, Long)],
                          out: Collector[(String, Long, Long)]): Unit = {
@@ -7224,7 +7331,7 @@ object AppMarketingStatistics {
 
 ## 恶意登陆实现
 
-```scala
+```java
 package com.atguigu
 
 import com.atguigu.FlinkCepExample.LoginEvent
@@ -7240,7 +7347,7 @@ import scala.collection.mutable.ListBuffer
 
 object LoginFailWithoutCEP {
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
@@ -7269,7 +7376,8 @@ object LoginFailWithoutCEP {
       new ValueStateDescriptor[Long]("ts", Types.of[Long])
     )
 
-    override def processElement(
+    @Override
+public processElement(
       value: LoginEvent,
       ctx: KeyedProcessFunction[String, LoginEvent, String]#Context,
       out: Collector[String]
@@ -7292,7 +7400,8 @@ object LoginFailWithoutCEP {
       }
     }
 
-    override def onTimer(
+    @Override
+public onTimer(
       ts: Long,
       ctx: KeyedProcessFunction[String, LoginEvent, String]#OnTimerContext,
       out: Collector[String]
@@ -7326,7 +7435,7 @@ object LoginFailWithoutCEP {
 
 我们将会利用CEP库来实现这个功能。我们先将事件流按照订单号orderId分流，然后定义这样的一个事件模式：在15分钟内，事件“create”与“pay”严格紧邻：
 
-```scala
+```java
 val orderPayPattern = Pattern.begin[OrderEvent]("begin")
   .where(_.eventType == "create")
   .next("next")
@@ -7338,7 +7447,7 @@ val orderPayPattern = Pattern.begin[OrderEvent]("begin")
 在src/main/scala下继续创建OrderTimeout.scala文件，新建一个单例对象。定义样例类OrderEvent，这是输入的订单事件流；另外还有OrderResult，这是输出显示的订单状态结果。由于没有现成的数据，我们还是用几条自定义的示例数据来做演示。
 完整代码如下：
 
-```scala
+```java
 import org.apache.flink.cep.scala.CEP
 import org.apache.flink.cep.scala.pattern.Pattern
 import org.apache.flink.streaming.api.scala._
@@ -7353,7 +7462,7 @@ object OrderTimeout {
 
   def main(args: Array[String]): Unit = {
 
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
@@ -7416,7 +7525,7 @@ object OrderTimeout {
 
 ### 使用Process Function实现订单超时需求
 
-```scala
+```java
 package com.atguigu.project
 
 import org.apache.flink.api.common.state.ValueStateDescriptor
@@ -7433,7 +7542,7 @@ object OrderTimeoutWIthoutCep {
                         eventTime: String)
 
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
@@ -7456,7 +7565,8 @@ object OrderTimeoutWIthoutCep {
       new ValueStateDescriptor[OrderEvent]("saved order", Types.of[OrderEvent])
     )
 
-    override def processElement(value: OrderEvent,
+    @Override
+public processElement(value: OrderEvent,
                                 ctx: KeyedProcessFunction[String, OrderEvent, String]#Context,
                                 out: Collector[String]): Unit = {
       if (value.eventType.equals("create")) {
@@ -7472,7 +7582,8 @@ object OrderTimeoutWIthoutCep {
       ctx.timerService().registerEventTimeTimer(value.eventTime.toLong * 1000 + 5000L)
     }
 
-    override def onTimer(timestamp: Long,
+    @Override
+public onTimer(timestamp: Long,
                          ctx: KeyedProcessFunction[String, OrderEvent, String]#OnTimerContext,
                          out: Collector[String]): Unit = {
       val savedOrder = orderState.value()
@@ -7491,7 +7602,7 @@ object OrderTimeoutWIthoutCep {
 
 完整代码如下：
 
-```scala
+```java
 import org.apache.flink.api.common.state.{ValueState, ValueStateDescriptor}
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.functions.co.CoProcessFunction
@@ -7512,7 +7623,7 @@ object TwoStreamsJoin {
   val unmatchedPays = new OutputTag[PayEvent]("unmatchedPays"){}
 
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
@@ -7554,7 +7665,8 @@ object TwoStreamsJoin {
       .getState(new ValueStateDescriptor[PayEvent]("saved pay",
         classOf[PayEvent]))
 
-    override def processElement1(
+    @Override
+public processElement1(
       order: OrderEvent,
       context: CoProcessFunction[OrderEvent,
         PayEvent, (OrderEvent, PayEvent)]#Context,
@@ -7574,7 +7686,8 @@ object TwoStreamsJoin {
       }
     }
 
-    override def processElement2(
+    @Override
+public processElement2(
       pay: PayEvent,
       context: CoProcessFunction[OrderEvent,
         PayEvent,(OrderEvent, PayEvent)]#Context,
@@ -7593,7 +7706,8 @@ object TwoStreamsJoin {
       }
     }
 
-    override def onTimer(
+    @Override
+public onTimer(
       timestamp: Long,
       ctx: CoProcessFunction[OrderEvent,
         PayEvent, (OrderEvent, PayEvent)]#OnTimerContext,

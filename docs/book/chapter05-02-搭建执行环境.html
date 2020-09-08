@@ -158,7 +158,7 @@
                         <h2><a class="header" href="#搭建执行环境" id="搭建执行环境">搭建执行环境</a></h2>
 <p>编写Flink程序的第一件事情就是搭建执行环境。执行环境决定了程序是运行在单机上还是集群上。在DataStream API中，程序的执行环境是由StreamExecutionEnvironment设置的。在我们的例子中，我们通过调用静态getExecutionEnvironment()方法来获取执行环境。这个方法根据调用方法的上下文，返回一个本地的或者远程的环境。如果这个方法是一个客户端提交到远程集群的代码调用的，那么这个方法将会返回一个远程的执行环境。否则，将返回本地执行环境。</p>
 <p>也可以用下面的方法来显式的创建本地或者远程执行环境：</p>
-<pre><code class="language-scala">// create a local stream execution environment
+<pre><code class="language-java">// create a local stream execution environment
 val localEnv = StreamExecutionEnvironment
   .createLocalEnvironment()
 // create a remote stream execution environment

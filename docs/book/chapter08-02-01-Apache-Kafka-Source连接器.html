@@ -168,7 +168,7 @@
 <p>Flink Kafka连接器并行的摄入事件流。每一个并行source任务可以从一个或者多个分区中读取数据。任务将会跟踪每一个分区当前的读偏移量，然后将读偏移量写入到检查点数据中。当从任务故障恢复时，读偏移量将被恢复，而source任务将从检查点保存的读偏移量开始重新读取数据。Flink Kafka连接器并不依赖Kafka自己的offset-tracking机制（基于消费者组实现）。下图展示了分区如何分配给source实例。</p>
 <p><img src="images/spaf_0801.png" alt="" /></p>
 <p>Kafka source连接器使用如下代码创建</p>
-<pre><code class="language-scala">val properties = new Properties()
+<pre><code class="language-java">val properties = new Properties()
 properties.setProperty(&quot;bootstrap.servers&quot;, &quot;localhost:9092&quot;)
 properties.setProperty(&quot;group.id&quot;, &quot;test&quot;)
 
@@ -182,7 +182,7 @@ val stream: DataStream[String] = env.addSource(
 <p>第二个参数是一个DeserializationSchema或者KeyedDeserializationSchema。Kafka消息被存储为原始的字节数据，所以需要反序列化成Java或者Scala对象。上例中使用的SimpleStringSchema，是一个内置的DeserializationSchema，它仅仅是简单的将字节数组反序列化成字符串。DeserializationSchema和KeyedDeserializationSchema是公共的接口，所以我们可以自定义反序列化逻辑。</p>
 <p>第三个参数是一个Properties对象，设置了用来读写的Kafka客户端的一些属性。</p>
 <p>为了抽取事件时间的时间戳然后产生水印，我们可以通过调用</p>
-<pre><code class="language-scala">FlinkKafkaConsumer.assignTimestampsAndWatermark()
+<pre><code class="language-java">FlinkKafkaConsumer.assignTimestampsAndWatermark()
 </code></pre>
 <p>方法为Kafka消费者提供AssignerWithPeriodicWatermark或者AssignerWithPucntuatedWatermark。每一个assigner都将被应用到每个分区，来利用每一个分区的顺序保证特性。source实例将会根据水印的传播协议聚合所有分区的水印。</p>
 

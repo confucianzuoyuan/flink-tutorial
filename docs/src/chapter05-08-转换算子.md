@@ -4,10 +4,9 @@
 
 大部分的流转换操作都基于用户自定义函数UDF。UDF函数打包了一些业务逻辑并定义了输入流的元素如何转换成输出流的元素。像`MapFunction`这样的函数，将会被定义为类，这个类实现了Flink针对特定的转换操作暴露出来的接口。
 
-```scala
-class MyMapFunction extends MapFunction[Int, Int] {
-  override def map(value: Int): Int = value + 1
-}
+```java
+DataStream<String> sensorIds = filteredReadings
+        .map(r -> r.id);
 ```
 
 函数接口定义了需要由用户实现的转换方法，例如上面例子中的`map()`方法。
