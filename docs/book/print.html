@@ -624,6 +624,7 @@ Socket，文件，Kafka Topic或传感器数据接口中提取数据。数据出
 <p>如果我们要从保存点启动一个修改过的应用程序，那么保存点中的状态只能映射到符合标准的应用程序——它里面的算子必须具有相应的ID和状态名称。默认情况下，Flink会自动分配唯一的算子ID。然而，一个算子的ID，是基于它之前算子的ID确定性地生成的。因此，算子的ID会在其前序算子改变时改变，比如，当我们添加了新的或移除掉一个算子时，前序算子ID改变，当前算子ID就会变化。所以对于具有默认算子ID的应用程序而言，如果想在不丢失状态的前提下升级，就会受到极大的限制。因此，我们强烈建议在程序中为算子手动分配唯一ID，而不是依靠Flink的默认分配。我们将在“指定唯一的算子标识符”一节中详细说明如何分配算子标识符。</p>
 <h1><a class="header" href="#第四章编写第一个flink程序" id="第四章编写第一个flink程序">第四章，编写第一个Flink程序</a></h1>
 <h2><a class="header" href="#在idea中编写flink程序" id="在idea中编写flink程序">在IDEA中编写Flink程序</a></h2>
+<h3><a class="header" href="#scala版flink程序编写" id="scala版flink程序编写">Scala版Flink程序编写</a></h3>
 <p>本项目使用的Flink版本为最新版本，也就是1.11.0。现在提供maven项目的配置文件。</p>
 <ol>
 <li>使用Intellij IDEA创建一个Maven新项目</li>
@@ -634,9 +635,7 @@ Socket，文件，Kafka Topic或传感器数据接口中提取数据。数据出
 <li>最好使用IDEA默认的Maven工具：Bundled（Maven 3），点击<code>Finish</code>，等待一会儿，项目就创建好了</li>
 </ol>
 <p>编写<code>WordCount.scala</code>程序</p>
-<pre><code class="language-java">package com.atguigu
-
-import org.apache.flink.streaming.api.scala._
+<pre><code class="language-scala">import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
 
 object StreamingJob {
@@ -676,6 +675,47 @@ object StreamingJob {
 <pre><code class="language-sh">$ nc -lk 9999
 </code></pre>
 <p>接下来使用<code>IDEA</code>运行就可以了。</p>
+<h3><a class="header" href="#java版flink程序编写" id="java版flink程序编写">Java版Flink程序编写</a></h3>
+<ol>
+<li>使用Intellij IDEA创建一个Maven新项目</li>
+<li>勾选<code>Create from archetype</code>，然后点击<code>Add Archetype</code>按钮</li>
+<li><code>GroupId</code>中输入<code>org.apache.flink</code>，<code>ArtifactId</code>中输入<code>flink-quickstart-java</code>，<code>Version</code>中输入<code>1.11.0</code>，然后点击<code>OK</code></li>
+<li>点击向右箭头，出现下拉列表，选中<code>flink-quickstart-java:1.11.0</code>，点击<code>Next</code></li>
+<li><code>Name</code>中输入<code>FlinkTutorial</code>，<code>GroupId</code>中输入<code>com.atguigu</code>，<code>ArtifactId</code>中输入<code>FlinkTutorial</code>，点击<code>Next</code></li>
+<li>最好使用IDEA默认的Maven工具：Bundled（Maven 3），点击<code>Finish</code>，等待一会儿，项目就创建好了</li>
+</ol>
+<p>编写<code>WordCount.java</code>程序</p>
+<pre><code class="language-java">import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.util.Collector;
+
+public class WordCountFromSocket {
+
+    public static void main(String[] args) throws Exception {
+        final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+
+        DataStream&lt;String&gt; stream = env.socketTextStream(&quot;localhost&quot;, 9999);
+
+        stream.flatMap(new Tokenizer()).keyBy(r -&gt; r.f0).sum(1).print();
+
+        env.execute(&quot;Flink Streaming Java API Skeleton&quot;);
+    }
+
+    public static class Tokenizer implements FlatMapFunction&lt;String, Tuple2&lt;String, Integer&gt;&gt; {
+        @Override
+        public void flatMap(String value, Collector&lt;Tuple2&lt;String, Integer&gt;&gt; out) throws Exception {
+            String[] stringList = value.split(&quot;\\s&quot;);
+            for (String s : stringList) {
+                // 使用out.collect方法向下游发送数据
+                out.collect(new Tuple2(s, 1));
+            }
+        }
+    }
+}
+</code></pre>
 <h2><a class="header" href="#下载flink运行时环境提交jar包的运行方式" id="下载flink运行时环境提交jar包的运行方式">下载Flink运行时环境，提交Jar包的运行方式</a></h2>
 <p>下载链接：http://mirror.bit.edu.cn/apache/flink/flink-1.11.0/flink-1.11.0-bin-scala_2.11.tgz</p>
 <p>然后解压</p>
