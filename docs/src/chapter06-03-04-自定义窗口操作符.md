@@ -87,14 +87,13 @@ WindowAssigner有两个泛型参数：
 
 下面的代码创建了一个自定义窗口分配器，是一个30秒的滚动事件时间窗口。
 
-```java
+```scala
 class ThirtySecondsWindows
     extends WindowAssigner[Object, TimeWindow] {
 
   val windowSize: Long = 30 * 1000L
 
-  @Override
-public assignWindows(
+  override def assignWindows(
     o: Object,
     ts: Long,
     ctx: WindowAssigner.WindowAssignerContext
@@ -105,22 +104,19 @@ public assignWindows(
     Collections.singletonList(new TimeWindow(startTime, endTime))
   }
 
-  @Override
-public getDefaultTrigger(
+  override def getDefaultTrigger(
     env: environment.StreamExecutionEnvironment
   ): Trigger[Object, TimeWindow] = {
       EventTimeTrigger.create()
   }
 
-  @Override
-public getWindowSerializer(
+  override def getWindowSerializer(
     executionConfig: ExecutionConfig
   ): TypeSerializer[TimeWindow] = {
     new TimeWindow.Serializer
   }
 
-  @Override
-public isEventTime = true
+  override def isEventTime = true
 }
 ```
 
@@ -176,7 +172,7 @@ public abstract class Trigger<T, W extends Window>
     long timestamp,
     W window,
     TriggerContext ctx);
-  
+
   public boolean canMerge();
 
   public void onMerge(W window, OnMergeContext ctx);
@@ -218,12 +214,11 @@ public interface OnMergeContext extends TriggerContext {
 
 下面的例子展示了一个触发器在窗口结束时间之前触发。当第一个事件被分配到窗口时，这个触发器注册了一个定时器，定时时间为水位线之前一秒钟。当定时事件执行，将会注册一个新的定时事件，这样，这个触发器每秒钟最多触发一次。
 
-```java
+```scala
 class OneSecondIntervalTrigger
     extends Trigger[SensorReading, TimeWindow] {
 
-  @Override
-public onElement(
+  override def onElement(
     SensorReading r,
     timestamp: Long,
     window: TimeWindow,
@@ -247,8 +242,7 @@ public onElement(
     TriggerResult.CONTINUE
   }
 
-  @Override
-public onEventTime(
+  override def onEventTime(
     timestamp: Long,
     window: TimeWindow,
     ctx: Trigger.TriggerContext
@@ -265,8 +259,7 @@ public onEventTime(
     }
   }
 
-  @Override
-public onProcessingTime(
+  override def onProcessingTime(
     timestamp: Long,
     window: TimeWindow,
     ctx: Trigger.TriggerContext
@@ -274,8 +267,7 @@ public onProcessingTime(
     TriggerResult.CONTINUE
   }
 
-  @Override
-public clear(
+  override def clear(
     window: TimeWindow,
     ctx: Trigger.TriggerContext
   ): Unit = {
