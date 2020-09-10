@@ -156,7 +156,8 @@
                 <div id="content" class="content">
                     <main>
                         <h3><a class="header" href="#以kafka消息队列的数据为数据来源" id="以kafka消息队列的数据为数据来源">以Kafka消息队列的数据为数据来源</a></h3>
-<pre><code class="language-java">val properties = new Properties()
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val properties = new Properties()
 properties.setProperty(&quot;bootstrap.servers&quot;, &quot;localhost:9092&quot;)
 properties.setProperty(&quot;group.id&quot;, &quot;consumer-group&quot;)
 properties.setProperty(
@@ -168,7 +169,7 @@ properties.setProperty(
   &quot;org.apache.kafka.common.serialization.StringDeserializer&quot;
 )
 properties.setProperty(&quot;auto.offset.reset&quot;, &quot;latest&quot;)
-StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
+val env = StreamExecutionEnvironment.getExecutionEnvironment
 env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 env.setParallelism(1)
 val stream = env
@@ -180,6 +181,32 @@ val stream = env
       properties
     )
   )
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">Properties properties = new Properties();
+properties.setProperty(&quot;bootstrap.servers&quot;, &quot;localhost:9092&quot;);
+properties.setProperty(&quot;group.id&quot;, &quot;consumer-group&quot;);
+properties.setProperty(
+  &quot;key.deserializer&quot;,
+  &quot;org.apache.kafka.common.serialization.StringDeserializer&quot;
+);
+properties.setProperty(
+  &quot;value.deserializer&quot;,
+  &quot;org.apache.kafka.common.serialization.StringDeserializer&quot;
+);
+properties.setProperty(&quot;auto.offset.reset&quot;, &quot;latest&quot;);
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment;
+env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+env.setParallelism(1);
+DataStream&lt;String&gt; stream = env
+  // source为来自Kafka的数据，这里我们实例化一个消费者，topic为hotitems
+  .addSource(
+    new FlinkKafkaConsumer011&lt;String&gt;(
+      &quot;hotitems&quot;,
+      new SimpleStringSchema(),
+      properties
+    )
+  );
 </code></pre>
 
                     </main>

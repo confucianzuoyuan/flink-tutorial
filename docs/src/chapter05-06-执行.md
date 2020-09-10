@@ -2,7 +2,7 @@
 
 当应用程序完全写好时，我们可以调用`StreamExecutionEnvironment.execute()`来执行应用程序。在我们的例子中就是我们的最后一行调用：
 
-```java
+```
 env.execute("Compute average sensor temperature")
 ```
 

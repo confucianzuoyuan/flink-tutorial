@@ -16,9 +16,9 @@ object WordCountFromSocket {
       // 使用空格分割字符串 `\\s`表示空格
       .flatMap(w => w.split("\\s"))
       // 相当于MapReduce中的Map操作
-      .map(w => WordCount(w, 1))
+      .map(w => (w, 1))
       // shuffle操作
-      .keyBy(_.word)
+      .keyBy(_._1)
       // 聚合`count`字段
       .sum(1)
 
@@ -26,6 +26,4 @@ object WordCountFromSocket {
 
     env.execute()
   }
-
-  case class WordCount(word: String, count: Int)
 }

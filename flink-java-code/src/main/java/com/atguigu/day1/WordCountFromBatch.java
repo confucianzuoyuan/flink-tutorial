@@ -6,15 +6,22 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
 
+import java.util.Properties;
+
 public class WordCountFromBatch {
 
     public static void main(String[] args) throws Exception {
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.setParallelism(1);
+        env.setParallelism(2);
 
         DataStream<String> stream = env.fromElements("Hello World", "Hello World");
 
-        stream.flatMap(new Tokenizer()).keyBy(r -> r.f0).sum(1).print();
+        stream
+                .flatMap(new Tokenizer())
+                .keyBy(r -> r.f0)
+                .sum(1)
+                .print()
+                .setParallelism(1);
 
         env.execute("Flink Streaming Java API Skeleton");
     }

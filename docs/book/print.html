@@ -717,31 +717,35 @@ public class WordCountFromSocket {
 }
 </code></pre>
 <h2><a class="header" href="#下载flink运行时环境提交jar包的运行方式" id="下载flink运行时环境提交jar包的运行方式">下载Flink运行时环境，提交Jar包的运行方式</a></h2>
-<p>下载链接：http://mirror.bit.edu.cn/apache/flink/flink-1.11.0/flink-1.11.0-bin-scala_2.11.tgz</p>
+<p>下载链接：http://mirror.bit.edu.cn/apache/flink/flink-1.11.1/flink-1.11.1-bin-scala_2.11.tgz</p>
 <p>然后解压</p>
-<pre><code class="language-sh">$ tar xvfz flink-1.11.0-bin-scala_2.11.tgz
+<pre><code class="language-sh">$ tar xvfz flink-1.11.1-bin-scala_2.11.tgz
 </code></pre>
 <p>启动Flink集群</p>
-<pre><code class="language-sh">$ cd flink-1.11.0
+<pre><code class="language-sh">$ cd flink-1.11.1
 $ ./bin/start-cluster.sh
 </code></pre>
 <p>可以打开Flink WebUI查看集群状态：http://localhost:8081</p>
 <p>在<code>IDEA</code>中使用<code>maven package</code>打包。</p>
 <p>提交打包好的<code>JAR</code>包</p>
-<pre><code class="language-sh">$ cd flink-1.11.0
+<pre><code class="language-sh">$ cd flink-1.11.1
 $ ./bin/flink run 打包好的JAR包的绝对路径
 </code></pre>
 <p>停止Flink集群</p>
 <pre><code class="language-sh">$ ./bin/stop-cluster.sh
 </code></pre>
 <p>查看标准输出日志的位置，在<code>log</code>文件夹中。</p>
-<pre><code class="language-sh">$ cd flink-1.11.0/log
+<pre><code class="language-sh">$ cd flink-1.11.1/log
 </code></pre>
 <h1><a class="header" href="#第五章flink-datastream-api" id="第五章flink-datastream-api">第五章，Flink DataStream API</a></h1>
 <p>本章介绍了Flink DataStream API的基本知识。我们展示了典型的Flink流处理程序的结构和组成部分，还讨论了Flink的类型系统以及支持的数据类型，还展示了数据和分区转换操作。窗口操作符，基于时间语义的转换操作，有状态的操作符，以及和外部系统的连接器将在接下来的章节进行介绍。阅读完这一章后，我们将会知道如何去实现一个具有基本功能的流处理程序。我们的示例程序采用Scala语言，因为Scala语言相对比较简洁。但Java API也是十分类似的（特殊情况，我们将会指出）。在我们的Github仓库里，我们所写的应用程序具有Scala和Java两种版本。</p>
 <h2><a class="header" href="#你好flink" id="你好flink">你好，Flink！</a></h2>
 <p>让我们写一个简单的例子来获得使用DataStream API编写流处理应用程序的粗浅印象。我们将使用这个简单的示例来展示一个Flink程序的基本结构，以及介绍一些DataStream API的重要特性。我们的示例程序摄取了一条（来自多个传感器的）温度测量数据流。</p>
 <p>首先让我们看一下表示传感器读数的数据结构：</p>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">case class SensorReading(id: String, timestamp: Long, temperature: Double)
+</code></pre>
+<p><strong>java version</strong></p>
 <pre><code class="language-java">public class SensorReading {
 
     public String id;
@@ -762,36 +766,51 @@ $ ./bin/flink run 打包好的JAR包的绝对路径
 }
 </code></pre>
 <p>示例程序5-1将温度从华氏温度读数转换成摄氏温度读数，然后针对每一个传感器，每5秒钟计算一次平均温度纸。</p>
-<pre><code class="language-java">// Scala object that defines
-// the DataStream program in the main() method.
-object AverageSensorReadings {
-  // main() defines and executes the DataStream program
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">object AverageSensorReadings {
   def main(args: Array[String]) {
-    // set up the streaming execution environment
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
-    // use event time for the application
+    // 创建运行时环境
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    // 使用事件时间
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-    // create a DataStream[SensorReading] from a stream source
-    val sensorData: DataStream[SensorReading] = env
-      // ingest sensor readings with a SensorSource SourceFunction
-      .addSource(new SensorSource)
-      // assign timestamps and watermarks (required for event time)
-    val avgTemp: DataStream[SensorReading] = sensorData
-      // convert Fahrenheit to Celsius with an inline lambda function
-      .map( r =&gt; {
+
+    val sensorData: DataStream[SensorReading] = env.addSource(new SensorSource)
+
+    val avgTemp = sensorData
+      .map(r =&gt; {
         val celsius = (r.temperature - 32) * (5.0 / 9.0)
         SensorReading(r.id, r.timestamp, celsius)
       })
-      // organize readings by sensor id
       .keyBy(_.id)
-      // group readings in 5 second tumbling windows
       .timeWindow(Time.seconds(5))
-      // compute average temperature using a user-defined function
       .apply(new TemperatureAverager)
-      // print result stream to standard out
-      avgTemp.print()
-    // execute application
+
+    avgTemp.print()
+
     env.execute(&quot;Compute average sensor temperature&quot;)
+  }
+}
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">public class AverageSensorReadings {
+  public static void main(String[] args) throws Exception {
+    final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+
+    DataStream&lt;SensorReading&gt; sensorData = env.addSource(new SensorSource());
+
+    DataStream&lt;T&gt; avgTemp = sensorData
+      .map(r -&gt; {
+        Double celsius = (r.temperature - 32) * (5.0 / 9.0);
+        return SensorReading(r.id, r.timestamp, celsius);
+      })
+      .keyBy(r -&gt; r.id)
+      .timeWindow(Time.seconds(5))
+      .apply(new TemperatureAverager());
+
+    avgTemp.print();
+
+    env.execute(&quot;Compute average sensor temperature&quot;);
   }
 }
 </code></pre>
@@ -808,7 +827,8 @@ object AverageSensorReadings {
 <h2><a class="header" href="#搭建执行环境" id="搭建执行环境">搭建执行环境</a></h2>
 <p>编写Flink程序的第一件事情就是搭建执行环境。执行环境决定了程序是运行在单机上还是集群上。在DataStream API中，程序的执行环境是由StreamExecutionEnvironment设置的。在我们的例子中，我们通过调用静态getExecutionEnvironment()方法来获取执行环境。这个方法根据调用方法的上下文，返回一个本地的或者远程的环境。如果这个方法是一个客户端提交到远程集群的代码调用的，那么这个方法将会返回一个远程的执行环境。否则，将返回本地执行环境。</p>
 <p>也可以用下面的方法来显式的创建本地或者远程执行环境：</p>
-<pre><code class="language-java">// create a local stream execution environment
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">// create a local stream execution environment
 val localEnv = StreamExecutionEnvironment
   .createLocalEnvironment()
 // create a remote stream execution environment
@@ -819,18 +839,35 @@ val remoteEnv = StreamExecutionEnvironment
     &quot;path/to/jarFile.jar&quot;
   ) // JAR file to ship to the JobManager
 </code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">StreamExecutionEnvironment localEnv = StreamExecutionEnvironment
+  .createLocalEnvironment();
+
+StreamExecutionEnvironment remoteEnv = StreamExecutionEnvironment
+  .createRemoteEnvironment(
+    &quot;host&quot;, // hostname of JobManager
+    1234, // port of JobManager process
+    &quot;path/to/jarFile.jar&quot;
+  ); // JAR file to ship to the JobManager
+</code></pre>
 <p>接下来，我们使用<code>env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)</code>来将我们程序的时间语义设置为事件时间。执行环境提供了很多配置选项，例如：设置程序的并行度和程序是否开启容错机制。</p>
 <h2><a class="header" href="#读取输入流" id="读取输入流">读取输入流</a></h2>
 <p>一旦执行环境设置好，就该写业务逻辑了。<code>StreamExecutionEnvironment</code>提供了创建数据源的方法，这些方法可以从数据流中将数据摄取到程序中。数据流可以来自消息队列或者文件系统，也可能是实时产生的（例如socket）。</p>
 <p>在我们的例子里面，我们这样写：</p>
-<pre><code class="language-java">val sensorData: DataStream[SensorReading] = env
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val sensorData: DataStream[SensorReading] = env
   .addSource(new SensorSource)
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">DataStream&lt;SensorReading&gt; sensorData = env
+  .addSource(new SensorSource());
 </code></pre>
 <p>这样就可以连接到传感器测量数据的数据源并创建一个类型为<code>SensorReading</code>的<code>DataStream</code>了。Flink支持很多数据类型，我们将在接下来的章节里面讲解。在我们的例子里面，我们的数据类型是一个定义好的Scala样例类。<code>SensorReading</code>样例类包含了传感器ID，数据的测量时间戳，以及测量温度值。<code>assignTimestampsAndWatermarks(new SensorTimeAssigner)</code>方法指定了如何设置事件时间语义的时间戳和水位线。有关<code>SensorTimeAssigner</code>我们后面再讲。</p>
 <h2><a class="header" href="#转换算子的使用" id="转换算子的使用">转换算子的使用</a></h2>
 <p>一旦我们有一条DataStream，我们就可以在这条数据流上面使用转换算子了。转换算子有很多种。一些转换算子可以产生一条新的DataStream，当然这个DataStream的类型可能是新类型。还有一些转换算子不会改变原有DataStream的数据，但会将数据流分区或者分组。业务逻辑就是由转换算子串起来组合而成的。</p>
 <p>在我们的例子中，我们首先使用<code>map()</code>转换算子将传感器的温度值转换成了摄氏温度单位。然后，我们使用<code>keyBy()</code>转换算子将传感器读数流按照传感器ID进行分区。接下来，我们定义了一个<code>timeWindow()</code>转换算子，这个算子将每个传感器ID所对应的分区的传感器读数分配到了5秒钟的滚动窗口中。</p>
-<pre><code class="language-java">val avgTemp: DataStream[SensorReading] = sensorData
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val avgTemp = sensorData
   .map(r =&gt; {
     val celsius = (r.temperature - 32) * (5.0 / 9.0)
     SensorReading(r.id, r.timestamp, celsius)
@@ -839,36 +876,61 @@ val remoteEnv = StreamExecutionEnvironment
   .timeWindow(Time.seconds(5))
   .apply(new TemperatureAverager)
 </code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">DataStream&lt;T&gt; avgTemp = sensorData
+  .map(r -&gt; {
+    Double celsius = (r.temperature -32) * (5.0 / 9.0);
+    return SensorReading(r.id, r.timestamp, celsius);
+  })
+  .keyBy(r -&gt; r.id)
+  .timeWindow(Time.seconds(5))
+  .apply(new TemperatureAverager());
+</code></pre>
 <p>窗口转换算子将在“窗口操作符”一章中讲解。最后，我们使用了一个UDF函数来计算每个窗口的温度的平均值。我们稍后将会讨论UDF函数的实现。</p>
 <h2><a class="header" href="#输出结果" id="输出结果">输出结果</a></h2>
 <p>流处理程序经常将它们的计算结果发送到一些外部系统中去，例如：Apache Kafka，文件系统，或者数据库中。Flink提供了一个维护的很好的sink算子的集合，这些sink算子可以用来将数据写入到不同的系统中去。我们也可以实现自己的sink算子。也有一些Flink程序并不会向第三方外部系统发送数据，而是将数据存储到Flink系统内部，然后可以使用Flink的可查询状态的特性来查询数据。</p>
 <p>在我们的例子中，计算结果是一个<code>DataStream[SensorReading]</code>数据记录。每一条数据记录包含了一个传感器在5秒钟的周期里面的平均温度。计算结果组成的数据流将会调用<code>print()</code>将计算结果写到标准输出。</p>
-<pre><code class="language-java">avgTemp.print()
+<pre><code>avgTemp.print()
 </code></pre>
 <blockquote>
 <p>要注意一点，流的Sink算子的选择将会影响应用程序端到端(<code>end-to-end</code>)的一致性，具体就是应用程序的计算提供的到底是<code>at-least-once</code>还是<code>exactly-once</code>的一致性语义。应用程序端到端的一致性依赖于所选择的流的Sink算子和Flink的检查点算法的集成使用。</p>
 </blockquote>
 <h2><a class="header" href="#执行" id="执行">执行</a></h2>
 <p>当应用程序完全写好时，我们可以调用<code>StreamExecutionEnvironment.execute()</code>来执行应用程序。在我们的例子中就是我们的最后一行调用：</p>
-<pre><code class="language-java">env.execute(&quot;Compute average sensor temperature&quot;)
+<pre><code>env.execute(&quot;Compute average sensor temperature&quot;)
 </code></pre>
 <p>Flink程序是惰性执行的。也就是说创建数据源和转换算子的API调用并不会立刻触发任何数据处理逻辑。API调用仅仅是在执行环境中构建了一个执行计划，这个执行计划包含了执行环境创建的数据源和所有的将要用在数据源上的转换算子。只有当<code>execute()</code>被调用时，系统才会触发程序的执行。</p>
 <p>构建好的执行计划将被翻译成一个<code>JobGraph</code>并提交到<code>JobManager</code>上面去执行。根据执行环境的种类，一个<code>JobManager</code>将会运行在一个本地线程中（如果是本地执行环境的化）或者<code>JobGraph</code>将会被发送到一个远程的<code>JobManager</code>上面去。如果<code>JobManager</code>远程运行，那么<code>JobGraph</code>必须和一个包含有所有类和应用程序的依赖的JAR包一起发送到远程<code>JobManager</code>。</p>
 <h2><a class="header" href="#产生传感器读数代码编写" id="产生传感器读数代码编写">产生传感器读数代码编写</a></h2>
 <h3><a class="header" href="#从批读取数据" id="从批读取数据">从批读取数据</a></h3>
-<pre><code class="language-java">val stream = env
-  .fromCollection(List(
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val stream = env
+  .fromElements(
     SensorReading(&quot;sensor_1&quot;, 1547718199, 35.80018327300259),
     SensorReading(&quot;sensor_6&quot;, 1547718199, 15.402984393403084),
     SensorReading(&quot;sensor_7&quot;, 1547718199, 6.720945201171228),
     SensorReading(&quot;sensor_10&quot;, 1547718199, 38.101067604893444)
-  ))
+  )
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">DataStream&lt;SensorReading&gt; stream = env
+  .fromElements(
+    new SensorReading(&quot;sensor_1&quot;, 1547718199, 35.80018327300259),
+    new SensorReading(&quot;sensor_6&quot;, 1547718199, 15.402984393403084),
+    new SensorReading(&quot;sensor_7&quot;, 1547718199, 6.720945201171228),
+    new SensorReading(&quot;sensor_10&quot;, 1547718199, 38.101067604893444)
+  )
 </code></pre>
 <h3><a class="header" href="#从文件读取数据" id="从文件读取数据">从文件读取数据</a></h3>
-<pre><code class="language-java">val stream = env.readTextFile(filePath)
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val stream = env.readTextFile(filePath)
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">DataStream&lt;String&gt; stream = env.readTextFile(filePath);
 </code></pre>
 <h3><a class="header" href="#以kafka消息队列的数据为数据来源" id="以kafka消息队列的数据为数据来源">以Kafka消息队列的数据为数据来源</a></h3>
-<pre><code class="language-java">val properties = new Properties()
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val properties = new Properties()
 properties.setProperty(&quot;bootstrap.servers&quot;, &quot;localhost:9092&quot;)
 properties.setProperty(&quot;group.id&quot;, &quot;consumer-group&quot;)
 properties.setProperty(
@@ -880,7 +942,7 @@ properties.setProperty(
   &quot;org.apache.kafka.common.serialization.StringDeserializer&quot;
 )
 properties.setProperty(&quot;auto.offset.reset&quot;, &quot;latest&quot;)
-StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
+val env = StreamExecutionEnvironment.getExecutionEnvironment
 env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 env.setParallelism(1)
 val stream = env
@@ -893,7 +955,80 @@ val stream = env
     )
   )
 </code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">Properties properties = new Properties();
+properties.setProperty(&quot;bootstrap.servers&quot;, &quot;localhost:9092&quot;);
+properties.setProperty(&quot;group.id&quot;, &quot;consumer-group&quot;);
+properties.setProperty(
+  &quot;key.deserializer&quot;,
+  &quot;org.apache.kafka.common.serialization.StringDeserializer&quot;
+);
+properties.setProperty(
+  &quot;value.deserializer&quot;,
+  &quot;org.apache.kafka.common.serialization.StringDeserializer&quot;
+);
+properties.setProperty(&quot;auto.offset.reset&quot;, &quot;latest&quot;);
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment;
+env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+env.setParallelism(1);
+DataStream&lt;String&gt; stream = env
+  // source为来自Kafka的数据，这里我们实例化一个消费者，topic为hotitems
+  .addSource(
+    new FlinkKafkaConsumer011&lt;String&gt;(
+      &quot;hotitems&quot;,
+      new SimpleStringSchema(),
+      properties
+    )
+  );
+</code></pre>
 <h3><a class="header" href="#自定义数据源" id="自定义数据源">自定义数据源</a></h3>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">import java.util.Calendar
+
+import org.apache.flink.streaming.api.functions.source.SourceFunction.SourceContext
+import org.apache.flink.streaming.api.functions.source.{RichParallelSourceFunction, SourceFunction}
+
+import scala.util.Random
+
+// 泛型是`SensorReading`，表明产生的流中的事件的类型是`SensorReading`
+class SensorSource extends RichParallelSourceFunction[SensorReading] {
+  // 表示数据源是否正常运行
+  var running: Boolean = true
+
+  // 上下文参数用来发出数据
+  override def run(ctx: SourceContext[SensorReading]): Unit = {
+    val rand = new Random
+
+    var curFTemp = (1 to 10).map(
+      // 使用高斯噪声产生随机温度值
+      i =&gt; (&quot;sensor_&quot; + i, (rand.nextGaussian() * 20))
+    )
+
+    // 产生无限数据流
+    while (running) {
+      curFTemp = curFTemp.map(
+        t =&gt; (t._1, t._2 + (rand.nextGaussian() * 0.5))
+      )
+
+      // 产生ms为单位的时间戳
+      val curTime = Calendar.getInstance.getTimeInMillis
+
+      // 使用ctx参数的collect方法发射传感器数据
+      curFTemp.foreach(t =&gt; ctx.collect(SensorReading(t._1, curTime, t._2)))
+
+      // 每隔100ms发送一条传感器数据
+      Thread.sleep(1000)
+    }
+  }
+
+  // 定义当取消flink任务时，需要关闭数据源
+  override def cancel(): Unit = running = false
+}
+</code></pre>
+<p>使用方法</p>
+<pre><code class="language-scala">val sensorData = env.addSource(new SensorSource)
+</code></pre>
+<p><strong>java version</strong></p>
 <pre><code class="language-java">import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
 
 import java.util.Calendar;
@@ -907,12 +1042,11 @@ public class SensorSource extends RichParallelSourceFunction&lt;SensorReading&gt
     public void run(SourceContext&lt;SensorReading&gt; srcCtx) throws Exception {
 
         Random rand = new Random();
-        int taskIdx = this.getRuntimeContext().getIndexOfThisSubtask();
 
         String[] sensorIds = new String[10];
         double[] curFTemp = new double[10];
         for (int i = 0; i &lt; 10; i++) {
-            sensorIds[i] = &quot;sensor_&quot; + (taskIdx * 10 + i);
+            sensorIds[i] = &quot;sensor_&quot; + i;
             curFTemp[i] = 65 + (rand.nextGaussian() * 20);
         }
 
@@ -935,11 +1069,8 @@ public class SensorSource extends RichParallelSourceFunction&lt;SensorReading&gt
 </code></pre>
 <p>使用方法</p>
 <pre><code class="language-java">// 摄入数据流
-DataStream[SensorReading] sensorData = env.addSource(new SensorSource)
+DataStream&lt;SensorReading&gt; sensorData = env.addSource(new SensorSource());
 </code></pre>
-<blockquote>
-<p>注意，在我们本教程中，我们一直会使用这个自定义的数据源。</p>
-</blockquote>
 <h2><a class="header" href="#转换算子-1" id="转换算子-1">转换算子</a></h2>
 <p>在这一小节我们将大概看一下DataStream API的基本转换算子。与时间有关的操作符（例如窗口操作符和其他特殊的转换算子）将会在后面的章节叙述。一个流的转换操作将会应用在一个或者多个流上面，这些转换操作将流转换成一个或者多个输出流。编写一个DataStream API简单来说就是将这些转换算子组合在一起来构建一个数据流图，这个数据流图就实现了我们的业务逻辑。</p>
 <p>大部分的流转换操作都基于用户自定义函数UDF。UDF函数打包了一些业务逻辑并定义了输入流的元素如何转换成输出流的元素。像<code>MapFunction</code>这样的函数，将会被定义为类，这个类实现了Flink针对特定的转换操作暴露出来的接口。</p>
@@ -967,8 +1098,20 @@ MapFunction[T, O]
     &gt; map(T): O
 </code></pre>
 <p>下面的代码实现了将SensorReading中的id字段抽取出来的功能。</p>
-<pre><code class="language-java">DataStream[SensorReading] readings = ...
-DataStream[String] sensorIds = readings.map(new IdExtractor)
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val readings: DataStream[SensorReading] = ...
+val sensorIds: DataStream[String] = readings.map(new IdExtractor)
+
+class IdExtractor extends MapFunction[SensorReading, String] {
+    override def map(r: SensorReading) : String = r.id
+}
+</code></pre>
+<p>当然我们更推荐匿名函数的写法。</p>
+<pre><code class="language-java">val sensorIds: DataStream[String] = filteredReadings.map(r =&gt; r.id)
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">DataStream&lt;SensorReading&gt; readings = ...
+DataStream&lt;String&gt; sensorIds = readings.map(new IdExtractor());
 
 public static class IdExtractor implements MapFunction&lt;SensorReading, String&gt; {
     @Override
@@ -978,8 +1121,7 @@ public static class IdExtractor implements MapFunction&lt;SensorReading, String&
 }
 </code></pre>
 <p>当然我们更推荐匿名函数的写法。</p>
-<pre><code class="language-java">DataStream&lt;String&gt; sensorIds = filteredReadings
-        .map(r -&gt; r.id);
+<pre><code class="language-java">DataStream&lt;String&gt; sensorIds = filteredReadings.map(r -&gt; r.id);
 </code></pre>
 <p><em>FILTER</em></p>
 <p><code>filter</code>转换算子通过在每个输入事件上对一个布尔条件进行求值来过滤掉一些元素，然后将剩下的元素继续发送。一个<code>true</code>的求值结果将会把输入事件保留下来并发送到输出，而如果求值结果为<code>false</code>，则输入事件会被抛弃掉。我们通过调用<code>DataStream.filter()</code>来指定流的<code>filter</code>算子，<code>filter</code>操作将产生一条新的流，其类型和输入流中的事件类型是一样的。图5-2展示了只产生白色方框的<code>filter</code>操作。</p>
@@ -990,8 +1132,11 @@ FilterFunction[T]
     &gt; filter(T): Boolean
 </code></pre>
 <p>下面的例子展示了如何使用filter来从传感器数据中过滤掉温度值小于25华氏温度的读数。</p>
-<pre><code class="language-java">DataStream&lt;SensorReading&gt; filteredReadings = readings
-        .filter(r -&gt; r.temperature &gt;= 25);
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val filteredReadings = readings.filter(r =&gt; r.temperature &gt;= 25)
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">DataStream&lt;SensorReading&gt; filteredReadings = readings.filter(r -&gt; r.temperature &gt;= 25);
 </code></pre>
 <p><em>FLATMAP</em></p>
 <p><code>flatMap</code>算子和<code>map</code>算子很类似，不同之处在于针对每一个输入事件<code>flatMap</code>可以生成0个、1个或者多个输出元素。事实上，<code>flatMap</code>转换算子是<code>filter</code>和<code>map</code>的泛化。所以<code>flatMap</code>可以实现<code>map</code>和<code>filter</code>算子的功能。图5-3展示了<code>flatMap</code>如何根据输入事件的颜色来做不同的处理。如果输入事件是白色方框，则直接输出。输入元素是黑框，则复制输入。灰色方框会被过滤掉。</p>
@@ -1003,6 +1148,19 @@ FlatMapFunction[T, O]
     &gt; flatMap(T, Collector[O]): Unit
 </code></pre>
 <p>下面的例子展示了在数据分析教程中经常用到的例子，我们用<code>flatMap</code>来实现。使用<code>_</code>来切割传感器ID，比如<code>sensor_1</code>。</p>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">class IdSplitter extends FlatMapFunction[String, String] {
+    override def flatMap(id: String, out: Collector[String]) : Unit = {
+        val arr = id.split(&quot;_&quot;)
+        arr.foreach(out.collect)
+    }
+}
+</code></pre>
+<p>匿名函数写法</p>
+<pre><code class="language-scala">val splitIds = sensorIds
+  .flatMap(r =&gt; r.split(&quot;_&quot;))
+</code></pre>
+<p><strong>java version</strong></p>
 <pre><code class="language-java">public static class IdSplitter implements FlatMapFunction&lt;String, String&gt; {
     @Override
     public void flatMap(String id, Collector&lt;String&gt; out) {
@@ -1020,6 +1178,7 @@ FlatMapFunction[T, O]
         .flatMap((FlatMapFunction&lt;String, String&gt;)
                 (id, out) -&gt; { for (String s: id.split(&quot;_&quot;)) { out.collect(s);}})
         // provide result type because Java cannot infer return type of lambda function
+        // 提供结果的类型，因为Java无法推断匿名函数的返回值类型
         .returns(Types.STRING);
 </code></pre>
 <h3><a class="header" href="#键控流转换算子" id="键控流转换算子">键控流转换算子</a></h3>
@@ -1034,8 +1193,12 @@ FlatMapFunction[T, O]
 <p>如图5-4所示，把输入事件的颜色作为key，黑色的事件输出到了一个分区，其他颜色输出到了另一个分区。</p>
 <p><img src="images/spaf_0504.png" alt="" /></p>
 <p><code>keyBy()</code>方法接收一个参数，这个参数指定了key或者keys，有很多不同的方法来指定key。我们将在后面讲解。下面的代码声明了<code>id</code>这个字段为SensorReading流的key。</p>
-<pre><code class="language-java">KeyedStream&lt;SensorReading, String&gt; keyed = readings
-        .keyBy(r -&gt; r.id);
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val keyed: KeyedStream[SensorReading, String] = readings.keyBy(r =&gt; r.id)
+</code></pre>
+<p>匿名函数<code>r =&gt; r.id</code>抽取了传感器读数SensorReading的id值。</p>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">KeyedStream&lt;SensorReading, String&gt; keyed = readings.keyBy(r -&gt; r.id);
 </code></pre>
 <p>匿名函数<code>r -&gt; r.id</code>抽取了传感器读数SensorReading的id值。</p>
 <p><em>滚动聚合</em></p>
@@ -1051,13 +1214,18 @@ FlatMapFunction[T, O]
 <li>maxBy()：在输入流上针对指定字段求最大值，并返回包含当前观察到的最大值的事件。</li>
 </ul>
 <p>滚动聚合算子无法组合起来使用，每次计算只能使用一个单独的滚动聚合算子。</p>
-<p>下面的例子根据第一个字段来对类型为<code>Tuple3[Int, Int, Int]</code>的流做分流操作，然后针对第二个字段做滚动求和操作。</p>
-<pre><code class="language-java">DataStream[Tuple3(Integer, Integer, Integer)] inputStream = env.fromElements(
-  Tuple3(1, 2, 2), Tuple3(2, 3, 1), Tuple3(2, 2, 4), Tuple3(1, 5, 3))
+<p>下面的例子根据第一个字段来对类型为<code>Tuple3&lt;Int, Int, Int&gt;</code>的流做分流操作，然后针对第二个字段做滚动求和操作。</p>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val inputStream = env.fromElements((1, 2, 2), (2, 3, 1), (2, 2, 4), (1, 5, 3))
 
-DataStream[Tuple3(Integer, Integer, Integer)] resultStream = inputStream
+val resultStream = inputStream.keyBy(0).sum(1)
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">DataStream&lt;Tuple3&lt;Integer, Integer, Integer&gt;&gt; inputStream = env.fromElements(new Tuple3(1, 2, 2), new Tuple3(2, 3, 1), new Tuple3(2, 2, 4), new Tuple3(1, 5, 3));
+
+DataStream&lt;Tuple3&lt;Integer, Integer, Integer&gt;&gt; resultStream = inputStream
   .keyBy(0) // key on first field of the tuple
-  .sum(1)   // sum the second field of the tuple in place
+  .sum(1);   // sum the second field of the tuple in place
 </code></pre>
 <p>在这个例子里面，输入流根据第一个字段来分流，然后在第二个字段上做计算。对于key 1，输出结果是(1,2,2),(1,7,2)。对于key 2，输出结果是(2,3,1),(2,5,1)。第一个字段是key，第二个字段是求和的数值，第三个字段未定义。</p>
 <blockquote>
@@ -1070,7 +1238,11 @@ DataStream[Tuple3(Integer, Integer, Integer)] resultStream = inputStream
 ReduceFunction[T]
     &gt; reduce(T, T): T
 </code></pre>
-<p>下面的例子，流根据语言这个key来分区，输出结果为针对每一种语言都实时更新的单词列表。</p>
+<p>下面的例子，流根据传感器ID分流，然后计算每个传感器的当前最大温度值。</p>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val maxTempPerSensor = keyed.reduce((r1, r2) =&gt; r1.temperature.max(r2.temperature))
+</code></pre>
+<p><strong>java version</strong></p>
 <pre><code class="language-java">DataStream&lt;SensorReading&gt; maxTempPerSensor = keyed
         .reduce((r1, r2) -&gt; {
             if (r1.temperature &gt; r2.temperature) {
@@ -1080,7 +1252,6 @@ ReduceFunction[T]
             }
         });
 </code></pre>
-<p>reduce匿名函数将连续两个tuple的第一个字段(key字段)继续发送出去，然后将两个tuple的第二个字段List[String]连接。</p>
 <blockquote>
 <p>reduce作为滚动聚合的泛化实现，同样也要针对每一个key保存状态。因为状态从来不会清空，所以我们需要将reduce算子应用在一个有限key的流上。</p>
 </blockquote>
@@ -1091,6 +1262,14 @@ ReduceFunction[T]
 <p><img src="images/spaf_0505.png" alt="" /></p>
 <p>事件合流的方式为FIFO方式。操作符并不会产生一个特定顺序的事件流。union操作符也不会进行去重。每一个输入事件都被发送到了下一个操作符。</p>
 <p>下面的例子展示了如何将三条类型为SensorReading的数据流合并成一条流。</p>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val parisStream: DataStream[SensorReading] = ...
+val tokyoStream: DataStream[SensorReading] = ...
+val rioStream: DataStream[SensorReading] = ...
+val allCities: DataStream[SensorReading] = parisStream
+  .union(tokyoStream, rioStream)
+</code></pre>
+<p><strong>java version</strong></p>
 <pre><code class="language-java">DataStream&lt;SensorReading&gt; parisStream = ...
 DataStream&lt;SensorReading&gt; tokyoStream = ...
 DataStream&lt;SensorReading&gt; rioStream = ...
@@ -1100,6 +1279,12 @@ DataStream&lt;SensorReading&gt; allCities = parisStream
 <p><em>CONNECT, COMAP和COFLATMAP</em></p>
 <p>联合两条流的事件是非常常见的流处理需求。例如监控一片森林然后发出高危的火警警报。报警的Application接收两条流，一条是温度传感器传回来的数据，一条是烟雾传感器传回来的数据。当两条流都超过各自的阈值时，报警。</p>
 <p>DataStream API提供了<code>connect</code>操作来支持以上的应用场景。<code>DataStream.connect()</code>方法接收一条<code>DataStream</code>，然后返回一个<code>ConnectedStreams</code>类型的对象，这个对象表示了两条连接的流。</p>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val first = ...
+val second = ...
+val connected = first.connect(second)
+</code></pre>
+<p><strong>java version</strong></p>
 <pre><code class="language-java">// first stream
 DataStream&lt;Integer&gt; first = ...
 // second stream
@@ -1125,6 +1310,15 @@ CoFlatMapFunction[IN1, IN2, OUT]
 <p>函数无法选择读某一条流。我们是无法控制函数中的两个方法的调用顺序的。当一条流中的元素到来时，将会调用相对应的方法。</p>
 </blockquote>
 <p>对两条流做连接查询通常需要这两条流基于某些条件被确定性的路由到操作符中相同的并行实例里面去。在默认情况下，connect()操作将不会对两条流的事件建立任何关系，所以两条流的事件将会随机的被发送到下游的算子实例里面去。这样的行为会产生不确定性的计算结果，显然不是我们想要的。为了针对ConnectedStreams进行确定性的转换操作，connect()方法可以和keyBy()或者broadcast()组合起来使用。我们首先看一下keyBy()的示例。</p>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val one = ...
+val two = ...
+
+val keyedConnect1 = one.connect(two).keyBy(0, 0)
+
+val keyedConnect2 = one.keyBy(0).connect(two.keyBy(0))
+</code></pre>
+<p><strong>java version</strong></p>
 <pre><code class="language-java">DataStream&lt;Tuple2&lt;Integer, Long&gt;&gt; one = ...
 DataStream&lt;Tuple2&lt;Integer, String&gt;&gt; two = ...
 
@@ -1140,6 +1334,13 @@ ConnectedStreams&lt;Tuple2&lt;Integer, Long&gt;, Tuple2&lt;Integer, String&gt;&g
 </code></pre>
 <p>无论使用keyBy()算子操作ConnectedStreams还是使用connect()算子连接两条KeyedStreams，connect()算子会将两条流的含有相同Key的所有事件都发送到相同的算子实例。两条流的key必须是一样的类型和值，就像SQL中的JOIN。在connected和keyed stream上面执行的算子有访问keyed state的权限。</p>
 <p>下面的例子展示了如何连接一条DataStream和广播过的流。</p>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val one = ...
+val two = ...
+
+val keyedConnect = first.connect(second.broadcast())
+</code></pre>
+<p><strong>java version</strong></p>
 <pre><code class="language-java">DataStream&lt;Tuple2&lt;Integer, Long&gt;&gt; one = ...
 DataStream&lt;Tuple2&lt;Int, String&gt;&gt; two = ...
 
@@ -1151,6 +1352,10 @@ ConnectedStreams&lt;Tuple2&lt;Int, Long&gt;, Tuple2&lt;Int, String&gt;&gt; keyed
 <p>一条被广播过的流中的所有元素将会被复制然后发送到下游算子的所有并行实例中去。未被广播过的流仅仅向前发送。所以两条流的元素显然会被连接处理。</p>
 <p>例子：</p>
 <p>警告类：</p>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">case class Alert(message: String, timestamp: Long)
+</code></pre>
+<p><strong>java version</strong></p>
 <pre><code class="language-java">public class Alert {
 
     public String message;
@@ -1203,6 +1408,41 @@ ConnectedStreams&lt;Tuple2&lt;Int, Long&gt;, Tuple2&lt;Int, String&gt;&gt; keyed
 }
 </code></pre>
 <p>监控一片森林然后发出高危的火警警报。报警的Application接收两条流，一条是温度传感器传回来的数据，一条是烟雾传感器传回来的数据。当两条流都超过各自的阈值时，报警。</p>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">object MultiStreamTransformations {
+    def main(args: Array[String]): Unit = {
+        val env = StreamExecutionEnvironment.getExecutionEnvironment
+        val tempReadings = env.addSource(new SensorSource)
+        val smokeReadings = env
+                .addSource(new SmokeLevelSource)
+                .setParallelism(1)
+        val keyedTempReadings = tempReadings
+                .keyBy(r =&gt; r.id)
+        val alerts = keyedTempReadings
+                .connect(smokeReadings.broadcast())
+                .flatMap(new RaiseAlertFlatMap)
+
+        alerts.print()
+
+        env.execute(&quot;Multi-Stream Transformations Example&quot;)
+    }
+
+    class RaiseAlertFlatMap extends CoFlatMapFunction[SensorReading, SmokeLevel, Alert] {
+        private var smokeLevel = &quot;LOW&quot;
+
+        override def flatMap1(tempReading: SensorReading, out: Collector[Alert]) : Unit = {
+            if (smokeLevel == &quot;HIGH&quot; &amp;&amp; tempReading.temperature &gt; 100) {
+                out.collect(Alert(&quot;Risk of fire! &quot; + tempReading, tempReading.timestamp))
+            }
+        }
+
+        override def flatMap2(sl: String, out: Collector[Alert]) : Unit = {
+            smokeLevel = sl
+        }
+    }
+}
+</code></pre>
+<p><strong>java version</strong></p>
 <pre><code class="language-java">public class MultiStreamTransformations {
 
     public static void main(String[] args) throws Exception {
@@ -1288,9 +1528,6 @@ env
 </blockquote>
 <h2><a class="header" href="#类型" id="类型">类型</a></h2>
 <p>Flink程序所处理的流中的事件一般是对象类型。操作符接收对象输出对象。所以Flink的内部机制需要能够处理事件的类型。在网络中传输数据，或者将数据写入到状态后端、检查点和保存点中，都需要我们对数据进行序列化和反序列化。为了高效的进行此类操作，Flink需要流中事件类型的详细信息。Flink使用了<code>Type Information</code>的概念来表达数据类型，这样就能针对不同的数据类型产生特定的序列化器，反序列化器和比较操作符。</p>
-<blockquote>
-<p>有点像泛型。</p>
-</blockquote>
 <p>Flink也能够通过分析输入数据和输出数据来自动获取数据的类型信息以及序列化器和反序列化器。尽管如此，在一些特定的情况下，例如匿名函数或者使用泛型的情况下，我们需要明确的提供数据的类型信息，来提高我们程序的性能。</p>
 <p>在这一节中，我们将讨论Flink支持的类型，以及如何为数据类型创建相应的类型信息，还有就是在Flink无法推断函数返回类型的情况下，如何帮助Flink的类型系统去做类型推断。</p>
 <h3><a class="header" href="#支持的数据类型" id="支持的数据类型">支持的数据类型</a></h3>

@@ -4,7 +4,9 @@
 
 也可以用下面的方法来显式的创建本地或者远程执行环境：
 
-```java
+**scala version**
+
+```scala
 // create a local stream execution environment
 val localEnv = StreamExecutionEnvironment
   .createLocalEnvironment()
@@ -15,6 +17,20 @@ val remoteEnv = StreamExecutionEnvironment
     1234, // port of JobManager process
     "path/to/jarFile.jar"
   ) // JAR file to ship to the JobManager
+```
+
+**java version**
+
+```java
+StreamExecutionEnvironment localEnv = StreamExecutionEnvironment
+  .createLocalEnvironment();
+
+StreamExecutionEnvironment remoteEnv = StreamExecutionEnvironment
+  .createRemoteEnvironment(
+    "host", // hostname of JobManager
+    1234, // port of JobManager process
+    "path/to/jarFile.jar"
+  ); // JAR file to ship to the JobManager
 ```
 
 接下来，我们使用`env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)`来将我们程序的时间语义设置为事件时间。执行环境提供了很多配置选项，例如：设置程序的并行度和程序是否开启容错机制。

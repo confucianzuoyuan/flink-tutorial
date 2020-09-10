@@ -156,25 +156,25 @@
                 <div id="content" class="content">
                     <main>
                         <h2><a class="header" href="#下载flink运行时环境提交jar包的运行方式" id="下载flink运行时环境提交jar包的运行方式">下载Flink运行时环境，提交Jar包的运行方式</a></h2>
-<p>下载链接：http://mirror.bit.edu.cn/apache/flink/flink-1.11.0/flink-1.11.0-bin-scala_2.11.tgz</p>
+<p>下载链接：http://mirror.bit.edu.cn/apache/flink/flink-1.11.1/flink-1.11.1-bin-scala_2.11.tgz</p>
 <p>然后解压</p>
-<pre><code class="language-sh">$ tar xvfz flink-1.11.0-bin-scala_2.11.tgz
+<pre><code class="language-sh">$ tar xvfz flink-1.11.1-bin-scala_2.11.tgz
 </code></pre>
 <p>启动Flink集群</p>
-<pre><code class="language-sh">$ cd flink-1.11.0
+<pre><code class="language-sh">$ cd flink-1.11.1
 $ ./bin/start-cluster.sh
 </code></pre>
 <p>可以打开Flink WebUI查看集群状态：http://localhost:8081</p>
 <p>在<code>IDEA</code>中使用<code>maven package</code>打包。</p>
 <p>提交打包好的<code>JAR</code>包</p>
-<pre><code class="language-sh">$ cd flink-1.11.0
+<pre><code class="language-sh">$ cd flink-1.11.1
 $ ./bin/flink run 打包好的JAR包的绝对路径
 </code></pre>
 <p>停止Flink集群</p>
 <pre><code class="language-sh">$ ./bin/stop-cluster.sh
 </code></pre>
 <p>查看标准输出日志的位置，在<code>log</code>文件夹中。</p>
-<pre><code class="language-sh">$ cd flink-1.11.0/log
+<pre><code class="language-sh">$ cd flink-1.11.1/log
 </code></pre>
 
                     </main>

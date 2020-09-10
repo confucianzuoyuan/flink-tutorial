@@ -162,6 +162,14 @@
 <p><img src="images/spaf_0505.png" alt="" /></p>
 <p>事件合流的方式为FIFO方式。操作符并不会产生一个特定顺序的事件流。union操作符也不会进行去重。每一个输入事件都被发送到了下一个操作符。</p>
 <p>下面的例子展示了如何将三条类型为SensorReading的数据流合并成一条流。</p>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val parisStream: DataStream[SensorReading] = ...
+val tokyoStream: DataStream[SensorReading] = ...
+val rioStream: DataStream[SensorReading] = ...
+val allCities: DataStream[SensorReading] = parisStream
+  .union(tokyoStream, rioStream)
+</code></pre>
+<p><strong>java version</strong></p>
 <pre><code class="language-java">DataStream&lt;SensorReading&gt; parisStream = ...
 DataStream&lt;SensorReading&gt; tokyoStream = ...
 DataStream&lt;SensorReading&gt; rioStream = ...
@@ -171,6 +179,12 @@ DataStream&lt;SensorReading&gt; allCities = parisStream
 <p><em>CONNECT, COMAP和COFLATMAP</em></p>
 <p>联合两条流的事件是非常常见的流处理需求。例如监控一片森林然后发出高危的火警警报。报警的Application接收两条流，一条是温度传感器传回来的数据，一条是烟雾传感器传回来的数据。当两条流都超过各自的阈值时，报警。</p>
 <p>DataStream API提供了<code>connect</code>操作来支持以上的应用场景。<code>DataStream.connect()</code>方法接收一条<code>DataStream</code>，然后返回一个<code>ConnectedStreams</code>类型的对象，这个对象表示了两条连接的流。</p>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val first = ...
+val second = ...
+val connected = first.connect(second)
+</code></pre>
+<p><strong>java version</strong></p>
 <pre><code class="language-java">// first stream
 DataStream&lt;Integer&gt; first = ...
 // second stream
@@ -196,6 +210,15 @@ CoFlatMapFunction[IN1, IN2, OUT]
 <p>函数无法选择读某一条流。我们是无法控制函数中的两个方法的调用顺序的。当一条流中的元素到来时，将会调用相对应的方法。</p>
 </blockquote>
 <p>对两条流做连接查询通常需要这两条流基于某些条件被确定性的路由到操作符中相同的并行实例里面去。在默认情况下，connect()操作将不会对两条流的事件建立任何关系，所以两条流的事件将会随机的被发送到下游的算子实例里面去。这样的行为会产生不确定性的计算结果，显然不是我们想要的。为了针对ConnectedStreams进行确定性的转换操作，connect()方法可以和keyBy()或者broadcast()组合起来使用。我们首先看一下keyBy()的示例。</p>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val one = ...
+val two = ...
+
+val keyedConnect1 = one.connect(two).keyBy(0, 0)
+
+val keyedConnect2 = one.keyBy(0).connect(two.keyBy(0))
+</code></pre>
+<p><strong>java version</strong></p>
 <pre><code class="language-java">DataStream&lt;Tuple2&lt;Integer, Long&gt;&gt; one = ...
 DataStream&lt;Tuple2&lt;Integer, String&gt;&gt; two = ...
 
@@ -211,6 +234,13 @@ ConnectedStreams&lt;Tuple2&lt;Integer, Long&gt;, Tuple2&lt;Integer, String&gt;&g
 </code></pre>
 <p>无论使用keyBy()算子操作ConnectedStreams还是使用connect()算子连接两条KeyedStreams，connect()算子会将两条流的含有相同Key的所有事件都发送到相同的算子实例。两条流的key必须是一样的类型和值，就像SQL中的JOIN。在connected和keyed stream上面执行的算子有访问keyed state的权限。</p>
 <p>下面的例子展示了如何连接一条DataStream和广播过的流。</p>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val one = ...
+val two = ...
+
+val keyedConnect = first.connect(second.broadcast())
+</code></pre>
+<p><strong>java version</strong></p>
 <pre><code class="language-java">DataStream&lt;Tuple2&lt;Integer, Long&gt;&gt; one = ...
 DataStream&lt;Tuple2&lt;Int, String&gt;&gt; two = ...
 
@@ -222,6 +252,10 @@ ConnectedStreams&lt;Tuple2&lt;Int, Long&gt;, Tuple2&lt;Int, String&gt;&gt; keyed
 <p>一条被广播过的流中的所有元素将会被复制然后发送到下游算子的所有并行实例中去。未被广播过的流仅仅向前发送。所以两条流的元素显然会被连接处理。</p>
 <p>例子：</p>
 <p>警告类：</p>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">case class Alert(message: String, timestamp: Long)
+</code></pre>
+<p><strong>java version</strong></p>
 <pre><code class="language-java">public class Alert {
 
     public String message;
@@ -274,6 +308,41 @@ ConnectedStreams&lt;Tuple2&lt;Int, Long&gt;, Tuple2&lt;Int, String&gt;&gt; keyed
 }
 </code></pre>
 <p>监控一片森林然后发出高危的火警警报。报警的Application接收两条流，一条是温度传感器传回来的数据，一条是烟雾传感器传回来的数据。当两条流都超过各自的阈值时，报警。</p>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">object MultiStreamTransformations {
+    def main(args: Array[String]): Unit = {
+        val env = StreamExecutionEnvironment.getExecutionEnvironment
+        val tempReadings = env.addSource(new SensorSource)
+        val smokeReadings = env
+                .addSource(new SmokeLevelSource)
+                .setParallelism(1)
+        val keyedTempReadings = tempReadings
+                .keyBy(r =&gt; r.id)
+        val alerts = keyedTempReadings
+                .connect(smokeReadings.broadcast())
+                .flatMap(new RaiseAlertFlatMap)
+
+        alerts.print()
+
+        env.execute(&quot;Multi-Stream Transformations Example&quot;)
+    }
+
+    class RaiseAlertFlatMap extends CoFlatMapFunction[SensorReading, SmokeLevel, Alert] {
+        private var smokeLevel = &quot;LOW&quot;
+
+        override def flatMap1(tempReading: SensorReading, out: Collector[Alert]) : Unit = {
+            if (smokeLevel == &quot;HIGH&quot; &amp;&amp; tempReading.temperature &gt; 100) {
+                out.collect(Alert(&quot;Risk of fire! &quot; + tempReading, tempReading.timestamp))
+            }
+        }
+
+        override def flatMap2(sl: String, out: Collector[Alert]) : Unit = {
+            smokeLevel = sl
+        }
+    }
+}
+</code></pre>
+<p><strong>java version</strong></p>
 <pre><code class="language-java">public class MultiStreamTransformations {
 
     public static void main(String[] args) throws Exception {

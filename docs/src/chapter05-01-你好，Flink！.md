@@ -4,6 +4,14 @@
 
 首先让我们看一下表示传感器读数的数据结构：
 
+**scala version**
+
+```scala
+case class SensorReading(id: String, timestamp: Long, temperature: Double)
+```
+
+**java version**
+
 ```java
 public class SensorReading {
 
@@ -27,37 +35,56 @@ public class SensorReading {
 
 示例程序5-1将温度从华氏温度读数转换成摄氏温度读数，然后针对每一个传感器，每5秒钟计算一次平均温度纸。
 
-```java
-// Scala object that defines
-// the DataStream program in the main() method.
+**scala version**
+
+```scala
 object AverageSensorReadings {
-  // main() defines and executes the DataStream program
   def main(args: Array[String]) {
-    // set up the streaming execution environment
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
-    // use event time for the application
+    // 创建运行时环境
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    // 使用事件时间
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-    // create a DataStream[SensorReading] from a stream source
-    val sensorData: DataStream[SensorReading] = env
-      // ingest sensor readings with a SensorSource SourceFunction
-      .addSource(new SensorSource)
-      // assign timestamps and watermarks (required for event time)
-    val avgTemp: DataStream[SensorReading] = sensorData
-      // convert Fahrenheit to Celsius with an inline lambda function
-      .map( r => {
+
+    val sensorData: DataStream[SensorReading] = env.addSource(new SensorSource)
+
+    val avgTemp = sensorData
+      .map(r => {
         val celsius = (r.temperature - 32) * (5.0 / 9.0)
         SensorReading(r.id, r.timestamp, celsius)
       })
-      // organize readings by sensor id
       .keyBy(_.id)
-      // group readings in 5 second tumbling windows
       .timeWindow(Time.seconds(5))
-      // compute average temperature using a user-defined function
       .apply(new TemperatureAverager)
-      // print result stream to standard out
-      avgTemp.print()
-    // execute application
+
+    avgTemp.print()
+
     env.execute("Compute average sensor temperature")
+  }
+}
+```
+
+**java version**
+
+```java
+public class AverageSensorReadings {
+  public static void main(String[] args) throws Exception {
+    final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+
+    DataStream<SensorReading> sensorData = env.addSource(new SensorSource());
+
+    DataStream<T> avgTemp = sensorData
+      .map(r -> {
+        Double celsius = (r.temperature - 32) * (5.0 / 9.0);
+        return SensorReading(r.id, r.timestamp, celsius);
+      })
+      .keyBy(r -> r.id)
+      .timeWindow(Time.seconds(5))
+      .apply(new TemperatureAverager());
+
+    avgTemp.print();
+
+    env.execute("Compute average sensor temperature");
   }
 }
 ```

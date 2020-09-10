@@ -19,9 +19,28 @@ MapFunction[T, O]
 
 下面的代码实现了将SensorReading中的id字段抽取出来的功能。
 
+**scala version**
+
+```scala
+val readings: DataStream[SensorReading] = ...
+val sensorIds: DataStream[String] = readings.map(new IdExtractor)
+
+class IdExtractor extends MapFunction[SensorReading, String] {
+    override def map(r: SensorReading) : String = r.id
+}
+```
+
+当然我们更推荐匿名函数的写法。
+
 ```java
-DataStream[SensorReading] readings = ...
-DataStream[String] sensorIds = readings.map(new IdExtractor)
+val sensorIds: DataStream[String] = filteredReadings.map(r => r.id)
+```
+
+**java version**
+
+```java
+DataStream<SensorReading> readings = ...
+DataStream<String> sensorIds = readings.map(new IdExtractor());
 
 public static class IdExtractor implements MapFunction<SensorReading, String> {
     @Override
@@ -34,8 +53,7 @@ public static class IdExtractor implements MapFunction<SensorReading, String> {
 当然我们更推荐匿名函数的写法。
 
 ```java
-DataStream<String> sensorIds = filteredReadings
-        .map(r -> r.id);
+DataStream<String> sensorIds = filteredReadings.map(r -> r.id);
 ```
 
 *FILTER*
@@ -54,9 +72,16 @@ FilterFunction[T]
 
 下面的例子展示了如何使用filter来从传感器数据中过滤掉温度值小于25华氏温度的读数。
 
+**scala version**
+
+```scala
+val filteredReadings = readings.filter(r => r.temperature >= 25)
+```
+
+**java version**
+
 ```java
-DataStream<SensorReading> filteredReadings = readings
-        .filter(r -> r.temperature >= 25);
+DataStream<SensorReading> filteredReadings = readings.filter(r -> r.temperature >= 25);
 ```
 
 *FLATMAP*
@@ -75,6 +100,26 @@ FlatMapFunction[T, O]
 ```
 
 下面的例子展示了在数据分析教程中经常用到的例子，我们用`flatMap`来实现。使用`_`来切割传感器ID，比如`sensor_1`。
+
+**scala version**
+
+```scala
+class IdSplitter extends FlatMapFunction[String, String] {
+    override def flatMap(id: String, out: Collector[String]) : Unit = {
+        val arr = id.split("_")
+        arr.foreach(out.collect)
+    }
+}
+```
+
+匿名函数写法
+
+```scala
+val splitIds = sensorIds
+  .flatMap(r => r.split("_"))
+```
+
+**java version**
 
 ```java
 public static class IdSplitter implements FlatMapFunction<String, String> {
@@ -97,5 +142,6 @@ DataStream<String> splitIds = sensorIds
         .flatMap((FlatMapFunction<String, String>)
                 (id, out) -> { for (String s: id.split("_")) { out.collect(s);}})
         // provide result type because Java cannot infer return type of lambda function
+        // 提供结果的类型，因为Java无法推断匿名函数的返回值类型
         .returns(Types.STRING);
 ```

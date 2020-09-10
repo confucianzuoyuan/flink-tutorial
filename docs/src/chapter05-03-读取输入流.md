@@ -4,9 +4,18 @@
 
 在我们的例子里面，我们这样写：
 
-```java
+**scala version**
+
+```scala
 val sensorData: DataStream[SensorReading] = env
   .addSource(new SensorSource)
+```
+
+**java version**
+
+```java
+DataStream<SensorReading> sensorData = env
+  .addSource(new SensorSource());
 ```
 
 这样就可以连接到传感器测量数据的数据源并创建一个类型为`SensorReading`的`DataStream`了。Flink支持很多数据类型，我们将在接下来的章节里面讲解。在我们的例子里面，我们的数据类型是一个定义好的Scala样例类。`SensorReading`样例类包含了传感器ID，数据的测量时间戳，以及测量温度值。`assignTimestampsAndWatermarks(new SensorTimeAssigner)`方法指定了如何设置事件时间语义的时间戳和水位线。有关`SensorTimeAssigner`我们后面再讲。

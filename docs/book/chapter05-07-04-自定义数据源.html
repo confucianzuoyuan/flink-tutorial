@@ -156,6 +156,53 @@
                 <div id="content" class="content">
                     <main>
                         <h3><a class="header" href="#自定义数据源" id="自定义数据源">自定义数据源</a></h3>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">import java.util.Calendar
+
+import org.apache.flink.streaming.api.functions.source.SourceFunction.SourceContext
+import org.apache.flink.streaming.api.functions.source.{RichParallelSourceFunction, SourceFunction}
+
+import scala.util.Random
+
+// 泛型是`SensorReading`，表明产生的流中的事件的类型是`SensorReading`
+class SensorSource extends RichParallelSourceFunction[SensorReading] {
+  // 表示数据源是否正常运行
+  var running: Boolean = true
+
+  // 上下文参数用来发出数据
+  override def run(ctx: SourceContext[SensorReading]): Unit = {
+    val rand = new Random
+
+    var curFTemp = (1 to 10).map(
+      // 使用高斯噪声产生随机温度值
+      i =&gt; (&quot;sensor_&quot; + i, (rand.nextGaussian() * 20))
+    )
+
+    // 产生无限数据流
+    while (running) {
+      curFTemp = curFTemp.map(
+        t =&gt; (t._1, t._2 + (rand.nextGaussian() * 0.5))
+      )
+
+      // 产生ms为单位的时间戳
+      val curTime = Calendar.getInstance.getTimeInMillis
+
+      // 使用ctx参数的collect方法发射传感器数据
+      curFTemp.foreach(t =&gt; ctx.collect(SensorReading(t._1, curTime, t._2)))
+
+      // 每隔100ms发送一条传感器数据
+      Thread.sleep(1000)
+    }
+  }
+
+  // 定义当取消flink任务时，需要关闭数据源
+  override def cancel(): Unit = running = false
+}
+</code></pre>
+<p>使用方法</p>
+<pre><code class="language-scala">val sensorData = env.addSource(new SensorSource)
+</code></pre>
+<p><strong>java version</strong></p>
 <pre><code class="language-java">import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
 
 import java.util.Calendar;
@@ -169,12 +216,11 @@ public class SensorSource extends RichParallelSourceFunction&lt;SensorReading&gt
     public void run(SourceContext&lt;SensorReading&gt; srcCtx) throws Exception {
 
         Random rand = new Random();
-        int taskIdx = this.getRuntimeContext().getIndexOfThisSubtask();
 
         String[] sensorIds = new String[10];
         double[] curFTemp = new double[10];
         for (int i = 0; i &lt; 10; i++) {
-            sensorIds[i] = &quot;sensor_&quot; + (taskIdx * 10 + i);
+            sensorIds[i] = &quot;sensor_&quot; + i;
             curFTemp[i] = 65 + (rand.nextGaussian() * 20);
         }
 
@@ -197,11 +243,8 @@ public class SensorSource extends RichParallelSourceFunction&lt;SensorReading&gt
 </code></pre>
 <p>使用方法</p>
 <pre><code class="language-java">// 摄入数据流
-DataStream[SensorReading] sensorData = env.addSource(new SensorSource)
+DataStream&lt;SensorReading&gt; sensorData = env.addSource(new SensorSource());
 </code></pre>
-<blockquote>
-<p>注意，在我们本教程中，我们一直会使用这个自定义的数据源。</p>
-</blockquote>
 
                     </main>
 

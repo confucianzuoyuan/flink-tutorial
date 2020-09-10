@@ -4,8 +4,10 @@
 
 在我们的例子中，我们首先使用`map()`转换算子将传感器的温度值转换成了摄氏温度单位。然后，我们使用`keyBy()`转换算子将传感器读数流按照传感器ID进行分区。接下来，我们定义了一个`timeWindow()`转换算子，这个算子将每个传感器ID所对应的分区的传感器读数分配到了5秒钟的滚动窗口中。
 
-```java
-val avgTemp: DataStream[SensorReading] = sensorData
+**scala version**
+
+```scala
+val avgTemp = sensorData
   .map(r => {
     val celsius = (r.temperature - 32) * (5.0 / 9.0)
     SensorReading(r.id, r.timestamp, celsius)
@@ -13,6 +15,19 @@ val avgTemp: DataStream[SensorReading] = sensorData
   .keyBy(_.id)
   .timeWindow(Time.seconds(5))
   .apply(new TemperatureAverager)
+```
+
+**java version**
+
+```java
+DataStream<T> avgTemp = sensorData
+  .map(r -> {
+    Double celsius = (r.temperature -32) * (5.0 / 9.0);
+    return SensorReading(r.id, r.timestamp, celsius);
+  })
+  .keyBy(r -> r.id)
+  .timeWindow(Time.seconds(5))
+  .apply(new TemperatureAverager());
 ```
 
 窗口转换算子将在“窗口操作符”一章中讲解。最后，我们使用了一个UDF函数来计算每个窗口的温度的平均值。我们稍后将会讨论UDF函数的实现。

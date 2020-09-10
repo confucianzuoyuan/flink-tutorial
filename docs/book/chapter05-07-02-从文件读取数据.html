@@ -156,7 +156,11 @@
                 <div id="content" class="content">
                     <main>
                         <h3><a class="header" href="#从文件读取数据" id="从文件读取数据">从文件读取数据</a></h3>
-<pre><code class="language-java">val stream = env.readTextFile(filePath)
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val stream = env.readTextFile(filePath)
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">DataStream&lt;String&gt; stream = env.readTextFile(filePath);
 </code></pre>
 
                     </main>
