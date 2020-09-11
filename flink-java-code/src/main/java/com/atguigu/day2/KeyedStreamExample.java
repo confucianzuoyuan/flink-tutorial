@@ -13,20 +13,38 @@ public class KeyedStreamExample {
         DataStream<SensorReading> stream = env.addSource(new SensorSource());
 
         stream
-                .filter(r -> r.id.equals("sensor_1"))
-                .keyBy(r -> r.id)
-                .reduce(new ReduceFunction<SensorReading>() {
+                .map(r -> new Tuple2<String, Double>(r.id, r.temperature))
+                .filter(r -> r.f0.equals("sensor_1"))
+                .keyBy(r -> r.f0)
+                .reduce(new ReduceFunction<Tuple2<String, Double>>() {
                     @Override
-                    public SensorReading reduce(SensorReading value1, SensorReading value2) throws Exception {
-                        if (value1.temperature > value2.temperature) {
+                    public Tuple2<String, Double> reduce(Tuple2<String, Double> value1, Tuple2<String, Double> value2) throws Exception {
+                        if (value1.f1 > value2.f1) {
                             return value1;
                         } else {
                             return value2;
                         }
                     }
-                })
+                });
+
+        stream
+                .map(r -> new Tuple2<String, Double>(r.id, r.temperature))
+                .filter(r -> r.f0.equals("sensor_1"))
+                .keyBy(r -> r.f0)
+                .reduce(new MyReduceFunction())
                 .print();
 
         env.execute();
+    }
+
+    public static class MyReduceFunction implements ReduceFunction<Tuple2<String, Double>> {
+        @Override
+        public Tuple2<String, Double> reduce(Tuple2<String, Double> value1, Tuple2<String, Double> value2) throws Exception {
+            if (value1.f1 > value2.f1) {
+                return value1;
+            } else {
+                return value2;
+            }
+        }
     }
 }
