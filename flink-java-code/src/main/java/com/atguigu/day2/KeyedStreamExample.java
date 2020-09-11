@@ -1,6 +1,9 @@
 package com.atguigu.day2;
 
 import org.apache.flink.api.common.functions.ReduceFunction;
+import org.apache.flink.api.common.typeinfo.TypeHint;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -14,6 +17,7 @@ public class KeyedStreamExample {
 
         stream
                 .map(r -> new Tuple2<String, Double>(r.id, r.temperature))
+                .returns(TypeInformation.of(new TypeHint<Tuple2<String, Double>>() { }))
                 .filter(r -> r.f0.equals("sensor_1"))
                 .keyBy(r -> r.f0)
                 .reduce(new ReduceFunction<Tuple2<String, Double>>() {
@@ -29,6 +33,7 @@ public class KeyedStreamExample {
 
         stream
                 .map(r -> new Tuple2<String, Double>(r.id, r.temperature))
+                .returns(TypeInformation.of(new TypeHint<Tuple2<String, Double>>() { }))
                 .filter(r -> r.f0.equals("sensor_1"))
                 .keyBy(r -> r.f0)
                 .reduce(new MyReduceFunction())
