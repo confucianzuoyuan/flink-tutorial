@@ -27,7 +27,7 @@ public class SensorSource extends RichParallelSourceFunction<SensorReading> {
                 ctx.collect(new SensorReading(sensorIds[i], curTime, curFTemp[i]));
             }
 
-            Thread.sleep(100);
+            Thread.sleep(1000);
         }
 
 

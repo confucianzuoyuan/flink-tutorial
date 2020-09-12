@@ -16,7 +16,7 @@ public class KeyedStreamExample {
         DataStream<SensorReading> stream = env.addSource(new SensorSource());
 
         stream
-                .map(r -> new Tuple2<String, Double>(r.id, r.temperature))
+                .map(r -> Tuple2.of(r.id, r.temperature))
                 .returns(TypeInformation.of(new TypeHint<Tuple2<String, Double>>() { }))
                 .filter(r -> r.f0.equals("sensor_1"))
                 .keyBy(r -> r.f0)
