@@ -4,7 +4,7 @@ import com.atguigu.day2.SensorSource
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
 
-object AvgTempPerWindow {
+object MinTempPerWindow {
   def main(args: Array[String]): Unit = {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)

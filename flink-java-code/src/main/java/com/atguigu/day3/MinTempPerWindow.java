@@ -9,7 +9,7 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
 
-public class AvgTempPerWindow {
+public class MinTempPerWindow {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
@@ -28,7 +28,7 @@ public class AvgTempPerWindow {
                 .reduce(new ReduceFunction<Tuple2<String, Double>>() {
                     @Override
                     public Tuple2<String, Double> reduce(Tuple2<String, Double> value1, Tuple2<String, Double> value2) throws Exception {
-                        if (value1.f1 > value2.f1) {
+                        if (value1.f1 < value2.f1) {
                             return value1;
                         } else {
                             return value2;
