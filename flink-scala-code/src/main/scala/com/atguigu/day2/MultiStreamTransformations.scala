@@ -4,6 +4,8 @@ import org.apache.flink.streaming.api.functions.co.CoFlatMapFunction
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.util.Collector
 
+// freeBSD: Bill Joy: bsd, vi, tcpip, sun公司 -> MacOS
+// Linux
 object MultiStreamTransformations {
   def main(args: Array[String]): Unit = {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
