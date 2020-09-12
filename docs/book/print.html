@@ -2348,11 +2348,33 @@ DataStream&lt;T&gt; sessionWindows = sensorData
 </ol>
 <p><em>ReduceFunction</em></p>
 <p>例子: 计算每个传感器15s窗口中的温度最小值</p>
-<pre><code class="language-java">DataStream&lt;(String, Double)&gt; minTempPerWindow = sensorData
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">val minTempPerWindow = sensorData
   .map(r =&gt; (r.id, r.temperature))
   .keyBy(_._1)
   .timeWindow(Time.seconds(15))
   .reduce((r1, r2) =&gt; (r1._1, r1._2.min(r2._2)))
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">DataStream&lt;Tuple2&lt;String, Double&gt;&gt; minTempPerwindow = sensorData
+    .map(new MapFunction&lt;SensorReading, Tuple2&lt;String, Double&gt;&gt;() {
+        @Override
+        public Tuple2&lt;String, Double&gt; map(SensorReading value) throws Exception {
+            return Tuple2.of(value.id, value.temperature);
+        }
+    })
+    .keyBy(r -&gt; r.f0)
+    .timeWindow(Time.seconds(5))
+    .reduce(new ReduceFunction&lt;Tuple2&lt;String, Double&gt;&gt;() {
+        @Override
+        public Tuple2&lt;String, Double&gt; reduce(Tuple2&lt;String, Double&gt; value1, Tuple2&lt;String, Double&gt; value2) throws Exception {
+            if (value1.f1 &lt; value2.f1) {
+                return value1;
+            } else {
+                return value2;
+            }
+        }
+    })
 </code></pre>
 <p><em>AggregateFunction</em></p>
 <p>先来看接口定义</p>
@@ -2386,23 +2408,19 @@ class AvgTempFunction
   extends AggregateFunction[(String, Double),
     (String, Double, Int), (String, Double)] {
 
-  @Override
-public createAccumulator() = {
+  override def createAccumulator() = {
     (&quot;&quot;, 0.0, 0)
   }
 
-  @Override
-public add(in: (String, Double), acc: (String, Double, Int)) = {
+  override def add(in: (String, Double), acc: (String, Double, Int)) = {
     (in._1, in._2 + acc._2, 1 + acc._3)
   }
 
-  @Override
-public getResult(acc: (String, Double, Int)) = {
+  override def getResult(acc: (String, Double, Int)) = {
     (acc._1, acc._2 / acc._3)
   }
 
-  @Override
-public merge(acc1: (String, Double, Int),
+  override def merge(acc1: (String, Double, Int),
     acc2: (String, Double, Int)) = {
     (acc1._1, acc1._2 + acc2._2, acc1._3 + acc2._3)
   }
@@ -2413,7 +2431,7 @@ public merge(acc1: (String, Double, Int),
 <p>先来看接口定义</p>
 <pre><code class="language-java">public abstract class ProcessWindowFunction&lt;IN, OUT, KEY, W extends Window&gt;
   extends AbstractRichFunction {
-  
+
   // Evaluates the window
   void process(KEY key, Context ctx, Iterable&lt;IN&gt; vals, Collector&lt;OUT&gt; out)
     throws Exception;
@@ -2459,8 +2477,7 @@ case class MinMaxTemp(id: String, min: Double, max: Double, endTs: Long)
 class HighAndLowTempProcessFunction
   extends ProcessWindowFunction[SensorReading,
     MinMaxTemp, String, TimeWindow] {
-  @Override
-public process(key: String,
+  override def process(key: String,
                        ctx: Context,
                        vals: Iterable[SensorReading],
                        out: Collector[MinMaxTemp]): Unit = {
@@ -2488,7 +2505,7 @@ input
     windowFunction: ProcessWindowFunction[V, OUT, K, W])
 </code></pre>
 <p>我们把之前的需求重新使用以上两种方法实现一下。</p>
-<pre><code class="language-java">case class MinMaxTemp(id: String, min: Double, max: Double, endTs: Long)
+<pre><code class="language-scala">case class MinMaxTemp(id: String, min: Double, max: Double, endTs: Long)
 
 val minMaxTempPerWindow2: DataStream[MinMaxTemp] = sensorData
   .map(r =&gt; (r.id, r.temperature, r.temperature))
@@ -2498,14 +2515,13 @@ val minMaxTempPerWindow2: DataStream[MinMaxTemp] = sensorData
     (r1: (String, Double, Double), r2: (String, Double, Double)) =&gt; {
       (r1._1, r1._2.min(r2._2), r1._3.max(r2._3))
     },
-    new AssignWindowEndProcessFunction()
+    new AssignWindowEndProcessFunction
   )
 
 class AssignWindowEndProcessFunction
   extends ProcessWindowFunction[(String, Double, Double),
     MinMaxTemp, String, TimeWindow] {
-  @Override
-public process(key: String,
+    override def process(key: String,
                        ctx: Context,
                        minMaxIt: Iterable[(String, Double, Double)],
                        out: Collector[MinMaxTemp]): Unit = {

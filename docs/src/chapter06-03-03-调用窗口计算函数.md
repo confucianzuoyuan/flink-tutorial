@@ -10,12 +10,38 @@ window functions定义了窗口中数据的计算逻辑。有两种计算逻辑�
 
 例子: 计算每个传感器15s窗口中的温度最小值
 
-```java
-DataStream<(String, Double)> minTempPerWindow = sensorData
+**scala version**
+
+```scala
+val minTempPerWindow = sensorData
   .map(r => (r.id, r.temperature))
   .keyBy(_._1)
   .timeWindow(Time.seconds(15))
   .reduce((r1, r2) => (r1._1, r1._2.min(r2._2)))
+```
+
+**java version**
+
+```java
+DataStream<Tuple2<String, Double>> minTempPerwindow = sensorData
+    .map(new MapFunction<SensorReading, Tuple2<String, Double>>() {
+        @Override
+        public Tuple2<String, Double> map(SensorReading value) throws Exception {
+            return Tuple2.of(value.id, value.temperature);
+        }
+    })
+    .keyBy(r -> r.f0)
+    .timeWindow(Time.seconds(5))
+    .reduce(new ReduceFunction<Tuple2<String, Double>>() {
+        @Override
+        public Tuple2<String, Double> reduce(Tuple2<String, Double> value1, Tuple2<String, Double> value2) throws Exception {
+            if (value1.f1 < value2.f1) {
+                return value1;
+            } else {
+                return value2;
+            }
+        }
+    })
 ```
 
 *AggregateFunction*
@@ -57,23 +83,19 @@ class AvgTempFunction
   extends AggregateFunction[(String, Double),
     (String, Double, Int), (String, Double)] {
 
-  @Override
-public createAccumulator() = {
+  override def createAccumulator() = {
     ("", 0.0, 0)
   }
 
-  @Override
-public add(in: (String, Double), acc: (String, Double, Int)) = {
+  override def add(in: (String, Double), acc: (String, Double, Int)) = {
     (in._1, in._2 + acc._2, 1 + acc._3)
   }
 
-  @Override
-public getResult(acc: (String, Double, Int)) = {
+  override def getResult(acc: (String, Double, Int)) = {
     (acc._1, acc._2 / acc._3)
   }
 
-  @Override
-public merge(acc1: (String, Double, Int),
+  override def merge(acc1: (String, Double, Int),
     acc2: (String, Double, Int)) = {
     (acc1._1, acc1._2 + acc2._2, acc1._3 + acc2._3)
   }
@@ -89,7 +111,7 @@ public merge(acc1: (String, Double, Int),
 ```java
 public abstract class ProcessWindowFunction<IN, OUT, KEY, W extends Window>
   extends AbstractRichFunction {
-  
+
   // Evaluates the window
   void process(KEY key, Context ctx, Iterable<IN> vals, Collector<OUT> out)
     throws Exception;
@@ -138,8 +160,7 @@ case class MinMaxTemp(id: String, min: Double, max: Double, endTs: Long)
 class HighAndLowTempProcessFunction
   extends ProcessWindowFunction[SensorReading,
     MinMaxTemp, String, TimeWindow] {
-  @Override
-public process(key: String,
+  override def process(key: String,
                        ctx: Context,
                        vals: Iterable[SensorReading],
                        out: Collector[MinMaxTemp]): Unit = {
@@ -173,7 +194,7 @@ input
 
 我们把之前的需求重新使用以上两种方法实现一下。
 
-```java
+```scala
 case class MinMaxTemp(id: String, min: Double, max: Double, endTs: Long)
 
 val minMaxTempPerWindow2: DataStream[MinMaxTemp] = sensorData
@@ -184,14 +205,13 @@ val minMaxTempPerWindow2: DataStream[MinMaxTemp] = sensorData
     (r1: (String, Double, Double), r2: (String, Double, Double)) => {
       (r1._1, r1._2.min(r2._2), r1._3.max(r2._3))
     },
-    new AssignWindowEndProcessFunction()
+    new AssignWindowEndProcessFunction
   )
 
 class AssignWindowEndProcessFunction
   extends ProcessWindowFunction[(String, Double, Double),
     MinMaxTemp, String, TimeWindow] {
-  @Override
-public process(key: String,
+    override def process(key: String,
                        ctx: Context,
                        minMaxIt: Iterable[(String, Double, Double)],
                        out: Collector[MinMaxTemp]): Unit = {
