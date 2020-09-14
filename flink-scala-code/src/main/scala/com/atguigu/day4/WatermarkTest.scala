@@ -1,5 +1,8 @@
 package com.atguigu.day4
 
+import java.time.Duration
+
+import org.apache.flink.api.common.eventtime.{SerializableTimestampAssigner, WatermarkStrategy}
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor
 import org.apache.flink.streaming.api.scala._
@@ -25,6 +28,8 @@ object WatermarkTest {
     // 设置流的时间语义为事件时间
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
+    env.getConfig.setAutoWatermarkInterval(60 * 1000L)
+
     val stream = env.socketTextStream("localhost", 9999, '\n')
 
     stream
@@ -33,15 +38,20 @@ object WatermarkTest {
         // 时间戳的单位是毫秒，所以需要ETL一下
         (arr(0), arr(1).toLong * 1000L)
       })
-      // 提取时间戳，设置水位线
+      // 一定要在source之后，keyBy之前生成水位线
       .assignTimestampsAndWatermarks(
-        // 最大延迟时间设置了5s
-        // 水位线 = 系统观察到的事件所携带的最大时间戳 - 最大延迟时间a
-        new BoundedOutOfOrdernessTimestampExtractor[(String, Long)](Time.seconds(5)) {
-          override def extractTimestamp(element: (String, Long)): Long = element._2
-        }
+        // 水位线策略；默认200ms的机器时间插入一次水位线
+        // 水位线 = 当前观察到的事件所携带的最大时间戳 - 最大延迟时间
+        WatermarkStrategy
+          // 最大延迟时间设置为5s
+          .forBoundedOutOfOrderness[(String, Long)](Duration.ofSeconds(5))
+          .withTimestampAssigner(new SerializableTimestampAssigner[(String, Long)] {
+            // 告诉系统第二个字段是时间戳，时间戳的单位是毫秒
+            override def extractTimestamp(element: (String, Long), recordTimestamp: Long): Long = element._2
+          })
       )
       .keyBy(r => r._1)
+      // 窗口是左闭右开的区间
       .timeWindow(Time.seconds(5))
       .process(new ProWin)
       .print()

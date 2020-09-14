@@ -187,6 +187,7 @@ under the License.
 					<args>
 						<arg>-nobootcp</arg>
 					</args>
+					<addScalacArgs>-target:jvm-1.8</addScalacArgs>
 				</configuration>
 			</plugin>
 
