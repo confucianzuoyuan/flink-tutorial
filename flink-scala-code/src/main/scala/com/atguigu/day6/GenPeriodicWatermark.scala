@@ -24,7 +24,7 @@ object GenPeriodicWatermark {
         // generate periodic watermarks
         new AssignerWithPeriodicWatermarks[(String, Long)] {
           val bound = 10 * 1000L // 最大延迟时间
-          var maxTs = Long.MinValue + bound // 当前观察到的最大时间戳
+          var maxTs = Long.MinValue + bound + 1 // 当前观察到的最大时间戳
 
           // 用来生成水位线
           // 默认200ms调用一次

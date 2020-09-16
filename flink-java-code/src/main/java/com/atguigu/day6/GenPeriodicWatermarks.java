@@ -29,7 +29,7 @@ public class GenPeriodicWatermarks {
                 })
                 .assignTimestampsAndWatermarks(new AssignerWithPeriodicWatermarks<Tuple2<String, Long>>() {
                     private final Long bound = 10 * 1000L;
-                    private Long maxTs = Long.MIN_VALUE + bound;
+                    private Long maxTs = Long.MIN_VALUE + bound + 1;
 
                     @Override
                     public Watermark getCurrentWatermark() {
