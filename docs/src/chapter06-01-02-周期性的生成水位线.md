@@ -17,13 +17,15 @@ env.getConfig.setAutoWatermarkInterval(5000)
 
 例子，自定义一个周期性的时间戳抽取
 
-```java
+**scala version**
+
+```scala
 class PeriodicAssigner extends AssignerWithPeriodicWatermarks[SensorReading] {
   val bound = 60 * 1000 // 延时为1分钟
-  var maxTs = Long.MinValue + bound // 观察到的最大时间戳
+  var maxTs = Long.MinValue + bound + 1 // 观察到的最大时间戳
 
   override def getCurrentWatermark: Watermark {
-    new Watermark(maxTs - bound)
+    new Watermark(maxTs - bound - 1)
   }
 
   override def extractTimestamp(r: SensorReading, previousTS: Long) {
@@ -33,29 +35,89 @@ class PeriodicAssigner extends AssignerWithPeriodicWatermarks[SensorReading] {
 }
 ```
 
+**java version**
+
+```java
+.assignTimestampsAndWatermarks(
+  // generate periodic watermarks
+  new AssignerWithPeriodicWatermarks[(String, Long)] {
+    val bound = 10 * 1000L // 最大延迟时间
+    var maxTs = Long.MinValue + bound + 1 // 当前观察到的最大时间戳
+
+    // 用来生成水位线
+    // 默认200ms调用一次
+    override def getCurrentWatermark: Watermark = {
+      println("generate watermark!!!" + (maxTs - bound - 1) + "ms")
+      new Watermark(maxTs - bound - 1)
+    }
+
+    // 每来一条数据都会调用一次
+    override def extractTimestamp(t: (String, Long), l: Long): Long = {
+      println("extract timestamp!!!")
+      maxTs = maxTs.max(t._2) // 更新观察到的最大事件时间
+      t._2 // 抽取时间戳
+    }
+  }
+)
+```
+
 如果我们事先得知数据流的时间戳是单调递增的，也就是说没有乱序。我们可以使用assignAscendingTimestamps，方法会直接使用数据的时间戳生成水位线。
+
+**scala version**
 
 ```scala
 val stream = ...
 val withTimestampsAndWatermarks = stream.assignAscendingTimestamps(e => e.timestamp)
 ```
 
+**java version**
+
+```java
+.assignTimestampsAndWatermarks(
+        WatermarkStrategy
+                .<SensorReading>forMonotonousTimestamps()
+                .withTimestampAssigner(new SerializableTimestampAssigner<SensorReading>() {
+                    @Override
+                    public long extractTimestamp(SensorReading r, long l) {
+                        return r.timestamp;
+                    }
+                })
+)
+```
+
 如果我们能大致估算出数据流中的事件的最大延迟时间，可以使用如下代码：
 
 >最大延迟时间就是当前到达的事件的事件时间和之前所有到达的事件中最大时间戳的差。
 
-```scala
-val stream = ...
-val withTimestampsAndWatermarks = stream.assignTimestampsAndWatermarks(
-  new SensorTimeAssigner()
-)
+**scala version**
 
-class SensorTimeAssigner extends BoundedOutOfOrdernessTimestampExtractor[SensorReading](Time.seconds(5)) {
-    // 抽取时间戳
-    override def extractTimestamp(r: SensorReading): Long {
-      r.timestamp;
-    }
-}
+```scala
+.assignTimestampsAndWatermarks(
+  // 水位线策略；默认200ms的机器时间插入一次水位线
+  // 水位线 = 当前观察到的事件所携带的最大时间戳 - 最大延迟时间
+  WatermarkStrategy
+    // 最大延迟时间设置为5s
+    .forBoundedOutOfOrderness[(String, Long)](Duration.ofSeconds(5))
+    .withTimestampAssigner(new SerializableTimestampAssigner[(String, Long)] {
+      // 告诉系统第二个字段是时间戳，时间戳的单位是毫秒
+      override def extractTimestamp(element: (String, Long), recordTimestamp: Long): Long = element._2
+    })
+)
+```
+
+**java version**
+
+```java
+.assignTimestampsAndWatermarks(
+        WatermarkStrategy
+                .<Tuple2<String, Long>>forBoundedOutOfOrderness(Duration.ofSeconds(5))
+                .withTimestampAssigner(new SerializableTimestampAssigner<Tuple2<String, Long>>() {
+                    @Override
+                    public long extractTimestamp(Tuple2<String, Long> element, long recordTimestamp) {
+                        return element.f1;
+                    }
+                })
+)
 ```
 
 以上代码设置了最大延迟时间为5秒。

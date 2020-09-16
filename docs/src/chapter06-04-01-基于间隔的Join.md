@@ -10,7 +10,7 @@
 
 ```scala
 input1
-  .keyBy(...)
+  .intervalJoin(input2)
   .between(<lower-bound>, <upper-bound>) // 相对于input1的上下界
   .process(ProcessJoinFunction) // 处理匹配的事件对
 ```
@@ -21,98 +21,116 @@ Join成功的事件对会发送给ProcessJoinFunction。下界和上界分别由
 
 例子：每个用户的点击Join这个用户最近10分钟内的浏览
 
+**scala version**
+
 ```scala
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.functions.co.ProcessJoinFunction
-
-import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor
-
-import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.api.windowing.time.Time
-import org.apache.flink.util.Collector
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
-
-// 需求：每个用户的点击Join这个用户最近10分钟内的浏览
-
-// 数据流clickStream
-// 某个用户在某个时刻点击了某个页面
-// {"userID": "user_2", "eventTime": "2019-11-16 17:30:02", "eventType": "click", "pageID": "page_1"}
-
-// 数据流browseStream
-// 某个用户在某个时刻浏览了某个商品，以及商品的价值
-// {"userID": "user_2", "eventTime": "2019-11-16 17:30:01", "eventType": "browse", "productID": "product_1", "productPrice": 10}
 object IntervalJoinExample {
-
-  case class UserClickLog(userID: String,
-                          eventTime: String,
-                          eventType: String,
-                          pageID: String)
-
-  case class UserBrowseLog(userID: String,
-                           eventTime: String,
-                           eventType: String,
-                           productID: String,
-                           productPrice: String)
-
   def main(args: Array[String]): Unit = {
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
-    val clickStream = env
-      .fromElements(
-        UserClickLog("user_2", "2019-11-16 17:30:00", "click", "page_1")
-      )
-      .assignTimestampsAndWatermarks(
-        new BoundedOutOfOrdernessTimestampExtractor[UserClickLog](Time.seconds(0)) {
-          override def extractTimestamp(t: UserClickLog): Long = {
-            val dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")
-            val dateTime = DateTime.parse(t.eventTime, dateTimeFormatter)
-            dateTime.getMillis
-          }
-        }
-      )
+    /*
+    A.intervalJoin(B).between(lowerBound, upperBound)
+    B.intervalJoin(A).between(-upperBound, -lowerBound)
+     */
 
-    val browseStream = env
+    val stream1 = env
       .fromElements(
-        UserBrowseLog("user_2", "2019-11-16 17:19:00", "browse", "product_1", "10"),
-        UserBrowseLog("user_2", "2019-11-16 17:20:00", "browse", "product_1", "10"),
-        UserBrowseLog("user_2", "2019-11-16 17:22:00", "browse", "product_1", "10"),
-        UserBrowseLog("user_2", "2019-11-16 17:26:00", "browse", "product_1", "10"),
-        UserBrowseLog("user_2", "2019-11-16 17:30:00", "browse", "product_1", "10"),
-        UserBrowseLog("user_2", "2019-11-16 17:31:00", "browse", "product_1", "10")
+        ("user_1", 10 * 60 * 1000L, "click"),
+        ("user_1", 16 * 60 * 1000L, "click")
       )
-      .assignTimestampsAndWatermarks(
-        new BoundedOutOfOrdernessTimestampExtractor[UserBrowseLog](Time.seconds(0)) {
-          override def extractTimestamp(t: UserBrowseLog): Long = {
-            val dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")
-            val dateTime = DateTime.parse(t.eventTime, dateTimeFormatter)
-            dateTime.getMillis
-          }
-        }
-      )
+      .assignAscendingTimestamps(_._2)
+      .keyBy(r => r._1)
 
-    clickStream
-      .keyBy("userID")
-      .intervalJoin(browseStream.keyBy("userID"))
-      .between(Time.minutes(-10),Time.seconds(0))
-      .process(new MyIntervalJoin)
+    val stream2 = env
+      .fromElements(
+        ("user_1", 5 * 60 * 1000L, "browse"),
+        ("user_1", 6 * 60 * 1000L, "browse")
+      )
+      .assignAscendingTimestamps(_._2)
+      .keyBy(r => r._1)
+
+    stream1
+      .intervalJoin(stream2)
+      .between(Time.minutes(-10), Time.minutes(0))
+      .process(new ProcessJoinFunction[(String, Long, String), (String, Long, String), String] {
+        override def processElement(in1: (String, Long, String), in2: (String, Long, String), context: ProcessJoinFunction[(String, Long, String), (String, Long, String), String]#Context, collector: Collector[String]): Unit = {
+          collector.collect(in1 + " => " + in2)
+        }
+      })
+      .print()
+
+    stream2
+      .intervalJoin(stream1)
+      .between(Time.minutes(0), Time.minutes(10))
+      .process(new ProcessJoinFunction[(String, Long, String), (String, Long, String), String] {
+        override def processElement(in1: (String, Long, String), in2: (String, Long, String), context: ProcessJoinFunction[(String, Long, String), (String, Long, String), String]#Context, collector: Collector[String]): Unit = {
+          collector.collect(in1 + " => " + in2)
+        }
+      })
       .print()
 
     env.execute()
   }
-
-  class MyIntervalJoin extends ProcessJoinFunction[UserClickLog, UserBrowseLog, String] {
-    override def processElement(
-      left: UserClickLog,
-      right: UserBrowseLog,
-      context: ProcessJoinFunction[UserClickLog, UserBrowseLog, String]#Context,
-      out: Collector[String]
-    ): Unit = {
-      out.collect(left +" =Interval Join=> "+right)
-    }
-  }
 }
 ```
 
+**java version**
+
+```java
+public class IntervalJoinExample {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+        env.setParallelism(1);
+
+        KeyedStream<Tuple3<String, Long, String>, String> stream1 = env
+                .fromElements(
+                        Tuple3.of("user_1", 10 * 60 * 1000L, "click")
+                )
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy
+                                .<Tuple3<String, Long, String>>forMonotonousTimestamps()
+                                .withTimestampAssigner(new SerializableTimestampAssigner<Tuple3<String, Long, String>>() {
+                                    @Override
+                                    public long extractTimestamp(Tuple3<String, Long, String> stringLongStringTuple3, long l) {
+                                        return stringLongStringTuple3.f1;
+                                    }
+                                })
+                )
+                .keyBy(r -> r.f0);
+
+        KeyedStream<Tuple3<String, Long, String>, String> stream2 = env
+                .fromElements(
+                        Tuple3.of("user_1", 5 * 60 * 1000L, "browse"),
+                        Tuple3.of("user_1", 6 * 60 * 1000L, "browse")
+                )
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy
+                                .<Tuple3<String, Long, String>>forMonotonousTimestamps()
+                                .withTimestampAssigner(new SerializableTimestampAssigner<Tuple3<String, Long, String>>() {
+                                    @Override
+                                    public long extractTimestamp(Tuple3<String, Long, String> stringLongStringTuple3, long l) {
+                                        return stringLongStringTuple3.f1;
+                                    }
+                                })
+                )
+                .keyBy(r -> r.f0);
+
+        stream1
+                .intervalJoin(stream2)
+                .between(Time.minutes(-10), Time.minutes(0))
+                .process(new ProcessJoinFunction<Tuple3<String, Long, String>, Tuple3<String, Long, String>, String>() {
+                    @Override
+                    public void processElement(Tuple3<String, Long, String> stringLongStringTuple3, Tuple3<String, Long, String> stringLongStringTuple32, Context context, Collector<String> collector) throws Exception {
+                        collector.collect(stringLongStringTuple3 + " => " + stringLongStringTuple32);
+                    }
+                })
+                .print();
+
+        env.execute();
+
+    }
+}
+```

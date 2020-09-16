@@ -1969,12 +1969,13 @@ env.getConfig.setAutoWatermarkInterval(5000)
 </code></pre>
 <p>上面的例子产生水位线的逻辑：每隔5秒钟，Flink会调用AssignerWithPeriodicWatermarks中的getCurrentWatermark()方法。如果方法返回的时间戳大于之前水位线的时间戳，新的水位线会被插入到流中。这个检查保证了水位线是单调递增的。如果方法返回的时间戳小于等于之前水位线的时间戳，则不会产生新的水位线。</p>
 <p>例子，自定义一个周期性的时间戳抽取</p>
-<pre><code class="language-java">class PeriodicAssigner extends AssignerWithPeriodicWatermarks[SensorReading] {
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">class PeriodicAssigner extends AssignerWithPeriodicWatermarks[SensorReading] {
   val bound = 60 * 1000 // 延时为1分钟
-  var maxTs = Long.MinValue + bound // 观察到的最大时间戳
+  var maxTs = Long.MinValue + bound + 1 // 观察到的最大时间戳
 
   override def getCurrentWatermark: Watermark {
-    new Watermark(maxTs - bound)
+    new Watermark(maxTs - bound - 1)
   }
 
   override def extractTimestamp(r: SensorReading, previousTS: Long) {
@@ -1983,25 +1984,74 @@ env.getConfig.setAutoWatermarkInterval(5000)
   }
 }
 </code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">.assignTimestampsAndWatermarks(
+  // generate periodic watermarks
+  new AssignerWithPeriodicWatermarks[(String, Long)] {
+    val bound = 10 * 1000L // 最大延迟时间
+    var maxTs = Long.MinValue + bound + 1 // 当前观察到的最大时间戳
+
+    // 用来生成水位线
+    // 默认200ms调用一次
+    override def getCurrentWatermark: Watermark = {
+      println(&quot;generate watermark!!!&quot; + (maxTs - bound - 1) + &quot;ms&quot;)
+      new Watermark(maxTs - bound - 1)
+    }
+
+    // 每来一条数据都会调用一次
+    override def extractTimestamp(t: (String, Long), l: Long): Long = {
+      println(&quot;extract timestamp!!!&quot;)
+      maxTs = maxTs.max(t._2) // 更新观察到的最大事件时间
+      t._2 // 抽取时间戳
+    }
+  }
+)
+</code></pre>
 <p>如果我们事先得知数据流的时间戳是单调递增的，也就是说没有乱序。我们可以使用assignAscendingTimestamps，方法会直接使用数据的时间戳生成水位线。</p>
+<p><strong>scala version</strong></p>
 <pre><code class="language-scala">val stream = ...
 val withTimestampsAndWatermarks = stream.assignAscendingTimestamps(e =&gt; e.timestamp)
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">.assignTimestampsAndWatermarks(
+        WatermarkStrategy
+                .&lt;SensorReading&gt;forMonotonousTimestamps()
+                .withTimestampAssigner(new SerializableTimestampAssigner&lt;SensorReading&gt;() {
+                    @Override
+                    public long extractTimestamp(SensorReading r, long l) {
+                        return r.timestamp;
+                    }
+                })
+)
 </code></pre>
 <p>如果我们能大致估算出数据流中的事件的最大延迟时间，可以使用如下代码：</p>
 <blockquote>
 <p>最大延迟时间就是当前到达的事件的事件时间和之前所有到达的事件中最大时间戳的差。</p>
 </blockquote>
-<pre><code class="language-scala">val stream = ...
-val withTimestampsAndWatermarks = stream.assignTimestampsAndWatermarks(
-  new SensorTimeAssigner()
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">.assignTimestampsAndWatermarks(
+  // 水位线策略；默认200ms的机器时间插入一次水位线
+  // 水位线 = 当前观察到的事件所携带的最大时间戳 - 最大延迟时间
+  WatermarkStrategy
+    // 最大延迟时间设置为5s
+    .forBoundedOutOfOrderness[(String, Long)](Duration.ofSeconds(5))
+    .withTimestampAssigner(new SerializableTimestampAssigner[(String, Long)] {
+      // 告诉系统第二个字段是时间戳，时间戳的单位是毫秒
+      override def extractTimestamp(element: (String, Long), recordTimestamp: Long): Long = element._2
+    })
 )
-
-class SensorTimeAssigner extends BoundedOutOfOrdernessTimestampExtractor[SensorReading](Time.seconds(5)) {
-    // 抽取时间戳
-    override def extractTimestamp(r: SensorReading): Long {
-      r.timestamp;
-    }
-}
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">.assignTimestampsAndWatermarks(
+        WatermarkStrategy
+                .&lt;Tuple2&lt;String, Long&gt;&gt;forBoundedOutOfOrderness(Duration.ofSeconds(5))
+                .withTimestampAssigner(new SerializableTimestampAssigner&lt;Tuple2&lt;String, Long&gt;&gt;() {
+                    @Override
+                    public long extractTimestamp(Tuple2&lt;String, Long&gt; element, long recordTimestamp) {
+                        return element.f1;
+                    }
+                })
+)
 </code></pre>
 <p>以上代码设置了最大延迟时间为5秒。</p>
 <h3><a class="header" href="#如何产生不规则的水位线" id="如何产生不规则的水位线">如何产生不规则的水位线</a></h3>
@@ -2922,104 +2972,119 @@ public interface OnMergeContext extends TriggerContext {
 <p><img src="images/spaf_0607.png" alt="" /></p>
 <p>基于间隔的Join目前只支持事件时间以及INNER JOIN语义（无法发出未匹配成功的事件）。下面的例子定义了一个基于间隔的Join。</p>
 <pre><code class="language-scala">input1
-  .keyBy(...)
+  .intervalJoin(input2)
   .between(&lt;lower-bound&gt;, &lt;upper-bound&gt;) // 相对于input1的上下界
   .process(ProcessJoinFunction) // 处理匹配的事件对
 </code></pre>
 <p>Join成功的事件对会发送给ProcessJoinFunction。下界和上界分别由负时间间隔和正时间间隔来定义，例如between(Time.hour(-1), Time.minute(15))。在满足下界值小于上界值的前提下，你可以任意对它们赋值。例如，允许出现B中事件的时间戳相较A中事件的时间戳早1～2小时这样的条件。</p>
 <p>基于间隔的Join需要同时对双流的记录进行缓冲。对第一个输入而言，所有时间戳大于当前水位线减去间隔上界的数据都会被缓冲起来；对第二个输入而言，所有时间戳大于当前水位线加上间隔下界的数据都会被缓冲起来。注意，两侧边界值都有可能为负。上图中的Join需要存储数据流A中所有时间戳大于当前水位线减去15分钟的记录，以及数据流B中所有时间戳大于当前水位线减去1小时的记录。不难想象，如果两条流的事件时间不同步，那么Join所需的存储就会显著增加，因为水位线总是由“较慢”的那条流来决定。</p>
 <p>例子：每个用户的点击Join这个用户最近10分钟内的浏览</p>
-<pre><code class="language-scala">import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.functions.co.ProcessJoinFunction
-
-import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor
-
-import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.api.windowing.time.Time
-import org.apache.flink.util.Collector
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
-
-// 需求：每个用户的点击Join这个用户最近10分钟内的浏览
-
-// 数据流clickStream
-// 某个用户在某个时刻点击了某个页面
-// {&quot;userID&quot;: &quot;user_2&quot;, &quot;eventTime&quot;: &quot;2019-11-16 17:30:02&quot;, &quot;eventType&quot;: &quot;click&quot;, &quot;pageID&quot;: &quot;page_1&quot;}
-
-// 数据流browseStream
-// 某个用户在某个时刻浏览了某个商品，以及商品的价值
-// {&quot;userID&quot;: &quot;user_2&quot;, &quot;eventTime&quot;: &quot;2019-11-16 17:30:01&quot;, &quot;eventType&quot;: &quot;browse&quot;, &quot;productID&quot;: &quot;product_1&quot;, &quot;productPrice&quot;: 10}
-object IntervalJoinExample {
-
-  case class UserClickLog(userID: String,
-                          eventTime: String,
-                          eventType: String,
-                          pageID: String)
-
-  case class UserBrowseLog(userID: String,
-                           eventTime: String,
-                           eventType: String,
-                           productID: String,
-                           productPrice: String)
-
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">object IntervalJoinExample {
   def main(args: Array[String]): Unit = {
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
-    val clickStream = env
-      .fromElements(
-        UserClickLog(&quot;user_2&quot;, &quot;2019-11-16 17:30:00&quot;, &quot;click&quot;, &quot;page_1&quot;)
-      )
-      .assignTimestampsAndWatermarks(
-        new BoundedOutOfOrdernessTimestampExtractor[UserClickLog](Time.seconds(0)) {
-          override def extractTimestamp(t: UserClickLog): Long = {
-            val dateTimeFormatter = DateTimeFormat.forPattern(&quot;yyyy-MM-dd HH:mm:ss&quot;)
-            val dateTime = DateTime.parse(t.eventTime, dateTimeFormatter)
-            dateTime.getMillis
-          }
-        }
-      )
+    /*
+    A.intervalJoin(B).between(lowerBound, upperBound)
+    B.intervalJoin(A).between(-upperBound, -lowerBound)
+     */
 
-    val browseStream = env
+    val stream1 = env
       .fromElements(
-        UserBrowseLog(&quot;user_2&quot;, &quot;2019-11-16 17:19:00&quot;, &quot;browse&quot;, &quot;product_1&quot;, &quot;10&quot;),
-        UserBrowseLog(&quot;user_2&quot;, &quot;2019-11-16 17:20:00&quot;, &quot;browse&quot;, &quot;product_1&quot;, &quot;10&quot;),
-        UserBrowseLog(&quot;user_2&quot;, &quot;2019-11-16 17:22:00&quot;, &quot;browse&quot;, &quot;product_1&quot;, &quot;10&quot;),
-        UserBrowseLog(&quot;user_2&quot;, &quot;2019-11-16 17:26:00&quot;, &quot;browse&quot;, &quot;product_1&quot;, &quot;10&quot;),
-        UserBrowseLog(&quot;user_2&quot;, &quot;2019-11-16 17:30:00&quot;, &quot;browse&quot;, &quot;product_1&quot;, &quot;10&quot;),
-        UserBrowseLog(&quot;user_2&quot;, &quot;2019-11-16 17:31:00&quot;, &quot;browse&quot;, &quot;product_1&quot;, &quot;10&quot;)
+        (&quot;user_1&quot;, 10 * 60 * 1000L, &quot;click&quot;),
+        (&quot;user_1&quot;, 16 * 60 * 1000L, &quot;click&quot;)
       )
-      .assignTimestampsAndWatermarks(
-        new BoundedOutOfOrdernessTimestampExtractor[UserBrowseLog](Time.seconds(0)) {
-          override def extractTimestamp(t: UserBrowseLog): Long = {
-            val dateTimeFormatter = DateTimeFormat.forPattern(&quot;yyyy-MM-dd HH:mm:ss&quot;)
-            val dateTime = DateTime.parse(t.eventTime, dateTimeFormatter)
-            dateTime.getMillis
-          }
-        }
-      )
+      .assignAscendingTimestamps(_._2)
+      .keyBy(r =&gt; r._1)
 
-    clickStream
-      .keyBy(&quot;userID&quot;)
-      .intervalJoin(browseStream.keyBy(&quot;userID&quot;))
-      .between(Time.minutes(-10),Time.seconds(0))
-      .process(new MyIntervalJoin)
+    val stream2 = env
+      .fromElements(
+        (&quot;user_1&quot;, 5 * 60 * 1000L, &quot;browse&quot;),
+        (&quot;user_1&quot;, 6 * 60 * 1000L, &quot;browse&quot;)
+      )
+      .assignAscendingTimestamps(_._2)
+      .keyBy(r =&gt; r._1)
+
+    stream1
+      .intervalJoin(stream2)
+      .between(Time.minutes(-10), Time.minutes(0))
+      .process(new ProcessJoinFunction[(String, Long, String), (String, Long, String), String] {
+        override def processElement(in1: (String, Long, String), in2: (String, Long, String), context: ProcessJoinFunction[(String, Long, String), (String, Long, String), String]#Context, collector: Collector[String]): Unit = {
+          collector.collect(in1 + &quot; =&gt; &quot; + in2)
+        }
+      })
+      .print()
+
+    stream2
+      .intervalJoin(stream1)
+      .between(Time.minutes(0), Time.minutes(10))
+      .process(new ProcessJoinFunction[(String, Long, String), (String, Long, String), String] {
+        override def processElement(in1: (String, Long, String), in2: (String, Long, String), context: ProcessJoinFunction[(String, Long, String), (String, Long, String), String]#Context, collector: Collector[String]): Unit = {
+          collector.collect(in1 + &quot; =&gt; &quot; + in2)
+        }
+      })
       .print()
 
     env.execute()
   }
+}
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">public class IntervalJoinExample {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+        env.setParallelism(1);
 
-  class MyIntervalJoin extends ProcessJoinFunction[UserClickLog, UserBrowseLog, String] {
-    override def processElement(
-      left: UserClickLog,
-      right: UserBrowseLog,
-      context: ProcessJoinFunction[UserClickLog, UserBrowseLog, String]#Context,
-      out: Collector[String]
-    ): Unit = {
-      out.collect(left +&quot; =Interval Join=&gt; &quot;+right)
+        KeyedStream&lt;Tuple3&lt;String, Long, String&gt;, String&gt; stream1 = env
+                .fromElements(
+                        Tuple3.of(&quot;user_1&quot;, 10 * 60 * 1000L, &quot;click&quot;)
+                )
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy
+                                .&lt;Tuple3&lt;String, Long, String&gt;&gt;forMonotonousTimestamps()
+                                .withTimestampAssigner(new SerializableTimestampAssigner&lt;Tuple3&lt;String, Long, String&gt;&gt;() {
+                                    @Override
+                                    public long extractTimestamp(Tuple3&lt;String, Long, String&gt; stringLongStringTuple3, long l) {
+                                        return stringLongStringTuple3.f1;
+                                    }
+                                })
+                )
+                .keyBy(r -&gt; r.f0);
+
+        KeyedStream&lt;Tuple3&lt;String, Long, String&gt;, String&gt; stream2 = env
+                .fromElements(
+                        Tuple3.of(&quot;user_1&quot;, 5 * 60 * 1000L, &quot;browse&quot;),
+                        Tuple3.of(&quot;user_1&quot;, 6 * 60 * 1000L, &quot;browse&quot;)
+                )
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy
+                                .&lt;Tuple3&lt;String, Long, String&gt;&gt;forMonotonousTimestamps()
+                                .withTimestampAssigner(new SerializableTimestampAssigner&lt;Tuple3&lt;String, Long, String&gt;&gt;() {
+                                    @Override
+                                    public long extractTimestamp(Tuple3&lt;String, Long, String&gt; stringLongStringTuple3, long l) {
+                                        return stringLongStringTuple3.f1;
+                                    }
+                                })
+                )
+                .keyBy(r -&gt; r.f0);
+
+        stream1
+                .intervalJoin(stream2)
+                .between(Time.minutes(-10), Time.minutes(0))
+                .process(new ProcessJoinFunction&lt;Tuple3&lt;String, Long, String&gt;, Tuple3&lt;String, Long, String&gt;, String&gt;() {
+                    @Override
+                    public void processElement(Tuple3&lt;String, Long, String&gt; stringLongStringTuple3, Tuple3&lt;String, Long, String&gt; stringLongStringTuple32, Context context, Collector&lt;String&gt; collector) throws Exception {
+                        collector.collect(stringLongStringTuple3 + &quot; =&gt; &quot; + stringLongStringTuple32);
+                    }
+                })
+                .print();
+
+        env.execute();
+
     }
-  }
 }
 </code></pre>
 <h3><a class="header" href="#基于窗口的join" id="基于窗口的join">基于窗口的Join</a></h3>
@@ -3040,6 +3105,108 @@ object IntervalJoinExample {
 <blockquote>
 <p>注意，对划分窗口后的数据流进行Join可能会产生意想不到的语义。例如，假设你为执行Join操作的算子配置了1小时的滚动窗口，那么一旦来自两个输入的元素没有被划分到同一窗口，它们就无法Join在一起，即使二者彼此仅相差1秒钟。</p>
 </blockquote>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">object TwoWindowJoinExample {
+  def main(args: Array[String]): Unit = {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+    env.setParallelism(1)
+
+    val stream1 = env
+      .fromElements(
+        (&quot;a&quot;, 1000L),
+        (&quot;a&quot;, 2000L)
+      )
+      .assignAscendingTimestamps(_._2)
+
+    val stream2 = env
+      .fromElements(
+        (&quot;a&quot;, 3000L),
+        (&quot;a&quot;, 4000L)
+      )
+      .assignAscendingTimestamps(_._2)
+
+    stream1
+      .join(stream2)
+      // on A.id = B.id
+      .where(_._1)
+      .equalTo(_._1)
+      .window(TumblingEventTimeWindows.of(Time.seconds(5)))
+      .apply(new JoinFunction[(String, Long), (String, Long), String] {
+        override def join(in1: (String, Long), in2: (String, Long)): String = {
+          in1 + &quot; =&gt; &quot; + in2
+        }
+      })
+      .print()
+
+    env.execute()
+  }
+}
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">public class TwoWindowJoinExample {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+
+        DataStream&lt;Tuple2&lt;String, Long&gt;&gt; stream1 = env
+                .fromElements(
+                        Tuple2.of(&quot;a&quot;, 1000L),
+                        Tuple2.of(&quot;b&quot;, 1000L),
+                        Tuple2.of(&quot;a&quot;, 2000L),
+                        Tuple2.of(&quot;b&quot;, 2000L)
+                )
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy
+                                .&lt;Tuple2&lt;String, Long&gt;&gt;forMonotonousTimestamps()
+                                .withTimestampAssigner(
+                                        new SerializableTimestampAssigner&lt;Tuple2&lt;String, Long&gt;&gt;() {
+                                            @Override
+                                            public long extractTimestamp(Tuple2&lt;String, Long&gt; stringLongTuple2, long l) {
+                                                return stringLongTuple2.f1;
+                                            }
+                                        }
+                                )
+                );
+
+        DataStream&lt;Tuple2&lt;String, Long&gt;&gt; stream2 = env
+                .fromElements(
+                        Tuple2.of(&quot;a&quot;, 3000L),
+                        Tuple2.of(&quot;b&quot;, 3000L),
+                        Tuple2.of(&quot;a&quot;, 4000L),
+                        Tuple2.of(&quot;b&quot;, 4000L)
+                )
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy
+                                .&lt;Tuple2&lt;String, Long&gt;&gt;forMonotonousTimestamps()
+                                .withTimestampAssigner(
+                                        new SerializableTimestampAssigner&lt;Tuple2&lt;String, Long&gt;&gt;() {
+                                            @Override
+                                            public long extractTimestamp(Tuple2&lt;String, Long&gt; stringLongTuple2, long l) {
+                                                return stringLongTuple2.f1;
+                                            }
+                                        }
+                                )
+                );
+
+        stream1
+                .join(stream2)
+                .where(r -&gt; r.f0)
+                .equalTo(r -&gt; r.f0)
+                .window(TumblingEventTimeWindows.of(Time.seconds(5)))
+                .apply(new JoinFunction&lt;Tuple2&lt;String, Long&gt;, Tuple2&lt;String, Long&gt;, String&gt;() {
+                    @Override
+                    public String join(Tuple2&lt;String, Long&gt; stringLongTuple2, Tuple2&lt;String, Long&gt; stringLongTuple22) throws Exception {
+                        return stringLongTuple2 + &quot; =&gt; &quot; + stringLongTuple22;
+                    }
+                })
+                .print();
+
+        env.execute();
+    }
+}
+</code></pre>
 <h2><a class="header" href="#处理迟到的元素" id="处理迟到的元素">处理迟到的元素</a></h2>
 <p>水位线可以用来平衡计算的完整性和延迟两方面。除非我们选择一种非常保守的水位线策略(最大延时设置的非常大，以至于包含了所有的元素，但结果是非常大的延迟)，否则我们总需要处理迟到的元素。</p>
 <p>迟到的元素是指当这个元素来到时，这个元素所对应的窗口已经计算完毕了(也就是说水位线已经没过窗口结束时间了)。这说明迟到这个特性只针对事件时间。</p>

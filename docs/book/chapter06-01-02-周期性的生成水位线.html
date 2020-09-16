@@ -172,12 +172,13 @@ env.getConfig.setAutoWatermarkInterval(5000)
 </code></pre>
 <p>上面的例子产生水位线的逻辑：每隔5秒钟，Flink会调用AssignerWithPeriodicWatermarks中的getCurrentWatermark()方法。如果方法返回的时间戳大于之前水位线的时间戳，新的水位线会被插入到流中。这个检查保证了水位线是单调递增的。如果方法返回的时间戳小于等于之前水位线的时间戳，则不会产生新的水位线。</p>
 <p>例子，自定义一个周期性的时间戳抽取</p>
-<pre><code class="language-java">class PeriodicAssigner extends AssignerWithPeriodicWatermarks[SensorReading] {
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">class PeriodicAssigner extends AssignerWithPeriodicWatermarks[SensorReading] {
   val bound = 60 * 1000 // 延时为1分钟
-  var maxTs = Long.MinValue + bound // 观察到的最大时间戳
+  var maxTs = Long.MinValue + bound + 1 // 观察到的最大时间戳
 
   override def getCurrentWatermark: Watermark {
-    new Watermark(maxTs - bound)
+    new Watermark(maxTs - bound - 1)
   }
 
   override def extractTimestamp(r: SensorReading, previousTS: Long) {
@@ -186,25 +187,74 @@ env.getConfig.setAutoWatermarkInterval(5000)
   }
 }
 </code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">.assignTimestampsAndWatermarks(
+  // generate periodic watermarks
+  new AssignerWithPeriodicWatermarks[(String, Long)] {
+    val bound = 10 * 1000L // 最大延迟时间
+    var maxTs = Long.MinValue + bound + 1 // 当前观察到的最大时间戳
+
+    // 用来生成水位线
+    // 默认200ms调用一次
+    override def getCurrentWatermark: Watermark = {
+      println(&quot;generate watermark!!!&quot; + (maxTs - bound - 1) + &quot;ms&quot;)
+      new Watermark(maxTs - bound - 1)
+    }
+
+    // 每来一条数据都会调用一次
+    override def extractTimestamp(t: (String, Long), l: Long): Long = {
+      println(&quot;extract timestamp!!!&quot;)
+      maxTs = maxTs.max(t._2) // 更新观察到的最大事件时间
+      t._2 // 抽取时间戳
+    }
+  }
+)
+</code></pre>
 <p>如果我们事先得知数据流的时间戳是单调递增的，也就是说没有乱序。我们可以使用assignAscendingTimestamps，方法会直接使用数据的时间戳生成水位线。</p>
+<p><strong>scala version</strong></p>
 <pre><code class="language-scala">val stream = ...
 val withTimestampsAndWatermarks = stream.assignAscendingTimestamps(e =&gt; e.timestamp)
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">.assignTimestampsAndWatermarks(
+        WatermarkStrategy
+                .&lt;SensorReading&gt;forMonotonousTimestamps()
+                .withTimestampAssigner(new SerializableTimestampAssigner&lt;SensorReading&gt;() {
+                    @Override
+                    public long extractTimestamp(SensorReading r, long l) {
+                        return r.timestamp;
+                    }
+                })
+)
 </code></pre>
 <p>如果我们能大致估算出数据流中的事件的最大延迟时间，可以使用如下代码：</p>
 <blockquote>
 <p>最大延迟时间就是当前到达的事件的事件时间和之前所有到达的事件中最大时间戳的差。</p>
 </blockquote>
-<pre><code class="language-scala">val stream = ...
-val withTimestampsAndWatermarks = stream.assignTimestampsAndWatermarks(
-  new SensorTimeAssigner()
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">.assignTimestampsAndWatermarks(
+  // 水位线策略；默认200ms的机器时间插入一次水位线
+  // 水位线 = 当前观察到的事件所携带的最大时间戳 - 最大延迟时间
+  WatermarkStrategy
+    // 最大延迟时间设置为5s
+    .forBoundedOutOfOrderness[(String, Long)](Duration.ofSeconds(5))
+    .withTimestampAssigner(new SerializableTimestampAssigner[(String, Long)] {
+      // 告诉系统第二个字段是时间戳，时间戳的单位是毫秒
+      override def extractTimestamp(element: (String, Long), recordTimestamp: Long): Long = element._2
+    })
 )
-
-class SensorTimeAssigner extends BoundedOutOfOrdernessTimestampExtractor[SensorReading](Time.seconds(5)) {
-    // 抽取时间戳
-    override def extractTimestamp(r: SensorReading): Long {
-      r.timestamp;
-    }
-}
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">.assignTimestampsAndWatermarks(
+        WatermarkStrategy
+                .&lt;Tuple2&lt;String, Long&gt;&gt;forBoundedOutOfOrderness(Duration.ofSeconds(5))
+                .withTimestampAssigner(new SerializableTimestampAssigner&lt;Tuple2&lt;String, Long&gt;&gt;() {
+                    @Override
+                    public long extractTimestamp(Tuple2&lt;String, Long&gt; element, long recordTimestamp) {
+                        return element.f1;
+                    }
+                })
+)
 </code></pre>
 <p>以上代码设置了最大延迟时间为5秒。</p>
 

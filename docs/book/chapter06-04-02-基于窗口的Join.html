@@ -177,6 +177,108 @@
 <blockquote>
 <p>注意，对划分窗口后的数据流进行Join可能会产生意想不到的语义。例如，假设你为执行Join操作的算子配置了1小时的滚动窗口，那么一旦来自两个输入的元素没有被划分到同一窗口，它们就无法Join在一起，即使二者彼此仅相差1秒钟。</p>
 </blockquote>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">object TwoWindowJoinExample {
+  def main(args: Array[String]): Unit = {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+    env.setParallelism(1)
+
+    val stream1 = env
+      .fromElements(
+        (&quot;a&quot;, 1000L),
+        (&quot;a&quot;, 2000L)
+      )
+      .assignAscendingTimestamps(_._2)
+
+    val stream2 = env
+      .fromElements(
+        (&quot;a&quot;, 3000L),
+        (&quot;a&quot;, 4000L)
+      )
+      .assignAscendingTimestamps(_._2)
+
+    stream1
+      .join(stream2)
+      // on A.id = B.id
+      .where(_._1)
+      .equalTo(_._1)
+      .window(TumblingEventTimeWindows.of(Time.seconds(5)))
+      .apply(new JoinFunction[(String, Long), (String, Long), String] {
+        override def join(in1: (String, Long), in2: (String, Long)): String = {
+          in1 + &quot; =&gt; &quot; + in2
+        }
+      })
+      .print()
+
+    env.execute()
+  }
+}
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">public class TwoWindowJoinExample {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+
+        DataStream&lt;Tuple2&lt;String, Long&gt;&gt; stream1 = env
+                .fromElements(
+                        Tuple2.of(&quot;a&quot;, 1000L),
+                        Tuple2.of(&quot;b&quot;, 1000L),
+                        Tuple2.of(&quot;a&quot;, 2000L),
+                        Tuple2.of(&quot;b&quot;, 2000L)
+                )
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy
+                                .&lt;Tuple2&lt;String, Long&gt;&gt;forMonotonousTimestamps()
+                                .withTimestampAssigner(
+                                        new SerializableTimestampAssigner&lt;Tuple2&lt;String, Long&gt;&gt;() {
+                                            @Override
+                                            public long extractTimestamp(Tuple2&lt;String, Long&gt; stringLongTuple2, long l) {
+                                                return stringLongTuple2.f1;
+                                            }
+                                        }
+                                )
+                );
+
+        DataStream&lt;Tuple2&lt;String, Long&gt;&gt; stream2 = env
+                .fromElements(
+                        Tuple2.of(&quot;a&quot;, 3000L),
+                        Tuple2.of(&quot;b&quot;, 3000L),
+                        Tuple2.of(&quot;a&quot;, 4000L),
+                        Tuple2.of(&quot;b&quot;, 4000L)
+                )
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy
+                                .&lt;Tuple2&lt;String, Long&gt;&gt;forMonotonousTimestamps()
+                                .withTimestampAssigner(
+                                        new SerializableTimestampAssigner&lt;Tuple2&lt;String, Long&gt;&gt;() {
+                                            @Override
+                                            public long extractTimestamp(Tuple2&lt;String, Long&gt; stringLongTuple2, long l) {
+                                                return stringLongTuple2.f1;
+                                            }
+                                        }
+                                )
+                );
+
+        stream1
+                .join(stream2)
+                .where(r -&gt; r.f0)
+                .equalTo(r -&gt; r.f0)
+                .window(TumblingEventTimeWindows.of(Time.seconds(5)))
+                .apply(new JoinFunction&lt;Tuple2&lt;String, Long&gt;, Tuple2&lt;String, Long&gt;, String&gt;() {
+                    @Override
+                    public String join(Tuple2&lt;String, Long&gt; stringLongTuple2, Tuple2&lt;String, Long&gt; stringLongTuple22) throws Exception {
+                        return stringLongTuple2 + &quot; =&gt; &quot; + stringLongTuple22;
+                    }
+                })
+                .print();
+
+        env.execute();
+    }
+}
+</code></pre>
 
                     </main>
 
