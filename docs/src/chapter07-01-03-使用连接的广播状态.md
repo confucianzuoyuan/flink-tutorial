@@ -8,7 +8,7 @@
 
 下面的例子实现了一个温度报警应用，应用有可以动态设定的阈值，动态设定通过广播流来实现。
 
-```java
+```scala
 val sensorData: DataStream[SensorReading] = ...
 val thresholds: DataStream[ThresholdUpdate] = ...
 val keyedSensorData: KeyedStream[SensorReading, String] = sensorData

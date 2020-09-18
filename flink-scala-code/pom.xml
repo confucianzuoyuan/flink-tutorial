@@ -72,6 +72,13 @@ under the License.
 <!--			<scope>provided</scope>-->
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-cep-scala_${scala.binary.version}</artifactId>
+			<version>${flink.version}</version>
+		</dependency>
+
+
 		<!-- Scala Library, provided by Flink as well. -->
 		<dependency>
 			<groupId>org.scala-lang</groupId>

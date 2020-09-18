@@ -3603,7 +3603,7 @@ restoreState(java.util.List[T] state): Unit
 <p>我们举个例子：一条流是一个规则(比如5秒钟内连续两个超过阈值的温度)，另一条流是待匹配的流。也就是说，规则流和事件流。所以每一个操作符的并行实例都需要把规则流保存在操作符状态中。也就是说，规则流需要被广播到所有的并行实例中去。</p>
 <p>在Flink中，这样的状态叫做广播状态(broadcast state)。广播状态和DataStream或者KeyedStream都可以做连接操作。</p>
 <p>下面的例子实现了一个温度报警应用，应用有可以动态设定的阈值，动态设定通过广播流来实现。</p>
-<pre><code class="language-java">val sensorData: DataStream[SensorReading] = ...
+<pre><code class="language-scala">val sensorData: DataStream[SensorReading] = ...
 val thresholds: DataStream[ThresholdUpdate] = ...
 val keyedSensorData: KeyedStream[SensorReading, String] = sensorData
   .keyBy(_.id)
@@ -3776,7 +3776,7 @@ env.setStateBackend(backend);
 <p>例如我们之前讲过增量聚合函数ReduceFunction/AggregateFunction，就可以提前聚合而不给state太多压力。</p>
 <p>我们来看一个例子，我们实现了一个KeyedProcessFunction，用来计算连续两次的温度的差值，如果差值超过阈值，报警。</p>
 <p>我们之前实现过这个需求，但没有清理掉状态数据。比如一小时内不再产生温度数据的传感器对应的状态数据就可以清理掉了。</p>
-<pre><code class="language-java">class SelfCleaningTemperatureAlertFunction(val threshold: Double)
+<pre><code class="language-scala">class SelfCleaningTemperatureAlertFunction(val threshold: Double)
     extends KeyedProcessFunction[String,
       SensorReading, (String, Double, Double)] {
 
@@ -3785,8 +3785,7 @@ env.setStateBackend(backend);
   // the keyed state handle for the last registered timer
   private var lastTimerState: ValueState[Long] = _
 
-  @Override
-public open(parameters: Configuration): Unit = {
+  override def open(parameters: Configuration): Unit = {
     // register state for last temperature
     val lastTempDesc = new ValueStateDescriptor[Double](
       &quot;lastTemp&quot;, classOf[Double])
@@ -3799,8 +3798,7 @@ public open(parameters: Configuration): Unit = {
       .getState(timestampDescriptor)
   }
 
-  @Override
-public processElement(
+  override def processElement(
       reading: SensorReading,
       ctx: KeyedProcessFunction
         [String, SensorReading, (String, Double, Double)]#Context,
@@ -3830,8 +3828,7 @@ public processElement(
     this.lastTempState.update(reading.temperature)
   }
 
-  @Override
-public onTimer(
+  override def onTimer(
       timestamp: Long,
       ctx: KeyedProcessFunction[String,
         SensorReading, (String, Double, Double)]#OnTimerContext,
