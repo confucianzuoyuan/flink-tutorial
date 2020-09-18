@@ -4457,10 +4457,18 @@ Modify job bc0b2ad61ecd4a615d92ce25390f61ad.
 <p><img src="images/cep6.png" alt="" /></p>
 <p>首先，开发人员要在DataStream流上定义出模式条件，之后Flink CEP引擎进行模式检测，必要时生成告警。</p>
 <p>为了使用Flink CEP，我们需要导入依赖：</p>
+<p><strong>scala version</strong></p>
 <pre><code class="language-xml">&lt;dependency&gt;
   &lt;groupId&gt;org.apache.flink&lt;/groupId&gt;
   &lt;artifactId&gt;flink-cep-scala_${scala.binary.version}&lt;/artifactId&gt;
   &lt;version&gt;${flink.version}&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-xml">&lt;dependency&gt;
+	&lt;groupId&gt;org.apache.flink&lt;/groupId&gt;
+	&lt;artifactId&gt;flink-cep_${scala.binary.version}&lt;/artifactId&gt;
+	&lt;version&gt;${flink.version}&lt;/version&gt;
 &lt;/dependency&gt;
 </code></pre>
 <p><em>Event Streams</em></p>
@@ -4555,58 +4563,146 @@ complexResult.print()
 timeoutResult.print()
 </code></pre>
 <p>完整例子:</p>
-<pre><code class="language-java">import org.apache.flink.cep.scala.CEP
-import org.apache.flink.cep.scala.pattern.Pattern
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.api.windowing.time.Time
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">object CepExample {
 
-import scala.collection.Map
-
-object ScalaFlinkLoginFail {
+  case class LoginEvent(userId: String, ip: String, eventType: String, eventTime: Long)
 
   def main(args: Array[String]): Unit = {
-
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
-    val loginEventStream = env.fromCollection(List(
-      LoginEvent(&quot;1&quot;, &quot;192.168.0.1&quot;, &quot;fail&quot;, &quot;1558430842&quot;),
-      LoginEvent(&quot;1&quot;, &quot;192.168.0.2&quot;, &quot;fail&quot;, &quot;1558430843&quot;),
-      LoginEvent(&quot;1&quot;, &quot;192.168.0.3&quot;, &quot;fail&quot;, &quot;1558430844&quot;),
-      LoginEvent(&quot;2&quot;, &quot;192.168.10.10&quot;, &quot;success&quot;, &quot;1558430845&quot;)
-    )).assignAscendingTimestamps(_.eventTime.toLong)
+    val stream = env
+      .fromElements(
+        LoginEvent(&quot;user_1&quot;, &quot;192.168.0.1&quot;, &quot;fail&quot;, 2000L),
+        LoginEvent(&quot;user_1&quot;, &quot;192.168.0.2&quot;, &quot;fail&quot;, 3000L),
+        LoginEvent(&quot;user_1&quot;, &quot;192.168.0.3&quot;, &quot;fail&quot;, 4000L),
+        LoginEvent(&quot;user_2&quot;, &quot;192.168.10.10&quot;, &quot;success&quot;, 5000L)
+      )
+      .assignAscendingTimestamps(_.eventTime)
+      .keyBy(r =&gt; r.userId)
 
-    val loginFailPattern = Pattern.begin[LoginEvent](&quot;begin&quot;)
-      .where(_.eventType.equals(&quot;fail&quot;))
-      .next(&quot;next&quot;)
-      .where(_.eventType.equals(&quot;fail&quot;))
-      .within(Time.seconds(10))
+    val pattern = Pattern
+      .begin[LoginEvent](&quot;first&quot;)
+      .where(r =&gt; r.eventType.equals(&quot;fail&quot;))
+      .next(&quot;second&quot;)
+      .where(r =&gt; r.eventType.equals(&quot;fail&quot;))
+      .next(&quot;third&quot;)
+      .where(r =&gt; r.eventType.equals(&quot;fail&quot;))
+      .within(Time.seconds(5))
 
-    val patternStream = CEP.pattern(
-      loginEventStream.keyBy(_.userId), loginFailPattern
-    )
+    val patternedStream = CEP.pattern(stream, pattern)
 
-    val loginFailDataStream = patternStream
-      .select((pattern: Map[String, Iterable[LoginEvent]]) =&gt; {
-        val first = pattern.getOrElse(&quot;begin&quot;, null).iterator.next()
-        val second = pattern.getOrElse(&quot;next&quot;, null).iterator.next()
+    patternedStream
+      .select((pattern: scala.collection.Map[String, Iterable[LoginEvent]]) =&gt; {
+        val first = pattern(&quot;first&quot;).iterator.next()
+        val second = pattern(&quot;second&quot;).iterator.next()
+        val third = pattern(&quot;third&quot;).iterator.next()
 
-        (second.userId, second.ip, second.eventType)
+        (first.userId, first.ip, second.ip, third.ip)
       })
+      .print()
 
-    loginFailDataStream.print
-
-    env.execute
+    env.execute()
   }
-
 }
+</code></pre>
+<p><strong>java version</strong></p>
+<p>POJO类定义</p>
+<pre><code class="language-java">public class LoginEvent {
+    public String userId;
+    public String ipAddress;
+    public String eventType;
+    public Long eventTime;
 
-case class LoginEvent(userId: String,
-                      ip: String,
-                      eventType: String,
-                      eventTime: String)
+    public LoginEvent(String userId, String ipAddress, String eventType, Long eventTime) {
+        this.userId = userId;
+        this.ipAddress = ipAddress;
+        this.eventType = eventType;
+        this.eventTime = eventTime;
+    }
+
+    public LoginEvent() {}
+
+    @Override
+    public String toString() {
+        return &quot;LoginEvent{&quot; +
+                &quot;userId='&quot; + userId + '\'' +
+                &quot;, ipAddress='&quot; + ipAddress + '\'' +
+                &quot;, eventType='&quot; + eventType + '\'' +
+                &quot;, eventTime=&quot; + eventTime +
+                '}';
+    }
+}
+</code></pre>
+<p>业务逻辑编写</p>
+<pre><code class="language-java">public class CepExample {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+
+        DataStream&lt;LoginEvent&gt; stream = env
+                .fromElements(
+                        new LoginEvent(&quot;user_1&quot;, &quot;0.0.0.0&quot;, &quot;fail&quot;, 2000L),
+                        new LoginEvent(&quot;user_1&quot;, &quot;0.0.0.1&quot;, &quot;fail&quot;, 3000L),
+                        new LoginEvent(&quot;user_1&quot;, &quot;0.0.0.2&quot;, &quot;fail&quot;, 4000L)
+               )
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy
+                                .&lt;LoginEvent&gt;forMonotonousTimestamps()
+                        .withTimestampAssigner(new SerializableTimestampAssigner&lt;LoginEvent&gt;() {
+                            @Override
+                            public long extractTimestamp(LoginEvent loginEvent, long l) {
+                                return loginEvent.eventTime;
+                            }
+                        })
+                )
+                .keyBy(r -&gt; r.userId);
+
+        Pattern&lt;LoginEvent, LoginEvent&gt; pattern = Pattern
+                .&lt;LoginEvent&gt;begin(&quot;first&quot;)
+                .where(new SimpleCondition&lt;LoginEvent&gt;() {
+                    @Override
+                    public boolean filter(LoginEvent loginEvent) throws Exception {
+                        return loginEvent.eventType.equals(&quot;fail&quot;);
+                    }
+                })
+                .next(&quot;second&quot;)
+                .where(new SimpleCondition&lt;LoginEvent&gt;() {
+                    @Override
+                    public boolean filter(LoginEvent loginEvent) throws Exception {
+                        return loginEvent.eventType.equals(&quot;fail&quot;);
+                    }
+                })
+                .next(&quot;third&quot;)
+                .where(new SimpleCondition&lt;LoginEvent&gt;() {
+                    @Override
+                    public boolean filter(LoginEvent loginEvent) throws Exception {
+                        return loginEvent.eventType.equals(&quot;fail&quot;);
+                    }
+                })
+                .within(Time.seconds(5));
+
+
+        PatternStream&lt;LoginEvent&gt; patternedStream = CEP.pattern(stream, pattern);
+
+        patternedStream
+                .select(new PatternSelectFunction&lt;LoginEvent, Tuple4&lt;String, String, String, String&gt;&gt;() {
+                    @Override
+                    public Tuple4&lt;String, String, String, String&gt; select(Map&lt;String, List&lt;LoginEvent&gt;&gt; map) throws Exception {
+                        LoginEvent first = map.get(&quot;first&quot;).iterator().next();
+                        LoginEvent second = map.get(&quot;second&quot;).iterator().next();
+                        LoginEvent third = map.get(&quot;third&quot;).iterator().next();
+                        return Tuple4.of(first.userId, first.ipAddress, second.ipAddress, third.ipAddress);
+                    }
+                })
+                .print();
+
+        env.execute();
+    }
+}
 </code></pre>
 <h1><a class="header" href="#第十二章table-api和flink-sql" id="第十二章table-api和flink-sql">第十二章，Table API和Flink SQL</a></h1>
 <h2><a class="header" href="#整体介绍" id="整体介绍">整体介绍</a></h2>

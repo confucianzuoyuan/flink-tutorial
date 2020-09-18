@@ -42,11 +42,23 @@ Flink为CEP提供了专门的Flink CEP library，它包含如下组件：
 
 为了使用Flink CEP，我们需要导入依赖：
 
+**scala version**
+
 ```xml
 <dependency>
   <groupId>org.apache.flink</groupId>
   <artifactId>flink-cep-scala_${scala.binary.version}</artifactId>
   <version>${flink.version}</version>
+</dependency>
+```
+
+**java version**
+
+```xml
+<dependency>
+	<groupId>org.apache.flink</groupId>
+	<artifactId>flink-cep_${scala.binary.version}</artifactId>
+	<version>${flink.version}</version>
 </dependency>
 ```
 
@@ -186,58 +198,153 @@ timeoutResult.print()
 
 完整例子:
 
-```java
-import org.apache.flink.cep.scala.CEP
-import org.apache.flink.cep.scala.pattern.Pattern
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.api.windowing.time.Time
+**scala version**
 
-import scala.collection.Map
+```scala
+object CepExample {
 
-object ScalaFlinkLoginFail {
+  case class LoginEvent(userId: String, ip: String, eventType: String, eventTime: Long)
 
   def main(args: Array[String]): Unit = {
-
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
-    val loginEventStream = env.fromCollection(List(
-      LoginEvent("1", "192.168.0.1", "fail", "1558430842"),
-      LoginEvent("1", "192.168.0.2", "fail", "1558430843"),
-      LoginEvent("1", "192.168.0.3", "fail", "1558430844"),
-      LoginEvent("2", "192.168.10.10", "success", "1558430845")
-    )).assignAscendingTimestamps(_.eventTime.toLong)
+    val stream = env
+      .fromElements(
+        LoginEvent("user_1", "192.168.0.1", "fail", 2000L),
+        LoginEvent("user_1", "192.168.0.2", "fail", 3000L),
+        LoginEvent("user_1", "192.168.0.3", "fail", 4000L),
+        LoginEvent("user_2", "192.168.10.10", "success", 5000L)
+      )
+      .assignAscendingTimestamps(_.eventTime)
+      .keyBy(r => r.userId)
 
-    val loginFailPattern = Pattern.begin[LoginEvent]("begin")
-      .where(_.eventType.equals("fail"))
-      .next("next")
-      .where(_.eventType.equals("fail"))
-      .within(Time.seconds(10))
+    val pattern = Pattern
+      .begin[LoginEvent]("first")
+      .where(r => r.eventType.equals("fail"))
+      .next("second")
+      .where(r => r.eventType.equals("fail"))
+      .next("third")
+      .where(r => r.eventType.equals("fail"))
+      .within(Time.seconds(5))
 
-    val patternStream = CEP.pattern(
-      loginEventStream.keyBy(_.userId), loginFailPattern
-    )
+    val patternedStream = CEP.pattern(stream, pattern)
 
-    val loginFailDataStream = patternStream
-      .select((pattern: Map[String, Iterable[LoginEvent]]) => {
-        val first = pattern.getOrElse("begin", null).iterator.next()
-        val second = pattern.getOrElse("next", null).iterator.next()
+    patternedStream
+      .select((pattern: scala.collection.Map[String, Iterable[LoginEvent]]) => {
+        val first = pattern("first").iterator.next()
+        val second = pattern("second").iterator.next()
+        val third = pattern("third").iterator.next()
 
-        (second.userId, second.ip, second.eventType)
+        (first.userId, first.ip, second.ip, third.ip)
       })
+      .print()
 
-    loginFailDataStream.print
-
-    env.execute
+    env.execute()
   }
-
 }
-
-case class LoginEvent(userId: String,
-                      ip: String,
-                      eventType: String,
-                      eventTime: String)
 ```
 
+**java version**
+
+POJO类定义
+
+```java
+public class LoginEvent {
+    public String userId;
+    public String ipAddress;
+    public String eventType;
+    public Long eventTime;
+
+    public LoginEvent(String userId, String ipAddress, String eventType, Long eventTime) {
+        this.userId = userId;
+        this.ipAddress = ipAddress;
+        this.eventType = eventType;
+        this.eventTime = eventTime;
+    }
+
+    public LoginEvent() {}
+
+    @Override
+    public String toString() {
+        return "LoginEvent{" +
+                "userId='" + userId + '\'' +
+                ", ipAddress='" + ipAddress + '\'' +
+                ", eventType='" + eventType + '\'' +
+                ", eventTime=" + eventTime +
+                '}';
+    }
+}
+```
+
+业务逻辑编写
+
+```java
+public class CepExample {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+
+        DataStream<LoginEvent> stream = env
+                .fromElements(
+                        new LoginEvent("user_1", "0.0.0.0", "fail", 2000L),
+                        new LoginEvent("user_1", "0.0.0.1", "fail", 3000L),
+                        new LoginEvent("user_1", "0.0.0.2", "fail", 4000L)
+               )
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy
+                                .<LoginEvent>forMonotonousTimestamps()
+                        .withTimestampAssigner(new SerializableTimestampAssigner<LoginEvent>() {
+                            @Override
+                            public long extractTimestamp(LoginEvent loginEvent, long l) {
+                                return loginEvent.eventTime;
+                            }
+                        })
+                )
+                .keyBy(r -> r.userId);
+
+        Pattern<LoginEvent, LoginEvent> pattern = Pattern
+                .<LoginEvent>begin("first")
+                .where(new SimpleCondition<LoginEvent>() {
+                    @Override
+                    public boolean filter(LoginEvent loginEvent) throws Exception {
+                        return loginEvent.eventType.equals("fail");
+                    }
+                })
+                .next("second")
+                .where(new SimpleCondition<LoginEvent>() {
+                    @Override
+                    public boolean filter(LoginEvent loginEvent) throws Exception {
+                        return loginEvent.eventType.equals("fail");
+                    }
+                })
+                .next("third")
+                .where(new SimpleCondition<LoginEvent>() {
+                    @Override
+                    public boolean filter(LoginEvent loginEvent) throws Exception {
+                        return loginEvent.eventType.equals("fail");
+                    }
+                })
+                .within(Time.seconds(5));
+
+
+        PatternStream<LoginEvent> patternedStream = CEP.pattern(stream, pattern);
+
+        patternedStream
+                .select(new PatternSelectFunction<LoginEvent, Tuple4<String, String, String, String>>() {
+                    @Override
+                    public Tuple4<String, String, String, String> select(Map<String, List<LoginEvent>> map) throws Exception {
+                        LoginEvent first = map.get("first").iterator().next();
+                        LoginEvent second = map.get("second").iterator().next();
+                        LoginEvent third = map.get("third").iterator().next();
+                        return Tuple4.of(first.userId, first.ipAddress, second.ipAddress, third.ipAddress);
+                    }
+                })
+                .print();
+
+        env.execute();
+    }
+}
+```

@@ -8,10 +8,7 @@ import org.apache.flink.streaming.api.windowing.time.Time
 
 object CepExample {
 
-  case class LoginEvent(userId: String,
-                        ip: String,
-                        eventType: String,
-                        eventTime: Long)
+  case class LoginEvent(userId: String, ip: String, eventType: String, eventTime: Long)
 
   def main(args: Array[String]): Unit = {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
@@ -51,5 +48,4 @@ object CepExample {
 
     env.execute()
   }
-
 }
