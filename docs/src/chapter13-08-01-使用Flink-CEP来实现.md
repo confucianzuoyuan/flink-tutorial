@@ -4,7 +4,7 @@
 
 我们将会利用CEP库来实现这个功能。我们先将事件流按照订单号orderId分流，然后定义这样的一个事件模式：在15分钟内，事件“create”与“pay”严格紧邻：
 
-```java
+```scala
 val orderPayPattern = Pattern.begin[OrderEvent]("begin")
   .where(_.eventType == "create")
   .next("next")
@@ -12,83 +12,60 @@ val orderPayPattern = Pattern.begin[OrderEvent]("begin")
   .within(Time.seconds(5))
 ```
 
-这样调用.select方法时，就可以同时获取到匹配出的事件和超时未匹配的事件了。
+这样调用`.select`方法时，就可以同时获取到匹配出的事件和超时未匹配的事件了。
 在src/main/scala下继续创建OrderTimeout.scala文件，新建一个单例对象。定义样例类OrderEvent，这是输入的订单事件流；另外还有OrderResult，这是输出显示的订单状态结果。由于没有现成的数据，我们还是用几条自定义的示例数据来做演示。
+
 完整代码如下：
 
-```java
-import org.apache.flink.cep.scala.CEP
-import org.apache.flink.cep.scala.pattern.Pattern
-import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.api.windowing.time.Time
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.util.Collector
-import scala.collection.Map
+**scala version**
 
-case class OrderEvent(orderId: String, eventType: String, eventTime: String)
-
-object OrderTimeout {
+```scala
+object OrderTimeoutDetect {
+   case class OrderEvent(orderId: String, eventType: String, eventTime: Long)
 
   def main(args: Array[String]): Unit = {
-
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setParallelism(1)
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+    env.setParallelism(1)
 
-    val orderEventStream = env.fromCollection(List(
-      OrderEvent("1", "create", "1558430842"),
-      OrderEvent("2", "create", "1558430843"),
-      OrderEvent("2", "pay", "1558430844"),
-      OrderEvent("3", "pay", "1558430942"),
-      OrderEvent("4", "pay", "1558430943")
-    )).assignAscendingTimestamps(_.eventTime.toLong * 1000)
+    val timeoutputTag = new OutputTag[String]("timeout-tag")
 
-//    val orders: DataStream[String] = env
-//      .socketTextStream("localhost", 9999)
-//
-//    val orderEventStream = orders
-//      .map(s => {
-//        println(s)
-//        val slist = s.split("\\|")
-//        println(slist)
-//        OrderEvent(slist(0), slist(1), slist(2))
-//      })
-//      .assignAscendingTimestamps(_.eventTime.toLong * 1000)
+    val orderStream = env
+      .fromElements(
+        OrderEvent("order_1", "create", 2000L),
+        OrderEvent("order_2", "create", 3000L),
+        OrderEvent("order_1", "pay", 4000L)
+      )
+      .assignAscendingTimestamps(_.eventTime)
+      .keyBy(r => r.orderId)
 
-    val orderPayPattern = Pattern.begin[OrderEvent]("begin")
+    val pattern = Pattern
+      .begin[OrderEvent]("create")
       .where(_.eventType.equals("create"))
-      .next("next")
+      .next("pay")
       .where(_.eventType.equals("pay"))
       .within(Time.seconds(5))
 
-    val orderTimeoutOutput = OutputTag[OrderEvent]("orderTimeout")
+    val patternedStream = CEP.pattern(orderStream, pattern)
 
-    val patternStream = CEP.pattern(
-      orderEventStream.keyBy("orderId"), orderPayPattern)
-
-    val timeoutFunction = (
-      map: Map[String, Iterable[OrderEvent]],
-      timestamp: Long,
-      out: Collector[OrderEvent]
-    ) => {
-      print(timestamp)
-      val orderStart = map.get("begin").get.head
-      out.collect(orderStart)
+    val selectFunc = (map: scala.collection.Map[String, Iterable[OrderEvent]], out: Collector[String]) => {
+      val create = map("create").iterator.next()
+      out.collect("order id " + create.orderId + " is payed!")
     }
 
-    val selectFunction = (
-      map: Map[String, Iterable[OrderEvent]],
-      out: Collector[OrderEvent]
-    ) => {}
+    val timeoutFunc = (map: scala.collection.Map[String, Iterable[OrderEvent]], ts: Long, out: Collector[String]) => {
+      val create = map("create").iterator.next()
+      out.collect("order id " + create.orderId + " is not payed! and timeout ts is " + ts)
+    }
 
-    val timeoutOrder = patternStream
-      .flatSelect(orderTimeoutOutput)(timeoutFunction)(selectFunction)
+    val selectStream = patternedStream.flatSelect(timeoutputTag)(timeoutFunc)(selectFunc)
 
-    timeoutOrder.getSideOutput(orderTimeoutOutput).print()
+    selectStream.print()
+    selectStream.getSideOutput(timeoutputTag).print()
 
-    env.execute
-
+    env.execute()
   }
 }
 ```
 
+**java version**

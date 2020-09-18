@@ -1,13 +1,6 @@
 ### 使用Process Function实现订单超时需求
 
 ```scala
-import org.apache.flink.api.common.state.ValueStateDescriptor
-import org.apache.flink.api.scala.typeutils.Types
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.functions.KeyedProcessFunction
-import org.apache.flink.streaming.api.scala._
-import org.apache.flink.util.Collector
-
 object OrderTimeoutWIthoutCep {
 
   case class OrderEvent(orderId: String,
