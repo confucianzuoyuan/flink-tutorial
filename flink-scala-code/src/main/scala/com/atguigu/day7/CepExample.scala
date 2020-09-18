@@ -34,6 +34,12 @@ object CepExample {
       .where(r => r.eventType.equals("fail"))
       .within(Time.seconds(5))
 
+    val pattern1 = Pattern
+      .begin[LoginEvent]("first")
+      .times(3)
+      .where(r => r.eventType.equals("fail"))
+      .within(Time.seconds(5))
+
     val patternedStream = CEP.pattern(stream, pattern)
 
     patternedStream
@@ -43,6 +49,18 @@ object CepExample {
         val third = pattern("third").iterator.next()
 
         (first.userId, first.ip, second.ip, third.ip)
+      })
+      .print()
+
+    val patternedStream1 = CEP.pattern(stream, pattern1)
+
+    patternedStream1
+      .select((pattern: scala.collection.Map[String, Iterable[LoginEvent]]) => {
+        val first = pattern("first").iterator
+        for (e <- first) {
+          println(e)
+        }
+        ("cep", "done")
       })
       .print()
 
