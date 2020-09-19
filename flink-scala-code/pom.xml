@@ -90,7 +90,17 @@ under the License.
 			<version>2.2.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.bahir</groupId>
+			<artifactId>flink-connector-redis_2.11</artifactId>
+			<version>1.0</version>
+		</dependency>
 
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-connector-elasticsearch7_2.11</artifactId>
+			<version>1.11.0</version>
+		</dependency>
 
 		<!-- Scala Library, provided by Flink as well. -->
 		<dependency>
