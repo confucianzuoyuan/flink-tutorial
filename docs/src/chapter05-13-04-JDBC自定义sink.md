@@ -4,58 +4,115 @@
 <dependency>
   <groupId>mysql</groupId>
   <artifactId>mysql-connector-java</artifactId>
-  <version>5.1.44</version>
+  <version>8.0.21</version>
 </dependency>
 ```
 
-添加MyJdbcSink
+示例代码：
 
-```java
-public static class MyJdbcSink extends RichSinkFunction<SensorReading> {
-  private Connection conn;
-  private PreparedStatement insertStmt;
-  private PreparedStatement updateStmt;
-  // open 主要是创建连接
-  @Override
-  public void open(Configuration parameters) throws Exception {
-    super.open(parameters);
-    conn = DriverManager.getConnection(
-      "jdbc:mysql://localhost:3306/test",
-      "root",
-      "123456");
-    insertStmt = conn.prepareStatement(
-      "INSERT INTO temperatures (sensor, temp) VALUES (?, ?)"
-    );
-    updateStmt = conn.prepareStatement(
-      "UPDATE temperatures SET temp = ? WHERE sensor = ?"
-    );
+**scala version**
+
+```scala
+object SinkToMySQL {
+  def main(args: Array[String]): Unit = {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setParallelism(1)
+
+    val stream = env.addSource(new SensorSource)
+
+    stream.addSink(new MyJDBCSink)
+
+    env.execute()
   }
-  // 调用连接，执行sql
-  @Override
-  public void invoke(SensorReading value, Context context) throws Exception {
-    updateStmt.setDouble(1, value.temperature);
-    updateStmt.setString(2, value.id);
-    updateStmt.execute();
 
-    if (updateStmt.getUpdateCount == 0) {
-      insertStmt.setString(1, value.id);
-      insertStmt.setDouble(2, value.temperature);
-      insertStmt.execute();
+  class MyJDBCSink extends RichSinkFunction[SensorReading] {
+    var conn: Connection = _
+    var insertStmt: PreparedStatement = _
+    var updateStmt: PreparedStatement = _
+
+    override def open(parameters: Configuration): Unit = {
+      conn = DriverManager.getConnection(
+        "jdbc:mysql://localhost:3306/sensor",
+        "zuoyuan",
+        "zuoyuan"
+      )
+      insertStmt = conn.prepareStatement("INSERT INTO temps (id, temp) VALUES (?, ?)")
+      updateStmt = conn.prepareStatement("UPDATE temps SET temp = ? WHERE id = ?")
     }
-  }
 
-  @Override
-  public void close() throws Exception {
-    super.close();
-    insertStmt.close();
-    updateStmt.close();
-    conn.close();
+    override def invoke(value: SensorReading, context: SinkFunction.Context[_]): Unit = {
+      updateStmt.setDouble(1, value.temperature)
+      updateStmt.setString(2, value.id)
+      updateStmt.execute()
+
+      if (updateStmt.getUpdateCount == 0) {
+        insertStmt.setString(1, value.id)
+        insertStmt.setDouble(2, value.temperature)
+        insertStmt.execute()
+      }
+    }
+
+    override def close(): Unit = {
+      insertStmt.close()
+      updateStmt.close()
+      conn.close()
+    }
   }
 }
 ```
 
-在main方法中增加，把明细保存到mysql中
+**java version**
 
 ```java
-dataStream.addSink(new MyJdbcSink());
+public class SinkToMySQL {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+
+        DataStream<SensorReading> stream = env.addSource(new SensorSource());
+
+        stream.addSink(new MyJDBCSink());
+
+        env.execute();
+    }
+
+    public static class MyJDBCSink extends RichSinkFunction<SensorReading> {
+        private Connection conn;
+        private PreparedStatement insertStmt;
+        private PreparedStatement updateStmt;
+
+        @Override
+        public void open(Configuration parameters) throws Exception {
+            super.open(parameters);
+            conn = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/sensor",
+                    "zuoyuan",
+                    "zuoyuan"
+            );
+            insertStmt = conn.prepareStatement("INSERT INTO temps (id, temp) VALUES (?, ?)");
+            updateStmt = conn.prepareStatement("UPDATE temps SET temp = ? WHERE id = ?");
+        }
+
+        @Override
+        public void invoke(SensorReading value, Context context) throws Exception {
+            updateStmt.setDouble(1, value.temperature);
+            updateStmt.setString(2, value.id);
+            updateStmt.execute();
+
+            if (updateStmt.getUpdateCount() == 0) {
+                insertStmt.setString(1, value.id);
+                insertStmt.setDouble(2, value.temperature);
+                insertStmt.execute();
+            }
+        }
+
+        @Override
+        public void close() throws Exception {
+            super.close();
+            insertStmt.close();
+            updateStmt.close();
+            conn.close();
+        }
+    }
+}
 ```

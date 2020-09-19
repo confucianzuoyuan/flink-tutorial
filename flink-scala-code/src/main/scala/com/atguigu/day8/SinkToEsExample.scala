@@ -15,28 +15,10 @@ object SinkToEsExample {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
 
-
     val httpHosts = new util.ArrayList[HttpHost]()
-
     httpHosts.add(new HttpHost("127.0.0.1", 9200, "http"))
-
     val esSinkBuilder = new ElasticsearchSink.Builder[SensorReading](
       httpHosts,
-//      new ElasticsearchSinkFunction[SensorReading] {
-//        override def process(t: SensorReading, runtimeContext: RuntimeContext, requestIndexer: RequestIndexer): Unit = {
-//          val json = new util.HashMap[String, String]()
-//          json.put("data", t.temperature.toString)
-//
-//          val indexRequest = Requests
-//            .indexRequest()
-//            .index("sensor") // 索引是sensor，相当于数据库
-//                        .`type`("readingData") // es6必须写这一行代码
-//            .source(json)
-//
-//          requestIndexer.add(indexRequest)
-//        }
-//
-//      }
       new ElasticsearchSinkFunction[SensorReading] {
         override def process(t: SensorReading, runtimeContext: RuntimeContext, requestIndexer: RequestIndexer): Unit = {
           val hashMap = new util.HashMap[String, String]()
