@@ -21,7 +21,8 @@ object OrderTimeoutDetect {
       .fromElements(
         OrderEvent("order_1", "create", 2000L),
         OrderEvent("order_2", "create", 3000L),
-        OrderEvent("order_1", "pay", 4000L)
+        OrderEvent("order_1", "pay", 4000L),
+        OrderEvent("order_2", "pay", 10000L)
       )
       .assignAscendingTimestamps(_.eventTime)
       .keyBy(r => r.orderId)
