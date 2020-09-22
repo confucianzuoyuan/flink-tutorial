@@ -11,7 +11,7 @@ insert into table t_user values ('1','huangbo'), ('2','xuzheng'),('3','wangbaoqi
 
 然后编写程序，将数据流写入到hive中
 
-```java
+```scala
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.table.api._
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
@@ -19,7 +19,7 @@ import org.apache.flink.table.catalog.hive.HiveCatalog
 
 object TestHiveStreaming {
   def main(args: Array[String]): Unit = {
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     val tableEnv = StreamTableEnvironment.create(env)
 
     val stream = env

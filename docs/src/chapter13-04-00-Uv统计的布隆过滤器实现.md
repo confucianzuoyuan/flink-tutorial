@@ -2,9 +2,9 @@
 
 完整代码如下：
 
-```java
-package com.atguigu.proj
+**scala version**
 
+```scala
 import java.lang
 import java.sql.Timestamp
 
@@ -34,7 +34,7 @@ object BloomFilterGuava {
                           timestamp: Long)
 
   def main(args: Array[String]): Unit = {
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
@@ -72,6 +72,7 @@ object BloomFilterGuava {
 
     override def merge(a: (Long, BloomFilter[lang.Long]), b: (Long, BloomFilter[lang.Long])): (Long, BloomFilter[lang.Long]) = ???
   }
+  
   class UvProcessFunc extends ProcessWindowFunction[Long, String, String, TimeWindow] {
     // 连接到redis
     override def process(key: String, context: Context, elements: Iterable[Long], out: Collector[String]): Unit = {

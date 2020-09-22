@@ -3,20 +3,9 @@
 完整代码如下：
 
 ```scala
-import org.apache.flink.api.common.state.{ValueState, ValueStateDescriptor}
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.functions.co.CoProcessFunction
-import org.apache.flink.streaming.api.scala.OutputTag
-import org.apache.flink.streaming.api.scala._
-import org.apache.flink.util.Collector
+case class OrderEvent(orderId: String, eventType: String, eventTime: String)
 
-case class OrderEvent(orderId: String,
-                      eventType: String,
-                      eventTime: String)
-
-case class PayEvent(orderId: String,
-                    eventType: String,
-                    eventTime: String)
+case class PayEvent(orderId: String, eventType: String, eventTime: String)
 
 object TwoStreamsJoin {
   val unmatchedOrders = new OutputTag[OrderEvent]("unmatchedOrders"){}
@@ -29,13 +18,14 @@ object TwoStreamsJoin {
 
     val orders = env
       .fromCollection(List(
-      OrderEvent("1", "create", "1558430842"),
-      OrderEvent("2", "create", "1558430843"),
-      OrderEvent("1", "pay", "1558430844"),
-      OrderEvent("2", "pay", "1558430845"),
-      OrderEvent("3", "create", "1558430849"),
-      OrderEvent("3", "pay", "1558430849")
-    )).assignAscendingTimestamps(_.eventTime.toLong * 1000)
+          OrderEvent("1", "create", "1558430842"),
+          OrderEvent("2", "create", "1558430843"),
+          OrderEvent("1", "pay", "1558430844"),
+          OrderEvent("2", "pay", "1558430845"),
+          OrderEvent("3", "create", "1558430849"),
+          OrderEvent("3", "pay", "1558430849")
+      ))
+      .assignAscendingTimestamps(_.eventTime.toLong * 1000)
       .keyBy("orderId")
 
     val pays = env.fromCollection(List(

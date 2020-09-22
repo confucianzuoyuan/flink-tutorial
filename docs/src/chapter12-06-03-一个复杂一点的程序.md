@@ -10,7 +10,7 @@ import org.apache.flink.table.catalog.hive.HiveCatalog
 
 object TestHiveStreaming {
   def main(args: Array[String]): Unit = {
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     val tableEnv = StreamTableEnvironment.create(env)
 
     val stream = env.fromElements(

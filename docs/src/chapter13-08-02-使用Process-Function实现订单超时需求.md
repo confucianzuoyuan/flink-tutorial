@@ -1,14 +1,14 @@
 ### 使用Process Function实现订单超时需求
 
 ```scala
-object OrderTimeoutWIthoutCep {
+object OrderTimeoutWithoutCep {
 
   case class OrderEvent(orderId: String,
                         eventType: String,
                         eventTime: String)
 
   def main(args: Array[String]): Unit = {
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
