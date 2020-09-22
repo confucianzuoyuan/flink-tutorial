@@ -21,9 +21,7 @@ public class OrderTimeoutDetectWithoutCEP {
                 .fromElements(
                         new OrderEvent("order_1", "create", 2000L),
                         new OrderEvent("order_2", "create", 3000L),
-                        new OrderEvent("order_1", "pay", 4000L),
-                        new OrderEvent("order_2", "pay", 10000L),
-                        new OrderEvent("order_3", "create", 11000L)
+                        new OrderEvent("order_1", "pay", 4000L)
                 )
                 .assignTimestampsAndWatermarks(
                         WatermarkStrategy.<OrderEvent>forMonotonousTimestamps()

@@ -122,6 +122,28 @@ under the License.
 			<version>8.0.21</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-table-api-scala-bridge_2.11</artifactId>
+			<version>1.11.0</version>
+<!--			<scope>provided</scope>-->
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-table-planner-blink_2.11</artifactId>
+			<version>1.11.0</version>
+<!--			<scope>provided</scope>-->
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-table-common</artifactId>
+			<version>1.11.0</version>
+<!--			<scope>provided</scope>-->
+		</dependency>
+
+
 		<!-- Scala Library, provided by Flink as well. -->
 		<dependency>
 			<groupId>org.scala-lang</groupId>
