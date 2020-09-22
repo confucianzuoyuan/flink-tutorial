@@ -20,49 +20,19 @@
 
 代码如下：
 
-```java
-// 定义好 DataStream
-val inputStream: DataStream[String] = env.readTextFile("\\sensor.txt")
-val dataStream: DataStream[SensorReading] = inputStream
-  .map(data => {
-    val dataArray = data.split(",")
-    SensorReading(dataArray(0), dataArray(1).toLong, dataArray(2).toDouble)
-  })
-
-// 将 DataStream转换为 Table，并指定时间字段
+```scala
+val stream = env.addSource(new SensorSource)
 val sensorTable = tableEnv
-  .fromDataStream(dataStream, 'id, 'temperature, 'timestamp, 'pt.proctime)
+  .fromDataStream(stream, $"id", $"timestamp", $"temperature", $"pt".proctime())
 ```
 
-2. 定义Table Schema时指定
-
-这种方法其实也很简单，只要在定义Schema的时候，加上一个新的字段，并指定成proctime就可以了。
-
-代码如下：
-
-```java
-tableEnv
-  .connect(
-    new FileSystem().path("..\\sensor.txt"))
-  .withFormat(new Csv())
-  .withSchema(
-    new Schema()
-      .field("id", DataTypes.STRING())
-      .field("timestamp", DataTypes.BIGINT())
-      .field("temperature", DataTypes.DOUBLE())
-      .field("pt", DataTypes.TIMESTAMP(3))
-      .proctime()    // 指定 pt字段为处理时间
-  ) // 定义表结构
-  .createTemporaryTable("inputTable") // 创建临时表
-```
-
-3. 创建表的DDL中指定
+2. 创建表的DDL中指定
 
 在创建表的DDL中，增加一个字段并指定成proctime，也可以指定当前的时间字段。
 
 代码如下：
 
-```java
+```scala
 val sinkDDL: String =
   """
     |create table dataTable (
@@ -72,7 +42,7 @@ val sinkDDL: String =
     |  pt AS PROCTIME()
     |) with (
     |  'connector.type' = 'filesystem',
-    |  'connector.path' = 'file:///D:\\..\\sensor.txt',
+    |  'connector.path' = 'sensor.txt',
     |  'format.type' = 'csv'
     |)
   """.stripMargin
@@ -101,54 +71,22 @@ tableEnv.sqlUpdate(sinkDDL) // 执行 DDL
 
 代码如下：
 
-```java
-val inputStream: DataStream[String] = env.readTextFile("\\sensor.txt")
-val dataStream: DataStream[SensorReading] = inputStream
-  .map(data => {
-    val dataArray = data.split(",")
-    SensorReading(dataArray(0), dataArray(1).toLong, dataArray(2).toDouble)
-  })
-  .assignAscendingTimestamps(_.timestamp * 1000L)
-
+```scala
+val stream = env
+  .addSource(new SensorSource)
+  .assignAscendingTimestamps(r => r.timestamp)
 // 将 DataStream转换为 Table，并指定时间字段
 val sensorTable = tableEnv
-  .fromDataStream(dataStream, 'id, 'timestamp.rowtime, 'temperature)
-// 或者，直接追加字段
-val sensorTable2 = tableEnv
-  .fromDataStream(dataStream, 'id, 'temperature, 'timestamp, 'rt.rowtime)
+  .fromDataStream(stream, $"id", $"timestamp".rowtime(), 'temperature)
 ```
 
-2. 定义Table Schema时指定
-
-这种方法只要在定义Schema的时候，将事件时间字段，并指定成rowtime就可以了。
-
-代码如下：
-
-```java
-tableEnv
-  .connect(new FileSystem().path("sensor.txt"))
-  .withFormat(new Csv())
-  .withSchema(
-    new Schema()
-      .field("id", DataTypes.STRING())
-      .field("timestamp", DataTypes.BIGINT())
-      .rowtime(
-        new Rowtime()
-          .timestampsFromField("timestamp")    // 从字段中提取时间戳
-          .watermarksPeriodicBounded(1000)    // watermark延迟1秒
-      )
-      .field("temperature", DataTypes.DOUBLE())
-  ) // 定义表结构
-  .createTemporaryTable("inputTable") // 创建临时表
-```
-
-3. 创建表的DDL中指定
+2. 创建表的DDL中指定
 
 事件时间属性，是使用CREATE TABLE DDL中的WARDMARK语句定义的。watermark语句，定义现有事件时间字段上的watermark生成表达式，该表达式将事件时间字段标记为事件时间属性。
 
 代码如下：
 
-```java
+```scala
 val sinkDDL: String =
   """
     |create table dataTable (

@@ -4,7 +4,7 @@
 
 Table API中的Group Windows都是使用.window（w:GroupWindow）子句定义的，并且必须由as子句指定一个别名。为了按窗口对表进行分组，窗口的别名必须在group by子句中，像常规的分组字段一样引用。
 
-```java
+```scala
 val table = input
   .window([w: GroupWindow] as $"w") // 定义窗口，别名 w
   .groupBy($"w", $"a")  // 以属性a和窗口w作为分组的key
@@ -13,7 +13,7 @@ val table = input
 
 或者，还可以把窗口的相关信息，作为字段添加到结果表中：
 
-```java
+```scala
 val table = input
   .window([w: GroupWindow] as $"w")
   .groupBy($"w", $"a")
@@ -34,7 +34,7 @@ Table API支持的窗口定义，和我们熟悉的一样，主要也是三种�
 
 代码如下：
 
-```java
+```scala
 // Tumbling Event-time Window（事件时间字段rowtime
 .window(Tumble over 10.minutes on $"rowtime" as $"w")
 // Tumbling Processing-time Window（处理时间字段proctime）
@@ -54,7 +54,7 @@ Table API支持的窗口定义，和我们熟悉的一样，主要也是三种�
 
 代码如下：
 
-```java
+```scala
 // Sliding Event-time Window
 .window(Slide over 10.minutes every 5.minutes on $"rowtime" as $"w")
 // Sliding Processing-time window
@@ -73,7 +73,7 @@ Table API支持的窗口定义，和我们熟悉的一样，主要也是三种�
 
 代码如下：
 
-```{scala}
+```scala
 // Session Event-time Window
 .window(Session withGap 10.minutes on $"rowtime" as $"w")
 // Session Processing-time Window

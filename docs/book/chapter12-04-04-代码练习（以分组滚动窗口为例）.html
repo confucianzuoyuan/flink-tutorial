@@ -162,58 +162,44 @@
                         <h3><a class="header" href="#代码练习以分组滚动窗口为例" id="代码练习以分组滚动窗口为例">代码练习（以分组滚动窗口为例）</a></h3>
 <p>我们可以综合学习过的内容，用一段完整的代码实现一个具体的需求。例如，可以开一个滚动窗口，统计10秒内出现的每个sensor的个数。</p>
 <p>代码如下：</p>
-<pre><code class="language-java">def main(args: Array[String]): Unit = {
-  StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
-  env.setParallelism(1)
-  env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">object TumblingWindowTempCount {
+  def main(args: Array[String]): Unit = {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setParallelism(1)
 
-  val streamFromFile: DataStream[String] = env.readTextFile(&quot;sensor.txt&quot;)
-  val dataStream: DataStream[SensorReading] = streamFromFile
-    .map( data =&gt; {
-      val dataArray = data.split(&quot;,&quot;)
-      SensorReading(dataArray(0).trim,
-        dataArray(1).trim.toLong, dataArray(2).trim.toDouble)
-    })
-    .assignTimestampsAndWatermarks(
-      new BoundedOutOfOrdernessTimestampExtractor[SensorReading](
-        Time.seconds(1)
-      ) {
-        @Override
-public extractTimestamp(
-          element: SensorReading
-        ): Long = element.timestamp * 1000L
-    })
+    val settings = EnvironmentSettings
+      .newInstance()
+      .inStreamingMode()
+      .build()
 
-  val settings: EnvironmentSettings = EnvironmentSettings
-    .newInstance()
-    .inStreamingMode()
-    .build()
+    val tableEnv = StreamTableEnvironment.create(env, settings)
 
-  val tableEnv: StreamTableEnvironment = StreamTableEnvironment
-    .create(env, settings)
+    val stream = env.addSource(new SensorSource).filter(r =&gt; r.id.equals(&quot;sensor_1&quot;))
 
-  val dataTable: Table = tableEnv
-    .fromDataStream(dataStream, $&quot;id&quot;, $&quot;temperature&quot;, $&quot;timestamp&quot;.rowtime)
+    val table = tableEnv.fromDataStream(stream, $&quot;id&quot;, $&quot;timestamp&quot; as &quot;ts&quot;, $&quot;temperature&quot;, $&quot;pt&quot;.proctime())
 
-  val resultTable: Table = dataTable
-    .window(Tumble over 10.seconds on $&quot;timestamp&quot; as $&quot;tw&quot;)
-    .groupBy($&quot;id&quot;, $&quot;tw&quot;)
-    .select($&quot;id&quot;, $&quot;id.count&quot;)
+    // table api
+    val tableResult = table
+      .window(Tumble over 10.seconds() on $&quot;pt&quot; as $&quot;w&quot;)
+      .groupBy($&quot;id&quot;, $&quot;w&quot;) // .keyBy(r =&gt; r.id).timeWindow(Time.seconds(10))
+      .select($&quot;id&quot;, $&quot;id&quot;.count())
 
-  val sqlDataTable: Table = dataTable
-    .select($&quot;id&quot;, $&quot;temperature&quot;, $&quot;timestamp&quot; as $&quot;ts&quot;)
-  val resultSqlTable: Table = tableEnv
-    .sqlQuery(&quot;select id, count(id) from &quot;
-      + sqlDataTable
-      + &quot; group by id,tumble(ts,interval '10' second)&quot;)
+    tableEnv.toRetractStream[Row](tableResult).print()
 
-  // 把 Table转化成数据流
-  val resultDstream: DataStream[(Boolean, (String, Long))] = resultSqlTable
-    .toRetractStream[(String, Long)]
-  resultDstream.filter(_._1).print()
-  env.execute()
+    // sql
+    tableEnv.createTemporaryView(&quot;sensor&quot;, stream, $&quot;id&quot;, $&quot;timestamp&quot; as &quot;ts&quot;, $&quot;temperature&quot;, $&quot;pt&quot;.proctime())
+
+    val sqlResult = tableEnv
+      .sqlQuery(&quot;SELECT id, count(id), TUMBLE_START(pt, INTERVAL '10' SECOND), TUMBLE_END(pt, INTERVAL '10' SECOND) FROM sensor GROUP BY id, TUMBLE(pt, INTERVAL '10' SECOND)&quot;)
+
+    tableEnv.toRetractStream[Row](sqlResult).print()
+
+    env.execute()
+  }
 }
 </code></pre>
+<p><strong>java version</strong></p>
 
                     </main>
 

@@ -172,43 +172,16 @@
 <p>由DataStream转换成表时，可以在后面指定字段名来定义Schema。在定义Schema期间，可以使用.proctime，定义处理时间字段。</p>
 <p>注意，这个proctime属性只能通过附加逻辑字段，来扩展物理schema。因此，只能在schema定义的末尾定义它。</p>
 <p>代码如下：</p>
-<pre><code class="language-java">// 定义好 DataStream
-val inputStream: DataStream[String] = env.readTextFile(&quot;\\sensor.txt&quot;)
-val dataStream: DataStream[SensorReading] = inputStream
-  .map(data =&gt; {
-    val dataArray = data.split(&quot;,&quot;)
-    SensorReading(dataArray(0), dataArray(1).toLong, dataArray(2).toDouble)
-  })
-
-// 将 DataStream转换为 Table，并指定时间字段
+<pre><code class="language-scala">val stream = env.addSource(new SensorSource)
 val sensorTable = tableEnv
-  .fromDataStream(dataStream, 'id, 'temperature, 'timestamp, 'pt.proctime)
+  .fromDataStream(stream, $&quot;id&quot;, $&quot;timestamp&quot;, $&quot;temperature&quot;, $&quot;pt&quot;.proctime())
 </code></pre>
 <ol start="2">
-<li>定义Table Schema时指定</li>
-</ol>
-<p>这种方法其实也很简单，只要在定义Schema的时候，加上一个新的字段，并指定成proctime就可以了。</p>
-<p>代码如下：</p>
-<pre><code class="language-java">tableEnv
-  .connect(
-    new FileSystem().path(&quot;..\\sensor.txt&quot;))
-  .withFormat(new Csv())
-  .withSchema(
-    new Schema()
-      .field(&quot;id&quot;, DataTypes.STRING())
-      .field(&quot;timestamp&quot;, DataTypes.BIGINT())
-      .field(&quot;temperature&quot;, DataTypes.DOUBLE())
-      .field(&quot;pt&quot;, DataTypes.TIMESTAMP(3))
-      .proctime()    // 指定 pt字段为处理时间
-  ) // 定义表结构
-  .createTemporaryTable(&quot;inputTable&quot;) // 创建临时表
-</code></pre>
-<ol start="3">
 <li>创建表的DDL中指定</li>
 </ol>
 <p>在创建表的DDL中，增加一个字段并指定成proctime，也可以指定当前的时间字段。</p>
 <p>代码如下：</p>
-<pre><code class="language-java">val sinkDDL: String =
+<pre><code class="language-scala">val sinkDDL: String =
   &quot;&quot;&quot;
     |create table dataTable (
     |  id varchar(20) not null,
@@ -217,7 +190,7 @@ val sensorTable = tableEnv
     |  pt AS PROCTIME()
     |) with (
     |  'connector.type' = 'filesystem',
-    |  'connector.path' = 'file:///D:\\..\\sensor.txt',
+    |  'connector.path' = 'sensor.txt',
     |  'format.type' = 'csv'
     |)
   &quot;&quot;&quot;.stripMargin
@@ -239,48 +212,19 @@ tableEnv.sqlUpdate(sinkDDL) // 执行 DDL
 </ul>
 <p>在这两种情况下，定义的事件时间戳字段，都将保存DataStream中事件时间戳的值。</p>
 <p>代码如下：</p>
-<pre><code class="language-java">val inputStream: DataStream[String] = env.readTextFile(&quot;\\sensor.txt&quot;)
-val dataStream: DataStream[SensorReading] = inputStream
-  .map(data =&gt; {
-    val dataArray = data.split(&quot;,&quot;)
-    SensorReading(dataArray(0), dataArray(1).toLong, dataArray(2).toDouble)
-  })
-  .assignAscendingTimestamps(_.timestamp * 1000L)
-
+<pre><code class="language-scala">val stream = env
+  .addSource(new SensorSource)
+  .assignAscendingTimestamps(r =&gt; r.timestamp)
 // 将 DataStream转换为 Table，并指定时间字段
 val sensorTable = tableEnv
-  .fromDataStream(dataStream, 'id, 'timestamp.rowtime, 'temperature)
-// 或者，直接追加字段
-val sensorTable2 = tableEnv
-  .fromDataStream(dataStream, 'id, 'temperature, 'timestamp, 'rt.rowtime)
+  .fromDataStream(stream, $&quot;id&quot;, $&quot;timestamp&quot;.rowtime(), 'temperature)
 </code></pre>
 <ol start="2">
-<li>定义Table Schema时指定</li>
-</ol>
-<p>这种方法只要在定义Schema的时候，将事件时间字段，并指定成rowtime就可以了。</p>
-<p>代码如下：</p>
-<pre><code class="language-java">tableEnv
-  .connect(new FileSystem().path(&quot;sensor.txt&quot;))
-  .withFormat(new Csv())
-  .withSchema(
-    new Schema()
-      .field(&quot;id&quot;, DataTypes.STRING())
-      .field(&quot;timestamp&quot;, DataTypes.BIGINT())
-      .rowtime(
-        new Rowtime()
-          .timestampsFromField(&quot;timestamp&quot;)    // 从字段中提取时间戳
-          .watermarksPeriodicBounded(1000)    // watermark延迟1秒
-      )
-      .field(&quot;temperature&quot;, DataTypes.DOUBLE())
-  ) // 定义表结构
-  .createTemporaryTable(&quot;inputTable&quot;) // 创建临时表
-</code></pre>
-<ol start="3">
 <li>创建表的DDL中指定</li>
 </ol>
 <p>事件时间属性，是使用CREATE TABLE DDL中的WARDMARK语句定义的。watermark语句，定义现有事件时间字段上的watermark生成表达式，该表达式将事件时间字段标记为事件时间属性。</p>
 <p>代码如下：</p>
-<pre><code class="language-java">val sinkDDL: String =
+<pre><code class="language-scala">val sinkDDL: String =
   &quot;&quot;&quot;
     |create table dataTable (
     |  id varchar(20) not null,

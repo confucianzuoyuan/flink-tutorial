@@ -5238,43 +5238,16 @@ println(explaination)
 <p>由DataStream转换成表时，可以在后面指定字段名来定义Schema。在定义Schema期间，可以使用.proctime，定义处理时间字段。</p>
 <p>注意，这个proctime属性只能通过附加逻辑字段，来扩展物理schema。因此，只能在schema定义的末尾定义它。</p>
 <p>代码如下：</p>
-<pre><code class="language-java">// 定义好 DataStream
-val inputStream: DataStream[String] = env.readTextFile(&quot;\\sensor.txt&quot;)
-val dataStream: DataStream[SensorReading] = inputStream
-  .map(data =&gt; {
-    val dataArray = data.split(&quot;,&quot;)
-    SensorReading(dataArray(0), dataArray(1).toLong, dataArray(2).toDouble)
-  })
-
-// 将 DataStream转换为 Table，并指定时间字段
+<pre><code class="language-scala">val stream = env.addSource(new SensorSource)
 val sensorTable = tableEnv
-  .fromDataStream(dataStream, 'id, 'temperature, 'timestamp, 'pt.proctime)
+  .fromDataStream(stream, $&quot;id&quot;, $&quot;timestamp&quot;, $&quot;temperature&quot;, $&quot;pt&quot;.proctime())
 </code></pre>
 <ol start="2">
-<li>定义Table Schema时指定</li>
-</ol>
-<p>这种方法其实也很简单，只要在定义Schema的时候，加上一个新的字段，并指定成proctime就可以了。</p>
-<p>代码如下：</p>
-<pre><code class="language-java">tableEnv
-  .connect(
-    new FileSystem().path(&quot;..\\sensor.txt&quot;))
-  .withFormat(new Csv())
-  .withSchema(
-    new Schema()
-      .field(&quot;id&quot;, DataTypes.STRING())
-      .field(&quot;timestamp&quot;, DataTypes.BIGINT())
-      .field(&quot;temperature&quot;, DataTypes.DOUBLE())
-      .field(&quot;pt&quot;, DataTypes.TIMESTAMP(3))
-      .proctime()    // 指定 pt字段为处理时间
-  ) // 定义表结构
-  .createTemporaryTable(&quot;inputTable&quot;) // 创建临时表
-</code></pre>
-<ol start="3">
 <li>创建表的DDL中指定</li>
 </ol>
 <p>在创建表的DDL中，增加一个字段并指定成proctime，也可以指定当前的时间字段。</p>
 <p>代码如下：</p>
-<pre><code class="language-java">val sinkDDL: String =
+<pre><code class="language-scala">val sinkDDL: String =
   &quot;&quot;&quot;
     |create table dataTable (
     |  id varchar(20) not null,
@@ -5283,7 +5256,7 @@ val sensorTable = tableEnv
     |  pt AS PROCTIME()
     |) with (
     |  'connector.type' = 'filesystem',
-    |  'connector.path' = 'file:///D:\\..\\sensor.txt',
+    |  'connector.path' = 'sensor.txt',
     |  'format.type' = 'csv'
     |)
   &quot;&quot;&quot;.stripMargin
@@ -5305,48 +5278,19 @@ tableEnv.sqlUpdate(sinkDDL) // 执行 DDL
 </ul>
 <p>在这两种情况下，定义的事件时间戳字段，都将保存DataStream中事件时间戳的值。</p>
 <p>代码如下：</p>
-<pre><code class="language-java">val inputStream: DataStream[String] = env.readTextFile(&quot;\\sensor.txt&quot;)
-val dataStream: DataStream[SensorReading] = inputStream
-  .map(data =&gt; {
-    val dataArray = data.split(&quot;,&quot;)
-    SensorReading(dataArray(0), dataArray(1).toLong, dataArray(2).toDouble)
-  })
-  .assignAscendingTimestamps(_.timestamp * 1000L)
-
+<pre><code class="language-scala">val stream = env
+  .addSource(new SensorSource)
+  .assignAscendingTimestamps(r =&gt; r.timestamp)
 // 将 DataStream转换为 Table，并指定时间字段
 val sensorTable = tableEnv
-  .fromDataStream(dataStream, 'id, 'timestamp.rowtime, 'temperature)
-// 或者，直接追加字段
-val sensorTable2 = tableEnv
-  .fromDataStream(dataStream, 'id, 'temperature, 'timestamp, 'rt.rowtime)
+  .fromDataStream(stream, $&quot;id&quot;, $&quot;timestamp&quot;.rowtime(), 'temperature)
 </code></pre>
 <ol start="2">
-<li>定义Table Schema时指定</li>
-</ol>
-<p>这种方法只要在定义Schema的时候，将事件时间字段，并指定成rowtime就可以了。</p>
-<p>代码如下：</p>
-<pre><code class="language-java">tableEnv
-  .connect(new FileSystem().path(&quot;sensor.txt&quot;))
-  .withFormat(new Csv())
-  .withSchema(
-    new Schema()
-      .field(&quot;id&quot;, DataTypes.STRING())
-      .field(&quot;timestamp&quot;, DataTypes.BIGINT())
-      .rowtime(
-        new Rowtime()
-          .timestampsFromField(&quot;timestamp&quot;)    // 从字段中提取时间戳
-          .watermarksPeriodicBounded(1000)    // watermark延迟1秒
-      )
-      .field(&quot;temperature&quot;, DataTypes.DOUBLE())
-  ) // 定义表结构
-  .createTemporaryTable(&quot;inputTable&quot;) // 创建临时表
-</code></pre>
-<ol start="3">
 <li>创建表的DDL中指定</li>
 </ol>
 <p>事件时间属性，是使用CREATE TABLE DDL中的WARDMARK语句定义的。watermark语句，定义现有事件时间字段上的watermark生成表达式，该表达式将事件时间字段标记为事件时间属性。</p>
 <p>代码如下：</p>
-<pre><code class="language-java">val sinkDDL: String =
+<pre><code class="language-scala">val sinkDDL: String =
   &quot;&quot;&quot;
     |create table dataTable (
     |  id varchar(20) not null,
@@ -5370,13 +5314,13 @@ tableEnv.sqlUpdate(sinkDDL) // 执行 DDL
 <h3><a class="header" href="#分组窗口" id="分组窗口">分组窗口</a></h3>
 <p>分组窗口（Group Windows）会根据时间或行计数间隔，将行聚合到有限的组（Group）中，并对每个组的数据执行一次聚合函数。</p>
 <p>Table API中的Group Windows都是使用.window（w:GroupWindow）子句定义的，并且必须由as子句指定一个别名。为了按窗口对表进行分组，窗口的别名必须在group by子句中，像常规的分组字段一样引用。</p>
-<pre><code class="language-java">val table = input
+<pre><code class="language-scala">val table = input
   .window([w: GroupWindow] as $&quot;w&quot;) // 定义窗口，别名 w
   .groupBy($&quot;w&quot;, $&quot;a&quot;)  // 以属性a和窗口w作为分组的key
   .select($&quot;a&quot;, $&quot;b&quot;.sum)  // 聚合字段b的值，求和
 </code></pre>
 <p>或者，还可以把窗口的相关信息，作为字段添加到结果表中：</p>
-<pre><code class="language-java">val table = input
+<pre><code class="language-scala">val table = input
   .window([w: GroupWindow] as $&quot;w&quot;)
   .groupBy($&quot;w&quot;, $&quot;a&quot;)
   .select($&quot;a&quot;, $&quot;w&quot;.start, $&quot;w&quot;.end, $&quot;w&quot;.rowtime, $&quot;b&quot;.count)
@@ -5391,7 +5335,7 @@ tableEnv.sqlUpdate(sinkDDL) // 执行 DDL
 <li>as：别名，必须出现在后面的groupBy中</li>
 </ul>
 <p>代码如下：</p>
-<pre><code class="language-java">// Tumbling Event-time Window（事件时间字段rowtime
+<pre><code class="language-scala">// Tumbling Event-time Window（事件时间字段rowtime
 .window(Tumble over 10.minutes on $&quot;rowtime&quot; as $&quot;w&quot;)
 // Tumbling Processing-time Window（处理时间字段proctime）
 .window(Tumble over 10.minutes on $&quot;proctime&quot; as $&quot;w&quot;)
@@ -5407,7 +5351,7 @@ tableEnv.sqlUpdate(sinkDDL) // 执行 DDL
 <li>as：别名，必须出现在后面的groupBy中</li>
 </ul>
 <p>代码如下：</p>
-<pre><code class="language-java">// Sliding Event-time Window
+<pre><code class="language-scala">// Sliding Event-time Window
 .window(Slide over 10.minutes every 5.minutes on $&quot;rowtime&quot; as $&quot;w&quot;)
 // Sliding Processing-time window
 .window(Slide over 10.minutes every 5.minutes on $&quot;proctime&quot; as $&quot;w&quot;)
@@ -5422,7 +5366,7 @@ tableEnv.sqlUpdate(sinkDDL) // 执行 DDL
 <li>as：别名，必须出现在后面的groupBy中</li>
 </ul>
 <p>代码如下：</p>
-<pre><code class="language-{scala}">// Session Event-time Window
+<pre><code class="language-scala">// Session Event-time Window
 .window(Session withGap 10.minutes on $&quot;rowtime&quot; as $&quot;w&quot;)
 // Session Processing-time Window
 .window(Session withGap 10.minutes on $&quot;proctime&quot; as $&quot;w&quot;)
@@ -5430,9 +5374,9 @@ tableEnv.sqlUpdate(sinkDDL) // 执行 DDL
 <h3><a class="header" href="#over-windows" id="over-windows">Over Windows</a></h3>
 <p>Over window聚合是标准SQL中已有的（Over子句），可以在查询的SELECT子句中定义。Over window 聚合，会针对每个输入行，计算相邻行范围内的聚合。Over windows使用.window（w:overwindows*）子句定义，并在select()方法中通过别名来引用。</p>
 <p>比如这样：</p>
-<pre><code class="language-java">val table = input
-  .window([w: OverWindow] as 'w)
-  .select('a, 'b.sum over 'w, 'c.min over 'w)
+<pre><code class="language-scala">val table = input
+  .window([w: OverWindow] as $&quot;w&quot;)
+  .select($&quot;a&quot;&quot;, $&quot;b&quot;.sum over $&quot;w&quot;, $&quot;c&quot;.min over $&quot;w&quot;)
 </code></pre>
 <p>Table API提供了Over类，来配置Over窗口的属性。可以在事件时间或处理时间，以及指定为时间间隔、或行计数的范围内，定义Over windows。</p>
 <p>无界的over window是使用常量指定的。也就是说，时间间隔要指定UNBOUNDED_RANGE，或者行计数间隔要指定UNBOUNDED_ROW。而有界的over window是用间隔的大小指定的。</p>
@@ -5440,26 +5384,26 @@ tableEnv.sqlUpdate(sinkDDL) // 执行 DDL
 <ol>
 <li>无界的 over window</li>
 </ol>
-<pre><code class="language-java">// 无界的事件时间over window (时间字段 &quot;rowtime&quot;)
-.window(Over partitionBy 'a orderBy 'rowtime preceding UNBOUNDED_RANGE as 'w)
+<pre><code class="language-scala">// 无界的事件时间over window (时间字段 &quot;rowtime&quot;)
+.window(Over partitionBy $&quot;a&quot; orderBy $&quot;rowtime&quot; preceding UNBOUNDED_RANGE as $&quot;w&quot;)
 //无界的处理时间over window (时间字段&quot;proctime&quot;)
-.window(Over partitionBy 'a orderBy 'proctime preceding UNBOUNDED_RANGE as 'w)
+.window(Over partitionBy $&quot;a&quot; orderBy $&quot;proctime&quot; preceding UNBOUNDED_RANGE as $&quot;w&quot;)
 // 无界的事件时间Row-count over window (时间字段 &quot;rowtime&quot;)
-.window(Over partitionBy 'a orderBy 'rowtime preceding UNBOUNDED_ROW as 'w)
+.window(Over partitionBy $&quot;a&quot; orderBy $&quot;rowtime&quot; preceding UNBOUNDED_ROW as $&quot;w&quot;)
 //无界的处理时间Row-count over window (时间字段 &quot;rowtime&quot;)
-.window(Over partitionBy 'a orderBy 'proctime preceding UNBOUNDED_ROW as 'w)
+.window(Over partitionBy $&quot;a&quot; orderBy $&quot;proctime&quot; preceding UNBOUNDED_ROW as $&quot;w&quot;)
 </code></pre>
 <ol start="2">
 <li>有界的over window</li>
 </ol>
-<pre><code class="language-java">// 有界的事件时间over window (时间字段 &quot;rowtime&quot;，之前1分钟)
-.window(Over partitionBy 'a orderBy 'rowtime preceding 1.minutes as 'w)
+<pre><code class="language-scala">// 有界的事件时间over window (时间字段 &quot;rowtime&quot;，之前1分钟)
+.window(Over partitionBy $&quot;a&quot; orderBy $&quot;rowtime&quot; preceding 1.minutes as $&quot;w&quot;)
 // 有界的处理时间over window (时间字段 &quot;rowtime&quot;，之前1分钟)
-.window(Over partitionBy 'a orderBy 'proctime preceding 1.minutes as 'w)
+.window(Over partitionBy $&quot;a&quot; orderBy $&quot;proctime&quot; preceding 1.minutes as $&quot;w&quot;)
 // 有界的事件时间Row-count over window (时间字段 &quot;rowtime&quot;，之前10行)
-.window(Over partitionBy 'a orderBy 'rowtime preceding 10.rows as 'w)
+.window(Over partitionBy $&quot;a&quot; orderBy $&quot;rowtime&quot; preceding 10.rows as $&quot;w&quot;)
 // 有界的处理时间Row-count over window (时间字段 &quot;rowtime&quot;，之前10行)
-.window(Over partitionBy 'a orderBy 'proctime preceding 10.rows as 'w)
+.window(Over partitionBy $&quot;a&quot; orderBy $&quot;proctime&quot; preceding 10.rows as $&quot;w&quot;)
 </code></pre>
 <h3><a class="header" href="#sql中窗口的定义" id="sql中窗口的定义">SQL中窗口的定义</a></h3>
 <p>我们已经了解了在Table API里window的调用方式，同样，我们也可以在SQL中直接加入窗口的定义和使用。</p>
@@ -5507,58 +5451,44 @@ WINDOW w AS (
 <h3><a class="header" href="#代码练习以分组滚动窗口为例" id="代码练习以分组滚动窗口为例">代码练习（以分组滚动窗口为例）</a></h3>
 <p>我们可以综合学习过的内容，用一段完整的代码实现一个具体的需求。例如，可以开一个滚动窗口，统计10秒内出现的每个sensor的个数。</p>
 <p>代码如下：</p>
-<pre><code class="language-java">def main(args: Array[String]): Unit = {
-  StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
-  env.setParallelism(1)
-  env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">object TumblingWindowTempCount {
+  def main(args: Array[String]): Unit = {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setParallelism(1)
 
-  val streamFromFile: DataStream[String] = env.readTextFile(&quot;sensor.txt&quot;)
-  val dataStream: DataStream[SensorReading] = streamFromFile
-    .map( data =&gt; {
-      val dataArray = data.split(&quot;,&quot;)
-      SensorReading(dataArray(0).trim,
-        dataArray(1).trim.toLong, dataArray(2).trim.toDouble)
-    })
-    .assignTimestampsAndWatermarks(
-      new BoundedOutOfOrdernessTimestampExtractor[SensorReading](
-        Time.seconds(1)
-      ) {
-        @Override
-public extractTimestamp(
-          element: SensorReading
-        ): Long = element.timestamp * 1000L
-    })
+    val settings = EnvironmentSettings
+      .newInstance()
+      .inStreamingMode()
+      .build()
 
-  val settings: EnvironmentSettings = EnvironmentSettings
-    .newInstance()
-    .inStreamingMode()
-    .build()
+    val tableEnv = StreamTableEnvironment.create(env, settings)
 
-  val tableEnv: StreamTableEnvironment = StreamTableEnvironment
-    .create(env, settings)
+    val stream = env.addSource(new SensorSource).filter(r =&gt; r.id.equals(&quot;sensor_1&quot;))
 
-  val dataTable: Table = tableEnv
-    .fromDataStream(dataStream, $&quot;id&quot;, $&quot;temperature&quot;, $&quot;timestamp&quot;.rowtime)
+    val table = tableEnv.fromDataStream(stream, $&quot;id&quot;, $&quot;timestamp&quot; as &quot;ts&quot;, $&quot;temperature&quot;, $&quot;pt&quot;.proctime())
 
-  val resultTable: Table = dataTable
-    .window(Tumble over 10.seconds on $&quot;timestamp&quot; as $&quot;tw&quot;)
-    .groupBy($&quot;id&quot;, $&quot;tw&quot;)
-    .select($&quot;id&quot;, $&quot;id.count&quot;)
+    // table api
+    val tableResult = table
+      .window(Tumble over 10.seconds() on $&quot;pt&quot; as $&quot;w&quot;)
+      .groupBy($&quot;id&quot;, $&quot;w&quot;) // .keyBy(r =&gt; r.id).timeWindow(Time.seconds(10))
+      .select($&quot;id&quot;, $&quot;id&quot;.count())
 
-  val sqlDataTable: Table = dataTable
-    .select($&quot;id&quot;, $&quot;temperature&quot;, $&quot;timestamp&quot; as $&quot;ts&quot;)
-  val resultSqlTable: Table = tableEnv
-    .sqlQuery(&quot;select id, count(id) from &quot;
-      + sqlDataTable
-      + &quot; group by id,tumble(ts,interval '10' second)&quot;)
+    tableEnv.toRetractStream[Row](tableResult).print()
 
-  // 把 Table转化成数据流
-  val resultDstream: DataStream[(Boolean, (String, Long))] = resultSqlTable
-    .toRetractStream[(String, Long)]
-  resultDstream.filter(_._1).print()
-  env.execute()
+    // sql
+    tableEnv.createTemporaryView(&quot;sensor&quot;, stream, $&quot;id&quot;, $&quot;timestamp&quot; as &quot;ts&quot;, $&quot;temperature&quot;, $&quot;pt&quot;.proctime())
+
+    val sqlResult = tableEnv
+      .sqlQuery(&quot;SELECT id, count(id), TUMBLE_START(pt, INTERVAL '10' SECOND), TUMBLE_END(pt, INTERVAL '10' SECOND) FROM sensor GROUP BY id, TUMBLE(pt, INTERVAL '10' SECOND)&quot;)
+
+    tableEnv.toRetractStream[Row](sqlResult).print()
+
+    env.execute()
+  }
 }
 </code></pre>
+<p><strong>java version</strong></p>
 <h2><a class="header" href="#函数" id="函数">函数</a></h2>
 <p>Flink Table 和 SQL内置了很多SQL中支持的函数；如果有无法满足的需要，则可以实现用户自定义的函数（UDF）来解决。</p>
 <h3><a class="header" href="#系统内置函数" id="系统内置函数">系统内置函数</a></h3>

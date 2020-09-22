@@ -1,13 +1,13 @@
-### 代码练习（以分组滚动窗口为例）
+package com.atguigu.day9
 
-我们可以综合学习过的内容，用一段完整的代码实现一个具体的需求。例如，可以开一个滚动窗口，统计10秒内出现的每个sensor的个数。
+import com.atguigu.day2.SensorSource
+import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
+import org.apache.flink.table.api._
+import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
+import org.apache.flink.api.scala._
+import org.apache.flink.types.Row
 
-代码如下：
-
-**scala version**
-
-```scala
-object TumblingWindowTempCount {
+object TumblingWindowExample {
   def main(args: Array[String]): Unit = {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
@@ -42,6 +42,3 @@ object TumblingWindowTempCount {
     env.execute()
   }
 }
-```
-
-**java version**
