@@ -45,7 +45,7 @@ object TableSQLExample {
       .sqlQuery("SELECT * FROM sensor where id = 'sensor_2'")
 
     tableEnv
-      // Table => DataStream
+      // T=> DataStream
       .toAppendStream[Row](sqlResult)
       .print()
 

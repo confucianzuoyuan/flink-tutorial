@@ -143,6 +143,11 @@ under the License.
 <!--			<scope>provided</scope>-->
 		</dependency>
 
+		<dependency>
+			<groupId>org.scala-lang.modules</groupId>
+			<artifactId>scala-parser-combinators_2.11</artifactId>
+			<version>1.1.2</version>
+		</dependency>
 
 		<!-- Scala Library, provided by Flink as well. -->
 		<dependency>
