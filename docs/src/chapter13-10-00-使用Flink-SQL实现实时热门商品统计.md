@@ -3,12 +3,6 @@
 代码
 
 ```scala
-package com.atguigu.project.topnhotitems
-
-import java.sql.Timestamp
-
-import com.atguigu.project.util.UserBehavior
-import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.api.scala._
 import org.apache.flink.table.api.{EnvironmentSettings, Tumble}
@@ -30,8 +24,7 @@ object HotItemsSQL {
       .readTextFile("`UserBehavior.csv`的绝对路径")
       .map(line => {
         val arr = line.split(",")
-        UserBehavior(arr(0).toLong,
-          arr(1).toLong, arr(2).toInt, arr(3), arr(4).toLong * 1000)
+        UserBehavior(arr(0), arr(1), arr(2), arr(3), arr(4).toLong * 1000)
       })
       .filter(_.behavior == "pv")
       .assignAscendingTimestamps(_.timestamp)

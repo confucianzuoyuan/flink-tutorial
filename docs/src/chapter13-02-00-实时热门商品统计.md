@@ -9,11 +9,11 @@
 
 *解决思路*
 
-. 在所有用户行为数据中，过滤出浏览("pv")行为进行统计
-. 构建滑动窗口，窗口长度为1小时，滑动距离为5分钟
-. 窗口计算使用增量聚合函数和全窗口聚合函数相结合的方法
-. 使用窗口结束时间作为key，对DataStream进行keyBy()操作
-. 将KeyedStream中的元素存储到ListState中，当水位线超过窗口结束时间时，排序输出
+* 在所有用户行为数据中，过滤出浏览("pv")行为进行统计
+* 构建滑动窗口，窗口长度为1小时，滑动距离为5分钟
+* 窗口计算使用增量聚合函数和全窗口聚合函数相结合的方法
+* 使用窗口结束时间作为key，对DataStream进行keyBy()操作
+* 将KeyedStream中的元素存储到ListState中，当水位线超过窗口结束时间时，排序输出
 
 *数据准备*
 
@@ -176,18 +176,6 @@ class WindowResultFunction extends ProcessWindowFunction[Long, ItemViewCount, St
 
 实际生产环境中，我们的数据流往往是从Kafka获取到的。如果要让代码更贴近生产实际，我们只需将source更换为Kafka即可：
 
->注意：这里Kafka的版本要用2.2！
-
-添加依赖：
-
-```xml
-<dependency>
-  <groupId>org.apache.flink</groupId>
-  <artifactId>flink-connector-kafka_${scala.binary.version}</artifactId>
-  <version>${flink.version}</version>
-</dependency>
-```
-
 编写代码：
 
 ```scala
@@ -213,18 +201,6 @@ val stream = env
 当然，根据实际的需要，我们还可以将Sink指定为Kafka、ES、Redis或其它存储，这里就不一一展开实现了。
 
 *kafka生产者程序*
-
-添加依赖
-
-```xml
-<dependency>
-    <groupId>org.apache.kafka</groupId>
-    <artifactId>kafka_2.11</artifactId>
-    <version>2.2.0</version>
-</dependency>
-```
-
-编写代码：
 
 ```scala
 import java.util.Properties
