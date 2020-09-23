@@ -167,11 +167,13 @@
 <li>点击量用浏览次数(&quot;pv&quot;)来衡量</li>
 </ul>
 <p><em>解决思路</em></p>
-<p>. 在所有用户行为数据中，过滤出浏览(&quot;pv&quot;)行为进行统计
-. 构建滑动窗口，窗口长度为1小时，滑动距离为5分钟
-. 窗口计算使用增量聚合函数和全窗口聚合函数相结合的方法
-. 使用窗口结束时间作为key，对DataStream进行keyBy()操作
-. 将KeyedStream中的元素存储到ListState中，当水位线超过窗口结束时间时，排序输出</p>
+<ul>
+<li>在所有用户行为数据中，过滤出浏览(&quot;pv&quot;)行为进行统计</li>
+<li>构建滑动窗口，窗口长度为1小时，滑动距离为5分钟</li>
+<li>窗口计算使用增量聚合函数和全窗口聚合函数相结合的方法</li>
+<li>使用窗口结束时间作为key，对DataStream进行keyBy()操作</li>
+<li>将KeyedStream中的元素存储到ListState中，当水位线超过窗口结束时间时，排序输出</li>
+</ul>
 <p><em>数据准备</em></p>
 <p>将数据文件UserBehavior.csv复制到资源文件目录src/main/resources下。</p>
 <p><em>程序主体</em></p>
@@ -314,16 +316,6 @@ class WindowResultFunction extends ProcessWindowFunction[Long, ItemViewCount, St
 </code></pre>
 <p><em>更换Kafka作为数据源</em></p>
 <p>实际生产环境中，我们的数据流往往是从Kafka获取到的。如果要让代码更贴近生产实际，我们只需将source更换为Kafka即可：</p>
-<blockquote>
-<p>注意：这里Kafka的版本要用2.2！</p>
-</blockquote>
-<p>添加依赖：</p>
-<pre><code class="language-xml">&lt;dependency&gt;
-  &lt;groupId&gt;org.apache.flink&lt;/groupId&gt;
-  &lt;artifactId&gt;flink-connector-kafka_${scala.binary.version}&lt;/artifactId&gt;
-  &lt;version&gt;${flink.version}&lt;/version&gt;
-&lt;/dependency&gt;
-</code></pre>
 <p>编写代码：</p>
 <pre><code class="language-scala">val properties = new Properties()
 properties.setProperty(&quot;bootstrap.servers&quot;, &quot;localhost:9092&quot;)
@@ -345,14 +337,6 @@ val stream = env
 </code></pre>
 <p>当然，根据实际的需要，我们还可以将Sink指定为Kafka、ES、Redis或其它存储，这里就不一一展开实现了。</p>
 <p><em>kafka生产者程序</em></p>
-<p>添加依赖</p>
-<pre><code class="language-xml">&lt;dependency&gt;
-    &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;
-    &lt;artifactId&gt;kafka_2.11&lt;/artifactId&gt;
-    &lt;version&gt;2.2.0&lt;/version&gt;
-&lt;/dependency&gt;
-</code></pre>
-<p>编写代码：</p>
 <pre><code class="language-scala">import java.util.Properties
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 

@@ -5568,13 +5568,12 @@ WINDOW w AS (
 <p>用户定义的标量函数，可以将0、1或多个标量值，映射到新的标量值。</p>
 <p>为了定义标量函数，必须在org.apache.flink.table.functions中扩展基类Scalar Function，并实现（一个或多个）求值（evaluation，eval）方法。标量函数的行为由求值方法决定，求值方法必须公开声明并命名为eval（直接def声明，没有override）。求值方法的参数类型和返回类型，确定了标量函数的参数和返回类型。</p>
 <p>在下面的代码中，我们定义自己的HashCode函数，在TableEnvironment中注册它，并在查询中调用它。</p>
-<pre><code class="language-java">// 自定义一个标量函数
+<pre><code class="language-scala">// 自定义一个标量函数
   class HashCodeFunction extends ScalarFunction {
 
     private var factor: Int = 0
 
-    @Override
-public open(context: FunctionContext): Unit = {
+    override def open(context: FunctionContext): Unit = {
       // 获取参数 &quot;hashcode_factor&quot;
       // 如果不存在，则使用默认值 &quot;12&quot;
       factor = context.getJobParameter(&quot;hashcode_factor&quot;, &quot;12&quot;).toInt
@@ -5586,7 +5585,7 @@ public open(context: FunctionContext): Unit = {
   }
 </code></pre>
 <p>主函数中调用，计算sensor id的哈希值（前面部分照抄，流环境、表环境、读取source、建表）：</p>
-<pre><code class="language-java">import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
+<pre><code class="language-scala">import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.api.scala._
 import org.apache.flink.table.api._
 import org.apache.flink.table.api.bridge.scala._
@@ -5633,8 +5632,7 @@ object ScalarFunctionExample {
 
     private var factor: Int = 0
 
-    @Override
-public open(context: FunctionContext): Unit = {
+    override def open(context: FunctionContext): Unit = {
       // 获取参数 &quot;hashcode_factor&quot;
       // 如果不存在，则使用默认值 &quot;12&quot;
       factor = context.getJobParameter(&quot;hashcode_factor&quot;, &quot;12&quot;).toInt
@@ -5656,7 +5654,7 @@ public open(context: FunctionContext): Unit = {
 <p>在SQL中，则需要使用Lateral Table（<TableFunction>），或者带有ON TRUE条件的左连接。</p>
 <p>下面的代码中，我们将定义一个表函数，在表环境中注册它，并在查询中调用它。</p>
 <p>自定义TableFunction：</p>
-<pre><code class="language-java">// 自定义TableFunction
+<pre><code class="language-scala">// 自定义TableFunction
   @FunctionHint(output = new DataTypeHint(&quot;ROW&lt;word STRING, length INT&gt;&quot;))
   class SplitFunction extends TableFunction[Row] {
 
@@ -5667,7 +5665,7 @@ public open(context: FunctionContext): Unit = {
   }
 </code></pre>
 <p>完整代码：</p>
-<pre><code class="language-java">import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
+<pre><code class="language-scala">import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.api.scala._
 import org.apache.flink.table.annotation.{DataTypeHint, FunctionHint}
 import org.apache.flink.table.api._
@@ -5677,7 +5675,7 @@ import org.apache.flink.types.Row
 
 object TableFunctionExample {
   def main(args: Array[String]): Unit = {
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
 
     val stream = env
@@ -5758,18 +5756,16 @@ object TableFunctionExample {
 <li>resetAccumulator()</li>
 </ul>
 <p>接下来我们写一个自定义AggregateFunction，计算一下每个sensor的平均温度值。</p>
-<pre><code class="language-java">// 定义AggregateFunction的Accumulator
+<pre><code class="language-scala">// 定义AggregateFunction的Accumulator
 class AvgTempAcc {
   var sum: Double = 0.0
   var count: Int = 0
 }
 
 class AvgTemp extends AggregateFunction[Double, AvgTempAcc] {
-  @Override
-public getValue(accumulator: AvgTempAcc): Double = accumulator.sum / accumulator.count
+  override def getValue(accumulator: AvgTempAcc): Double = accumulator.sum / accumulator.count
 
-  @Override
-public createAccumulator(): AvgTempAcc = new AvgTempAcc
+  override def createAccumulator(): AvgTempAcc = new AvgTempAcc
 
   def accumulate(accumulator: AvgTempAcc, temp: Double): Unit ={
     accumulator.sum += temp
@@ -5778,7 +5774,7 @@ public createAccumulator(): AvgTempAcc = new AvgTempAcc
 }
 </code></pre>
 <p>接下来就可以在代码中调用了。</p>
-<pre><code class="language-java">// 创建一个聚合函数实例
+<pre><code class="language-scala">// 创建一个聚合函数实例
 val avgTemp = new AvgTemp()
 // Table API的调用
 val resultTable = sensorTable
@@ -5827,7 +5823,7 @@ resultSqlTable.toRetractStream[Row].print(&quot;agg temp sql&quot;)
 <li>emitUpdateWithRetract()</li>
 </ul>
 <p>接下来我们写一个自定义TableAggregateFunction，用来提取每个sensor最高的两个温度值。</p>
-<pre><code class="language-java">// 先定义一个 Accumulator
+<pre><code class="language-scala">// 先定义一个 Accumulator
 class Top2TempAcc{
   var highestTemp: Double = Int.MinValue
   var secondHighestTemp: Double = Int.MinValue
@@ -5836,8 +5832,7 @@ class Top2TempAcc{
 // 自定义 TableAggregateFunction
 class Top2Temp extends TableAggregateFunction[(Double, Int), Top2TempAcc]{
 
-  @Override
-public createAccumulator(): Top2TempAcc = new Top2TempAcc
+  override def createAccumulator(): Top2TempAcc = new Top2TempAcc
 
   def accumulate(acc: Top2TempAcc, temp: Double): Unit ={
     if( temp &gt; acc.highestTemp ){
@@ -5855,7 +5850,7 @@ public createAccumulator(): Top2TempAcc = new Top2TempAcc
 }
 </code></pre>
 <p>接下来就可以在代码中调用了。</p>
-<pre><code class="language-java">// 创建一个表聚合函数实例
+<pre><code class="language-scala">// 创建一个表聚合函数实例
 val top2Temp = new Top2Temp()
 // Table API的调用
 val resultTable = sensorTable
@@ -5925,14 +5920,14 @@ create table if not exists t_user(id string, name string);
 insert into table t_user values ('1','huangbo'), ('2','xuzheng'),('3','wangbaoqiang');
 </code></pre>
 <p>然后编写程序，将数据流写入到hive中</p>
-<pre><code class="language-java">import org.apache.flink.streaming.api.scala._
+<pre><code class="language-scala">import org.apache.flink.streaming.api.scala._
 import org.apache.flink.table.api._
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
 import org.apache.flink.table.catalog.hive.HiveCatalog
 
 object TestHiveStreaming {
   def main(args: Array[String]): Unit = {
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     val tableEnv = StreamTableEnvironment.create(env)
 
     val stream = env
@@ -5971,7 +5966,7 @@ import org.apache.flink.table.catalog.hive.HiveCatalog
 
 object TestHiveStreaming {
   def main(args: Array[String]): Unit = {
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     val tableEnv = StreamTableEnvironment.create(env)
 
     val stream = env.fromElements(
@@ -6056,11 +6051,13 @@ hive
 <li>点击量用浏览次数(&quot;pv&quot;)来衡量</li>
 </ul>
 <p><em>解决思路</em></p>
-<p>. 在所有用户行为数据中，过滤出浏览(&quot;pv&quot;)行为进行统计
-. 构建滑动窗口，窗口长度为1小时，滑动距离为5分钟
-. 窗口计算使用增量聚合函数和全窗口聚合函数相结合的方法
-. 使用窗口结束时间作为key，对DataStream进行keyBy()操作
-. 将KeyedStream中的元素存储到ListState中，当水位线超过窗口结束时间时，排序输出</p>
+<ul>
+<li>在所有用户行为数据中，过滤出浏览(&quot;pv&quot;)行为进行统计</li>
+<li>构建滑动窗口，窗口长度为1小时，滑动距离为5分钟</li>
+<li>窗口计算使用增量聚合函数和全窗口聚合函数相结合的方法</li>
+<li>使用窗口结束时间作为key，对DataStream进行keyBy()操作</li>
+<li>将KeyedStream中的元素存储到ListState中，当水位线超过窗口结束时间时，排序输出</li>
+</ul>
 <p><em>数据准备</em></p>
 <p>将数据文件UserBehavior.csv复制到资源文件目录src/main/resources下。</p>
 <p><em>程序主体</em></p>
@@ -6203,16 +6200,6 @@ class WindowResultFunction extends ProcessWindowFunction[Long, ItemViewCount, St
 </code></pre>
 <p><em>更换Kafka作为数据源</em></p>
 <p>实际生产环境中，我们的数据流往往是从Kafka获取到的。如果要让代码更贴近生产实际，我们只需将source更换为Kafka即可：</p>
-<blockquote>
-<p>注意：这里Kafka的版本要用2.2！</p>
-</blockquote>
-<p>添加依赖：</p>
-<pre><code class="language-xml">&lt;dependency&gt;
-  &lt;groupId&gt;org.apache.flink&lt;/groupId&gt;
-  &lt;artifactId&gt;flink-connector-kafka_${scala.binary.version}&lt;/artifactId&gt;
-  &lt;version&gt;${flink.version}&lt;/version&gt;
-&lt;/dependency&gt;
-</code></pre>
 <p>编写代码：</p>
 <pre><code class="language-scala">val properties = new Properties()
 properties.setProperty(&quot;bootstrap.servers&quot;, &quot;localhost:9092&quot;)
@@ -6234,14 +6221,6 @@ val stream = env
 </code></pre>
 <p>当然，根据实际的需要，我们还可以将Sink指定为Kafka、ES、Redis或其它存储，这里就不一一展开实现了。</p>
 <p><em>kafka生产者程序</em></p>
-<p>添加依赖</p>
-<pre><code class="language-xml">&lt;dependency&gt;
-    &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;
-    &lt;artifactId&gt;kafka_2.11&lt;/artifactId&gt;
-    &lt;version&gt;2.2.0&lt;/version&gt;
-&lt;/dependency&gt;
-</code></pre>
-<p>编写代码：</p>
 <pre><code class="language-scala">import java.util.Properties
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 
@@ -6446,86 +6425,156 @@ public add(apacheLogEvent: ApacheLogEvent, acc: Long): Long = acc + 1
 }
 </code></pre>
 <h2><a class="header" href="#uv统计的布隆过滤器实现" id="uv统计的布隆过滤器实现">Uv统计的布隆过滤器实现</a></h2>
-<p>完整代码如下：</p>
-<pre><code class="language-java">package com.atguigu.proj
+<h3><a class="header" href="#uv实现的最简单版本" id="uv实现的最简单版本">UV实现的最简单版本</a></h3>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">import scala.collection.mutable.Set
 
-import java.lang
-import java.sql.Timestamp
+object UVPerWindowNaive {
 
-import org.apache.flink.api.common.functions.AggregateFunction
-
-import org.apache.flink.shaded.guava18.com.google.common.hash.BloomFilter
-import org.apache.flink.shaded.guava18.com.google.common.hash.Funnels
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.api.scala.function.ProcessWindowFunction
-import org.apache.flink.streaming.api.windowing.time.Time
-import org.apache.flink.streaming.api.windowing.windows.TimeWindow
-import org.apache.flink.util.Collector
-
-
-// uv: unique visitor
-// 有多少用户访问过网站；pv按照userid去重
-// 滑动窗口：窗口长度1小时，滑动距离5秒钟，每小时用户数量1亿
-// 大数据去重的唯一解决方案：布隆过滤器
-// 布隆过滤器的组成：bit数组，哈希函数
-object BloomFilterGuava {
-
-  case class UserBehavior(userId: Long,
-                          itemId: Long,
-                          categoryId: Long,
-                          behavior: String,
-                          timestamp: Long)
+  case class UserBehavior(userId: String, itemId: String, categoryId: String, behavior: String, timestamp: Long)
 
   def main(args: Array[String]): Unit = {
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
     val stream = env
-      .readTextFile(&quot;/Users/yuanzuo/Desktop/flink-tutorial/FlinkSZ1128/src/main/resources/UserBehavior.csv&quot;)
+      .readTextFile(&quot;/home/zuoyuan/flink-tutorial/flink-scala-code/src/main/resources/UserBehavior.csv&quot;)
       .map(line =&gt; {
         val arr = line.split(&quot;,&quot;)
-        UserBehavior(arr(0).toLong, arr(1).toLong, arr(2).toLong, arr(3), arr(4).toLong * 1000L)
+        UserBehavior(arr(0), arr(1), arr(2), arr(3), arr(4).toLong * 1000L)
       })
-      .filter(_.behavior.equals(&quot;pv&quot;))
-      .assignAscendingTimestamps(_.timestamp) // 分配升序时间戳 DataStream
-      .map(r =&gt; (&quot;key&quot;, r.userId))
-      .keyBy(_._1)
-      .timeWindow(Time.hours(1))
-      .aggregate(new UvAggFunc,new UvProcessFunc)
+      .filter(r =&gt; r.behavior.equals(&quot;pv&quot;))
+      .assignAscendingTimestamps(_.timestamp)
 
-    stream.print()
+    stream
+      .map(r =&gt; (&quot;key&quot;, r.userId))
+      .keyBy(r =&gt; r._1)
+      .timeWindow(Time.hours(1))
+      .process(new WindowResult)
+      .print()
+
     env.execute()
   }
 
-  class UvAggFunc extends AggregateFunction[(String,Long),(Long,BloomFilter[lang.Long]),Long]{
-    override def createAccumulator(): (Long, BloomFilter[lang.Long]) = (0,BloomFilter.create(Funnels.longFunnel(), 100000000, 0.01))
-
-    override def add(value: (String, Long), accumulator: (Long, BloomFilter[lang.Long])): (Long, BloomFilter[lang.Long]) = {
-      var bloom = accumulator._2
-      var uvCount = accumulator._1
-      if(!bloom.mightContain(value._2)){
-        bloom.put(value._2)
-        uvCount += 1
+  class WindowResult extends ProcessWindowFunction[(String, String), String, String, TimeWindow] {
+    override def process(key: String, context: Context, elements: Iterable[(String, String)], out: Collector[String]): Unit = {
+      var s : Set[String] = Set()
+      for (e &lt;- elements) {
+        s += e._2
       }
-      (uvCount,bloom)
+      out.collect(&quot;window end: &quot; + context.window.getEnd + &quot; uv count: &quot; + s.size)
+    }
+  }
+}
+</code></pre>
+<h3><a class="header" href="#改进版本" id="改进版本">改进版本</a></h3>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">import scala.collection.mutable.Set
+
+object UVPerWindowWithAggAndWindowProcess {
+
+  case class UserBehavior(userId: String, itemId: String, categoryId: String, behavior: String, timestamp: Long)
+
+  def main(args: Array[String]): Unit = {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setParallelism(1)
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+
+    val stream = env
+      .readTextFile(&quot;UserBehavior.csv&quot;)
+      .map(line =&gt; {
+        val arr = line.split(&quot;,&quot;)
+        UserBehavior(arr(0), arr(1), arr(2), arr(3), arr(4).toLong * 1000L)
+      })
+      .filter(r =&gt; r.behavior.equals(&quot;pv&quot;))
+      .assignAscendingTimestamps(_.timestamp)
+
+    stream
+      .map(r =&gt; (&quot;key&quot;, r.userId))
+      .keyBy(r =&gt; r._1)
+      .timeWindow(Time.hours(1))
+      .aggregate(new CountAgg, new WindowResult)
+      .print()
+
+    env.execute()
+  }
+
+  class WindowResult extends ProcessWindowFunction[Long, String, String, TimeWindow] {
+    override def process(key: String, context: Context, elements: Iterable[Long], out: Collector[String]): Unit = {
+      out.collect(&quot;window end: &quot; + new Timestamp(context.window.getEnd) + &quot; uv count: &quot; + elements.head)
+    }
+  }
+
+  class CountAgg extends AggregateFunction[(String, String), (Set[String], Long), Long] {
+    override def createAccumulator(): (mutable.Set[String], Long) = (mutable.Set[String](), 0L)
+
+    override def add(in: (String, String), acc: (mutable.Set[String], Long)): (mutable.Set[String], Long) = {
+      if (!acc._1.contains(in._2)) {
+        acc._1 += in._2
+        (acc._1, acc._2 + 1)
+      } else {
+        acc
+      }
     }
 
-    override def getResult(accumulator: (Long, BloomFilter[lang.Long])): Long = accumulator._1
+    override def getResult(acc: (mutable.Set[String], Long)): Long = acc._2
 
-    override def merge(a: (Long, BloomFilter[lang.Long]), b: (Long, BloomFilter[lang.Long])): (Long, BloomFilter[lang.Long]) = ???
+    override def merge(acc: (mutable.Set[String], Long), acc1: (mutable.Set[String], Long)): (mutable.Set[String], Long) = ???
   }
-  class UvProcessFunc extends ProcessWindowFunction[Long, String, String, TimeWindow] {
-    // 连接到redis
-    override def process(key: String, context: Context, elements: Iterable[Long], out: Collector[String]): Unit = {
-      // 窗口结束时间 ==&gt; UV数
-      // 窗口结束时间 ==&gt; bit数组
+}
+</code></pre>
+<p>完整代码如下：</p>
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">import org.apache.flink.shaded.guava18.com.google.common.hash.{BloomFilter, Funnels}
 
-      // 拿到key
-      val start = new Timestamp(context.window.getStart)
-      val end = new Timestamp(context.window.getEnd)
-      out.collect(s&quot;窗口开始时间为$start 到 $end 的uv 为 ${elements.head}&quot;)
+object UVPerWindowWithBloomFilter {
+  case class UserBehavior(userId: String, itemId: String, categoryId: String, behavior: String, timestamp: Long)
+  def main(args: Array[String]): Unit = {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setParallelism(1)
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+
+    val stream = env
+      .readTextFile(&quot;/home/zuoyuan/flink-tutorial/flink-scala-code/src/main/resources/UserBehavior.csv&quot;)
+      .map(line =&gt; {
+        val arr = line.split(&quot;,&quot;)
+        UserBehavior(arr(0), arr(1), arr(2), arr(3), arr(4).toLong * 1000L)
+      })
+      .filter(r =&gt; r.behavior.equals(&quot;pv&quot;))
+      .assignAscendingTimestamps(_.timestamp)
+
+    stream
+      .map(r =&gt; (&quot;key&quot;, r.userId.toLong))
+      .keyBy(r =&gt; r._1)
+      .timeWindow(Time.hours(1))
+      .aggregate(new CountAgg, new WindowResult)
+      .print()
+
+    env.execute()
+  }
+
+  class CountAgg extends AggregateFunction[(String, Long), (Long, BloomFilter[lang.Long]), Long] {
+    override def createAccumulator(): (Long, BloomFilter[lang.Long]) = (0, BloomFilter.create(Funnels.longFunnel(), 100000000, 0.01))
+
+    override def add(in: (String, Long), acc: (Long, BloomFilter[lang.Long])): (Long, BloomFilter[lang.Long]) = {
+      if (!acc._2.mightContain(in._2)) {
+        acc._2.put(in._2)
+        (acc._1 + 1, acc._2)
+      } else {
+        acc
+      }
+    }
+
+    override def getResult(acc: (Long, BloomFilter[lang.Long])): Long = acc._1
+
+    override def merge(acc: (Long, BloomFilter[lang.Long]), acc1: (Long, BloomFilter[lang.Long])): (Long, BloomFilter[lang.Long]) = ???
+
+  }
+
+  class WindowResult extends ProcessWindowFunction[Long, String, String, TimeWindow] {
+    override def process(key: String, context: Context, elements: Iterable[Long], out: Collector[String]): Unit = {
+      out.collect(&quot;window end: &quot; + new Timestamp(context.window.getEnd) + &quot; uv count: &quot; + elements.head)
     }
   }
 }
@@ -6812,14 +6861,14 @@ object LoginFailWithoutCEP {
 </code></pre>
 <p><strong>java version</strong></p>
 <h3><a class="header" href="#使用process-function实现订单超时需求" id="使用process-function实现订单超时需求">使用Process Function实现订单超时需求</a></h3>
-<pre><code class="language-scala">object OrderTimeoutWIthoutCep {
+<pre><code class="language-scala">object OrderTimeoutWithoutCep {
 
   case class OrderEvent(orderId: String,
                         eventType: String,
                         eventTime: String)
 
   def main(args: Array[String]): Unit = {
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
@@ -6874,181 +6923,302 @@ object LoginFailWithoutCEP {
 </code></pre>
 <h2><a class="header" href="#实时对帐实现两条流的join" id="实时对帐实现两条流的join">实时对帐：实现两条流的Join</a></h2>
 <p>完整代码如下：</p>
-<pre><code class="language-scala">import org.apache.flink.api.common.state.{ValueState, ValueStateDescriptor}
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.functions.co.CoProcessFunction
-import org.apache.flink.streaming.api.scala.OutputTag
-import org.apache.flink.streaming.api.scala._
-import org.apache.flink.util.Collector
+<pre><code class="language-scala">object TwoStreamJoin {
 
-case class OrderEvent(orderId: String,
-                      eventType: String,
-                      eventTime: String)
+  case class OrderEvent(orderId: String, eventType: String, eventTime: Long)
 
-case class PayEvent(orderId: String,
-                    eventType: String,
-                    eventTime: String)
+  case class PayEvent(orderId: String, eventType: String, eventTime: Long)
 
-object TwoStreamsJoin {
-  val unmatchedOrders = new OutputTag[OrderEvent](&quot;unmatchedOrders&quot;){}
-  val unmatchedPays = new OutputTag[PayEvent](&quot;unmatchedPays&quot;){}
+  val unmatchedOrders = new OutputTag[String](&quot;unmatched-orders&quot;)
+  val unmatchedPays   = new OutputTag[String](&quot;unmatched-pays&quot;)
 
   def main(args: Array[String]): Unit = {
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
-    val orders = env
-      .fromCollection(List(
-      OrderEvent(&quot;1&quot;, &quot;create&quot;, &quot;1558430842&quot;),
-      OrderEvent(&quot;2&quot;, &quot;create&quot;, &quot;1558430843&quot;),
-      OrderEvent(&quot;1&quot;, &quot;pay&quot;, &quot;1558430844&quot;),
-      OrderEvent(&quot;2&quot;, &quot;pay&quot;, &quot;1558430845&quot;),
-      OrderEvent(&quot;3&quot;, &quot;create&quot;, &quot;1558430849&quot;),
-      OrderEvent(&quot;3&quot;, &quot;pay&quot;, &quot;1558430849&quot;)
-    )).assignAscendingTimestamps(_.eventTime.toLong * 1000)
-      .keyBy(&quot;orderId&quot;)
+    val orderStream = env
+      .fromElements(
+        OrderEvent(&quot;order_1&quot;, &quot;pay&quot;, 1000L),
+        OrderEvent(&quot;order_2&quot;, &quot;pay&quot;, 2000L)
+      )
+      .assignAscendingTimestamps(r =&gt; r.eventTime)
+      .keyBy(r =&gt; r.orderId)
 
-    val pays = env.fromCollection(List(
-      PayEvent(&quot;1&quot;, &quot;weixin&quot;, &quot;1558430847&quot;),
-      PayEvent(&quot;2&quot;, &quot;zhifubao&quot;, &quot;1558430848&quot;),
-      PayEvent(&quot;4&quot;, &quot;zhifubao&quot;, &quot;1558430850&quot;)
-    )).assignAscendingTimestamps(_.eventTime.toLong * 1000)
-      .keyBy(&quot;orderId&quot;)
+    val payStream = env
+      .fromElements(
+        PayEvent(&quot;order_1&quot;, &quot;weixin&quot;, 3000L),
+        PayEvent(&quot;order_3&quot;, &quot;weixin&quot;, 4000L)
+      )
+      .assignAscendingTimestamps(r =&gt; r.eventTime)
+      .keyBy(r =&gt; r.orderId)
 
-    val processed = orders
-      .connect(pays)
-      .process(new EnrichmentFunction)
+    val result = orderStream
+      .connect(payStream)
+      .process(new MatchFunction)
 
-    processed.getSideOutput[PayEvent](unmatchedPays).print()
-    processed.getSideOutput[OrderEvent](unmatchedOrders).print()
+    result.print()
 
-    env.execute
+    result.getSideOutput(unmatchedOrders).print()
+
+    result.getSideOutput(unmatchedPays).print()
+
+    env.execute()
   }
 
-  class EnrichmentFunction extends CoProcessFunction[
-    OrderEvent, PayEvent, (OrderEvent, PayEvent)] {
-    lazy val orderState: ValueState[OrderEvent] = getRuntimeContext
-      .getState(new ValueStateDescriptor[OrderEvent](&quot;saved order&quot;,
-        classOf[OrderEvent]))
+  class MatchFunction extends CoProcessFunction[OrderEvent, PayEvent, String] {
 
-    lazy val payState: ValueState[PayEvent] = getRuntimeContext
-      .getState(new ValueStateDescriptor[PayEvent](&quot;saved pay&quot;,
-        classOf[PayEvent]))
+    lazy val orderState = getRuntimeContext.getState(
+      new ValueStateDescriptor[OrderEvent](&quot;order&quot;, Types.of[OrderEvent])
+    )
 
-    override def processElement1(
-      order: OrderEvent,
-      context: CoProcessFunction[OrderEvent,
-        PayEvent, (OrderEvent, PayEvent)]#Context,
-      out: Collector[(OrderEvent, PayEvent)]
-    ): Unit = {
+    lazy val payState = getRuntimeContext.getState(
+      new ValueStateDescriptor[PayEvent](&quot;pay&quot;, Types.of[PayEvent])
+    )
+
+    override def processElement1(order: OrderEvent, context: CoProcessFunction[OrderEvent, PayEvent, String]#Context, collector: Collector[String]): Unit = {
       val pay = payState.value()
 
       if (pay != null) {
         payState.clear()
-        out.collect((order, pay))
+        collector.collect(&quot;order id: &quot; + order.orderId + &quot; matched success!&quot;)
       } else {
         orderState.update(order)
-        // as soon as the watermark arrives,
-        // we can stop waiting for the corresponding pay
-        context.timerService
-          .registerEventTimeTimer(order.eventTime.toLong * 1000)
+        context.timerService().registerEventTimeTimer(order.eventTime + 5000L)
       }
     }
 
-    override def processElement2(
-      pay: PayEvent,
-      context: CoProcessFunction[OrderEvent,
-        PayEvent,(OrderEvent, PayEvent)]#Context,
-      out: Collector[(OrderEvent, PayEvent)]
-    ): Unit = {
+    override def processElement2(pay: PayEvent, context: CoProcessFunction[OrderEvent, PayEvent, String]#Context, collector: Collector[String]): Unit = {
       val order = orderState.value()
 
       if (order != null) {
         orderState.clear()
-        out.collect((order, pay))
+        collector.collect(&quot;order id: &quot; + pay.orderId + &quot; match success!&quot;)
       } else {
         payState.update(pay)
-        context
-          .timerService
-          .registerEventTimeTimer(pay.eventTime.toLong * 1000)
+        context.timerService().registerEventTimeTimer(pay.eventTime + 5000L)
       }
     }
 
-    override def onTimer(
-      timestamp: Long,
-      ctx: CoProcessFunction[OrderEvent,
-        PayEvent, (OrderEvent, PayEvent)]#OnTimerContext,
-      out: Collector[(OrderEvent, PayEvent)]
-    ): Unit = {
-      if (payState.value != null) {
-        ctx.output(unmatchedPays, payState.value)
-        payState.clear()
-      }
-
-      if (orderState.value != null) {
-        ctx.output(unmatchedOrders, orderState.value)
+    override def onTimer(timestamp: Long, ctx: CoProcessFunction[OrderEvent, PayEvent, String]#OnTimerContext, out: Collector[String]): Unit = {
+      if (orderState.value() != null) {
+        ctx.output(unmatchedOrders, &quot;order id: &quot; + orderState.value().orderId + &quot; fail match&quot;)
         orderState.clear()
+      }
+      if (payState.value() != null) {
+        ctx.output(unmatchedPays, &quot;order id: &quot; + payState.value().orderId + &quot; fail match&quot;)
+        payState.clear()
       }
     }
   }
 }
 </code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">public class TwoStreamsJoin {
+
+    private static OutputTag&lt;String&gt; unmatchedOrders = new OutputTag&lt;String&gt;(&quot;order&quot;){};
+    private static OutputTag&lt;String&gt; unmatchedPays   = new OutputTag&lt;String&gt;(&quot;pay&quot;){};
+
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+        env.setParallelism(1);
+
+        KeyedStream&lt;OrderEvent, String&gt; orderStream = env
+                .fromElements(
+                        new OrderEvent(&quot;order_1&quot;, &quot;pay&quot;, 1000L),
+                        new OrderEvent(&quot;order_2&quot;, &quot;pay&quot;, 2000L)
+                )
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy.&lt;OrderEvent&gt;forMonotonousTimestamps()
+                                .withTimestampAssigner(new SerializableTimestampAssigner&lt;OrderEvent&gt;() {
+                                    @Override
+                                    public long extractTimestamp(OrderEvent orderEvent, long l) {
+                                        return orderEvent.eventTime;
+                                    }
+                                })
+                )
+                .keyBy(r -&gt; r.orderId);
+
+        KeyedStream&lt;PayEvent, String&gt; payStream = env
+                .fromElements(
+                        new PayEvent(&quot;order_1&quot;, &quot;weixin&quot;, 3000L),
+                        new PayEvent(&quot;order_3&quot;, &quot;weixin&quot;, 4000L)
+                )
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy.&lt;PayEvent&gt;forMonotonousTimestamps()
+                                .withTimestampAssigner(new SerializableTimestampAssigner&lt;PayEvent&gt;() {
+                                    @Override
+                                    public long extractTimestamp(PayEvent payEvent, long l) {
+                                        return payEvent.eventTime;
+                                    }
+                                })
+                )
+                .keyBy(r -&gt; r.orderId);
+
+        SingleOutputStreamOperator&lt;String&gt; result = orderStream
+                .connect(payStream)
+                .process(new CoProcessFunction&lt;OrderEvent, PayEvent, String&gt;() {
+                    private ValueState&lt;OrderEvent&gt; orderState;
+                    private ValueState&lt;PayEvent&gt; payState;
+
+                    @Override
+                    public void open(Configuration parameters) throws Exception {
+                        super.open(parameters);
+                        orderState = getRuntimeContext().getState(
+                                new ValueStateDescriptor&lt;OrderEvent&gt;(&quot;order&quot;, OrderEvent.class)
+                        );
+                        payState = getRuntimeContext().getState(
+                                new ValueStateDescriptor&lt;PayEvent&gt;(&quot;pay&quot;, PayEvent.class)
+                        );
+                    }
+
+                    @Override
+                    public void processElement1(OrderEvent orderEvent, Context context, Collector&lt;String&gt; collector) throws Exception {
+                        PayEvent pay = payState.value();
+                        if (pay != null) {
+                            payState.clear();
+                            collector.collect(&quot;order id &quot; + orderEvent.orderId + &quot; matched success&quot;);
+                        } else {
+                            orderState.update(orderEvent);
+                            context.timerService().registerEventTimeTimer(orderEvent.eventTime + 5000L);
+                        }
+                    }
+
+                    @Override
+                    public void processElement2(PayEvent payEvent, Context context, Collector&lt;String&gt; collector) throws Exception {
+                        OrderEvent order = orderState.value();
+                        if (order != null) {
+                            orderState.clear();
+                            collector.collect(&quot;order id&quot; + payEvent.orderId + &quot; matched success&quot;);
+                        } else {
+                            payState.update(payEvent);
+                            context.timerService().registerEventTimeTimer(payEvent.eventTime + 5000L);
+                        }
+                    }
+
+                    @Override
+                    public void onTimer(long timestamp, OnTimerContext ctx, Collector&lt;String&gt; out) throws Exception {
+                        super.onTimer(timestamp, ctx, out);
+                        if (orderState.value() != null) {
+                            ctx.output(unmatchedOrders, &quot;order id: &quot; + orderState.value().orderId + &quot; not match&quot;);
+                            orderState.clear();
+                        }
+                        if (payState.value() != null) {
+                            ctx.output(unmatchedPays, &quot;order id: &quot; + payState.value().orderId + &quot; not match&quot;);
+                        }
+                    }
+                });
+
+        result.print();
+
+        result.getSideOutput(unmatchedOrders).print();
+
+        result.getSideOutput(unmatchedPays).print();
+
+        env.execute();
+    }
+}
+</code></pre>
 <h2><a class="header" href="#只使用flink-sql实现topn需求" id="只使用flink-sql实现topn需求">只使用Flink SQL实现TopN需求</a></h2>
 <p>代码</p>
-<pre><code class="language-scala">package com.atguigu.project.topnhotitems
-
-import java.sql.Timestamp
-
-import com.atguigu.project.util.UserBehavior
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.api.scala._
-import org.apache.flink.table.api.{EnvironmentSettings, Tumble}
-import org.apache.flink.table.api.scala._
+import org.apache.flink.table.api._
+import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
+import org.apache.flink.types.Row
 
 object HotItemsSQL {
 
-  def main(args: Array[String]): Unit = {
+  case class UserBehavior(userId: String, itemId: String, categoryId: String, behavior: String, timestamp: Long)
 
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
-    val settings = EnvironmentSettings.newInstance()
-      .useBlinkPlanner()
-      .inStreamingMode()
-      .build()
-    val tEnv = StreamTableEnvironment.create(env, settings)
+  def main(args: Array[String]): Unit = {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+
+    val settings = EnvironmentSettings
+      .newInstance()
+      .inStreamingMode()
+      .build()
+
+    val tableEnv = StreamTableEnvironment.create(env, settings)
+
     val stream = env
-      .readTextFile(&quot;`UserBehavior.csv`的绝对路径&quot;)
+      .readTextFile(&quot;UserBehavior.csv&quot;)
       .map(line =&gt; {
         val arr = line.split(&quot;,&quot;)
-        UserBehavior(arr(0).toLong,
-          arr(1).toLong, arr(2).toInt, arr(3), arr(4).toLong * 1000)
+        UserBehavior(arr(0), arr(1), arr(2), arr(3), arr(4).toLong * 1000L)
       })
-      .filter(_.behavior == &quot;pv&quot;)
+      .filter(r =&gt; r.behavior.equals(&quot;pv&quot;))
       .assignAscendingTimestamps(_.timestamp)
 
-    tEnv.createTemporaryView(&quot;t&quot;, stream, 'itemId, 'timestamp.rowtime as 'ts)
-
-    val result = tEnv.sqlQuery(
-      &quot;&quot;&quot;
-        |SELECT *
-        |FROM (
-        |    SELECT *,
-        |        ROW_NUMBER() OVER
-        |        (PARTITION BY windowEnd ORDER BY icount DESC) as row_num
-        |    FROM
-        |    (SELECT count(itemId) as icount,
-        |     TUMBLE_START(ts, INTERVAL '1' HOUR) as windowEnd
-        |     FROM t GROUP BY TUMBLE(ts, INTERVAL '1' HOUR), itemId) topn)
-        |WHERE row_num &lt;= 5
-        |&quot;&quot;&quot;.stripMargin
-    )
-    result.toRetractStream[(Long, Timestamp, Long)].print()
+    // stream =&gt; dynamic table
+    tableEnv.createTemporaryView(&quot;t&quot;, stream, $&quot;itemId&quot;, $&quot;timestamp&quot;.rowtime() as &quot;ts&quot;)
+    val result = tableEnv
+      .sqlQuery(
+        &quot;&quot;&quot;
+          |SELECT *
+          |FROM (
+          |    SELECT *, ROW_NUMBER() OVER (PARTITION BY windowEnd ORDER BY itemCount DESC) as row_num
+          |    FROM (SELECT itemId, COUNT(itemId) as itemCount, HOP_END(ts, INTERVAL '5' MINUTE, INTERVAL '1' HOUR) as windowEnd
+          |          FROM t GROUP BY HOP(ts, INTERVAL '5' MINUTE, INTERVAL '1' HOUR), itemId)
+          |)
+          |WHERE row_num &lt;= 3
+          |&quot;&quot;&quot;.stripMargin)
+    tableEnv.toRetractStream[Row](result).print()
 
     env.execute()
   }
+}
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">public class HotItemsSQL {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+
+        EnvironmentSettings settings = EnvironmentSettings
+                .newInstance()
+                .inStreamingMode()
+                .build();
+
+        StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env, settings);
+
+        DataStream&lt;UserBehavior&gt; stream = env
+                .readTextFile(&quot;/home/zuoyuan/flink-tutorial/flink-scala-code/src/main/resources/UserBehavior.csv&quot;)
+                .map(new MapFunction&lt;String, UserBehavior&gt;() {
+                    @Override
+                    public UserBehavior map(String s) throws Exception {
+                        String[] arr = s.split(&quot;,&quot;);
+                        return new UserBehavior(arr[0], arr[1], arr[2], arr[3], Long.parseLong(arr[4]) * 1000L);
+                    }
+                })
+                .filter(r -&gt; r.behavior.equals(&quot;pv&quot;))
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy.&lt;UserBehavior&gt;forMonotonousTimestamps()
+                                .withTimestampAssigner(new SerializableTimestampAssigner&lt;UserBehavior&gt;() {
+                                    @Override
+                                    public long extractTimestamp(UserBehavior userBehavior, long l) {
+                                        return userBehavior.timestamp;
+                                    }
+                                })
+                );
+
+        tableEnv.createTemporaryView(&quot;t&quot;, stream, $(&quot;itemId&quot;), $(&quot;timestamp&quot;).rowtime().as(&quot;ts&quot;));
+        Table result = tableEnv
+                .sqlQuery(&quot;SELECT *&quot; +
+                        &quot; FROM (&quot; +
+                        &quot;     SELECT *, ROW_NUMBER() OVER (PARTITION BY windowEnd ORDER BY itemCount DESC) as row_num&quot; +
+                        &quot;     FROM (SELECT itemId, COUNT(itemId) as itemCount, HOP_END(ts, INTERVAL '5' MINUTE, INTERVAL '1' HOUR) as windowEnd&quot; +
+                        &quot;           FROM t GROUP BY HOP(ts, INTERVAL '5' MINUTE, INTERVAL '1' HOUR), itemId)&quot; +
+                        &quot;) WHERE row_num &lt;= 3&quot;);
+        tableEnv.toRetractStream(result, TypeInformation.of(Row.class)).print();
+
+        env.execute();
+    }
 }
 </code></pre>
 <h1><a class="header" href="#flink-sql-demo-构建一个端到端的流式应用" id="flink-sql-demo-构建一个端到端的流式应用">Flink SQL Demo: 构建一个端到端的流式应用</a></h1>

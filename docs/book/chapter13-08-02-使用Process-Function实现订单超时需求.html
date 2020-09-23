@@ -160,14 +160,14 @@
                 <div id="content" class="content">
                     <main>
                         <h3><a class="header" href="#使用process-function实现订单超时需求" id="使用process-function实现订单超时需求">使用Process Function实现订单超时需求</a></h3>
-<pre><code class="language-scala">object OrderTimeoutWIthoutCep {
+<pre><code class="language-scala">object OrderTimeoutWithoutCep {
 
   case class OrderEvent(orderId: String,
                         eventType: String,
                         eventTime: String)
 
   def main(args: Array[String]): Unit = {
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 

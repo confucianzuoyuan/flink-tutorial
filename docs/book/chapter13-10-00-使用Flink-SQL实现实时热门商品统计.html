@@ -161,59 +161,103 @@
                     <main>
                         <h2><a class="header" href="#只使用flink-sql实现topn需求" id="只使用flink-sql实现topn需求">只使用Flink SQL实现TopN需求</a></h2>
 <p>代码</p>
-<pre><code class="language-scala">package com.atguigu.project.topnhotitems
-
-import java.sql.Timestamp
-
-import com.atguigu.project.util.UserBehavior
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
+<p><strong>scala version</strong></p>
+<pre><code class="language-scala">import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.api.scala._
-import org.apache.flink.table.api.{EnvironmentSettings, Tumble}
-import org.apache.flink.table.api.scala._
+import org.apache.flink.table.api._
+import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
+import org.apache.flink.types.Row
 
 object HotItemsSQL {
 
-  def main(args: Array[String]): Unit = {
+  case class UserBehavior(userId: String, itemId: String, categoryId: String, behavior: String, timestamp: Long)
 
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
-    val settings = EnvironmentSettings.newInstance()
-      .useBlinkPlanner()
-      .inStreamingMode()
-      .build()
-    val tEnv = StreamTableEnvironment.create(env, settings)
+  def main(args: Array[String]): Unit = {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+
+    val settings = EnvironmentSettings
+      .newInstance()
+      .inStreamingMode()
+      .build()
+
+    val tableEnv = StreamTableEnvironment.create(env, settings)
+
     val stream = env
-      .readTextFile(&quot;`UserBehavior.csv`的绝对路径&quot;)
+      .readTextFile(&quot;UserBehavior.csv&quot;)
       .map(line =&gt; {
         val arr = line.split(&quot;,&quot;)
-        UserBehavior(arr(0).toLong,
-          arr(1).toLong, arr(2).toInt, arr(3), arr(4).toLong * 1000)
+        UserBehavior(arr(0), arr(1), arr(2), arr(3), arr(4).toLong * 1000L)
       })
-      .filter(_.behavior == &quot;pv&quot;)
+      .filter(r =&gt; r.behavior.equals(&quot;pv&quot;))
       .assignAscendingTimestamps(_.timestamp)
 
-    tEnv.createTemporaryView(&quot;t&quot;, stream, 'itemId, 'timestamp.rowtime as 'ts)
-
-    val result = tEnv.sqlQuery(
-      &quot;&quot;&quot;
-        |SELECT *
-        |FROM (
-        |    SELECT *,
-        |        ROW_NUMBER() OVER
-        |        (PARTITION BY windowEnd ORDER BY icount DESC) as row_num
-        |    FROM
-        |    (SELECT count(itemId) as icount,
-        |     TUMBLE_START(ts, INTERVAL '1' HOUR) as windowEnd
-        |     FROM t GROUP BY TUMBLE(ts, INTERVAL '1' HOUR), itemId) topn)
-        |WHERE row_num &lt;= 5
-        |&quot;&quot;&quot;.stripMargin
-    )
-    result.toRetractStream[(Long, Timestamp, Long)].print()
+    // stream =&gt; dynamic table
+    tableEnv.createTemporaryView(&quot;t&quot;, stream, $&quot;itemId&quot;, $&quot;timestamp&quot;.rowtime() as &quot;ts&quot;)
+    val result = tableEnv
+      .sqlQuery(
+        &quot;&quot;&quot;
+          |SELECT *
+          |FROM (
+          |    SELECT *, ROW_NUMBER() OVER (PARTITION BY windowEnd ORDER BY itemCount DESC) as row_num
+          |    FROM (SELECT itemId, COUNT(itemId) as itemCount, HOP_END(ts, INTERVAL '5' MINUTE, INTERVAL '1' HOUR) as windowEnd
+          |          FROM t GROUP BY HOP(ts, INTERVAL '5' MINUTE, INTERVAL '1' HOUR), itemId)
+          |)
+          |WHERE row_num &lt;= 3
+          |&quot;&quot;&quot;.stripMargin)
+    tableEnv.toRetractStream[Row](result).print()
 
     env.execute()
   }
+}
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">public class HotItemsSQL {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+
+        EnvironmentSettings settings = EnvironmentSettings
+                .newInstance()
+                .inStreamingMode()
+                .build();
+
+        StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env, settings);
+
+        DataStream&lt;UserBehavior&gt; stream = env
+                .readTextFile(&quot;/home/zuoyuan/flink-tutorial/flink-scala-code/src/main/resources/UserBehavior.csv&quot;)
+                .map(new MapFunction&lt;String, UserBehavior&gt;() {
+                    @Override
+                    public UserBehavior map(String s) throws Exception {
+                        String[] arr = s.split(&quot;,&quot;);
+                        return new UserBehavior(arr[0], arr[1], arr[2], arr[3], Long.parseLong(arr[4]) * 1000L);
+                    }
+                })
+                .filter(r -&gt; r.behavior.equals(&quot;pv&quot;))
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy.&lt;UserBehavior&gt;forMonotonousTimestamps()
+                                .withTimestampAssigner(new SerializableTimestampAssigner&lt;UserBehavior&gt;() {
+                                    @Override
+                                    public long extractTimestamp(UserBehavior userBehavior, long l) {
+                                        return userBehavior.timestamp;
+                                    }
+                                })
+                );
+
+        tableEnv.createTemporaryView(&quot;t&quot;, stream, $(&quot;itemId&quot;), $(&quot;timestamp&quot;).rowtime().as(&quot;ts&quot;));
+        Table result = tableEnv
+                .sqlQuery(&quot;SELECT *&quot; +
+                        &quot; FROM (&quot; +
+                        &quot;     SELECT *, ROW_NUMBER() OVER (PARTITION BY windowEnd ORDER BY itemCount DESC) as row_num&quot; +
+                        &quot;     FROM (SELECT itemId, COUNT(itemId) as itemCount, HOP_END(ts, INTERVAL '5' MINUTE, INTERVAL '1' HOUR) as windowEnd&quot; +
+                        &quot;           FROM t GROUP BY HOP(ts, INTERVAL '5' MINUTE, INTERVAL '1' HOUR), itemId)&quot; +
+                        &quot;) WHERE row_num &lt;= 3&quot;);
+        tableEnv.toRetractStream(result, TypeInformation.of(Row.class)).print();
+
+        env.execute();
+    }
 }
 </code></pre>
 

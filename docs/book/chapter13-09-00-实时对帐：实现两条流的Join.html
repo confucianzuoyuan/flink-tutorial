@@ -161,124 +161,201 @@
                     <main>
                         <h2><a class="header" href="#实时对帐实现两条流的join" id="实时对帐实现两条流的join">实时对帐：实现两条流的Join</a></h2>
 <p>完整代码如下：</p>
-<pre><code class="language-scala">import org.apache.flink.api.common.state.{ValueState, ValueStateDescriptor}
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.functions.co.CoProcessFunction
-import org.apache.flink.streaming.api.scala.OutputTag
-import org.apache.flink.streaming.api.scala._
-import org.apache.flink.util.Collector
+<pre><code class="language-scala">object TwoStreamJoin {
 
-case class OrderEvent(orderId: String,
-                      eventType: String,
-                      eventTime: String)
+  case class OrderEvent(orderId: String, eventType: String, eventTime: Long)
 
-case class PayEvent(orderId: String,
-                    eventType: String,
-                    eventTime: String)
+  case class PayEvent(orderId: String, eventType: String, eventTime: Long)
 
-object TwoStreamsJoin {
-  val unmatchedOrders = new OutputTag[OrderEvent](&quot;unmatchedOrders&quot;){}
-  val unmatchedPays = new OutputTag[PayEvent](&quot;unmatchedPays&quot;){}
+  val unmatchedOrders = new OutputTag[String](&quot;unmatched-orders&quot;)
+  val unmatchedPays   = new OutputTag[String](&quot;unmatched-pays&quot;)
 
   def main(args: Array[String]): Unit = {
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.setParallelism(1)
 
-    val orders = env
-      .fromCollection(List(
-      OrderEvent(&quot;1&quot;, &quot;create&quot;, &quot;1558430842&quot;),
-      OrderEvent(&quot;2&quot;, &quot;create&quot;, &quot;1558430843&quot;),
-      OrderEvent(&quot;1&quot;, &quot;pay&quot;, &quot;1558430844&quot;),
-      OrderEvent(&quot;2&quot;, &quot;pay&quot;, &quot;1558430845&quot;),
-      OrderEvent(&quot;3&quot;, &quot;create&quot;, &quot;1558430849&quot;),
-      OrderEvent(&quot;3&quot;, &quot;pay&quot;, &quot;1558430849&quot;)
-    )).assignAscendingTimestamps(_.eventTime.toLong * 1000)
-      .keyBy(&quot;orderId&quot;)
+    val orderStream = env
+      .fromElements(
+        OrderEvent(&quot;order_1&quot;, &quot;pay&quot;, 1000L),
+        OrderEvent(&quot;order_2&quot;, &quot;pay&quot;, 2000L)
+      )
+      .assignAscendingTimestamps(r =&gt; r.eventTime)
+      .keyBy(r =&gt; r.orderId)
 
-    val pays = env.fromCollection(List(
-      PayEvent(&quot;1&quot;, &quot;weixin&quot;, &quot;1558430847&quot;),
-      PayEvent(&quot;2&quot;, &quot;zhifubao&quot;, &quot;1558430848&quot;),
-      PayEvent(&quot;4&quot;, &quot;zhifubao&quot;, &quot;1558430850&quot;)
-    )).assignAscendingTimestamps(_.eventTime.toLong * 1000)
-      .keyBy(&quot;orderId&quot;)
+    val payStream = env
+      .fromElements(
+        PayEvent(&quot;order_1&quot;, &quot;weixin&quot;, 3000L),
+        PayEvent(&quot;order_3&quot;, &quot;weixin&quot;, 4000L)
+      )
+      .assignAscendingTimestamps(r =&gt; r.eventTime)
+      .keyBy(r =&gt; r.orderId)
 
-    val processed = orders
-      .connect(pays)
-      .process(new EnrichmentFunction)
+    val result = orderStream
+      .connect(payStream)
+      .process(new MatchFunction)
 
-    processed.getSideOutput[PayEvent](unmatchedPays).print()
-    processed.getSideOutput[OrderEvent](unmatchedOrders).print()
+    result.print()
 
-    env.execute
+    result.getSideOutput(unmatchedOrders).print()
+
+    result.getSideOutput(unmatchedPays).print()
+
+    env.execute()
   }
 
-  class EnrichmentFunction extends CoProcessFunction[
-    OrderEvent, PayEvent, (OrderEvent, PayEvent)] {
-    lazy val orderState: ValueState[OrderEvent] = getRuntimeContext
-      .getState(new ValueStateDescriptor[OrderEvent](&quot;saved order&quot;,
-        classOf[OrderEvent]))
+  class MatchFunction extends CoProcessFunction[OrderEvent, PayEvent, String] {
 
-    lazy val payState: ValueState[PayEvent] = getRuntimeContext
-      .getState(new ValueStateDescriptor[PayEvent](&quot;saved pay&quot;,
-        classOf[PayEvent]))
+    lazy val orderState = getRuntimeContext.getState(
+      new ValueStateDescriptor[OrderEvent](&quot;order&quot;, Types.of[OrderEvent])
+    )
 
-    override def processElement1(
-      order: OrderEvent,
-      context: CoProcessFunction[OrderEvent,
-        PayEvent, (OrderEvent, PayEvent)]#Context,
-      out: Collector[(OrderEvent, PayEvent)]
-    ): Unit = {
+    lazy val payState = getRuntimeContext.getState(
+      new ValueStateDescriptor[PayEvent](&quot;pay&quot;, Types.of[PayEvent])
+    )
+
+    override def processElement1(order: OrderEvent, context: CoProcessFunction[OrderEvent, PayEvent, String]#Context, collector: Collector[String]): Unit = {
       val pay = payState.value()
 
       if (pay != null) {
         payState.clear()
-        out.collect((order, pay))
+        collector.collect(&quot;order id: &quot; + order.orderId + &quot; matched success!&quot;)
       } else {
         orderState.update(order)
-        // as soon as the watermark arrives,
-        // we can stop waiting for the corresponding pay
-        context.timerService
-          .registerEventTimeTimer(order.eventTime.toLong * 1000)
+        context.timerService().registerEventTimeTimer(order.eventTime + 5000L)
       }
     }
 
-    override def processElement2(
-      pay: PayEvent,
-      context: CoProcessFunction[OrderEvent,
-        PayEvent,(OrderEvent, PayEvent)]#Context,
-      out: Collector[(OrderEvent, PayEvent)]
-    ): Unit = {
+    override def processElement2(pay: PayEvent, context: CoProcessFunction[OrderEvent, PayEvent, String]#Context, collector: Collector[String]): Unit = {
       val order = orderState.value()
 
       if (order != null) {
         orderState.clear()
-        out.collect((order, pay))
+        collector.collect(&quot;order id: &quot; + pay.orderId + &quot; match success!&quot;)
       } else {
         payState.update(pay)
-        context
-          .timerService
-          .registerEventTimeTimer(pay.eventTime.toLong * 1000)
+        context.timerService().registerEventTimeTimer(pay.eventTime + 5000L)
       }
     }
 
-    override def onTimer(
-      timestamp: Long,
-      ctx: CoProcessFunction[OrderEvent,
-        PayEvent, (OrderEvent, PayEvent)]#OnTimerContext,
-      out: Collector[(OrderEvent, PayEvent)]
-    ): Unit = {
-      if (payState.value != null) {
-        ctx.output(unmatchedPays, payState.value)
-        payState.clear()
-      }
-
-      if (orderState.value != null) {
-        ctx.output(unmatchedOrders, orderState.value)
+    override def onTimer(timestamp: Long, ctx: CoProcessFunction[OrderEvent, PayEvent, String]#OnTimerContext, out: Collector[String]): Unit = {
+      if (orderState.value() != null) {
+        ctx.output(unmatchedOrders, &quot;order id: &quot; + orderState.value().orderId + &quot; fail match&quot;)
         orderState.clear()
+      }
+      if (payState.value() != null) {
+        ctx.output(unmatchedPays, &quot;order id: &quot; + payState.value().orderId + &quot; fail match&quot;)
+        payState.clear()
       }
     }
   }
+}
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">public class TwoStreamsJoin {
+
+    private static OutputTag&lt;String&gt; unmatchedOrders = new OutputTag&lt;String&gt;(&quot;order&quot;){};
+    private static OutputTag&lt;String&gt; unmatchedPays   = new OutputTag&lt;String&gt;(&quot;pay&quot;){};
+
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+        env.setParallelism(1);
+
+        KeyedStream&lt;OrderEvent, String&gt; orderStream = env
+                .fromElements(
+                        new OrderEvent(&quot;order_1&quot;, &quot;pay&quot;, 1000L),
+                        new OrderEvent(&quot;order_2&quot;, &quot;pay&quot;, 2000L)
+                )
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy.&lt;OrderEvent&gt;forMonotonousTimestamps()
+                                .withTimestampAssigner(new SerializableTimestampAssigner&lt;OrderEvent&gt;() {
+                                    @Override
+                                    public long extractTimestamp(OrderEvent orderEvent, long l) {
+                                        return orderEvent.eventTime;
+                                    }
+                                })
+                )
+                .keyBy(r -&gt; r.orderId);
+
+        KeyedStream&lt;PayEvent, String&gt; payStream = env
+                .fromElements(
+                        new PayEvent(&quot;order_1&quot;, &quot;weixin&quot;, 3000L),
+                        new PayEvent(&quot;order_3&quot;, &quot;weixin&quot;, 4000L)
+                )
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy.&lt;PayEvent&gt;forMonotonousTimestamps()
+                                .withTimestampAssigner(new SerializableTimestampAssigner&lt;PayEvent&gt;() {
+                                    @Override
+                                    public long extractTimestamp(PayEvent payEvent, long l) {
+                                        return payEvent.eventTime;
+                                    }
+                                })
+                )
+                .keyBy(r -&gt; r.orderId);
+
+        SingleOutputStreamOperator&lt;String&gt; result = orderStream
+                .connect(payStream)
+                .process(new CoProcessFunction&lt;OrderEvent, PayEvent, String&gt;() {
+                    private ValueState&lt;OrderEvent&gt; orderState;
+                    private ValueState&lt;PayEvent&gt; payState;
+
+                    @Override
+                    public void open(Configuration parameters) throws Exception {
+                        super.open(parameters);
+                        orderState = getRuntimeContext().getState(
+                                new ValueStateDescriptor&lt;OrderEvent&gt;(&quot;order&quot;, OrderEvent.class)
+                        );
+                        payState = getRuntimeContext().getState(
+                                new ValueStateDescriptor&lt;PayEvent&gt;(&quot;pay&quot;, PayEvent.class)
+                        );
+                    }
+
+                    @Override
+                    public void processElement1(OrderEvent orderEvent, Context context, Collector&lt;String&gt; collector) throws Exception {
+                        PayEvent pay = payState.value();
+                        if (pay != null) {
+                            payState.clear();
+                            collector.collect(&quot;order id &quot; + orderEvent.orderId + &quot; matched success&quot;);
+                        } else {
+                            orderState.update(orderEvent);
+                            context.timerService().registerEventTimeTimer(orderEvent.eventTime + 5000L);
+                        }
+                    }
+
+                    @Override
+                    public void processElement2(PayEvent payEvent, Context context, Collector&lt;String&gt; collector) throws Exception {
+                        OrderEvent order = orderState.value();
+                        if (order != null) {
+                            orderState.clear();
+                            collector.collect(&quot;order id&quot; + payEvent.orderId + &quot; matched success&quot;);
+                        } else {
+                            payState.update(payEvent);
+                            context.timerService().registerEventTimeTimer(payEvent.eventTime + 5000L);
+                        }
+                    }
+
+                    @Override
+                    public void onTimer(long timestamp, OnTimerContext ctx, Collector&lt;String&gt; out) throws Exception {
+                        super.onTimer(timestamp, ctx, out);
+                        if (orderState.value() != null) {
+                            ctx.output(unmatchedOrders, &quot;order id: &quot; + orderState.value().orderId + &quot; not match&quot;);
+                            orderState.clear();
+                        }
+                        if (payState.value() != null) {
+                            ctx.output(unmatchedPays, &quot;order id: &quot; + payState.value().orderId + &quot; not match&quot;);
+                        }
+                    }
+                });
+
+        result.print();
+
+        result.getSideOutput(unmatchedOrders).print();
+
+        result.getSideOutput(unmatchedPays).print();
+
+        env.execute();
+    }
 }
 </code></pre>
 

@@ -168,13 +168,12 @@
 <p>用户定义的标量函数，可以将0、1或多个标量值，映射到新的标量值。</p>
 <p>为了定义标量函数，必须在org.apache.flink.table.functions中扩展基类Scalar Function，并实现（一个或多个）求值（evaluation，eval）方法。标量函数的行为由求值方法决定，求值方法必须公开声明并命名为eval（直接def声明，没有override）。求值方法的参数类型和返回类型，确定了标量函数的参数和返回类型。</p>
 <p>在下面的代码中，我们定义自己的HashCode函数，在TableEnvironment中注册它，并在查询中调用它。</p>
-<pre><code class="language-java">// 自定义一个标量函数
+<pre><code class="language-scala">// 自定义一个标量函数
   class HashCodeFunction extends ScalarFunction {
 
     private var factor: Int = 0
 
-    @Override
-public open(context: FunctionContext): Unit = {
+    override def open(context: FunctionContext): Unit = {
       // 获取参数 &quot;hashcode_factor&quot;
       // 如果不存在，则使用默认值 &quot;12&quot;
       factor = context.getJobParameter(&quot;hashcode_factor&quot;, &quot;12&quot;).toInt
@@ -186,7 +185,7 @@ public open(context: FunctionContext): Unit = {
   }
 </code></pre>
 <p>主函数中调用，计算sensor id的哈希值（前面部分照抄，流环境、表环境、读取source、建表）：</p>
-<pre><code class="language-java">import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
+<pre><code class="language-scala">import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.api.scala._
 import org.apache.flink.table.api._
 import org.apache.flink.table.api.bridge.scala._
@@ -233,8 +232,7 @@ object ScalarFunctionExample {
 
     private var factor: Int = 0
 
-    @Override
-public open(context: FunctionContext): Unit = {
+    override def open(context: FunctionContext): Unit = {
       // 获取参数 &quot;hashcode_factor&quot;
       // 如果不存在，则使用默认值 &quot;12&quot;
       factor = context.getJobParameter(&quot;hashcode_factor&quot;, &quot;12&quot;).toInt
@@ -256,7 +254,7 @@ public open(context: FunctionContext): Unit = {
 <p>在SQL中，则需要使用Lateral Table（<TableFunction>），或者带有ON TRUE条件的左连接。</p>
 <p>下面的代码中，我们将定义一个表函数，在表环境中注册它，并在查询中调用它。</p>
 <p>自定义TableFunction：</p>
-<pre><code class="language-java">// 自定义TableFunction
+<pre><code class="language-scala">// 自定义TableFunction
   @FunctionHint(output = new DataTypeHint(&quot;ROW&lt;word STRING, length INT&gt;&quot;))
   class SplitFunction extends TableFunction[Row] {
 
@@ -267,7 +265,7 @@ public open(context: FunctionContext): Unit = {
   }
 </code></pre>
 <p>完整代码：</p>
-<pre><code class="language-java">import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
+<pre><code class="language-scala">import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.api.scala._
 import org.apache.flink.table.annotation.{DataTypeHint, FunctionHint}
 import org.apache.flink.table.api._
@@ -277,7 +275,7 @@ import org.apache.flink.types.Row
 
 object TableFunctionExample {
   def main(args: Array[String]): Unit = {
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
 
     val stream = env
@@ -358,18 +356,16 @@ object TableFunctionExample {
 <li>resetAccumulator()</li>
 </ul>
 <p>接下来我们写一个自定义AggregateFunction，计算一下每个sensor的平均温度值。</p>
-<pre><code class="language-java">// 定义AggregateFunction的Accumulator
+<pre><code class="language-scala">// 定义AggregateFunction的Accumulator
 class AvgTempAcc {
   var sum: Double = 0.0
   var count: Int = 0
 }
 
 class AvgTemp extends AggregateFunction[Double, AvgTempAcc] {
-  @Override
-public getValue(accumulator: AvgTempAcc): Double = accumulator.sum / accumulator.count
+  override def getValue(accumulator: AvgTempAcc): Double = accumulator.sum / accumulator.count
 
-  @Override
-public createAccumulator(): AvgTempAcc = new AvgTempAcc
+  override def createAccumulator(): AvgTempAcc = new AvgTempAcc
 
   def accumulate(accumulator: AvgTempAcc, temp: Double): Unit ={
     accumulator.sum += temp
@@ -378,7 +374,7 @@ public createAccumulator(): AvgTempAcc = new AvgTempAcc
 }
 </code></pre>
 <p>接下来就可以在代码中调用了。</p>
-<pre><code class="language-java">// 创建一个聚合函数实例
+<pre><code class="language-scala">// 创建一个聚合函数实例
 val avgTemp = new AvgTemp()
 // Table API的调用
 val resultTable = sensorTable
@@ -427,7 +423,7 @@ resultSqlTable.toRetractStream[Row].print(&quot;agg temp sql&quot;)
 <li>emitUpdateWithRetract()</li>
 </ul>
 <p>接下来我们写一个自定义TableAggregateFunction，用来提取每个sensor最高的两个温度值。</p>
-<pre><code class="language-java">// 先定义一个 Accumulator
+<pre><code class="language-scala">// 先定义一个 Accumulator
 class Top2TempAcc{
   var highestTemp: Double = Int.MinValue
   var secondHighestTemp: Double = Int.MinValue
@@ -436,8 +432,7 @@ class Top2TempAcc{
 // 自定义 TableAggregateFunction
 class Top2Temp extends TableAggregateFunction[(Double, Int), Top2TempAcc]{
 
-  @Override
-public createAccumulator(): Top2TempAcc = new Top2TempAcc
+  override def createAccumulator(): Top2TempAcc = new Top2TempAcc
 
   def accumulate(acc: Top2TempAcc, temp: Double): Unit ={
     if( temp &gt; acc.highestTemp ){
@@ -455,7 +450,7 @@ public createAccumulator(): Top2TempAcc = new Top2TempAcc
 }
 </code></pre>
 <p>接下来就可以在代码中调用了。</p>
-<pre><code class="language-java">// 创建一个表聚合函数实例
+<pre><code class="language-scala">// 创建一个表聚合函数实例
 val top2Temp = new Top2Temp()
 // Table API的调用
 val resultTable = sensorTable

@@ -167,14 +167,14 @@ create table if not exists t_user(id string, name string);
 insert into table t_user values ('1','huangbo'), ('2','xuzheng'),('3','wangbaoqiang');
 </code></pre>
 <p>然后编写程序，将数据流写入到hive中</p>
-<pre><code class="language-java">import org.apache.flink.streaming.api.scala._
+<pre><code class="language-scala">import org.apache.flink.streaming.api.scala._
 import org.apache.flink.table.api._
 import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
 import org.apache.flink.table.catalog.hive.HiveCatalog
 
 object TestHiveStreaming {
   def main(args: Array[String]): Unit = {
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
     val tableEnv = StreamTableEnvironment.create(env)
 
     val stream = env
