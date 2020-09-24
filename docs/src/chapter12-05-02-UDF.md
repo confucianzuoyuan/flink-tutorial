@@ -6,7 +6,7 @@
 
 在大多数情况下，用户定义的函数必须先注册，然后才能在查询中使用。不需要专门为Scala 的Table API注册函数。
 
-函数通过调用registerFunction（）方法在TableEnvironment中注册。当用户定义的函数被注册时，它被插入到TableEnvironment的函数目录中，这样Table API或SQL解析器就可以识别并正确地解释它。
+函数通过调用registerFunction()方法在TableEnvironment中注册。当用户定义的函数被注册时，它被插入到TableEnvironment的函数目录中，这样Table API或SQL解析器就可以识别并正确地解释它。
 
 #### 标量函数（Scalar Functions）
 
@@ -103,7 +103,7 @@ object ScalarFunctionExample {
 
 为了定义一个表函数，必须扩展org.apache.flink.table.functions中的基类TableFunction并实现（一个或多个）求值方法。表函数的行为由其求值方法决定，求值方法必须是public的，并命名为eval。求值方法的参数类型，决定表函数的所有有效参数。
 
-返回表的类型由TableFunction的泛型类型确定。求值方法使用protected collect（T）方法发出输出行。
+返回表的类型由TableFunction的泛型类型确定。求值方法使用protected collect(T)方法发出输出行。
 
 在Table API中，Table函数需要与.joinLateral或.leftOuterJoinLateral一起使用。
 
@@ -213,9 +213,9 @@ object TableFunctionExample {
 
 AggregateFunction的工作原理如下。
 
-* 首先，它需要一个累加器，用来保存聚合中间结果的数据结构（状态）。可以通过调用AggregateFunction的createAccumulator（）方法创建空累加器。
-* 随后，对每个输入行调用函数的accumulate（）方法来更新累加器。
-* 处理完所有行后，将调用函数的getValue（）方法来计算并返回最终结果。
+* 首先，它需要一个累加器，用来保存聚合中间结果的数据结构（状态）。可以通过调用AggregateFunction的createAccumulator()方法创建空累加器。
+* 随后，对每个输入行调用函数的accumulate()方法来更新累加器。
+* 处理完所有行后，将调用函数的getValue()方法来计算并返回最终结果。
 
 AggregationFunction要求必须实现的方法：
 
@@ -223,10 +223,10 @@ AggregationFunction要求必须实现的方法：
 * accumulate()
 * getValue()
 
-除了上述方法之外，还有一些可选择实现的方法。其中一些方法，可以让系统执行查询更有效率，而另一些方法，对于某些场景是必需的。例如，如果聚合函数应用在会话窗口（session group window）的上下文中，则merge（）方法是必需的。
+除了上述方法之外，还有一些可选择实现的方法。其中一些方法，可以让系统执行查询更有效率，而另一些方法，对于某些场景是必需的。例如，如果聚合函数应用在会话窗口（session group window）的上下文中，则merge()方法是必需的。
 
-* retract() 
-* merge() 
+* retract()
+* merge()
 * resetAccumulator()
 
 接下来我们写一个自定义AggregateFunction，计算一下每个sensor的平均温度值。

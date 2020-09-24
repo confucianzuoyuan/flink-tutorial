@@ -2,6 +2,8 @@
 
 完整代码如下：
 
+**scala version**
+
 ```scala
 object TwoStreamJoin {
 
