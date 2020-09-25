@@ -22,7 +22,7 @@ under the License.
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.atguigu</groupId>
-	<artifactId>flink-scala-code</artifactId>
+	<artifactId>flink-code-scala-0421</artifactId>
 	<version>1.0</version>
 	<packaging>jar</packaging>
 
@@ -48,8 +48,6 @@ under the License.
 		<scala.binary.version>2.11</scala.binary.version>
 		<scala.version>2.11.12</scala.version>
 		<log4j.version>2.12.1</log4j.version>
-		<hive.version>3.1.2</hive.version>
-		<hadoop.version>3.2.0</hadoop.version>
 	</properties>
 
 	<dependencies>
@@ -72,126 +70,6 @@ under the License.
 			<artifactId>flink-clients_${scala.binary.version}</artifactId>
 			<version>${flink.version}</version>
 <!--			<scope>provided</scope>-->
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-cep-scala_${scala.binary.version}</artifactId>
-			<version>${flink.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-connector-kafka-0.11_2.11</artifactId>
-			<version>${flink.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.kafka</groupId>
-			<artifactId>kafka_2.11</artifactId>
-			<version>2.2.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.bahir</groupId>
-			<artifactId>flink-connector-redis_2.11</artifactId>
-			<version>1.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-connector-elasticsearch7_2.11</artifactId>
-			<version>1.11.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.elasticsearch.client</groupId>
-			<artifactId>elasticsearch-rest-high-level-client</artifactId>
-			<version>7.9.1</version>
-
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.elasticsearch/elasticsearch -->
-		<dependency>
-			<groupId>org.elasticsearch</groupId>
-			<artifactId>elasticsearch</artifactId>
-			<version>7.9.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>8.0.21</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-table-api-scala-bridge_2.11</artifactId>
-			<version>1.11.0</version>
-<!--			<scope>provided</scope>-->
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-table-planner-blink_2.11</artifactId>
-			<version>1.11.0</version>
-<!--			<scope>provided</scope>-->
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-table-common</artifactId>
-			<version>1.11.0</version>
-<!--			<scope>provided</scope>-->
-		</dependency>
-
-		<!-- Flink Dependency -->
-		<dependency>
-			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-connector-hive_2.11</artifactId>
-			<version>${flink.version}</version>
-<!--			<scope>provided</scope>-->
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-table-api-java-bridge_2.11</artifactId>
-			<version>${flink.version}</version>
-<!--			<scope>provided</scope>-->
-		</dependency>
-
-		<!-- Hive Dependency -->
-		<dependency>
-			<groupId>org.apache.hive</groupId>
-			<artifactId>hive-exec</artifactId>
-			<version>${hive.version}</version>
-<!--			<scope>provided</scope>-->
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-common</artifactId>
-			<version>${hadoop.version}</version>
-			<!--            <scope>provided</scope>-->
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-hdfs</artifactId>
-			<version>${hadoop.version}</version>
-			<!--<scope>provided</scope>-->
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-mapreduce-client-core</artifactId>
-			<version>${hadoop.version}</version>
-		</dependency>
-
-
-		<dependency>
-			<groupId>org.scala-lang.modules</groupId>
-			<artifactId>scala-parser-combinators_2.11</artifactId>
-			<version>1.1.2</version>
 		</dependency>
 
 		<!-- Scala Library, provided by Flink as well. -->
@@ -273,7 +151,7 @@ under the License.
 							</filters>
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>com.atguigu.day1.WordCountFromBatch</mainClass>
+									<mainClass>com.atguigu.StreamingJob</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>
@@ -309,7 +187,6 @@ under the License.
 					<args>
 						<arg>-nobootcp</arg>
 					</args>
-					<addScalacArgs>-target:jvm-1.8</addScalacArgs>
 				</configuration>
 			</plugin>
 
