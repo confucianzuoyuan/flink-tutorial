@@ -12,7 +12,7 @@ public class WordCountFromSocket {
         // runtime context
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         // num of task parallelism
-        env.setParallelism(1);
+        env.setParallelism(9);
 
         DataStream<String> stream = env.socketTextStream("localhost", 9999);
 
@@ -33,7 +33,7 @@ public class WordCountFromSocket {
                 // second element of Tuple2
                 .sum(1);
 
-        result.print();
+        result.print().setParallelism(1);
 
         // execute task
         env.execute();
