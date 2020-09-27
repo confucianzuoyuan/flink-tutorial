@@ -1,7 +1,6 @@
 package com.atguigu.day01
 
 import org.apache.flink.streaming.api.scala._
-
 object WordCountFromBatch {
   def main(args: Array[String]): Unit = {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
