@@ -9,9 +9,10 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 public class FilterExample {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.setParallelism(1);
+//        env.setParallelism(1);
+        System.out.println(env.getParallelism());
 
-        DataStreamSource<SensorReading> stream = env.addSource(new SensorSource());
+        DataStreamSource<SensorReading> stream = env.addSource(new SensorSource()).setParallelism(1);
 
         stream
                 .filter(r -> r.id.equals("sensor_1"));
