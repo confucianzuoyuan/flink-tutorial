@@ -1,4 +1,4 @@
-package com.atguigu;
+package com.atguigu.day04;
 
 import com.atguigu.day02.util.SensorReading;
 import com.atguigu.day02.util.SensorSource;
@@ -7,6 +7,7 @@ import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.co.CoProcessFunction;
@@ -16,6 +17,7 @@ public class SwitchSensorStream {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
+        env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime);
 
         KeyedStream<SensorReading, String> stream = env
                 .addSource(new SensorSource())
