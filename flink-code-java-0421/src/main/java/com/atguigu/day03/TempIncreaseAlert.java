@@ -45,6 +45,7 @@ public class TempIncreaseAlert {
             );
         }
 
+        // 2, 3, 4, 1
         @Override
         public void processElement(SensorReading r, Context ctx, Collector<String> collector) throws Exception {
             // 初始化一个prevTemp变量，用来保存从状态变量里取出的最近一次的温度值
@@ -62,10 +63,13 @@ public class TempIncreaseAlert {
             }
 
             if (prevTemp == 0.0 || r.temperature < prevTemp) {
+                // 删除curTimerTimestamp对应的定时器
                 ctx.timerService().deleteProcessingTimeTimer(curTimerTimestamp);
                 currentTimer.clear();
             } else if (r.temperature > prevTemp && curTimerTimestamp == 0L) {
+                // 当前机器时间 + 1s
                 long oneSecondLater = ctx.timerService().currentProcessingTime() + 1000L;
+                // 注册处理时间定时器
                 ctx.timerService().registerProcessingTimeTimer(oneSecondLater);
                 currentTimer.update(oneSecondLater);
             }
