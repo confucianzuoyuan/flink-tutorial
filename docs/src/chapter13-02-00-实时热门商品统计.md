@@ -233,3 +233,242 @@ object KafkaProducerUtil {
   }
 }
 ```
+
+### java版本程序
+
+UserBehavior的POJO类定义
+
+```java
+public class UserBehavior {
+    public String userId;
+    public String itemId;
+    public String categoryId;
+    public String behavior;
+    public Long timestamp;
+
+    public UserBehavior() {
+    }
+
+    public UserBehavior(String userId, String itemId, String categoryId, String behavior, Long timestamp) {
+        this.userId = userId;
+        this.itemId = itemId;
+        this.categoryId = categoryId;
+        this.behavior = behavior;
+        this.timestamp = timestamp;
+    }
+
+    @Override
+    public String toString() {
+        return "UserBehavior{" +
+                "userId='" + userId + '\'' +
+                ", itemId='" + itemId + '\'' +
+                ", categoryId='" + categoryId + '\'' +
+                ", behavior='" + behavior + '\'' +
+                ", timestamp=" + timestamp +
+                '}';
+    }
+}
+```
+
+ItemViewCount的POJO类定义
+
+```java
+import java.sql.Timestamp;
+
+public class ItemViewCount {
+    public String itemId;
+    public Long count;
+    public Long windowStart;
+    public Long windowEnd;
+
+    public ItemViewCount() {
+    }
+
+    public ItemViewCount(String itemId, Long count, Long windowStart, Long windowEnd) {
+        this.itemId = itemId;
+        this.count = count;
+        this.windowStart = windowStart;
+        this.windowEnd = windowEnd;
+    }
+
+    @Override
+    public String toString() {
+        return "ItemViewCount{" +
+                "itemId='" + itemId + '\'' +
+                ", count=" + count +
+                ", windowStart=" + new Timestamp(windowStart) +
+                ", windowEnd=" + new Timestamp(windowEnd) +
+                '}';
+    }
+}
+```
+
+主体程序
+
+```java
+public class UserBehaviorAnalysis {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+        env.setParallelism(1);
+
+        SingleOutputStreamOperator<UserBehavior> stream = env
+                .readTextFile("UserBehavior.csv")
+                .map(new MapFunction<String, UserBehavior>() {
+                    @Override
+                    public UserBehavior map(String s) throws Exception {
+                        String[] arr = s.split(",");
+                        return new UserBehavior(arr[0], arr[1], arr[2], arr[3], Long.parseLong(arr[4]) * 1000L);
+                    }
+                })
+                .filter(r -> r.behavior.equals("pv"))
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy.<UserBehavior>forMonotonousTimestamps()
+                                .withTimestampAssigner(new SerializableTimestampAssigner<UserBehavior>() {
+                                    @Override
+                                    public long extractTimestamp(UserBehavior userBehavior, long l) {
+                                        return userBehavior.timestamp;
+                                    }
+                                })
+                );
+
+        stream
+                .keyBy(r -> r.itemId)
+                .timeWindow(Time.hours(1), Time.minutes(5))
+                .aggregate(new CountAgg(), new WindowResult())
+                .keyBy(r -> r.windowEnd)
+                .process(new TopN(3))
+                .print();
+
+        env.execute();
+    }
+
+    public static class CountAgg implements AggregateFunction<UserBehavior, Long, Long> {
+        @Override
+        public Long createAccumulator() {
+            return 0L;
+        }
+
+        @Override
+        public Long add(UserBehavior userBehavior, Long acc) {
+            return acc + 1;
+        }
+
+        @Override
+        public Long getResult(Long acc) {
+            return acc;
+        }
+
+        @Override
+        public Long merge(Long aLong, Long acc1) {
+            return null;
+        }
+    }
+
+    public static class WindowResult extends ProcessWindowFunction<Long, ItemViewCount, String, TimeWindow> {
+        @Override
+        public void process(String key, Context ctx, Iterable<Long> iterable, Collector<ItemViewCount> collector) throws Exception {
+            collector.collect(new ItemViewCount(key, iterable.iterator().next(), ctx.window().getStart(), ctx.window().getEnd()));
+        }
+    }
+
+    public static class TopN extends KeyedProcessFunction<Long, ItemViewCount, String> {
+        private ListState<ItemViewCount> itemState;
+        private Integer threshold;
+
+        public TopN(Integer threshold) {
+            this.threshold = threshold;
+        }
+
+        @Override
+        public void open(Configuration parameters) throws Exception {
+            super.open(parameters);
+            itemState = getRuntimeContext().getListState(
+                    new ListStateDescriptor<ItemViewCount>("item-state", ItemViewCount.class)
+            );
+        }
+
+        @Override
+        public void processElement(ItemViewCount itemViewCount, Context context, Collector<String> collector) throws Exception {
+            itemState.add(itemViewCount);
+            context.timerService().registerEventTimeTimer(itemViewCount.windowEnd + 100L);
+        }
+
+        @Override
+        public void onTimer(long timestamp, OnTimerContext ctx, Collector<String> out) throws Exception {
+            super.onTimer(timestamp, ctx, out);
+            Iterable<ItemViewCount> itemViewCounts = itemState.get();
+            ArrayList<ItemViewCount> itemList = new ArrayList<>();
+            for (ItemViewCount iter : itemViewCounts) {
+                itemList.add(iter);
+            }
+            itemState.clear();
+
+            itemList.sort(new Comparator<ItemViewCount>() {
+                @Override
+                public int compare(ItemViewCount t0, ItemViewCount t1) {
+                    return t1.count.intValue() - t0.count.intValue();
+                }
+            });
+
+            StringBuilder result = new StringBuilder();
+            result
+                    .append("===========================================\n")
+                    .append("time: ")
+                    .append(new Timestamp(timestamp - 100L))
+                    .append("\n");
+            for (int i = 0; i < this.threshold; i++) {
+                ItemViewCount currItem = itemList.get(i);
+                result
+                        .append("No.")
+                        .append(i + 1)
+                        .append(" : ")
+                        .append(currItem.itemId)
+                        .append(" count = ")
+                        .append(currItem.count)
+                        .append("\n");
+            }
+            result
+                    .append("===========================================\n\n\n");
+            Thread.sleep(1000L);
+            out.collect(result.toString());
+        }
+    }
+}
+```
+
+将用户行为数据写入`Kafka`
+
+```java
+public class UserBehaviorProduceToKafka {
+    public static void main(String[] args) throws Exception {
+        writeToKafka("hotitems");
+    }
+
+    public static void writeToKafka(String topic) throws Exception {
+        Properties properties = new Properties();
+        properties.put("bootstrap.servers", "localhost:9092");
+        properties.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+
+        KafkaProducer<String, String> producer = new KafkaProducer<>(properties);
+        // pass the path to the file as a parameter
+        File file = new File("UserBehavior.csv");
+        Scanner sc = new Scanner(file);
+
+        while (sc.hasNextLine()) {
+            producer.send(new ProducerRecord<String, String>(topic, sc.nextLine()));
+        }
+    }
+}
+```
+
+别忘记导入驱动
+
+```xml
+<dependency>
+	<groupId>org.apache.kafka</groupId>
+	<artifactId>kafka_2.11</artifactId>
+	<version>2.2.0</version>
+</dependency>
+```
