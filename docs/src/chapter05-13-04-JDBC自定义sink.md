@@ -1,5 +1,12 @@
 ### JDBC自定义sink
 
+建表语句
+
+```sql
+create database sensor;
+create table temps(id varchar(20), temp float);
+```
+
 ```xml
 <dependency>
   <groupId>mysql</groupId>
