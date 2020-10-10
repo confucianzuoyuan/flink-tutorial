@@ -39,7 +39,7 @@ public class LoginFailDetect {
                 );
 
         // 定义恶意登录的模板
-        Pattern<LoginEvent, LoginEvent> pattern = Pattern
+        Pattern<LoginEvent, LoginEvent> pattern1 = Pattern
                 .<LoginEvent>begin("first")
                 .where(new SimpleCondition<LoginEvent>() {
                     @Override
@@ -64,9 +64,23 @@ public class LoginFailDetect {
                 // 5s以内连续三次登录失败
                 .within(Time.seconds(5));
 
-        PatternStream<LoginEvent> patternStream = CEP.pattern(stream.keyBy(r -> r.userId), pattern);
+        // 连续三次登录失败模板的另一种定义方法
+        Pattern<LoginEvent, LoginEvent> pattern2 = Pattern
+                .<LoginEvent>begin("first")
+                .times(3)
+                .where(new SimpleCondition<LoginEvent>() {
+                    @Override
+                    public boolean filter(LoginEvent value) throws Exception {
+                        return value.eventType.equals("fail");
+                    }
+                })
+                .within(Time.seconds(5));
 
-        patternStream
+        PatternStream<LoginEvent> patternStream1 = CEP.pattern(stream.keyBy(r -> r.userId), pattern1);
+
+        PatternStream<LoginEvent> patternStream2 = CEP.pattern(stream.keyBy(r -> r.userId), pattern2);
+
+        patternStream1
                 .select(new PatternSelectFunction<LoginEvent, String>() {
                     @Override
                     public String select(Map<String, List<LoginEvent>> map) throws Exception {
@@ -75,6 +89,18 @@ public class LoginFailDetect {
                         LoginEvent thrid = map.get("third").iterator().next();
 
                         return first.ipAddr + "; " + second.ipAddr + "; " + thrid.ipAddr;
+                    }
+                })
+                .print();
+
+        patternStream2
+                .select(new PatternSelectFunction<LoginEvent, String>() {
+                    @Override
+                    public String select(Map<String, List<LoginEvent>> map) throws Exception {
+                        for (LoginEvent e : map.get("first")) {
+                            System.out.println(e.ipAddr);
+                        }
+                        return "hello world";
                     }
                 })
                 .print();
