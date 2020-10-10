@@ -69,3 +69,100 @@ object OrderTimeoutDetect {
 ```
 
 **java version**
+
+POJO类实现
+
+```java
+public class OrderEvent {
+    public String orderId;
+    public String eventType;
+    public Long eventTime;
+
+    public OrderEvent() {
+    }
+
+    public OrderEvent(String orderId, String eventType, Long eventTime) {
+        this.orderId = orderId;
+        this.eventType = eventType;
+        this.eventTime = eventTime;
+    }
+
+    @Override
+    public String toString() {
+        return "OrderEvent{" +
+                "orderId='" + orderId + '\'' +
+                ", eventType='" + eventType + '\'' +
+                ", eventTime=" + eventTime +
+                '}';
+    }
+}
+```
+
+```java
+public class OrderTimeoutDetect {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+        env.setParallelism(1);
+
+        SingleOutputStreamOperator<OrderEvent> stream = env
+                .fromElements(
+                        new OrderEvent("order_1", "create", 1000L),
+                        new OrderEvent("order_2", "create", 2000L),
+                        new OrderEvent("order_1", "pay", 3000L)
+                )
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy.<OrderEvent>forMonotonousTimestamps()
+                                .withTimestampAssigner(new SerializableTimestampAssigner<OrderEvent>() {
+                                    @Override
+                                    public long extractTimestamp(OrderEvent element, long recordTimestamp) {
+                                        return element.eventTime;
+                                    }
+                                })
+                );
+
+        Pattern<OrderEvent, OrderEvent> pattern = Pattern
+                .<OrderEvent>begin("create")
+                .where(new SimpleCondition<OrderEvent>() {
+                    @Override
+                    public boolean filter(OrderEvent value) throws Exception {
+                        return value.eventType.equals("create");
+                    }
+                })
+                .next("pay")
+                .where(new SimpleCondition<OrderEvent>() {
+                    @Override
+                    public boolean filter(OrderEvent value) throws Exception {
+                        return value.eventType.equals("pay");
+                    }
+                })
+                .within(Time.seconds(5));
+
+        PatternStream<OrderEvent> patternStream = CEP.pattern(stream.keyBy(r -> r.orderId), pattern);
+
+        SingleOutputStreamOperator<String> result = patternStream
+                .select(
+                        new OutputTag<String>("order-timeout") {
+                        },
+                        new PatternTimeoutFunction<OrderEvent, String>() {
+                            @Override
+                            public String timeout(Map<String, List<OrderEvent>> map, long l) throws Exception {
+                                return "订单ID为 " + map.get("create").get(0).orderId + " 没有支付！";
+                            }
+                        },
+                        new PatternSelectFunction<OrderEvent, String>() {
+                            @Override
+                            public String select(Map<String, List<OrderEvent>> map) throws Exception {
+                                return "订单ID为 " + map.get("pay").get(0).orderId + " 已经支付！";
+                            }
+                        }
+                );
+
+        result.print();
+
+        result.getSideOutput(new OutputTag<String>("order-timeout") {}).print();
+
+        env.execute();
+    }
+}
+```

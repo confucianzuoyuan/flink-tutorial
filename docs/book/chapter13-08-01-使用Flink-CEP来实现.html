@@ -220,6 +220,98 @@
 }
 </code></pre>
 <p><strong>java version</strong></p>
+<p>POJO类实现</p>
+<pre><code class="language-java">public class OrderEvent {
+    public String orderId;
+    public String eventType;
+    public Long eventTime;
+
+    public OrderEvent() {
+    }
+
+    public OrderEvent(String orderId, String eventType, Long eventTime) {
+        this.orderId = orderId;
+        this.eventType = eventType;
+        this.eventTime = eventTime;
+    }
+
+    @Override
+    public String toString() {
+        return &quot;OrderEvent{&quot; +
+                &quot;orderId='&quot; + orderId + '\'' +
+                &quot;, eventType='&quot; + eventType + '\'' +
+                &quot;, eventTime=&quot; + eventTime +
+                '}';
+    }
+}
+</code></pre>
+<pre><code class="language-java">public class OrderTimeoutDetect {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+        env.setParallelism(1);
+
+        SingleOutputStreamOperator&lt;OrderEvent&gt; stream = env
+                .fromElements(
+                        new OrderEvent(&quot;order_1&quot;, &quot;create&quot;, 1000L),
+                        new OrderEvent(&quot;order_2&quot;, &quot;create&quot;, 2000L),
+                        new OrderEvent(&quot;order_1&quot;, &quot;pay&quot;, 3000L)
+                )
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy.&lt;OrderEvent&gt;forMonotonousTimestamps()
+                                .withTimestampAssigner(new SerializableTimestampAssigner&lt;OrderEvent&gt;() {
+                                    @Override
+                                    public long extractTimestamp(OrderEvent element, long recordTimestamp) {
+                                        return element.eventTime;
+                                    }
+                                })
+                );
+
+        Pattern&lt;OrderEvent, OrderEvent&gt; pattern = Pattern
+                .&lt;OrderEvent&gt;begin(&quot;create&quot;)
+                .where(new SimpleCondition&lt;OrderEvent&gt;() {
+                    @Override
+                    public boolean filter(OrderEvent value) throws Exception {
+                        return value.eventType.equals(&quot;create&quot;);
+                    }
+                })
+                .next(&quot;pay&quot;)
+                .where(new SimpleCondition&lt;OrderEvent&gt;() {
+                    @Override
+                    public boolean filter(OrderEvent value) throws Exception {
+                        return value.eventType.equals(&quot;pay&quot;);
+                    }
+                })
+                .within(Time.seconds(5));
+
+        PatternStream&lt;OrderEvent&gt; patternStream = CEP.pattern(stream.keyBy(r -&gt; r.orderId), pattern);
+
+        SingleOutputStreamOperator&lt;String&gt; result = patternStream
+                .select(
+                        new OutputTag&lt;String&gt;(&quot;order-timeout&quot;) {
+                        },
+                        new PatternTimeoutFunction&lt;OrderEvent, String&gt;() {
+                            @Override
+                            public String timeout(Map&lt;String, List&lt;OrderEvent&gt;&gt; map, long l) throws Exception {
+                                return &quot;订单ID为 &quot; + map.get(&quot;create&quot;).get(0).orderId + &quot; 没有支付！&quot;;
+                            }
+                        },
+                        new PatternSelectFunction&lt;OrderEvent, String&gt;() {
+                            @Override
+                            public String select(Map&lt;String, List&lt;OrderEvent&gt;&gt; map) throws Exception {
+                                return &quot;订单ID为 &quot; + map.get(&quot;pay&quot;).get(0).orderId + &quot; 已经支付！&quot;;
+                            }
+                        }
+                );
+
+        result.print();
+
+        result.getSideOutput(new OutputTag&lt;String&gt;(&quot;order-timeout&quot;) {}).print();
+
+        env.execute();
+    }
+}
+</code></pre>
 
                     </main>
 

@@ -58,8 +58,6 @@ public class OrderTimeoutDetectWithoutCEP {
                 if (orderState.value() == null) {
                     orderState.update(orderEvent);
                     context.timerService().registerEventTimeTimer(orderEvent.eventTime + 5000L);
-                } else {
-                    collector.collect("订单ID为 " + orderEvent.orderId + " 支付成功！");
                 }
             } else {
                 orderState.update(orderEvent);

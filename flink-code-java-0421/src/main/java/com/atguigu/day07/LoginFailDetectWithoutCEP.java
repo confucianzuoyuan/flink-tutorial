@@ -71,6 +71,7 @@ public class LoginFailDetectWithoutCEP {
                 if (timerTs.value() == null) {
                     loginListState.add(loginEvent);
                     context.timerService().registerEventTimeTimer(loginEvent.eventTime + 5000L);
+                    timerTs.update(loginEvent.eventTime + 5000L);
                 }
             }
         }
