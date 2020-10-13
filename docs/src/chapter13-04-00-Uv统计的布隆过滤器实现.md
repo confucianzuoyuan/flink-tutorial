@@ -2,52 +2,91 @@
 
 ### UV实现的最简单版本
 
-**scala version**
+**java version**
 
-```scala
-import scala.collection.mutable.Set
+```java
+public class UvStatistics {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
-object UVPerWindowNaive {
+        SingleOutputStreamOperator<UserBehavior> stream = env
+                .readTextFile("/home/zuoyuan/flink-tutorial/flink-code-java-0421/src/main/resources/UserBehavior.csv")
+                .map(new MapFunction<String, UserBehavior>() {
+                    @Override
+                    public UserBehavior map(String value) throws Exception {
+                        String[] arr = value.split(",");
+                        return new UserBehavior(
+                                arr[0],
+                                arr[1],
+                                arr[2],
+                                arr[3],
+                                Long.parseLong(arr[4]) * 1000L
+                        );
+                    }
+                })
+                .filter(r -> r.behavior.equals("pv"))
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy
+                                .<UserBehavior>forMonotonousTimestamps()
+                                .withTimestampAssigner(new SerializableTimestampAssigner<UserBehavior>() {
+                                    @Override
+                                    public long extractTimestamp(UserBehavior element, long recordTimestamp) {
+                                        return element.timestamp;
+                                    }
+                                })
+                );
 
-  case class UserBehavior(userId: String, itemId: String, categoryId: String, behavior: String, timestamp: Long)
+        stream
+                .map(new MapFunction<UserBehavior, Tuple2<String, String>>() {
+                    @Override
+                    public Tuple2<String, String> map(UserBehavior value) throws Exception {
+                        return Tuple2.of("dummy", value.userId);
+                    }
+                })
+                .keyBy(r -> r.f0)
+                .timeWindow(Time.hours(1))
+                .aggregate(new CountAgg(), new WindowResult())
+                .print();
 
-  def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setParallelism(1)
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-
-    val stream = env
-      .readTextFile("/home/zuoyuan/flink-tutorial/flink-scala-code/src/main/resources/UserBehavior.csv")
-      .map(line => {
-        val arr = line.split(",")
-        UserBehavior(arr(0), arr(1), arr(2), arr(3), arr(4).toLong * 1000L)
-      })
-      .filter(r => r.behavior.equals("pv"))
-      .assignAscendingTimestamps(_.timestamp)
-
-    stream
-      .map(r => ("key", r.userId))
-      .keyBy(r => r._1)
-      .timeWindow(Time.hours(1))
-      .process(new WindowResult)
-      .print()
-
-    env.execute()
-  }
-
-  class WindowResult extends ProcessWindowFunction[(String, String), String, String, TimeWindow] {
-    override def process(key: String, context: Context, elements: Iterable[(String, String)], out: Collector[String]): Unit = {
-      var s : Set[String] = Set()
-      for (e <- elements) {
-        s += e._2
-      }
-      out.collect("window end: " + context.window.getEnd + " uv count: " + s.size)
+        env.execute();
     }
-  }
+
+    public static class WindowResult extends ProcessWindowFunction<Long, String, String, TimeWindow> {
+        @Override
+        public void process(String s, Context context, Iterable<Long> iterable, Collector<String> collector) throws Exception {
+            collector.collect("窗口结束时间是：" + new Timestamp(context.window().getEnd()) + " 的窗口的UV是：" + iterable.iterator().next());
+        }
+    }
+
+    public static class CountAgg implements AggregateFunction<Tuple2<String, String>, Tuple2<Set<String>, Long>, Long> {
+        @Override
+        public Tuple2<Set<String>, Long> createAccumulator() {
+            return Tuple2.of(new HashSet<>(), 0L);
+        }
+
+        @Override
+        public Tuple2<Set<String>, Long> add(Tuple2<String, String> value, Tuple2<Set<String>, Long> accumulator) {
+            if (!accumulator.f0.contains(value.f1)) {
+                accumulator.f0.add(value.f1);
+                accumulator.f1 += 1;
+            }
+            return accumulator;
+        }
+
+        @Override
+        public Long getResult(Tuple2<Set<String>, Long> accumulator) {
+            return accumulator.f1;
+        }
+
+        @Override
+        public Tuple2<Set<String>, Long> merge(Tuple2<Set<String>, Long> a, Tuple2<Set<String>, Long> b) {
+            return null;
+        }
+    }
 }
 ```
-
-### 改进版本
 
 **scala version**
 
@@ -106,6 +145,8 @@ object UVPerWindowWithAggAndWindowProcess {
   }
 }
 ```
+
+### 布隆过滤器版本
 
 完整代码如下：
 
@@ -166,3 +207,7 @@ object UVPerWindowWithBloomFilter {
 }
 ```
 
+**java version**
+
+```java
+```
