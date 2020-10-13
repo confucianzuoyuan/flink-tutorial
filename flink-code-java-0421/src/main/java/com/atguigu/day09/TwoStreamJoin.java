@@ -2,6 +2,7 @@ package com.atguigu.day09;
 
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.configuration.Configuration;
@@ -24,11 +25,19 @@ public class TwoStreamJoin {
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
         env.setParallelism(1);
 
-        KeyedStream<OrderEvent, String> orderStream = env
-                .fromElements(
-                        new OrderEvent("order_1", "pay", 1000L),
-                        new OrderEvent("order_2", "pay", 2000L)
-                )
+        SingleOutputStreamOperator<OrderEvent> orderStream = env
+//                .fromElements(
+//                        new OrderEvent("order_1", "pay", 1000L),
+//                        new OrderEvent("order_2", "pay", 2000L)
+//                )
+                .socketTextStream("localhost", 9999)
+                .map(new MapFunction<String, OrderEvent>() {
+                    @Override
+                    public OrderEvent map(String value) throws Exception {
+                        String[] arr = value.split(" ");
+                        return new OrderEvent(arr[0], arr[1], Long.parseLong(arr[2]));
+                    }
+                })
                 .assignTimestampsAndWatermarks(
                         WatermarkStrategy.<OrderEvent>forMonotonousTimestamps()
                                 .withTimestampAssigner(new SerializableTimestampAssigner<OrderEvent>() {
@@ -37,14 +46,23 @@ public class TwoStreamJoin {
                                         return element.timestamp;
                                     }
                                 })
-                )
-                .keyBy(r -> r.orderId);
+                );
 
-        KeyedStream<PayEvent, String> payStream = env
-                .fromElements(
-                        new PayEvent("order_1", "weixin", 3000L),
-                        new PayEvent("order_3", "weixin", 4000L)
-                )
+        SingleOutputStreamOperator<PayEvent> payStream = env
+//                .fromElements(
+//                        new PayEvent("order_1", "weixin", 3000L),
+//                        new PayEvent("order_3", "weixin", 4000L),
+//                        new PayEvent("order_4", "weixin", 10 * 1000L),
+//                        new PayEvent("order_2", "weixin", 100 * 1000L)
+//                )
+                .socketTextStream("localhost", 9998)
+                .map(new MapFunction<String, PayEvent>() {
+                    @Override
+                    public PayEvent map(String value) throws Exception {
+                        String[] arr = value.split(" ");
+                        return new PayEvent(arr[0], arr[1], Long.parseLong(arr[2]));
+                    }
+                })
                 .assignTimestampsAndWatermarks(
                         WatermarkStrategy.<PayEvent>forMonotonousTimestamps()
                                 .withTimestampAssigner(new SerializableTimestampAssigner<PayEvent>() {
@@ -53,11 +71,11 @@ public class TwoStreamJoin {
                                         return element.timestamp;
                                     }
                                 })
-                )
-                .keyBy(r -> r.orderId);
+                );
 
         SingleOutputStreamOperator<String> process = orderStream
                 .connect(payStream)
+                .keyBy("orderId", "orderId")
                 .process(new MatchFunction());
 
         process.print();
