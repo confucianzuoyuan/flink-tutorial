@@ -7068,49 +7068,89 @@ public add(apacheLogEvent: ApacheLogEvent, acc: Long): Long = acc + 1
 </code></pre>
 <h2><a class="header" href="#uv统计的布隆过滤器实现" id="uv统计的布隆过滤器实现">Uv统计的布隆过滤器实现</a></h2>
 <h3><a class="header" href="#uv实现的最简单版本" id="uv实现的最简单版本">UV实现的最简单版本</a></h3>
-<p><strong>scala version</strong></p>
-<pre><code class="language-scala">import scala.collection.mutable.Set
+<p><strong>java version</strong></p>
+<pre><code class="language-java">public class UvStatistics {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
-object UVPerWindowNaive {
+        SingleOutputStreamOperator&lt;UserBehavior&gt; stream = env
+                .readTextFile(&quot;/home/zuoyuan/flink-tutorial/flink-code-java-0421/src/main/resources/UserBehavior.csv&quot;)
+                .map(new MapFunction&lt;String, UserBehavior&gt;() {
+                    @Override
+                    public UserBehavior map(String value) throws Exception {
+                        String[] arr = value.split(&quot;,&quot;);
+                        return new UserBehavior(
+                                arr[0],
+                                arr[1],
+                                arr[2],
+                                arr[3],
+                                Long.parseLong(arr[4]) * 1000L
+                        );
+                    }
+                })
+                .filter(r -&gt; r.behavior.equals(&quot;pv&quot;))
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy
+                                .&lt;UserBehavior&gt;forMonotonousTimestamps()
+                                .withTimestampAssigner(new SerializableTimestampAssigner&lt;UserBehavior&gt;() {
+                                    @Override
+                                    public long extractTimestamp(UserBehavior element, long recordTimestamp) {
+                                        return element.timestamp;
+                                    }
+                                })
+                );
 
-  case class UserBehavior(userId: String, itemId: String, categoryId: String, behavior: String, timestamp: Long)
+        stream
+                .map(new MapFunction&lt;UserBehavior, Tuple2&lt;String, String&gt;&gt;() {
+                    @Override
+                    public Tuple2&lt;String, String&gt; map(UserBehavior value) throws Exception {
+                        return Tuple2.of(&quot;dummy&quot;, value.userId);
+                    }
+                })
+                .keyBy(r -&gt; r.f0)
+                .timeWindow(Time.hours(1))
+                .aggregate(new CountAgg(), new WindowResult())
+                .print();
 
-  def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setParallelism(1)
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-
-    val stream = env
-      .readTextFile(&quot;/home/zuoyuan/flink-tutorial/flink-scala-code/src/main/resources/UserBehavior.csv&quot;)
-      .map(line =&gt; {
-        val arr = line.split(&quot;,&quot;)
-        UserBehavior(arr(0), arr(1), arr(2), arr(3), arr(4).toLong * 1000L)
-      })
-      .filter(r =&gt; r.behavior.equals(&quot;pv&quot;))
-      .assignAscendingTimestamps(_.timestamp)
-
-    stream
-      .map(r =&gt; (&quot;key&quot;, r.userId))
-      .keyBy(r =&gt; r._1)
-      .timeWindow(Time.hours(1))
-      .process(new WindowResult)
-      .print()
-
-    env.execute()
-  }
-
-  class WindowResult extends ProcessWindowFunction[(String, String), String, String, TimeWindow] {
-    override def process(key: String, context: Context, elements: Iterable[(String, String)], out: Collector[String]): Unit = {
-      var s : Set[String] = Set()
-      for (e &lt;- elements) {
-        s += e._2
-      }
-      out.collect(&quot;window end: &quot; + context.window.getEnd + &quot; uv count: &quot; + s.size)
+        env.execute();
     }
-  }
+
+    public static class WindowResult extends ProcessWindowFunction&lt;Long, String, String, TimeWindow&gt; {
+        @Override
+        public void process(String s, Context context, Iterable&lt;Long&gt; iterable, Collector&lt;String&gt; collector) throws Exception {
+            collector.collect(&quot;窗口结束时间是：&quot; + new Timestamp(context.window().getEnd()) + &quot; 的窗口的UV是：&quot; + iterable.iterator().next());
+        }
+    }
+
+    public static class CountAgg implements AggregateFunction&lt;Tuple2&lt;String, String&gt;, Tuple2&lt;Set&lt;String&gt;, Long&gt;, Long&gt; {
+        @Override
+        public Tuple2&lt;Set&lt;String&gt;, Long&gt; createAccumulator() {
+            return Tuple2.of(new HashSet&lt;&gt;(), 0L);
+        }
+
+        @Override
+        public Tuple2&lt;Set&lt;String&gt;, Long&gt; add(Tuple2&lt;String, String&gt; value, Tuple2&lt;Set&lt;String&gt;, Long&gt; accumulator) {
+            if (!accumulator.f0.contains(value.f1)) {
+                accumulator.f0.add(value.f1);
+                accumulator.f1 += 1;
+            }
+            return accumulator;
+        }
+
+        @Override
+        public Long getResult(Tuple2&lt;Set&lt;String&gt;, Long&gt; accumulator) {
+            return accumulator.f1;
+        }
+
+        @Override
+        public Tuple2&lt;Set&lt;String&gt;, Long&gt; merge(Tuple2&lt;Set&lt;String&gt;, Long&gt; a, Tuple2&lt;Set&lt;String&gt;, Long&gt; b) {
+            return null;
+        }
+    }
 }
 </code></pre>
-<h3><a class="header" href="#改进版本" id="改进版本">改进版本</a></h3>
 <p><strong>scala version</strong></p>
 <pre><code class="language-scala">import scala.collection.mutable.Set
 
@@ -7166,6 +7206,7 @@ object UVPerWindowWithAggAndWindowProcess {
   }
 }
 </code></pre>
+<h3><a class="header" href="#布隆过滤器版本" id="布隆过滤器版本">布隆过滤器版本</a></h3>
 <p>完整代码如下：</p>
 <p><strong>scala version</strong></p>
 <pre><code class="language-scala">import org.apache.flink.shaded.guava18.com.google.common.hash.{BloomFilter, Funnels}
@@ -7219,6 +7260,90 @@ object UVPerWindowWithBloomFilter {
       out.collect(&quot;window end: &quot; + new Timestamp(context.window.getEnd) + &quot; uv count: &quot; + elements.head)
     }
   }
+}
+</code></pre>
+<p><strong>java version</strong></p>
+<pre><code class="language-java">public class UvStatisticsWithBloomFilter {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+
+        SingleOutputStreamOperator&lt;UserBehavior&gt; stream = env
+                .readTextFile(&quot;/home/zuoyuan/flink-tutorial/flink-code-java-0421/src/main/resources/UserBehavior.csv&quot;)
+                .map(new MapFunction&lt;String, UserBehavior&gt;() {
+                    @Override
+                    public UserBehavior map(String value) throws Exception {
+                        String[] arr = value.split(&quot;,&quot;);
+                        return new UserBehavior(
+                                arr[0],
+                                arr[1],
+                                arr[2],
+                                arr[3],
+                                Long.parseLong(arr[4]) * 1000L
+                        );
+                    }
+                })
+                .filter(r -&gt; r.behavior.equals(&quot;pv&quot;))
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy
+                                .&lt;UserBehavior&gt;forMonotonousTimestamps()
+                                .withTimestampAssigner(new SerializableTimestampAssigner&lt;UserBehavior&gt;() {
+                                    @Override
+                                    public long extractTimestamp(UserBehavior element, long recordTimestamp) {
+                                        return element.timestamp;
+                                    }
+                                })
+                );
+
+        stream
+                .map(new MapFunction&lt;UserBehavior, Tuple2&lt;String, Long&gt;&gt;() {
+                    @Override
+                    public Tuple2&lt;String, Long&gt; map(UserBehavior value) throws Exception {
+                        return Tuple2.of(&quot;dummy&quot;, Long.parseLong(value.userId));
+                    }
+                })
+                .keyBy(r -&gt; r.f0)
+                .timeWindow(Time.hours(1))
+                .aggregate(new CountAgg(), new WindowResult())
+                .print();
+
+        env.execute();
+    }
+
+    public static class WindowResult extends ProcessWindowFunction&lt;Long, String, String, TimeWindow&gt; {
+        @Override
+        public void process(String s, Context context, Iterable&lt;Long&gt; iterable, Collector&lt;String&gt; collector) throws Exception {
+            collector.collect(&quot;窗口结束时间是：&quot; + new Timestamp(context.window().getEnd()) + &quot; 的窗口的UV是：&quot; + iterable.iterator().next());
+        }
+    }
+
+    public static class CountAgg implements AggregateFunction&lt;Tuple2&lt;String, Long&gt;, Tuple2&lt;BloomFilter&lt;Long&gt;, Long&gt;, Long&gt; {
+        @Override
+        public Tuple2&lt;BloomFilter&lt;Long&gt;, Long&gt; createAccumulator() {
+            // 去重的数据类型是Long，待去重的数据集大小是100万条数据以内，误判率0.01
+            return Tuple2.of(BloomFilter.create(Funnels.longFunnel(), 1000000, 0.01), 0L);
+        }
+
+        @Override
+        public Tuple2&lt;BloomFilter&lt;Long&gt;, Long&gt; add(Tuple2&lt;String, Long&gt; value, Tuple2&lt;BloomFilter&lt;Long&gt;, Long&gt; accumulator) {
+            if (!accumulator.f0.mightContain(value.f1)) {
+                accumulator.f0.put(value.f1);
+                accumulator.f1 += 1;
+            }
+            return accumulator;
+        }
+
+        @Override
+        public Long getResult(Tuple2&lt;BloomFilter&lt;Long&gt;, Long&gt; accumulator) {
+            return accumulator.f1;
+        }
+
+        @Override
+        public Tuple2&lt;BloomFilter&lt;Long&gt;, Long&gt; merge(Tuple2&lt;BloomFilter&lt;Long&gt;, Long&gt; a, Tuple2&lt;BloomFilter&lt;Long&gt;, Long&gt; b) {
+            return null;
+        }
+    }
 }
 </code></pre>
 <h2><a class="header" href="#app分渠道数据统计" id="app分渠道数据统计">APP分渠道数据统计</a></h2>
