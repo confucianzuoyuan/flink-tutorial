@@ -97,6 +97,72 @@ object ScalarFunctionExample {
 }
 ```
 
+**java version**
+
+```java
+public class ScalarFunctionExample {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+
+        EnvironmentSettings settings = EnvironmentSettings
+                .newInstance()
+                .inStreamingMode()
+                .build();
+
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, settings);
+
+        DataStreamSource<SensorReading> stream = env.addSource(new SensorSource());
+
+        Table table = tEnv
+                .fromDataStream(
+                        stream,
+                        $("id"),
+                        $("timestamp").as("ts"),
+                        $("temperature"),
+                        $("pt").proctime());
+
+        tEnv.createTemporaryView(
+                "sensor",
+                stream,
+                $("id"),
+                $("timestamp").as("ts"),
+                $("temperature"),
+                $("pt").proctime());
+
+        tEnv.getConfig().addJobParameter("hashcode_factor", "31");
+
+        // table api
+        Table tableResult = tEnv.from("sensor").select(call(HashCodeFunction.class, $("id")));
+//        tEnv.toAppendStream(tableResult, Row.class).print();
+
+        // sql写法
+        // 注册udf函数
+        tEnv.createTemporarySystemFunction("hashCode", HashCodeFunction.class);
+
+        Table sqlResult = tEnv.sqlQuery("SELECT id, hashCode(id) FROM sensor");
+        tEnv.toAppendStream(sqlResult, Row.class).print();
+
+
+        env.execute();
+    }
+
+    public static class HashCodeFunction extends ScalarFunction {
+        private Integer factor = 0;
+
+        @Override
+        public void open(FunctionContext context) throws Exception {
+            super.open(context);
+            factor = Integer.parseInt(context.getJobParameter("hashcode_factor", "12"));
+        }
+
+        public Integer eval(String s) {
+            return s.hashCode() * factor;
+        }
+    }
+}
+```
+
 #### 表函数（Table Functions）
 
 与用户定义的标量函数类似，用户定义的表函数，可以将0、1或多个标量值作为输入参数；与标量函数不同的是，它可以返回任意数量的行作为输出，而不是单个值。
@@ -200,6 +266,72 @@ object TableFunctionExample {
 }
 ```
 
+**java version**
+
+```java
+public class TableFunctionExample {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+
+        EnvironmentSettings settings = EnvironmentSettings
+                .newInstance()
+                .inStreamingMode()
+                .build();
+
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, settings);
+
+        DataStreamSource<String> stream = env.fromElements("hello#world", "bigdata#atguigu");
+
+        tEnv.createTemporaryView("t", stream, $("s"));
+
+        // table api
+        tEnv
+                .from("t")
+                .joinLateral(call(SplitFunction.class, $("s")))
+                .select($("s"), $("word"), $("length"));
+        tEnv
+                .from("t")
+                .leftOuterJoinLateral(call(SplitFunction.class, $("s")))
+                .select($("s"), $("word"), $("length"));
+
+        // rename fields of the function in Table API
+        tEnv
+                .from("t")
+                .leftOuterJoinLateral(call(SplitFunction.class, $("s")).as("newWord", "newLength"))
+                .select($("s"), $("newWord"), $("newLength"));
+
+        // sql写法
+        // 注册udf函数
+        tEnv.createTemporarySystemFunction("SplitFunction", SplitFunction.class);
+
+        Table sqlResult = tEnv
+                .sqlQuery("SELECT s, word, length FROM t, LATERAL TABLE(SplitFunction(s))");
+
+        // 和上面的写法等价
+        tEnv.sqlQuery(
+                "SELECT s, word, length " +
+                        "FROM t " +
+                        "LEFT JOIN LATERAL TABLE(SplitFunction(s)) ON TRUE");
+
+        tEnv.toAppendStream(sqlResult, Row.class).print();
+
+        env.execute();
+    }
+
+    // 类型注解，flink特有的语法
+    @FunctionHint(output = @DataTypeHint("ROW<word STRING, length INT>"))
+    public static class SplitFunction extends TableFunction<Row> {
+
+        public void eval(String str) {
+            for (String s : str.split("#")) {
+                // use collect(...) to emit a row
+                collect(Row.of(s, s.length()));
+            }
+        }
+    }
+}
+```
 
 #### 聚合函数（Aggregate Functions）
 
@@ -278,6 +410,75 @@ resultTable.toRetractStream[(String, Double)].print("agg temp")
 resultSqlTable.toRetractStream[Row].print("agg temp sql")
 ```
 
+**java version**
+
+```java
+public class AggregateFunctionExample {
+    public static void main(String[] args) throws Exception {
+        // 创建流环境
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+
+        // 设置为使用流模式
+        EnvironmentSettings settings = EnvironmentSettings
+                .newInstance()
+                .inStreamingMode()
+                .build();
+
+        // 创建表环境
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, settings);
+
+        DataStreamSource<SensorReading> stream = env.addSource(new SensorSource());
+
+        // 流 -> 表
+        Table table = tEnv.fromDataStream(
+                stream,
+                $("id"),
+                $("timestamp").as("ts"),
+                $("temperature"),
+                $("pt").proctime());
+
+        tEnv.createTemporaryView("sensor", stream);
+
+        tEnv.registerFunction("avgTemp", new AvgTemp());
+        Table sqlResult = tEnv.sqlQuery("SELECT id, avgTemp(temperature) FROM sensor GROUP BY id");
+        tEnv.toRetractStream(sqlResult, Row.class).print();
+
+        env.execute();
+    }
+
+    public static class AvgTempAcc {
+        public Double sum = 0.0;
+        public Integer count = 0;
+
+        public AvgTempAcc() {
+        }
+
+        public AvgTempAcc(Double sum, Integer count) {
+            this.sum = sum;
+            this.count = count;
+        }
+    }
+
+    public static class AvgTemp extends AggregateFunction<Double, AvgTempAcc> {
+        @Override
+        public AvgTempAcc createAccumulator() {
+            return new AvgTempAcc();
+        }
+
+        public void accumulate(AvgTempAcc acc, Double temp) {
+            acc.sum += temp;
+            acc.count += 1;
+        }
+
+        @Override
+        public Double getValue(AvgTempAcc acc) {
+            return acc.sum / acc.count;
+        }
+    }
+}
+```
+
 #### 表聚合函数（Table Aggregate Functions）
 
 用户定义的表聚合函数（User-Defined Table Aggregate Functions，UDTAGGs），可以把一个表中数据，聚合为具有多行和多列的结果表。这跟AggregateFunction非常类似，只是之前聚合结果是一个标量值，现在变成了一张表。
@@ -351,4 +552,79 @@ val resultTable = sensorTable
 // 转换成流打印输出
 resultTable.toRetractStream[(String, Double, Int)].print("agg temp")
 resultSqlTable.toRetractStream[Row].print("agg temp sql")
+```
+
+**java version**
+
+```java
+public class TableAggregateFunctionExample {
+    public static void main(String[] args) throws Exception {
+        // 创建流环境
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+
+        // 设置为使用流模式
+        EnvironmentSettings settings = EnvironmentSettings
+                .newInstance()
+                .inStreamingMode()
+                .build();
+
+        // 创建表环境
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, settings);
+
+        DataStreamSource<SensorReading> stream = env.addSource(new SensorSource());
+
+        tEnv.registerFunction("top2", new Top2Temp());
+
+        // 流 -> 表
+        Table table = tEnv.fromDataStream(
+                stream,
+                $("id"),
+                $("timestamp").as("ts"),
+                $("temperature"),
+                $("pt").proctime());
+
+        Table tableResult = table
+                .groupBy($("id"))
+                .flatAggregate("top2(temperature) as (temp, rank)")
+                .select($("id"), $("temp"), $("rank"));
+
+        tEnv.toRetractStream(tableResult, Row.class).print();
+
+        env.execute();
+    }
+    public static class Top2TempAcc {
+        public Double highestTemp = Double.MIN_VALUE;
+        public Double secondHighestTemp = Double.MIN_VALUE;
+
+        public Top2TempAcc(Double highestTemp, Double secondHighestTemp) {
+            this.highestTemp = highestTemp;
+            this.secondHighestTemp = secondHighestTemp;
+        }
+
+        public Top2TempAcc() {
+        }
+    }
+
+    public static class Top2Temp extends TableAggregateFunction<Tuple2<Double, Integer>, Top2TempAcc> {
+        @Override
+        public Top2TempAcc createAccumulator() {
+            return new Top2TempAcc();
+        }
+
+        public void accumulate(Top2TempAcc acc, Double temp) {
+            if (temp > acc.highestTemp) {
+                acc.secondHighestTemp = acc.highestTemp;
+                acc.highestTemp = temp;
+            } else if (temp > acc.secondHighestTemp) {
+                acc.secondHighestTemp = temp;
+            }
+        }
+
+        public void emitValue(Top2TempAcc acc, Collector<Tuple2<Double, Integer>> out) {
+            out.collect(Tuple2.of(acc.highestTemp, 1));
+            out.collect(Tuple2.of(acc.secondHighestTemp, 2));
+        }
+    }
+}
 ```
