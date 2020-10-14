@@ -180,36 +180,11 @@
 <p>我们现在要实现的模块是“实时流量统计”。对于一个电商平台而言，用户登录的入口流量、不同页面的访问流量都是值得分析的重要数据，而这些数据，可以简单地从web服务器的日志中提取出来。我们在这里实现最基本的“页面浏览数”的统计，也就是读取服务器日志中的每一行log，统计在一段时间内用户访问url的次数。</p>
 <p>具体做法为：每隔5秒，输出最近10分钟内访问量最多的前N个URL。可以看出，这个需求与之前“实时热门商品统计”非常类似，所以我们完全可以借鉴此前的代码。</p>
 <p>完整代码如下：</p>
-<pre><code class="language-scala">import java.sql.Timestamp
-import java.text.SimpleDateFormat
+<pre><code class="language-scala">object ApacheLogAnalysis {
 
-import org.apache.flink.api.common.functions.AggregateFunction
-import org.apache.flink.api.common.state.ListStateDescriptor
-import org.apache.flink.api.scala.typeutils.Types
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.functions.KeyedProcessFunction
+  case class ApacheLogEvent(ip: String, userId: String, eventTime: Long, method: String, url: String)
 
-import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor
-
-import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.api.scala.function.ProcessWindowFunction
-import org.apache.flink.streaming.api.windowing.time.Time
-import org.apache.flink.streaming.api.windowing.windows.TimeWindow
-import org.apache.flink.util.Collector
-
-import scala.collection.mutable.ListBuffer
-
-object ApacheLogAnalysis {
-
-  case class ApacheLogEvent(ip: String,
-                            userId: String,
-                            eventTime: Long,
-                            method: String,
-                            url: String)
-
-  case class UrlViewCount(url: String,
-                          windowEnd: Long,
-                          count: Long)
+  case class UrlViewCount(url: String, windowEnd: Long, count: Long)
 
   def main(args: Array[String]): Unit = {
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
@@ -249,10 +224,8 @@ object ApacheLogAnalysis {
   }
 
   class CountAgg extends AggregateFunction[ApacheLogEvent, Long, Long] {
-    @Override
-public createAccumulator(): Long = 0L
-    @Override
-public add(apacheLogEvent: ApacheLogEvent, acc: Long): Long = acc + 1
+    override def createAccumulator(): Long = 0L
+    override def add(apacheLogEvent: ApacheLogEvent, acc: Long): Long = acc + 1
     override def getResult(acc: Long): Long = acc
     override def merge(acc1: Long, acc2: Long): Long = acc1 + acc2
   }

@@ -20,36 +20,11 @@
 完整代码如下：
 
 ```scala
-import java.sql.Timestamp
-import java.text.SimpleDateFormat
-
-import org.apache.flink.api.common.functions.AggregateFunction
-import org.apache.flink.api.common.state.ListStateDescriptor
-import org.apache.flink.api.scala.typeutils.Types
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.functions.KeyedProcessFunction
-
-import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor
-
-import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.api.scala.function.ProcessWindowFunction
-import org.apache.flink.streaming.api.windowing.time.Time
-import org.apache.flink.streaming.api.windowing.windows.TimeWindow
-import org.apache.flink.util.Collector
-
-import scala.collection.mutable.ListBuffer
-
 object ApacheLogAnalysis {
 
-  case class ApacheLogEvent(ip: String,
-                            userId: String,
-                            eventTime: Long,
-                            method: String,
-                            url: String)
+  case class ApacheLogEvent(ip: String, userId: String, eventTime: Long, method: String, url: String)
 
-  case class UrlViewCount(url: String,
-                          windowEnd: Long,
-                          count: Long)
+  case class UrlViewCount(url: String, windowEnd: Long, count: Long)
 
   def main(args: Array[String]): Unit = {
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
@@ -89,10 +64,8 @@ object ApacheLogAnalysis {
   }
 
   class CountAgg extends AggregateFunction[ApacheLogEvent, Long, Long] {
-    @Override
-public createAccumulator(): Long = 0L
-    @Override
-public add(apacheLogEvent: ApacheLogEvent, acc: Long): Long = acc + 1
+    override def createAccumulator(): Long = 0L
+    override def add(apacheLogEvent: ApacheLogEvent, acc: Long): Long = acc + 1
     override def getResult(acc: Long): Long = acc
     override def merge(acc1: Long, acc2: Long): Long = acc1 + acc2
   }
