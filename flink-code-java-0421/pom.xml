@@ -126,6 +126,13 @@ under the License.
 <!--			<scope>provided</scope>-->
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>27.0-jre</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.apache.flink</groupId>
 			<artifactId>flink-connector-hive_2.11</artifactId>

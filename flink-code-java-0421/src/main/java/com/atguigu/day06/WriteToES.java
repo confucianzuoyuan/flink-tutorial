@@ -36,6 +36,7 @@ public class WriteToES {
                         IndexRequest indexRequest = Requests
                                 .indexRequest()
                                 .index("sensor0421") // 索引是sensor，相当于数据库
+//                                .type("sensor") // es6需要加这一句
                                 .source(map);
 
                         requestIndexer.add(indexRequest);
