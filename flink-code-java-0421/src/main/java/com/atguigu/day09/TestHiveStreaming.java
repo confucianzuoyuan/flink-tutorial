@@ -16,8 +16,8 @@ public class TestHiveStreaming {
 
         DataStreamSource<Tuple2<String, String>> stream = env
                 .fromElements(
-                        Tuple2.of("14", "hello"),
-                        Tuple2.of("15", "world")
+                        Tuple2.of("20", "bigdata"),
+                        Tuple2.of("21", "atguigu")
                 );
 
         String name            = "myhive"; // 命名空间或者叫catalog目录
@@ -43,19 +43,5 @@ public class TestHiveStreaming {
         // 执行hive sql
         tableEnv.executeSql("insert into t_user select id, name from users");
         tableEnv.executeSql("select * from t_user");
-
-        String hiveSql = "CREATE external TABLE fs_table (\n" +
-                "  user_id STRING,\n" +
-                "  order_amount DOUBLE" +
-                ") partitioned by (dt string,h string,m string) " +
-                "stored as ORC " +
-                "TBLPROPERTIES (\n" +
-                "  'partition.time-extractor.timestamp-pattern'='$dt $h:$m:00',\n" +
-                "  'sink.partition-commit.delay'='0s',\n" +
-                "  'sink.partition-commit.trigger'='partition-time',\n" +
-                "  'sink.partition-commit.policy.kind'='metastore'" +
-                ")";
-
-        tableEnv.executeSql(hiveSql);
     }
 }
