@@ -2,30 +2,14 @@
 
 完整代码如下：
 
-```java
-package com.atguigu
+**scala version**
 
-import java.util.{Calendar, UUID}
-
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction
-import org.apache.flink.streaming.api.functions.source.SourceFunction.SourceContext
-import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.api.scala.function.ProcessWindowFunction
-import org.apache.flink.streaming.api.windowing.time.Time
-import org.apache.flink.streaming.api.windowing.windows.TimeWindow
-import org.apache.flink.util.Collector
-
-import scala.util.Random
-
+```scala
 object AppMarketingByChannel {
-  case class MarketingUserBehavior(userId: String,
-                                   behavior: String,
-                                   channel: String,
-                                   ts: Long)
 
-  class SimulatedEventSource
-    extends RichParallelSourceFunction[MarketingUserBehavior] {
+  case class MarketingUserBehavior(userId: String, behavior: String, channel: String, ts: Long)
+
+  class SimulatedEventSource extends RichParallelSourceFunction[MarketingUserBehavior] {
 
     var running = true
 
@@ -67,16 +51,15 @@ object AppMarketingByChannel {
     env.execute()
   }
 
-  class MarketingCountByChannel
-    extends ProcessWindowFunction[((String, String), Long),
-      (String, Long, Long), (String, String), TimeWindow] {
-    override def process(key:  (String,String),
-                         context: Context,
-                         elements: Iterable[((String, String), Long)],
-                         out: Collector[(String, Long, Long)]): Unit = {
+  class MarketingCountByChannel extends ProcessWindowFunction[((String, String), Long), (String, Long, Long), (String, String), TimeWindow] {
+    override def process(key:  (String,String), context: Context, elements: Iterable[((String, String), Long)], out: Collector[(String, Long, Long)]): Unit = {
       out.collect((key._1, elements.size, context.window.getEnd))
     }
   }
 }
 ```
 
+**java version**
+
+```java
+```
