@@ -18,21 +18,11 @@ keyBy通过指定key来将DataStream转换成KeyedStream。基于不同的key，
 
 `keyBy()`方法接收一个参数，这个参数指定了key或者keys，有很多不同的方法来指定key。我们将在后面讲解。下面的代码声明了`id`这个字段为SensorReading流的key。
 
-**scala version**
-
-```scala
-val keyed: KeyedStream[SensorReading, String] = readings.keyBy(r => r.id)
-```
-
-匿名函数`r => r.id`抽取了传感器读数SensorReading的id值。
-
-**java version**
-
 ```java
-KeyedStream<SensorReading, String> keyed = readings.keyBy(r -> r.id);
+KeyedStream<Event, String> keyedStream = stream.keyBy(e -> e.key);
 ```
 
-匿名函数`r -> r.id`抽取了传感器读数SensorReading的id值。
+匿名函数`e -> e.key`抽取了事件的key值。
 
 *滚动聚合*
 
@@ -50,25 +40,13 @@ KeyedStream<SensorReading, String> keyed = readings.keyBy(r -> r.id);
 
 下面的例子根据第一个字段来对类型为`Tuple3<Int, Int, Int>`的流做分流操作，然后针对第二个字段做滚动求和操作。
 
-**scala version**
-
-```scala
-val inputStream = env.fromElements((1, 2, 2), (2, 3, 1), (2, 2, 4), (1, 5, 3))
-
-val resultStream = inputStream.keyBy(0).sum(1)
-```
-
-**java version**
-
 ```java
-DataStream<Tuple3<Integer, Integer, Integer>> inputStream = env.fromElements(new Tuple3(1, 2, 2), new Tuple3(2, 3, 1), new Tuple3(2, 2, 4), new Tuple3(1, 5, 3));
+DataStream<Event> stream = env.addSource(new EventSource());
 
-DataStream<Tuple3<Integer, Integer, Integer>> resultStream = inputStream
-  .keyBy(0) // key on first field of the tuple
-  .sum(1);   // sum the second field of the tuple in place
+stream
+  .keyBy(e -> e.key)
+  .sum(1);   // 累加Event的第二个字段 
 ```
-
-在这个例子里面，输入流根据第一个字段来分流，然后在第二个字段上做计算。对于key 1，输出结果是(1,2,2),(1,7,2)。对于key 2，输出结果是(2,3,1),(2,5,1)。第一个字段是key，第二个字段是求和的数值，第三个字段未定义。
 
 >滚动聚合操作会对每一个key都保存一个状态。因为状态从来不会被清空，所以我们在使用滚动聚合算子时只能使用在含有有限个key的流上面。
 
@@ -84,23 +62,17 @@ ReduceFunction[T]
     > reduce(T, T): T
 ```
 
-下面的例子，流根据传感器ID分流，然后计算每个传感器的当前最大温度值。
-
-**scala version**
-
-```scala
-val maxTempPerSensor = keyed.reduce((r1, r2) => r1.temperature.max(r2.temperature))
-```
-
-**java version**
+下面的例子，流根据key分流，然后计算每条支流的当前最大value值。
 
 ```java
-DataStream<SensorReading> maxTempPerSensor = keyed
-        .reduce((r1, r2) -> {
-            if (r1.temperature > r2.temperature) {
-                return r1;
+DataStream<Event> maxValuePerKey = env
+        .addSource(new EventSource())
+        .keyBy(e -> e.key)
+        .reduce((e1, e2) -> {
+            if (e1.value > e2.value) {
+                return e1;
             } else {
-                return r2;
+                return e2;
             }
         });
 ```

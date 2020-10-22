@@ -2,8 +2,8 @@
 
 当应用程序完全写好时，我们可以调用`StreamExecutionEnvironment.execute()`来执行应用程序。在我们的例子中就是我们的最后一行调用：
 
-```
-env.execute("Compute average sensor temperature")
+```java
+env.execute("平均值计算程序");
 ```
 
 Flink程序是惰性执行的。也就是说创建数据源和转换算子的API调用并不会立刻触发任何数据处理逻辑。API调用仅仅是在执行环境中构建了一个执行计划，这个执行计划包含了执行环境创建的数据源和所有的将要用在数据源上的转换算子。只有当`execute()`被调用时，系统才会触发程序的执行。

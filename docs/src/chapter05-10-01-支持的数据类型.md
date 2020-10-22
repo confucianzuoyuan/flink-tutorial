@@ -1,10 +1,9 @@
 ### 支持的数据类型
 
-Flink支持Java和Scala提供的所有普通数据类型。最常用的数据类型可以做以下分类：
+Flink支持Java提供的所有普通数据类型。最常用的数据类型可以做以下分类：
 
 * Primitives（原始数据类型）
-* Java和Scala的Tuples（元组）
-* Scala的样例类
+* Java的Tuples（元组）
 * POJO类型
 * 一些特殊的类型
 
@@ -12,10 +11,10 @@ Flink支持Java和Scala提供的所有普通数据类型。最常用的数据类
 
 *Primitives*
 
-Java和Scala提供的所有原始数据类型都支持，例如`Int`(Java的`Integer`)，String，Double等等。下面举一个例子：
+Java提供的所有原始数据类型都支持，例如`Integer`，`String`，`Double`等等。下面举一个例子：
 
 ```java
-DataStream[Long] numbers = env.fromElements(1L, 2L, 3L, 4L);
+DataStream<Long> numbers = env.fromElements(1L, 2L, 3L, 4L);
 numbers.map(n -> n + 1);
 ```
 
@@ -44,7 +43,7 @@ Tuple2<String, Integer> personTuple = Tuple2.of("Alex", 42);
 Integer age = personTuple.getField(1); // age = 42
 ```
 
-不同于Scala的Tuple，Java的Tuple是可变数据结构，所以Tuple中的元素可以重新进行赋值。重复利用Java的Tuple可以减轻垃圾收集的压力。举个例子：
+Java的Tuple是可变数据结构，所以Tuple中的元素可以重新进行赋值。重复利用Java的Tuple可以减轻垃圾收集的压力。举个例子：
 
 ```java
 personTuple.f1 = 42; // set the 2nd field to 42

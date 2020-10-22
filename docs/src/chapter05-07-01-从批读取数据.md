@@ -1,25 +1,19 @@
 ### 从批读取数据
 
-**scala version**
-
-```scala
-val stream = env
-  .fromElements(
-    SensorReading("sensor_1", 1547718199, 35.80018327300259),
-    SensorReading("sensor_6", 1547718199, 15.402984393403084),
-    SensorReading("sensor_7", 1547718199, 6.720945201171228),
-    SensorReading("sensor_10", 1547718199, 38.101067604893444)
-  )
-```
-
-**java version**
-
 ```java
-DataStream<SensorReading> stream = env
+DataStream<String> stringStream = env
   .fromElements(
-    new SensorReading("sensor_1", 1547718199, 35.80018327300259),
-    new SensorReading("sensor_6", 1547718199, 15.402984393403084),
-    new SensorReading("sensor_7", 1547718199, 6.720945201171228),
-    new SensorReading("sensor_10", 1547718199, 38.101067604893444)
+    "hello world",
+    "atguigu bigdata"
   )
+
+DataStream<Integer> intStream = env.fromElements(1, 2, 3);
+
+DataStream<Event> stream = env
+  .fromElements(
+    new Event("key_1", 1, 1000L),
+    new Event("key_2", 2, 2000L),
+    new Event("key_3", 3, 3000L),
+    new Event("key_4", 4, 4000L),
+  );
 ```

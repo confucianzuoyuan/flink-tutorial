@@ -11,11 +11,11 @@ Flink应用程序在一个像集群这样的分布式环境中并行执行。当
 算子默认的并行度也可以通过重写来明确指定。在下面的例子里面，数据源的操作符将会按照环境默认的并行度来并行执行，map操作符的并行度将会是默认并行度的2倍，sink操作符的并行度为2。
 
 ```java
-StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment;
-int defaultP = env.getParallelism;
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+int defaultP = env.getParallelism();
 env
-  .addSource(new CustomSource)
-  .map(new MyMapper)
+  .addSource(new CustomSource())
+  .map(new MyMapper())
   .setParallelism(defaultP * 2)
   .print()
   .setParallelism(2);

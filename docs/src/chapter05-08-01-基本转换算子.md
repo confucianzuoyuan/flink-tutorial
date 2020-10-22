@@ -17,35 +17,16 @@ MapFunction[T, O]
     > map(T): O
 ```
 
-下面的代码实现了将SensorReading中的id字段抽取出来的功能。
-
-**scala version**
-
-```scala
-val readings: DataStream[SensorReading] = ...
-val sensorIds: DataStream[String] = readings.map(new IdExtractor)
-
-class IdExtractor extends MapFunction[SensorReading, String] {
-    override def map(r: SensorReading) : String = r.id
-}
-```
-
-当然我们更推荐匿名函数的写法。
+下面的代码实现了将`Event`中的`key`字段抽取出来的功能。
 
 ```java
-val sensorIds: DataStream[String] = filteredReadings.map(r => r.id)
-```
+DataStream<Event> stream = env.addSource(new EventSource()); 
+DataStream<String> keys = stream.map(new KeyExtractor());
 
-**java version**
-
-```java
-DataStream<SensorReading> readings = ...
-DataStream<String> sensorIds = readings.map(new IdExtractor());
-
-public static class IdExtractor implements MapFunction<SensorReading, String> {
+public static class IdExtractor implements MapFunction<Event, String> {
     @Override
-    public String map(SensorReading r) throws Exception {
-        return r.id;
+    public String map(Event e) throws Exception {
+        return e.key;
     }
 }
 ```
@@ -53,7 +34,15 @@ public static class IdExtractor implements MapFunction<SensorReading, String> {
 当然我们更推荐匿名函数的写法。
 
 ```java
-DataStream<String> sensorIds = filteredReadings.map(r -> r.id);
+DataStream<String> keys = stream.map(e -> e.key);
+```
+
+如果要使用匿名函数将流中的数据map成元组，那么需要使用`.returns`方法明确告诉编译器元组的类型信息，因为Java没有元组类型，而这里的元组类型是Flink为Java提供的。例如：
+
+```java
+stream
+    .map(e -> Tuple2.of(e.key, e.value))
+    .returns(new TypeHint<Tuple2<String, Long>>() {});
 ```
 
 *FILTER*
@@ -72,16 +61,8 @@ FilterFunction[T]
 
 下面的例子展示了如何使用filter来从传感器数据中过滤掉温度值小于25华氏温度的读数。
 
-**scala version**
-
-```scala
-val filteredReadings = readings.filter(r => r.temperature >= 25)
-```
-
-**java version**
-
 ```java
-DataStream<SensorReading> filteredReadings = readings.filter(r -> r.temperature >= 25);
+DataStream<Event> filteredStream = stream.filter(e -> e.value >= 100L);
 ```
 
 *FLATMAP*
@@ -99,34 +80,14 @@ FlatMapFunction[T, O]
     > flatMap(T, Collector[O]): Unit
 ```
 
-下面的例子展示了在数据分析教程中经常用到的例子，我们用`flatMap`来实现。使用`_`来切割传感器ID，比如`sensor_1`。
-
-**scala version**
-
-```scala
-class IdSplitter extends FlatMapFunction[String, String] {
-    override def flatMap(id: String, out: Collector[String]) : Unit = {
-        val arr = id.split("_")
-        arr.foreach(out.collect)
-    }
-}
-```
-
-匿名函数写法
-
-```scala
-val splitIds = sensorIds
-  .flatMap(r => r.split("_"))
-```
-
-**java version**
+下面的例子展示了在数据分析教程中经常用到的例子，我们用`flatMap`来实现。使用`_`来切割key，比如`key_1`。
 
 ```java
-public static class IdSplitter implements FlatMapFunction<String, String> {
+public static class KeySplitter implements FlatMapFunction<String, String> {
     @Override
-    public void flatMap(String id, Collector<String> out) {
+    public void flatMap(String key, Collector<String> out) {
 
-        String[] splits = id.split("_");
+        String[] splits = key.split("_");
 
         for (String split : splits) {
             out.collect(split);
@@ -138,9 +99,9 @@ public static class IdSplitter implements FlatMapFunction<String, String> {
 匿名函数写法：
 
 ```java
-DataStream<String> splitIds = sensorIds
+DataStream<String> splitKeys = stream
         .flatMap((FlatMapFunction<String, String>)
-                (id, out) -> { for (String s: id.split("_")) { out.collect(s);}})
+                (key, out) -> { for (String s: key.split("_")) { out.collect(s);}})
         // provide result type because Java cannot infer return type of lambda function
         // 提供结果的类型，因为Java无法推断匿名函数的返回值类型
         .returns(Types.STRING);

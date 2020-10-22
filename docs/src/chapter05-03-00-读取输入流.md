@@ -4,19 +4,34 @@
 
 在我们的例子里面，我们这样写：
 
-**scala version**
-
-```scala
-val sensorData: DataStream[SensorReading] = env
-  .addSource(new SensorSource)
+```java
+DataStream<Event> stream = env.addSource(new EventSource());
 ```
 
-**java version**
+**Event POJO Class**
 
 ```java
-DataStream<SensorReading> sensorData = env
-  .addSource(new SensorSource());
+public class Event {
+    public String key;
+    public Long value;
+    public Long timestamp;
+
+    public Event(String key, Long value, Long timestamp) {
+        this.key = key;
+        this.value = value;
+        this.timestamp = timestamp;
+    }
+
+    public Event() {
+    }
+
+    @Override
+    public String toString() {
+        return "Event{" + "key='" + key + '\'' + ", value='" + value + '\'' + ", timestamp=" + timestamp + '}';
+    }
+}
 ```
 
-这样就可以连接到传感器测量数据的数据源并创建一个类型为`SensorReading`的`DataStream`了。Flink支持很多数据类型，我们将在接下来的章节里面讲解。在我们的例子里面，我们的数据类型是一个定义好的Scala样例类。`SensorReading`样例类包含了传感器ID，数据的测量时间戳，以及测量温度值。`assignTimestampsAndWatermarks(new SensorTimeAssigner)`方法指定了如何设置事件时间语义的时间戳和水位线。有关`SensorTimeAssigner`我们后面再讲。
+这样就可以连接到传感器测量数据的数据源并创建一个类型为`Event`的`DataStream`了。Flink支持很多数据类型，我们将在接下来的章节里面讲解。在我们的例子里面，我们的数据类型是一个定义好的Java的POJO Class。`Event`类包含了`key`，`value`，以及`时间戳`。
 
+我们这里将流中的数据抽象成了一个三元组（键，值，时间戳），有利于我们抛开业务，抓住流处理的本质。
