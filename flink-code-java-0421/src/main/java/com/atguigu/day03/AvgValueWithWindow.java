@@ -1,7 +1,7 @@
 package com.atguigu.day03;
 
-import com.atguigu.day02.util.SensorReading;
-import com.atguigu.day02.util.SensorSource;
+import com.atguigu.refactorcode.Event;
+import com.atguigu.refactorcode.EventSource;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
@@ -11,34 +11,34 @@ import org.apache.flink.util.Collector;
 
 import java.sql.Timestamp;
 
-public class AvgTempWithWindow {
+public class AvgValueWithWindow {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
 
-        DataStreamSource<SensorReading> stream = env.addSource(new SensorSource());
+        DataStreamSource<Event> stream = env.addSource(new EventSource());
 
         stream
-                .keyBy(r -> r.id)
+                .keyBy(e -> e.key)
                 .timeWindow(Time.seconds(5))
-                .process(new AvgTempPerWindow())
+                .process(new AvgValuePerWindow())
                 .print();
 
         env.execute();
     }
 
-    public static class AvgTempPerWindow extends ProcessWindowFunction<SensorReading, String, String, TimeWindow> {
+    public static class AvgValuePerWindow extends ProcessWindowFunction<Event, String, String, TimeWindow> {
         @Override
-        public void process(String key, Context ctx, Iterable<SensorReading> iterable, Collector<String> collector) throws Exception {
+        public void process(String key, Context ctx, Iterable<Event> iterable, Collector<String> collector) throws Exception {
             Double sum = 0.0;
-            Long count = 0L;
+            long count = 0L;
 
-            for (SensorReading r : iterable) {
-                sum += r.temperature;
+            for (Event e : iterable) {
+                sum += e.value;
                 count += 1L;
             }
 
-            collector.collect("传感器为：" + key + " 窗口结束时间为：" + new Timestamp(ctx.window().getEnd()) + " 的平均值是：" + sum / count);
+            collector.collect("key为：" + key + " 窗口结束时间为：" + new Timestamp(ctx.window().getEnd()) + " 的平均值是：" + sum / count);
         }
     }
 }

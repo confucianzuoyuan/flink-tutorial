@@ -1,3 +1,290 @@
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+**Table of Contents**
+
+- [第一章，有状态的流式处理简介](#第一章有状态的流式处理简介)
+    - [传统数据处理架构](#传统数据处理架构)
+        - [事务处理](#事务处理)
+        - [分析处理](#分析处理)
+    - [有状态的流式处理](#有状态的流式处理)
+        - [事件驱动应用程序](#事件驱动应用程序)
+        - [数据管道](#数据管道)
+        - [流分析](#流分析)
+    - [开源流处理的演进](#开源流处理的演进)
+        - [流处理的历史](#流处理的历史)
+    - [Flink简介](#flink简介)
+- [第二章，流处理基础](#第二章流处理基础)
+    - [数据流编程简介](#数据流编程简介)
+        - [数据流图](#数据流图)
+        - [数据并行和任务并行](#数据并行和任务并行)
+        - [数据交换策略](#数据交换策略)
+    - [并行处理流数据](#并行处理流数据)
+        - [延迟和吞吐量](#延迟和吞吐量)
+        - [延迟](#延迟)
+        - [吞吐量](#吞吐量)
+        - [延迟与吞吐量的对比](#延迟与吞吐量的对比)
+    - [数据流上的操作](#数据流上的操作)
+        - [数据摄入和数据吞吐量](#数据摄入和数据吞吐量)
+        - [转换算子](#转换算子)
+        - [滚动聚合](#滚动聚合)
+        - [窗口操作符](#窗口操作符)
+    - [时间语义](#时间语义)
+        - [在流处理中一分钟代表什么？](#在流处理中一分钟代表什么)
+        - [处理时间](#处理时间)
+        - [事件时间](#事件时间)
+        - [水位线](#水位线)
+        - [处理时间和事件时间](#处理时间和事件时间)
+    - [状态和持久化模型](#状态和持久化模型)
+        - [任务失败](#任务失败)
+            - [什么是任务失败？](#什么是任务失败)
+            - [结果的保证](#结果的保证)
+- [第三章，Flink运行架构](#第三章flink运行架构)
+    - [系统架构](#系统架构)
+        - [Flink运行时组件](#flink运行时组件)
+        - [应用部署](#应用部署)
+        - [任务执行](#任务执行)
+        - [高可用配置](#高可用配置)
+    - [Flink中的数据传输](#flink中的数据传输)
+        - [基于信任度的流控制](#基于信任度的流控制)
+        - [任务链](#任务链)
+- [Flink中的数据传输](#flink中的数据传输-1)
+    - [事件时间处理](#事件时间处理)
+        - [时间戳](#时间戳)
+        - [水位线](#水位线-1)
+        - [watermark的传递和事件时间](#watermark的传递和事件时间)
+        - [时间戳的分配和水位线的产生](#时间戳的分配和水位线的产生)
+    - [状态管理](#状态管理)
+        - [算子状态](#算子状态)
+            - [列表状态](#列表状态)
+            - [联合列表状态](#联合列表状态)
+            - [广播状态](#广播状态)
+        - [键控状态](#键控状态)
+            - [值状态](#值状态)
+            - [列表状态](#列表状态-1)
+            - [映射状态](#映射状态)
+        - [状态后端](#状态后端)
+        - [调整有状态算子的并行度](#调整有状态算子的并行度)
+    - [检查点，保存点和状态恢复](#检查点保存点和状态恢复)
+        - [一致的检查点](#一致的检查点)
+        - [从一致检查点中恢复状态](#从一致检查点中恢复状态)
+        - [Flink的检查点算法](#flink的检查点算法)
+        - [检查点的性能影响](#检查点的性能影响)
+        - [保存点](#保存点)
+            - [使用保存点](#使用保存点)
+            - [从保存点启动应用程序](#从保存点启动应用程序)
+- [第四章，编写第一个Flink程序](#第四章编写第一个flink程序)
+    - [在IDEA中编写Flink程序](#在idea中编写flink程序)
+        - [Java版Flink程序编写](#java版flink程序编写)
+    - [下载Flink运行时环境，提交Jar包的运行方式](#下载flink运行时环境提交jar包的运行方式)
+- [第五章，Flink DataStream API](#第五章flink-datastream-api)
+    - [Flink程序的执行步骤](#flink程序的执行步骤)
+    - [搭建执行环境](#搭建执行环境)
+    - [读取输入流](#读取输入流)
+    - [转换算子的使用](#转换算子的使用)
+    - [输出结果](#输出结果)
+    - [执行](#执行)
+    - [产生数据流中的数据代码编写](#产生数据流中的数据代码编写)
+        - [从批读取数据](#从批读取数据)
+        - [从文件读取数据](#从文件读取数据)
+        - [以Kafka消息队列的数据为数据来源](#以kafka消息队列的数据为数据来源)
+        - [自定义数据源](#自定义数据源)
+    - [转换算子](#转换算子-1)
+        - [基本转换算子](#基本转换算子)
+        - [键控流转换算子](#键控流转换算子)
+        - [多流转换算子](#多流转换算子)
+        - [分布式转换算子](#分布式转换算子)
+    - [设置并行度](#设置并行度)
+    - [类型](#类型)
+        - [支持的数据类型](#支持的数据类型)
+        - [为数据类型创建类型信息](#为数据类型创建类型信息)
+    - [定义Key以及引用字段](#定义key以及引用字段)
+    - [实现UDF函数，更细粒度的控制流](#实现udf函数更细粒度的控制流)
+        - [函数类](#函数类)
+        - [匿名函数](#匿名函数)
+        - [富函数](#富函数)
+    - [Sink](#sink)
+        - [Kafka](#kafka)
+        - [Redis](#redis)
+        - [ElasticSearch](#elasticsearch)
+        - [JDBC自定义sink](#jdbc自定义sink)
+- [第六章，基于时间和窗口的操作符](#第六章基于时间和窗口的操作符)
+    - [设置时间属性](#设置时间属性)
+        - [指定时间戳和产生水位线](#指定时间戳和产生水位线)
+        - [水位线概念讲解及测试案例](#水位线概念讲解及测试案例)
+        - [周期性的生成水位线](#周期性的生成水位线)
+        - [如何产生不规则的水位线](#如何产生不规则的水位线)
+    - [处理函数](#处理函数)
+        - [时间服务和定时器](#时间服务和定时器)
+        - [将事件发送到侧输出](#将事件发送到侧输出)
+        - [CoProcessFunction](#coprocessfunction)
+    - [窗口操作符](#窗口操作符-1)
+        - [定义窗口操作符](#定义窗口操作符)
+        - [内置的窗口分配器](#内置的窗口分配器)
+        - [调用窗口计算函数](#调用窗口计算函数)
+        - [自定义窗口操作符](#自定义窗口操作符)
+    - [基于时间的双流Join](#基于时间的双流join)
+        - [基于间隔的Join](#基于间隔的join)
+        - [基于窗口的Join](#基于窗口的join)
+        - [flink流与MySQL维表的join](#flink流与mysql维表的join)
+        - [CoProcessFunction的使用](#coprocessfunction的使用)
+    - [处理迟到的元素](#处理迟到的元素)
+        - [抛弃迟到元素](#抛弃迟到元素)
+        - [重定向迟到元素](#重定向迟到元素)
+        - [使用迟到元素更新窗口计算结果](#使用迟到元素更新窗口计算结果)
+- [第七章，有状态算子和应用](#第七章有状态算子和应用)
+    - [实现有状态的用户自定义函数](#实现有状态的用户自定义函数)
+        - [在RuntimeContext中定义键控状态](#在runtimecontext中定义键控状态)
+        - [使用ListCheckpointed接口来实现操作符的列表状态](#使用listcheckpointed接口来实现操作符的列表状态)
+        - [使用连接的广播状态](#使用连接的广播状态)
+    - [配置检查点](#配置检查点)
+        - [将hdfs配置为状态后端](#将hdfs配置为状态后端)
+    - [保证有状态应用的可维护性](#保证有状态应用的可维护性)
+        - [指定唯一的操作符标识符](#指定唯一的操作符标识符)
+        - [指定操作符的最大并行度](#指定操作符的最大并行度)
+- [保证有状态应用的可维护性](#保证有状态应用的可维护性-1)
+    - [有状态应用的性能和健壮性](#有状态应用的性能和健壮性)
+        - [选择一个状态后端](#选择一个状态后端)
+        - [防止状态泄露](#防止状态泄露)
+- [第八章，读写外部系统](#第八章读写外部系统)
+    - [应用的一致性保证](#应用的一致性保证)
+        - [幂等性写入](#幂等性写入)
+        - [事务性写入](#事务性写入)
+    - [Flink提供的连接器](#flink提供的连接器)
+        - [Apache Kafka Source连接器](#apache-kafka-source连接器)
+        - [Apache Kafka Sink连接器](#apache-kafka-sink连接器)
+        - [Kakfa Sink的at-least-once保证](#kakfa-sink的at-least-once保证)
+        - [Kafka Sink的恰好处理一次语义保证](#kafka-sink的恰好处理一次语义保证)
+        - [文件系统source连接器](#文件系统source连接器)
+        - [文件系统sink连接器](#文件系统sink连接器)
+    - [实现自定义源函数](#实现自定义源函数)
+        - [可重置的源函数](#可重置的源函数)
+    - [实现自定义sink函数](#实现自定义sink函数)
+        - [幂等sink连接器](#幂等sink连接器)
+- [幂等sink连接器](#幂等sink连接器-1)
+    - [-](#-)
+- [第九章，搭建Flink运行流式应用](#第九章搭建flink运行流式应用)
+    - [部署方式](#部署方式)
+        - [独立集群](#独立集群)
+        - [Apache Hadoop Yarn](#apache-hadoop-yarn)
+    - [高可用配置](#高可用配置-1)
+        - [独立集群高可用配置](#独立集群高可用配置)
+        - [yarn集群高可用配置](#yarn集群高可用配置)
+    - [与Hadoop集成](#与hadoop集成)
+    - [保存点操作](#保存点操作)
+    - [取消一个应用](#取消一个应用)
+    - [从保存点启动应用程序](#从保存点启动应用程序-1)
+    - [扩容，改变并行度操作](#扩容改变并行度操作)
+- [第十章，Flink DataSet API讲解](#第十章flink-dataset-api讲解)
+- [第十一章，Flink CEP简介](#第十一章flink-cep简介)
+- [第十二章，Table API和Flink SQL](#第十二章table-api和flink-sql)
+    - [整体介绍](#整体介绍)
+        - [什么是Table API和Flink SQL](#什么是table-api和flink-sql)
+        - [需要引入的依赖](#需要引入的依赖)
+        - [两种planner（old & blink）的区别](#两种plannerold--blink的区别)
+    - [API调用](#api调用)
+        - [基本程序结构](#基本程序结构)
+        - [创建表环境](#创建表环境)
+        - [在Catalog中注册表](#在catalog中注册表)
+            - [临时表（Temporary Table）和永久表（Permanent Table）](#临时表temporary-table和永久表permanent-table)
+            - [创建表](#创建表)
+                - [虚拟表](#虚拟表)
+            - [扩展表标识符](#扩展表标识符)
+        - [表的查询](#表的查询)
+            - [Table API的调用](#table-api的调用)
+            - [SQL查询](#sql查询)
+        - [将DataStream转换成表](#将datastream转换成表)
+            - [代码表达](#代码表达)
+            - [数据类型与Table schema的对应](#数据类型与table-schema的对应)
+        - [创建临时视图](#创建临时视图)
+        - [输出表](#输出表)
+            - [更新模式（Update Mode）](#更新模式update-mode)
+        - [将表转换成DataStream](#将表转换成datastream)
+        - [Query的解释和执行](#query的解释和执行)
+    - [流处理中的特殊概念](#流处理中的特殊概念)
+        - [流处理和关系代数（表，及SQL）的区别](#流处理和关系代数表及sql的区别)
+        - [动态表](#动态表)
+        - [流式持续查询的过程](#流式持续查询的过程)
+            - [将流转换成表（Table）](#将流转换成表table)
+            - [持续查询（Continuous Query）](#持续查询continuous-query)
+            - [将动态表转换成流](#将动态表转换成流)
+        - [时间特性](#时间特性)
+            - [处理时间](#处理时间-1)
+            - [事件时间（Event Time）](#事件时间event-time)
+    - [窗口](#窗口)
+        - [分组窗口](#分组窗口)
+            - [滚动窗口](#滚动窗口)
+            - [滑动窗口](#滑动窗口)
+            - [会话窗口](#会话窗口)
+        - [Over Windows](#over-windows)
+        - [SQL中窗口的定义](#sql中窗口的定义)
+            - [Group Windows](#group-windows)
+            - [Over Windows](#over-windows-1)
+        - [代码练习（以分组滚动窗口为例）](#代码练习以分组滚动窗口为例)
+    - [函数](#函数)
+        - [系统内置函数](#系统内置函数)
+        - [UDF](#udf)
+            - [注册用户自定义函数UDF](#注册用户自定义函数udf)
+            - [标量函数（Scalar Functions）](#标量函数scalar-functions)
+            - [表函数（Table Functions）](#表函数table-functions)
+            - [聚合函数（Aggregate Functions）](#聚合函数aggregate-functions)
+            - [表聚合函数（Table Aggregate Functions）](#表聚合函数table-aggregate-functions)
+    - [Flink和Hive集成](#flink和hive集成)
+        - [一个复杂一点的程序](#一个复杂一点的程序)
+        - [彻底重置hadoop和hive的方法](#彻底重置hadoop和hive的方法)
+- [第十三章，尚硅谷大数据技术之电商用户行为分析](#第十三章尚硅谷大数据技术之电商用户行为分析)
+    - [数据集解析](#数据集解析)
+        - [淘宝数据集解析](#淘宝数据集解析)
+        - [Apache服务器日志数据集解析](#apache服务器日志数据集解析)
+    - [实时热门商品统计](#实时热门商品统计)
+        - [java版本程序](#java版本程序)
+    - [实时流量统计](#实时流量统计)
+    - [Uv统计的布隆过滤器实现](#uv统计的布隆过滤器实现)
+        - [UV实现的最简单版本](#uv实现的最简单版本)
+        - [布隆过滤器版本](#布隆过滤器版本)
+    - [APP分渠道数据统计](#app分渠道数据统计)
+    - [APP不分渠道数据统计](#app不分渠道数据统计)
+    - [恶意登陆实现](#恶意登陆实现)
+    - [订单支付实时监控](#订单支付实时监控)
+        - [使用Flink CEP来实现](#使用flink-cep来实现)
+        - [使用Process Function实现订单超时需求](#使用process-function实现订单超时需求)
+    - [实时对帐：实现两条流的Join](#实时对帐：实现两条流的join)
+    - [只使用Flink SQL实现TopN需求](#只使用flink-sql实现topn需求)
+- [Flink SQL Demo: 构建一个端到端的流式应用](#flink-sql-demo-构建一个端到端的流式应用)
+    - [准备](#准备)
+        - [使用 Docker Compose 启动容器](#使用-docker-compose-启动容器)
+        - [进入 SQL CLI 客户端](#进入-sql-cli-客户端)
+    - [使用 DDL 创建 Kafka 表](#使用-ddl-创建-kafka-表)
+    - [统计每小时的成交量](#统计每小时的成交量)
+        - [使用 DDL 创建 Elasticsearch 表](#使用-ddl-创建-elasticsearch-表)
+        - [提交 Query](#提交-query)
+        - [使用 Kibana 可视化结果](#使用-kibana-可视化结果)
+    - [统计一天每10分钟累计独立用户数](#统计一天每10分钟累计独立用户数)
+    - [顶级类目排行榜](#顶级类目排行榜)
+    - [结尾](#结尾)
+- [第十四章，常见面试题解答](#第十四章常见面试题解答)
+    - [面试题一](#面试题一)
+    - [面试题二](#面试题二)
+    - [面试题三](#面试题三)
+    - [面试题四](#面试题四)
+    - [面试题五](#面试题五)
+    - [面试题六](#面试题六)
+    - [面试题七](#面试题七)
+    - [面试题八](#面试题八)
+    - [面试题九](#面试题九)
+    - [面试题十](#面试题十)
+    - [面试题十一](#面试题十一)
+    - [面试题十二](#面试题十二)
+    - [面试题十三](#面试题十三)
+    - [面试题十四](#面试题十四)
+    - [面试题十五](#面试题十五)
+    - [面试题十六](#面试题十六)
+    - [面试题十七](#面试题十七)
+    - [面试题十八](#面试题十八)
+    - [面试题十九](#面试题十九)
+    - [面试题二十](#面试题二十)
+
+<!-- markdown-toc end -->
+
+
 # 第一章，有状态的流式处理简介
 
 Apache Flink是一个分布式流处理器，具有直观和富有表现力的API，可实现有状态的流处理应用程序。它以容错的方式有效地大规模运行这些应用程序。 Flink于2014年4月加入Apache软件基金会作为孵化项目，并于2015年1月成为顶级项目。从一开始，Flink就拥有一个非常活跃且不断增长的用户和贡献者社区。到目前为止，已有超过五百人为Flink做出贡献，并且它已经发展成为最复杂的开源流处理引擎之一，并得到了广泛采用的证明。 Flink为不同行业和全球的许多公司和企业提供大规模的商业关键应用。
@@ -825,6 +1112,7 @@ public class WordCountFromSocket {
     }
 }
 ```
+
 ## 下载Flink运行时环境，提交Jar包的运行方式
 
 下载链接：http://mirror.bit.edu.cn/apache/flink/flink-1.11.1/flink-1.11.1-bin-scala_2.11.tgz
@@ -890,8 +1178,7 @@ Flink流处理程序的结构如下：
 也可以用下面的方法来显式的创建本地或者远程执行环境：
 
 ```java
-StreamExecutionEnvironment localEnv = StreamExecutionEnvironment
-  .createLocalEnvironment();
+StreamExecutionEnvironment localEnv = StreamExecutionEnvironment.createLocalEnvironment();
 
 StreamExecutionEnvironment remoteEnv = StreamExecutionEnvironment
   .createRemoteEnvironment(
@@ -1198,6 +1485,50 @@ DataStream<String> splitKeys = stream
         // 提供结果的类型，因为Java无法推断匿名函数的返回值类型
         .returns(Types.STRING);
 ```
+
+```java
+public class FlatMapExample {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+
+        DataStreamSource<String> stream = env.fromElements("white", "black", "gray");
+
+        stream
+                .flatMap(new FlatMapFunction<String, String>() {
+                    @Override
+                    public void flatMap(String s, Collector<String> collector) throws Exception {
+                        if (s.equals("white")) {
+                            collector.collect(s);
+                        } else if (s.equals("black")) {
+                            collector.collect(s);
+                            collector.collect(s);
+                        }
+                    }
+                })
+                .print();
+
+        stream
+                .flatMap(new MyFlatMap())
+                .print();
+
+        env.execute();
+    }
+
+    public static class MyFlatMap implements FlatMapFunction<String, String> {
+        @Override
+        public void flatMap(String s, Collector<String> collector) throws Exception {
+            if (s.equals("white")) {
+                collector.collect(s);
+            } else if (s.equals("black")) {
+                collector.collect(s);
+                collector.collect(s);
+            }
+        }
+    }
+}
+```
+
 ### 键控流转换算子
 
 很多流处理程序的一个基本要求就是要能对数据进行分组，分组后的数据共享某一个相同的属性。DataStream API提供了一个叫做`KeyedStream`的抽象，此抽象会从逻辑上对DataStream进行分区，分区后的数据拥有同样的`Key`值，分区后的流互不相关。
@@ -1810,6 +2141,41 @@ public static class MyFlatMap extends RichFlatMapFunction<Integer, Tuple2<Intege
 }
 ```
 
+```java
+public class RichFunctionExample {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+
+        DataStreamSource<Integer> stream = env.fromElements(1,2,3,4);
+
+        stream
+                .map(new RichMapFunction<Integer, Integer>() {
+                    @Override
+                    public void open(Configuration parameters) throws Exception {
+                        super.open(parameters);
+                        System.out.println("进入生命周期");
+                    }
+
+                    @Override
+                    public Integer map(Integer integer) throws Exception {
+                        return integer + 10;
+                    }
+
+                    @Override
+                    public void close() throws Exception {
+                        super.close();
+                        System.out.println("离开生命周期");
+                    }
+                })
+                .print();
+
+
+        env.execute();
+    }
+}
+```
+
 ## Sink
 
 Flink没有类似于spark中foreach方法，让用户进行迭代的操作。所有对外的输出操作都要利用Sink完成。最后通过类似如下方式完成整个任务最终输出操作。
@@ -1974,8 +2340,8 @@ public class SinkToES {
 建表语句
 
 ```sql
-create database sensor;
-create table temps(id varchar(20), temp float);
+create database kvdatabase;
+create table kvtable(key varchar(20), value bigint);
 ```
 
 ```xml
@@ -2074,9 +2440,9 @@ public class SinkToMySQL {
 下面的例子展示了如何设置事件时间。
 
 ```java
-StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment;
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
-DataStream<Event> sensorData = env.addSource(...);
+DataStream<Event> sensorData = env.addSource(new EventSource());
 ```
 
 如果要使用processing time，将`TimeCharacteristic.EventTime`替换为`TimeCharacteristic.ProcessingTIme`就可以了。
@@ -2109,7 +2475,7 @@ DataStream<T> stream = env
 
 
 ```java
-StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment;
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
 // 从调用时刻开始给env创建的每一个stream追加时间特征
 env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
@@ -2126,6 +2492,9 @@ MyAssigner有两种类型
 * AssignerWithPunctuatedWatermarks
 
 以上两个接口都继承自TimestampAssigner。
+
+### 水位线概念讲解及测试案例
+
 ### 周期性的生成水位线
 
 周期性的生成水位线：系统会周期性的将水位线插入到流中（水位线也是一种特殊的事件!）。默认周期是200毫秒，也就是说，系统会每隔200毫秒就往流中插入一次水位线。
@@ -2134,11 +2503,11 @@ MyAssigner有两种类型
 
 可以使用`ExecutionConfig.setAutoWatermarkInterval()`方法进行设置。
 
-```scala
-val env = StreamExecutionEnvironment.getExecutionEnvironment
-env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+```java
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 // 每隔5秒产生一个水位线
-env.getConfig.setAutoWatermarkInterval(5000)
+env.getConfig.setAutoWatermarkInterval(5000);
 ```
 
 上面的例子产生水位线的逻辑：每隔5秒钟，Flink会调用AssignerWithPeriodicWatermarks中的getCurrentWatermark()方法。如果方法返回的时间戳大于之前水位线的时间戳，新的水位线会被插入到流中。这个检查保证了水位线是单调递增的。如果方法返回的时间戳小于等于之前水位线的时间戳，则不会产生新的水位线。
@@ -2296,59 +2665,59 @@ DataStream<String> warings = readings
 看一下TempIncreaseAlertFunction如何实现, 程序中使用了ValueState这样一个状态变量, 后面会详细讲解。
 
 ```java
-	public static class TempIncreaseAlertFunction extends KeyedProcessFunction<String, Event, String> {
+public static class TempIncreaseAlertFunction extends KeyedProcessFunction<String, Event, String> {
 
-		private ValueState<Double> lastTemp;
-		private ValueState<Long> currentTimer;
+	private ValueState<Double> lastTemp;
+	private ValueState<Long> currentTimer;
 
-		@Override
-		public void open(Configuration parameters) throws Exception {
-			super.open(parameters);
-			lastTemp = getRuntimeContext().getState(
-					new ValueStateDescriptor<>("last-temp", Types.DOUBLE)
-			);
-			currentTimer = getRuntimeContext().getState(
-					new ValueStateDescriptor<>("current-timer", Types.LONG)
-			);
+	@Override
+	public void open(Configuration parameters) throws Exception {
+		super.open(parameters);
+		lastTemp = getRuntimeContext().getState(
+				new ValueStateDescriptor<>("last-temp", Types.DOUBLE)
+		);
+		currentTimer = getRuntimeContext().getState(
+				new ValueStateDescriptor<>("current-timer", Types.LONG)
+		);
+	}
+
+	@Override
+	public void processElement(Event r, Context ctx, Collector<String> out) throws Exception {
+		// 取出上一次的温度
+		Double prevTemp = 0.0;
+		if (lastTemp.value() != null) {
+			prevTemp = lastTemp.value();
 		}
+		// 将当前温度更新到上一次的温度这个变量中
+		lastTemp.update(r.temperature);
 
-		@Override
-		public void processElement(Event r, Context ctx, Collector<String> out) throws Exception {
-			// 取出上一次的温度
-			Double prevTemp = 0.0;
-			if (lastTemp.value() != null) {
-				prevTemp = lastTemp.value();
-			}
-			// 将当前温度更新到上一次的温度这个变量中
-			lastTemp.update(r.temperature);
-
-			Long curTimerTimestamp = 0L;
-			if (currentTimer.value() != null) {
-				curTimerTimestamp = currentTimer.value();
-			}
-			if (prevTemp == 0.0 || r.temperature < prevTemp) {
-				// 温度下降或者是第一个温度值，删除定时器
-				ctx.timerService().deleteProcessingTimeTimer(curTimerTimestamp);
-				// 清空状态变量
-				currentTimer.clear();
-			} else if (r.temperature > prevTemp && curTimerTimestamp == 0) {
-				// 温度上升且我们并没有设置定时器
-				long timerTs = ctx.timerService().currentProcessingTime() + 1000L;
-				ctx.timerService().registerProcessingTimeTimer(timerTs);
-				// 保存定时器时间戳
-				currentTimer.update(timerTs);
-			}
+		Long curTimerTimestamp = 0L;
+		if (currentTimer.value() != null) {
+			curTimerTimestamp = currentTimer.value();
 		}
-
-		@Override
-		public void onTimer(long timestamp, OnTimerContext ctx, Collector<String> out) throws Exception {
-			super.onTimer(timestamp, ctx, out);
-			out.collect("传感器id为: "
-					+ ctx.getCurrentKey()
-					+ "的传感器温度值已经连续1s上升了。");
+		if (prevTemp == 0.0 || r.temperature < prevTemp) {
+			// 温度下降或者是第一个温度值，删除定时器
+			ctx.timerService().deleteProcessingTimeTimer(curTimerTimestamp);
+			// 清空状态变量
 			currentTimer.clear();
+		} else if (r.temperature > prevTemp && curTimerTimestamp == 0) {
+			// 温度上升且我们并没有设置定时器
+			long timerTs = ctx.timerService().currentProcessingTime() + 1000L;
+			ctx.timerService().registerProcessingTimeTimer(timerTs);
+			// 保存定时器时间戳
+			currentTimer.update(timerTs);
 		}
 	}
+
+	@Override
+	public void onTimer(long timestamp, OnTimerContext ctx, Collector<String> out) throws Exception {
+		super.onTimer(timestamp, ctx, out);
+		out.collect("传感器id为: "
+				+ ctx.getCurrentKey()
+				+ "的传感器温度值已经连续1s上升了。");
+		currentTimer.clear();
+	}
+}
 ```
 
 ### 将事件发送到侧输出
@@ -2465,7 +2834,7 @@ Window算子可以在keyed stream或者nokeyed stream上面使用。
 
 下面的代码说明了如何使用窗口操作符。
 
-```scala
+```
 stream
   .keyBy(...)
   .window(...)  // 指定window assigner
@@ -2496,15 +2865,15 @@ Flink创建的窗口类型是`TimeWindow`，包含开始时间和结束时间，
 ![](images/spaf_0601.png)
 
 ```java
-DataStream<Event> sensorData = ...
+DataStream<Event> stream = ...
 
-DataStream<T> avgTemp = sensorData
+DataStream<T> avgTemp = stream
   .keyBy(r -> r.id)
   // group readings in 1s event-time windows
   .window(TumblingEventTimeWindows.of(Time.seconds(1)))
   .process(new TemperatureAverager);
 
-DataStream<T> avgTemp = sensorData
+DataStream<T> avgTemp = stream
   .keyBy(r -> r.id)
   // group readings in 1s processing-time windows
   .window(TumblingProcessingTimeWindows.of(Time.seconds(1)))
@@ -2512,7 +2881,7 @@ DataStream<T> avgTemp = sensorData
 
 // 其实就是之前的
 // shortcut for window.(TumblingEventTimeWindows.of(size))
-DataStream<T> avgTemp = sensorData
+DataStream<T> avgTemp = stream
   .keyBy(r -> r.id)
   .timeWindow(Time.seconds(1))
   .process(new TemperatureAverager);
@@ -2529,21 +2898,21 @@ DataStream<T> avgTemp = sensorData
 ![](images/spaf_0602.png)
 
 ```java
-DataStream<T> slidingAvgTemp = sensorData
+DataStream<T> slidingAvgTemp = stream
   .keyBy(r -> r.id)
   .window(
     SlidingEventTimeWindows.of(Time.hours(1), Time.minutes(15))
   )
   .process(new TemperatureAverager);
 
-DataStream<T> slidingAvgTemp = sensorData
+DataStream<T> slidingAvgTemp = stream
   .keyBy(r -> r.id)
   .window(
     SlidingProcessingTimeWindows.of(Time.hours(1), Time.minutes(15))
   )
   .process(new TemperatureAverager);
 
-DataStream<T> slidingAvgTemp = sensorData
+DataStream<T> slidingAvgTemp = stream
   .keyBy(r -> r.id)
   .timeWindow(Time.hours(1), Time.minutes(15))
   .process(new TemperatureAverager);
@@ -2556,12 +2925,12 @@ DataStream<T> slidingAvgTemp = sensorData
 ![](images/spaf_0603.png)
 
 ```java
-DataStream<T> sessionWindows = sensorData
+DataStream<T> sessionWindows = stream
   .keyBy(r -> r.id)
   .window(EventTimeSessionWindows.withGap(Time.minutes(15)))
   .process(...);
 
-DataStream<T> sessionWindows = sensorData
+DataStream<T> sessionWindows = stream
   .keyBy(r -> r.id)
   .window(ProcessingTimeSessionWindows.withGap(Time.minutes(15)))
   .process(...);
@@ -2579,25 +2948,25 @@ window functions定义了窗口中数据的计算逻辑。有两种计算逻辑�
 
 *ReduceFunction*
 
-例子: 计算每个传感器15s窗口中的温度最小值
+例子: 计算每个key的5s滚动窗口中的value最小值
 
 ```java
-DataStream<Tuple2<String, Double>> minTempPerwindow = sensorData
-    .map(new MapFunction<Event, Tuple2<String, Double>>() {
+DataStream<Tuple2<String, Long>> minValuePerwindow = stream
+    .map(new MapFunction<Event, Tuple2<String, Long>>() {
         @Override
-        public Tuple2<String, Double> map(Event value) throws Exception {
-            return Tuple2.of(value.id, value.temperature);
+        public Tuple2<String, Long> map(Event event) throws Exception {
+            return Tuple2.of(event.key, event.value);
         }
     })
-    .keyBy(r -> r.f0)
+    .keyBy(e -> e.f0)
     .timeWindow(Time.seconds(5))
-    .reduce(new ReduceFunction<Tuple2<String, Double>>() {
+    .reduce(new ReduceFunction<Tuple2<String, Long>>() {
         @Override
-        public Tuple2<String, Double> reduce(Tuple2<String, Double> value1, Tuple2<String, Double> value2) throws Exception {
-            if (value1.f1 < value2.f1) {
-                return value1;
+        public Tuple2<String, Long> reduce(Tuple2<String, Long> e1, Tuple2<String, Long> e2) throws Exception {
+            if (e1.f1 < e2.f1) {
+                return e1;
             } else {
-                return value2;
+                return e2;
             }
         }
     })
@@ -2630,34 +2999,41 @@ IN是输入元素的类型，ACC是累加器的类型，OUT是输出元素的类
 例子
 
 ```java
-val avgTempPerWindow: DataStream[(String, Double)] = sensorData
-  .map(r => (r.id, r.temperature))
-  .keyBy(_._1)
-  .timeWindow(Time.seconds(15))
-  .aggregate(new AvgTempFunction)
+public static void main(String[] args) throws Exception {
+    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+    env.setParallelism(1);
 
-// An AggregateFunction to compute the average temperature per sensor.
-// The accumulator holds the sum of temperatures and an event count.
-class AvgTempFunction
-  extends AggregateFunction[(String, Double),
-    (String, Double, Int), (String, Double)] {
+    DataStreamSource<Event> stream = env.addSource(new EventSource());
 
-  override def createAccumulator() = {
-    ("", 0.0, 0)
-  }
+    stream
+            .keyBy(r -> r.key)
+            .timeWindow(Time.seconds(5))
+            .aggregate(new AvgValue())
+            .print();
 
-  override def add(in: (String, Double), acc: (String, Double, Int)) = {
-    (in._1, in._2 + acc._2, 1 + acc._3)
-  }
+    env.execute();
+}
 
-  override def getResult(acc: (String, Double, Int)) = {
-    (acc._1, acc._2 / acc._3)
-  }
+public static class AvgValue implements AggregateFunction<Event, Tuple3<String, Long, Long>, Tuple2<String, Long>> {
+    @Override
+    public Tuple3<String, Long, Long> createAccumulator() {
+        return Tuple3.of("", 0L, 0L);
+    }
 
-  override def merge(acc1: (String, Double, Int),
-    acc2: (String, Double, Int)) = {
-    (acc1._1, acc1._2 + acc2._2, acc1._3 + acc2._3)
-  }
+    @Override
+    public Tuple3<String, Long, Long> add(Event e, Tuple3<String, Long, Long> acc) {
+        return Tuple3.of(e.key, acc.f1 + e.value, acc.f2 + 1L);
+    }
+
+    @Override
+    public Tuple2<String, Long> getResult(Tuple3<String, Long, Long> acc) {
+        return Tuple2.of(acc.f0, acc.f1 / acc.f2);
+    }
+
+    @Override
+    public Tuple3<String, Long, Long> merge(Tuple3<String, Long, Long> acc1, Tuple3<String, Long, Long> acc2) {
+        return null;
+    }
 }
 ```
 
@@ -2706,28 +3082,42 @@ process()方法接受的参数为：window的key，Iterable迭代器包含窗口
 * per-window state: 用于保存一些信息，这些信息可以被process()访问，只要process所处理的元素属于这个窗口。
 * per-key global state: 同一个key，也就是在一条KeyedStream上，不同的window可以访问per-key global state保存的值。
 
-例子：计算5s滚动窗口中的最低和最高的温度。输出的元素包含了(流的Key, 最低温度, 最高温度, 窗口结束时间)。
+例子：计算5s滚动窗口中的value的中位数。
 
 ```java
-val minMaxTempPerWindow: DataStream[MinMaxTemp] = sensorData
-  .keyBy(_.id)
-  .timeWindow(Time.seconds(5))
-  .process(new HighAndLowTempProcessFunction)
+public class MidValuePerWindow {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
 
-case class MinMaxTemp(id: String, min: Double, max: Double, endTs: Long)
+        DataStreamSource<Event> stream = env.addSource(new EventSource());
 
-class HighAndLowTempProcessFunction
-  extends ProcessWindowFunction[Event,
-    MinMaxTemp, String, TimeWindow] {
-  override def process(key: String,
-                       ctx: Context,
-                       vals: Iterable[Event],
-                       out: Collector[MinMaxTemp]): Unit = {
-    val temps = vals.map(_.temperature)
-    val windowEnd = ctx.window.getEnd
+        stream
+                .keyBy(e -> e.key)
+                .timeWindow(Time.seconds(5))
+                .process(new MidValue())
+                .print();
 
-    out.collect(MinMaxTemp(key, temps.min, temps.max, windowEnd))
-  }
+        env.execute();
+    }
+
+    public static class MidValue extends ProcessWindowFunction<Event, String, String, TimeWindow> {
+        @Override
+        public void process(String s, Context context, Iterable<Event> elements, Collector<String> out) throws Exception {
+            List<Long> list = new ArrayList<Long>();
+            for (Event e : elements) {
+                list.add(e.value);
+            }
+            list.sort(new Comparator<Long>() {
+                @Override
+                public int compare(Long v1, Long v2) {
+                    return (int)(v1 - v2);
+                }
+            });
+            out.collect("中位数是：" + list.get(list.size() / 2));
+        }
+    }
+
 }
 ```
 
@@ -2753,31 +3143,82 @@ input
 
 我们把之前的需求重新使用以上两种方法实现一下。
 
-```scala
-case class MinMaxTemp(id: String, min: Double, max: Double, endTs: Long)
+```java
+public class HighLowValuePerWindow {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
 
-val minMaxTempPerWindow2: DataStream[MinMaxTemp] = sensorData
-  .map(r => (r.id, r.temperature, r.temperature))
-  .keyBy(_._1)
-  .timeWindow(Time.seconds(5))
-  .reduce(
-    (r1: (String, Double, Double), r2: (String, Double, Double)) => {
-      (r1._1, r1._2.min(r2._2), r1._3.max(r2._3))
-    },
-    new AssignWindowEndProcessFunction
-  )
+        DataStreamSource<Event> stream = env.addSource(new EventSource());
 
-class AssignWindowEndProcessFunction
-  extends ProcessWindowFunction[(String, Double, Double),
-    MinMaxTemp, String, TimeWindow] {
-    override def process(key: String,
-                       ctx: Context,
-                       minMaxIt: Iterable[(String, Double, Double)],
-                       out: Collector[MinMaxTemp]): Unit = {
-    val minMax = minMaxIt.head
-    val windowEnd = ctx.window.getEnd
-    out.collect(MinMaxTemp(key, minMax._2, minMax._3, windowEnd))
-  }
+        stream
+                .keyBy(e -> e.key)
+                .timeWindow(Time.seconds(5))
+                .aggregate(new CountAgg(), new WindowResult())
+                .print();
+
+        env.execute();
+    }
+
+    public static class HighLowValue {
+        public String key;
+        public Long minValue;
+        public Long maxValue;
+        public Long windowStart;
+        public Long windowEnd;
+
+        public HighLowValue() {
+        }
+
+        public HighLowValue(String key, Long minValue, Long maxValue, Long windowStart, Long windowEnd) {
+            this.key = key;
+            this.maxValue = maxValue;
+            this.minValue = minValue;
+            this.windowStart = windowStart;
+            this.windowEnd = windowEnd;
+        }
+
+        @Override
+        public String toString() {
+            return "HighLowValue{" +
+                    "key='" + key + '\'' +
+                    ", maxValue=" + maxValue +
+                    ", minValue=" + minValue +
+                    ", windowStart=" + windowStart +
+                    ", windowEnd=" + windowEnd +
+                    '}';
+        }
+    }
+
+    public static class WindowResult extends ProcessWindowFunction<Tuple3<String, Long, Long>, HighLowValue, String, TimeWindow> {
+        @Override
+        public void process(String key, Context context, Iterable<Tuple3<String, Long, Long>> iterable, Collector<HighLowValue> collector) throws Exception {
+            Tuple3<String, Long, Long> iter = iterable.iterator().next();
+            collector.collect(new HighLowValue(key, iter.f1, iter.f2, context.window().getStart(), context.window().getEnd()));
+        }
+    }
+
+    public static class CountAgg implements AggregateFunction<Event, Tuple3<String, Long, Long>, Tuple3<String, Long, Long>> {
+        @Override
+        public Tuple3<String, Long, Long> createAccumulator() {
+            return Tuple3.of("", Long.MAX_VALUE, Long.MIN_VALUE);
+        }
+
+        @Override
+        public Tuple3<String, Long, Long> add(Event e, Tuple3<String, Long, Long> agg) {
+            return Tuple3.of(e.key, Math.min(e.value, agg.f1), Math.max(e.value, agg.f2));
+        }
+
+        @Override
+        public Tuple3<String, Long, Long> getResult(Tuple3<String, Long, Long> agg) {
+            return agg;
+        }
+
+        @Override
+        public Tuple3<String, Long, Long> merge(Tuple3<String, Long, Long> acc1, Tuple3<String, Long, Long> acc2) {
+            return null;
+        }
+    }
 }
 ```
 
@@ -3299,6 +3740,161 @@ public class TwoWindowJoinExample {
     }
 }
 ```
+
+### flink流与MySQL维表的join
+
+代码实例：
+
+```java
+public class StreamJoinMySQL {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+
+        env
+                .addSource(new EventSource())
+                .map(new RichMapFunction<Event, String>() {
+                    private final HashMap<String, Long> map = new HashMap<>();
+                    @Override
+                    public void open(Configuration parameters) throws Exception {
+                        super.open(parameters);
+                        Connection conn = DriverManager.getConnection(
+                                "jdbc:mysql://localhost:3306/sensor",
+                                "zuoyuan",
+                                "zuoyuan"
+                        );
+
+                        Statement stmt = conn.createStatement();
+                        String sql;
+                        sql = "SELECT key, value FROM kvtable";
+                        ResultSet rs = stmt.executeQuery(sql);
+                        while (rs.next()) {
+                            String key = rs.getString("key");
+                            long value = rs.getLong("value");
+                            map.put(key, value);
+                        }
+                        rs.close();
+                        stmt.close();
+                        conn.close();
+                    }
+
+                    @Override
+                    public String map(Event event) throws Exception {
+                        if (map.containsKey(event.key)) {
+                            return event.key;
+                        } else {
+                            return "MySQL表中不包含key：" + event.key;
+                        }
+                    }
+
+                    @Override
+                    public void close() throws Exception {
+                        super.close();
+                    }
+                })
+                .print();
+
+        env.execute();
+    }
+}
+```
+
+如果想要定时拉取MySQL维表的数据，可以在open方法中另开一个线程，定时拉取MySQL维表中的数据。
+
+### CoProcessFunction的使用
+
+代码示例
+
+```java
+public class TwoStream {
+
+    private static OutputTag<String> unmatchedLefts = new OutputTag<String>("left"){};
+    private static OutputTag<String> unmatchedRights   = new OutputTag<String>("right"){};
+
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+
+        SingleOutputStreamOperator<Tuple2<String, String>> leftStream = env
+                .socketTextStream("localhost", 9999)
+                .map(new MapFunction<String, Tuple2<String, String>>() {
+                    @Override
+                    public Tuple2<String, String> map(String value) throws Exception {
+                        String[] arr = value.split(" ");
+                        return Tuple2.of(arr[0], arr[1]);
+                    }
+                });
+
+        SingleOutputStreamOperator<Tuple2<String, String>> rightStream = env
+                .socketTextStream("localhost", 9998)
+                .map(new MapFunction<String, Tuple2<String, String>>() {
+                    @Override
+                    public Tuple2<String, String> map(String value) throws Exception {
+                        String[] arr = value.split(" ");
+                        return Tuple2.of(arr[0], arr[1]);
+                    }
+                });
+
+        SingleOutputStreamOperator<String> process = leftStream.keyBy(r -> r.f0)
+                .connect(rightStream.keyBy(r -> r.f0))
+                .process(new MatchFunction());
+
+        process.print();
+
+        process.getSideOutput(unmatchedLefts).print();
+        process.getSideOutput(unmatchedRights).print();
+
+        env.execute();
+    }
+
+    public static class MatchFunction extends CoProcessFunction<Tuple2<String, String>, Tuple2<String, String>, String> {
+        private ValueState<Tuple2<String, String>> leftState;
+        private ValueState<Tuple2<String, String>> rightState;
+        @Override
+        public void open(Configuration parameters) throws Exception {
+            super.open(parameters);
+            leftState = getRuntimeContext().getState(new ValueStateDescriptor<Tuple2<String, String>>("left", Types.TUPLE(Types.STRING, Types.STRING)));
+            rightState = getRuntimeContext().getState(new ValueStateDescriptor<Tuple2<String, String>>("right", Types.TUPLE(Types.STRING, Types.STRING)));
+        }
+
+        @Override
+        public void processElement1(Tuple2<String, String> left, Context context, Collector<String> collector) throws Exception {
+            if (rightState.value() != null) {
+                collector.collect("左边和右边匹配成功！ ");
+                rightState.clear();
+            } else {
+                leftState.update(left);
+                context.timerService().registerProcessingTimeTimer(context.timerService().currentProcessingTime() + 5000L);
+            }
+        }
+
+        @Override
+        public void processElement2(Tuple2<String, String> right, Context context, Collector<String> collector) throws Exception {
+            if (leftState.value() != null) {
+                collector.collect("右边和左边匹配成功！");
+                leftState.clear();
+            } else {
+                rightState.update(right);
+                context.timerService().registerEventTimeTimer(context.timerService().currentProcessingTime() + 5000L);
+            }
+        }
+
+        @Override
+        public void onTimer(long timestamp, OnTimerContext ctx, Collector<String> out) throws Exception {
+            super.onTimer(timestamp, ctx, out);
+            if (leftState.value() != null) {
+                ctx.output(unmatchedLefts, "只有左边没有右边！");
+                leftState.clear();
+            }
+            if (rightState.value() != null) {
+                ctx.output(unmatchedRights, "只有右边没有左边！");
+                rightState.clear();
+            }
+        }
+    }
+}
+```
+
 ## 处理迟到的元素
 
 水位线可以用来平衡计算的完整性和延迟两方面。除非我们选择一种非常保守的水位线策略(最大延时设置的非常大，以至于包含了所有的元素，但结果是非常大的延迟)，否则我们总需要处理迟到的元素。
@@ -3322,49 +3918,6 @@ process function可以通过比较迟到元素的时间戳和当前水位线的�
 迟到的元素也可以使用侧输出(side output)特性被重定向到另外的一条流中去。迟到元素所组成的侧输出流可以继续处理或者sink到持久化设施中去。
 
 例子
-
-**scala version**
-
-```scala
-val readings = env
-  .socketTextStream("localhost", 9999, '\n')
-  .map(line => {
-    val arr = line.split(" ")
-    (arr(0), arr(1).toLong * 1000)
-  })
-  .assignAscendingTimestamps(_._2)
-
-val countPer10Secs = readings
-  .keyBy(_._1)
-  .timeWindow(Time.seconds(10))
-  .sideOutputLateData(
-    new OutputTag[(String, Long)]("late-readings")
-  )
-  .process(new CountFunction())
-
-val lateStream = countPer10Secs
-  .getSideOutput(
-    new OutputTag[(String, Long)]("late-readings")
-  )
-
-lateStream.print()
-```
-
-实现`CountFunction`:
-
-```scala
-class CountFunction extends ProcessWindowFunction[(String, Long),
-  String, String, TimeWindow] {
-  override def process(key: String,
-                       context: Context,
-                       elements: Iterable[(String, Long)],
-                       out: Collector[String]): Unit = {
-    out.collect("窗口共有" + elements.size + "条数据")
-  }
-}
-```
-
-**java version**
 
 ```java
 public class RedirectLateEvent {
@@ -3467,6 +4020,7 @@ public class RedirectLateEvent {
     }
 }
 ```
+
 ### 使用迟到元素更新窗口计算结果
 
 由于存在迟到的元素，所以已经计算出的窗口结果是不准确和不完全的。我们可以使用迟到元素更新已经计算完的窗口结果。
@@ -3478,53 +4032,6 @@ window operator API提供了方法来明确声明我们要等待迟到元素。�
 当迟到元素在allowed lateness时间内到达时，这个迟到元素会被实时处理并发送到触发器(trigger)。当水位线没过了窗口结束时间+allowed lateness时间时，窗口会被删除，并且所有后来的迟到的元素都会被丢弃。
 
 Allowed lateness可以使用allowedLateness()方法来指定，如下所示：
-
-```java
-val readings: DataStream[Event] = ...
-
-val countPer10Secs: DataStream[(String, Long, Int, String)] = readings
-  .keyBy(_.id)
-  .timeWindow(Time.seconds(10))
-  // process late readings for 5 additional seconds
-  .allowedLateness(Time.seconds(5))
-  // count readings and update results if late readings arrive
-  .process(new UpdatingWindowCountFunction)
-
-  /** A counting WindowProcessFunction that distinguishes between
-  * first results and updates. */
-class UpdatingWindowCountFunction
-    extends ProcessWindowFunction[Event,
-      (String, Long, Int, String), String, TimeWindow] {
-
-  override def process(
-      id: String,
-      ctx: Context,
-      elements: Iterable[Event],
-      out: Collector[(String, Long, Int, String)]): Unit = {
-
-    // count the number of readings
-    val cnt = elements.count(_ => true)
-
-    // state to check if this is
-    // the first evaluation of the window or not
-    val isUpdate = ctx.windowState.getState(
-      new ValueStateDescriptor[Boolean](
-        "isUpdate",
-        Types.of[Boolean]))
-
-    if (!isUpdate.value()) {
-      // first evaluation, emit first result
-      out.collect((id, ctx.window.getEnd, cnt, "first"))
-      isUpdate.update(true)
-    } else {
-      // not the first evaluation, emit an update
-      out.collect((id, ctx.window.getEnd, cnt, "update"))
-    }
-  }
-}
-```
-
-**java version**
 
 ```java
 public class UpdateWindowResultWithLateEvent {
@@ -3586,6 +4093,7 @@ public class UpdateWindowResultWithLateEvent {
     }
 }
 ```
+
 # 第七章，有状态算子和应用
 
 状态操作符和用户自定义函数都是我们在写流处理程序时，常用的工具。事实上，大部分稍微复杂一点的逻辑都需要保存数据或者保存计算结果。很多Flink内置的操作符例如：source操作符，sink操作符等等都是有状态的，也就是说会缓存流数据或者计算结果。例如，窗口操作符将会为ProcessWindowFunction收集输入的数据，或者收集ReduceFunction计算的结果。而ProcessFunction也会保存定时器事件，一些sink方法为了做到exactly-once，会将事务保存下来。除了内置的操作符以及提供的source和sink操作符，Flink的DataStream API还在UDF函数中暴露了可以注册、保存和访问状态的接口。
@@ -3623,8 +4131,8 @@ State.clear()是清空操作。
 **scala version**
 
 ```scala
-val sensorData: DataStream[Event] = ...
-val keyedData: KeyedStream[Event, String] = sensorData.keyBy(_.id)
+val stream: DataStream[Event] = ...
+val keyedData: KeyedStream[Event, String] = stream.keyBy(_.id)
 
 val alerts: DataStream[(String, Double, Double)] = keyedData
   .flatMap(new TemperatureAlertFunction(1.7))
@@ -3779,9 +4287,9 @@ override def snapshotState(
 下面的例子实现了一个温度报警应用，应用有可以动态设定的阈值，动态设定通过广播流来实现。
 
 ```scala
-val sensorData: DataStream[Event] = ...
+val stream: DataStream[Event] = ...
 val thresholds: DataStream[ThresholdUpdate] = ...
-val keyedSensorData: KeyedStream[Event, String] = sensorData
+val keyedSensorData: KeyedStream[Event, String] = stream
   .keyBy(_.id)
 
 // the descriptor of the broadcast state
@@ -3806,7 +4314,7 @@ val alerts: DataStream[(String, Double, Double)] = keyedSensorData
 
 下面的例子实现了动态设定温度阈值的功能。
 
-```java
+```scala
 class UpdatableTemperatureAlertFunction()
     extends KeyedBroadcastProcessFunction[String,
       Event, ThresholdUpdate, (String, Double, Double)] {
@@ -3882,7 +4390,7 @@ class UpdatableTemperatureAlertFunction()
 10秒钟保存一次检查点。
 
 ```java
-StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment;
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
 // set checkpointing interval to 10 seconds (10000 milliseconds)
 env.enableCheckpointing(10000L);
@@ -3922,8 +4430,8 @@ hdfs dfs -put /home/parallels/flink/checkpoint hdfs://localhost:9000/flink
 然后在代码中添加：
 
 ```java
-env.enableCheckpointing(5000)
-env.setStateBackend(new FsStateBackend("hdfs://localhost:9000/flink"))
+env.enableCheckpointing(5000);
+env.setStateBackend(new FsStateBackend("hdfs://localhost:9000/flink"));
 ```
 
 检查一下检查点正确保存了没有：
@@ -3942,7 +4450,7 @@ hdfs dfs -ls hdfs://localhost:9000/flink
 
 ```java
 DataStream<Tuple3<String, Double, Double>> alerts = keyedSensorData
-  .flatMap(new TemperatureAlertFunction(1.1))  
+  .flatMap(new TemperatureAlertFunction(1.1))
   .uid("TempAlert");
 ```
 
@@ -3951,7 +4459,7 @@ DataStream<Tuple3<String, Double, Double>> alerts = keyedSensorData
 操作符的最大并行度定义了操作符的keyed state可以被分到多少个key groups中。
 
 ```java
-StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment;
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
 // set the maximum parallelism for this application
 env.setMaxParallelism(512);
@@ -3964,6 +4472,7 @@ DataStream<Tuple3<String, Double, Double>> alerts = keyedSensorData
 ```
 
 # 保证有状态应用的可维护性
+
 ## 有状态应用的性能和健壮性
 
 ### 选择一个状态后端
@@ -4166,8 +4675,8 @@ FlinkKafkaConsumer.assignTimestampsAndWatermark()
 ```xml
 <dependency>
    <groupId>org.apache.flink</groupId>
-   <artifactId>flink-connector-kafka_2.12</artifactId>
-   <version>1.7.1</version>
+   <artifactId>flink-connector-kafka_2.11</artifactId>
+   <version>1.11.0</version>
 </dependency>
 ```
 
@@ -4845,7 +5354,7 @@ Modify job bc0b2ad61ecd4a615d92ce25390f61ad.
 ​Rescaled job bc0b2ad61ecd4a615d92ce25390f61ad. Its new parallelism is 16.
 ```
 
-# 第十章，Flink和流式应用运维
+# 第十章，Flink DataSet API讲解
 
 # 第十一章，Flink CEP简介
 
@@ -4890,18 +5399,6 @@ Flink为CEP提供了专门的Flink CEP library，它包含如下组件：
 首先，开发人员要在DataStream流上定义出模式条件，之后Flink CEP引擎进行模式检测，必要时生成告警。
 
 为了使用Flink CEP，我们需要导入依赖：
-
-**scala version**
-
-```xml
-<dependency>
-  <groupId>org.apache.flink</groupId>
-  <artifactId>flink-cep-scala_${scala.binary.version}</artifactId>
-  <version>${flink.version}</version>
-</dependency>
-```
-
-**java version**
 
 ```xml
 <dependency>
@@ -5046,56 +5543,6 @@ timeoutResult.print()
 ```
 
 完整例子:
-
-**scala version**
-
-```scala
-object CepExample {
-
-  case class LoginEvent(userId: String, ip: String, eventType: String, eventTime: Long)
-
-  def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setParallelism(1)
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-
-    val stream = env
-      .fromElements(
-        LoginEvent("user_1", "192.168.0.1", "fail", 2000L),
-        LoginEvent("user_1", "192.168.0.2", "fail", 3000L),
-        LoginEvent("user_1", "192.168.0.3", "fail", 4000L),
-        LoginEvent("user_2", "192.168.10.10", "success", 5000L)
-      )
-      .assignAscendingTimestamps(_.eventTime)
-      .keyBy(r => r.userId)
-
-    val pattern = Pattern
-      .begin[LoginEvent]("first")
-      .where(r => r.eventType.equals("fail"))
-      .next("second")
-      .where(r => r.eventType.equals("fail"))
-      .next("third")
-      .where(r => r.eventType.equals("fail"))
-      .within(Time.seconds(5))
-
-    val patternedStream = CEP.pattern(stream, pattern)
-
-    patternedStream
-      .select((pattern: scala.collection.Map[String, Iterable[LoginEvent]]) => {
-        val first = pattern("first").iterator.next()
-        val second = pattern("second").iterator.next()
-        val third = pattern("third").iterator.next()
-
-        (first.userId, first.ip, second.ip, third.ip)
-      })
-      .print()
-
-    env.execute()
-  }
-}
-```
-
-**java version**
 
 POJO类定义
 
@@ -5326,6 +5773,7 @@ val bsTableEnv = StreamTableEnvironment.create(bsEnv, bsSettings)
 ```
 
 >这里只提供了 blink planner 的流处理设置。有关 old planner 的批处理和流处理的设置，以及 blink planner 的批处理的设置，请查阅官方文档。
+
 ### 在Catalog中注册表
 
 TableEnvironment 维护着一个由标识符（identifier）创建的表 catalog 的映射。标识符由三个部分组成：catalog 名称、数据库名称以及对象名称。如果 catalog 或者数据库没有指明，就会使用当前默认值。
@@ -5576,6 +6024,7 @@ Flink Table API中的更新模式有以下三种：
 * 删除（Delete）编码为Delete信息。
 
 这种模式和Retract模式的主要区别在于，Update操作是用单个消息编码的，所以效率会更高。
+
 ### 将表转换成DataStream
 
 表可以转换为DataStream或DataSet。这样，自定义流处理或批处理程序就可以继续在 Table API或SQL查询的结果上运行了。
@@ -5758,10 +6207,9 @@ Upsert流包含两种类型的消息：Upsert消息和delete消息。转换为up
 
 代码如下：
 
-```scala
-val stream = env.addSource(new EventSource)
-val sensorTable = tableEnv
-  .fromDataStream(stream, $"id", $"timestamp", $"temperature", $"pt".proctime())
+```java
+DataStream<Event> stream = env.addSource(new EventSource());
+Table table = tableEnv.fromDataStream(stream, $("key"), $("value"), $("timestamp"), $"pt".proctime());
 ```
 
 2. 创建表的DDL中指定
@@ -5809,13 +6257,20 @@ tableEnv.sqlUpdate(sinkDDL) // 执行 DDL
 
 代码如下：
 
-```scala
-val stream = env
-  .addSource(new EventSource)
-  .assignAscendingTimestamps(r => r.timestamp)
+```java
+DataStream<Event> stream = env
+  .addSource(new EventSource())
+  .assignTimestampsAndWatermarks(
+          WatermarkStrategy.<Event>forMonotonousTimestamps()
+                  .withTimestampAssigner(new SerializableTimestampAssigner<Event>() {
+                      @Override
+                      public long extractTimestamp(Event event, long l) {
+                          return event.timestamp;
+                      }
+                  })
+  );
 // 将 DataStream转换为 Table，并指定时间字段
-val sensorTable = tableEnv
-  .fromDataStream(stream, $"id", $"timestamp".rowtime(), 'temperature)
+Table table = tableEnv.fromDataStream(stream, $("key"), $("value"), $("timestamp").rowtime());
 ```
 
 2. 创建表的DDL中指定
@@ -5857,20 +6312,20 @@ tableEnv.sqlUpdate(sinkDDL) // 执行 DDL
 
 Table API中的Group Windows都是使用.window（w:GroupWindow）子句定义的，并且必须由as子句指定一个别名。为了按窗口对表进行分组，窗口的别名必须在group by子句中，像常规的分组字段一样引用。
 
-```scala
-val table = input
-  .window([w: GroupWindow] as $"w") // 定义窗口，别名 w
-  .groupBy($"w", $"a")  // 以属性a和窗口w作为分组的key
-  .select($"a", $"b".sum)  // 聚合字段b的值，求和
+```java
+Table table = input
+  .window([w: GroupWindow] as $("w")) // 定义窗口，别名 w
+  .groupBy($("w"), $("a"))  // 以属性a和窗口w作为分组的key
+  .select($("a"), $("b").sum());  // 聚合字段b的值，求和
 ```
 
 或者，还可以把窗口的相关信息，作为字段添加到结果表中：
 
-```scala
-val table = input
-  .window([w: GroupWindow] as $"w")
-  .groupBy($"w", $"a")
-  .select($"a", $"w".start, $"w".end, $"w".rowtime, $"b".count)
+```java
+Table table = input
+  .window([w: GroupWindow] as $("w"))
+  .groupBy($("w"), $("a"))
+  .select($("a"), $("w").start(), $("w").end(), $("w").rowtime(), $("b").count());
 ```
 
 Table API提供了一组具有特定语义的预定义Window类，这些类会被转换为底层DataStream或DataSet的窗口操作。
@@ -5887,7 +6342,7 @@ Table API支持的窗口定义，和我们熟悉的一样，主要也是三种�
 
 代码如下：
 
-```scala
+```java
 // Tumbling Event-time Window（事件时间字段rowtime
 .window(Tumble over 10.minutes on $"rowtime" as $"w")
 // Tumbling Processing-time Window（处理时间字段proctime）
@@ -5907,7 +6362,7 @@ Table API支持的窗口定义，和我们熟悉的一样，主要也是三种�
 
 代码如下：
 
-```scala
+```java
 // Sliding Event-time Window
 .window(Slide over 10.minutes every 5.minutes on $"rowtime" as $"w")
 // Sliding Processing-time window
@@ -5926,7 +6381,7 @@ Table API支持的窗口定义，和我们熟悉的一样，主要也是三种�
 
 代码如下：
 
-```scala
+```java
 // Session Event-time Window
 .window(Session withGap 10.minutes on $"rowtime" as $"w")
 // Session Processing-time Window
@@ -5939,7 +6394,7 @@ Over window聚合是标准SQL中已有的（Over子句），可以在查询的SE
 
 比如这样：
 
-```scala
+```java
 val table = input
   .window([w: OverWindow] as $"w")
   .select($"a"", $"b".sum over $"w", $"c".min over $"w")
@@ -5953,7 +6408,7 @@ Table API提供了Over类，来配置Over窗口的属性。可以在事件时间
 
 1. 无界的 over window
 
-```scala
+```java
 // 无界的事件时间over window (时间字段 "rowtime")
 .window(Over partitionBy $"a" orderBy $"rowtime" preceding UNBOUNDED_RANGE as $"w")
 //无界的处理时间over window (时间字段"proctime")
@@ -6079,6 +6534,7 @@ object TumblingWindowTempCount {
 ```
 
 **java version**
+
 ## 函数
 
 Flink Table 和 SQL内置了很多SQL中支持的函数；如果有无法满足的需要，则可以实现用户自定义的函数（UDF）来解决。
@@ -6213,88 +6669,7 @@ FIELD.sum0
 
 在下面的代码中，我们定义自己的HashCode函数，在TableEnvironment中注册它，并在查询中调用它。
 
-```scala
-// 自定义一个标量函数
-  class HashCodeFunction extends ScalarFunction {
-
-    private var factor: Int = 0
-
-    override def open(context: FunctionContext): Unit = {
-      // 获取参数 "hashcode_factor"
-      // 如果不存在，则使用默认值 "12"
-      factor = context.getJobParameter("hashcode_factor", "12").toInt
-    }
-
-    def eval(s: String): Int = {
-      s.hashCode * factor
-    }
-  }
-```
-
 主函数中调用，计算sensor id的哈希值（前面部分照抄，流环境、表环境、读取source、建表）：
-
-```scala
-import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
-import org.apache.flink.api.scala._
-import org.apache.flink.table.api._
-import org.apache.flink.table.api.bridge.scala._
-import org.apache.flink.table.functions.{FunctionContext, ScalarFunction}
-import org.apache.flink.types.Row
-
-object ScalarFunctionExample {
-  def main(args: Array[String]): Unit = {
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setParallelism(1)
-
-    val stream = env.addSource(new EventSource)
-
-    val settings = EnvironmentSettings
-        .newInstance()
-        .inStreamingMode()
-        .build()
-
-    val tEnv = StreamTableEnvironment.create(env, settings)
-
-    tEnv.getConfig.addJobParameter("hashcode_factor", "31")
-
-    tEnv.createTemporaryView("sensor", stream)
-
-    // 在 Table API 里不经注册直接“内联”调用函数
-    tEnv.from("sensor").select(call(classOf[HashCodeFunction], $"id"))
-
-    // sql 写法
-    // 注册函数
-    tEnv.createTemporarySystemFunction("hashCode", classOf[HashCodeFunction])
-
-    // 在 Table API 里调用注册好的函数
-    tEnv.from("sensor").select(call("hashCode", $"id"))
-
-    tEnv
-        .sqlQuery("SELECT id, hashCode(id) FROM sensor")
-        .toAppendStream[Row]
-        .print()
-
-    env.execute()
-  }
-
-  class HashCodeFunction extends ScalarFunction {
-
-    private var factor: Int = 0
-
-    override def open(context: FunctionContext): Unit = {
-      // 获取参数 "hashcode_factor"
-      // 如果不存在，则使用默认值 "12"
-      factor = context.getJobParameter("hashcode_factor", "12").toInt
-    }
-
-    def eval(s: String): Int = {
-      s.hashCode * factor
-    }
-  }
-}
-```
-
-**java version**
 
 ```java
 public class ScalarFunctionExample {
@@ -6379,91 +6754,6 @@ joinLateral算子，会将外部表中的每一行，与表函数（TableFunctio
 下面的代码中，我们将定义一个表函数，在表环境中注册它，并在查询中调用它。
 
 自定义TableFunction：
-
-```scala
-// 自定义TableFunction
-  @FunctionHint(output = new DataTypeHint("ROW<word STRING, length INT>"))
-  class SplitFunction extends TableFunction[Row] {
-
-    def eval(str: String): Unit = {
-      // use collect(...) to emit a row
-      str.split("#").foreach(s => collect(Row.of(s, Int.box(s.length))))
-    }
-  }
-```
-
-完整代码：
-
-```scala
-import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
-import org.apache.flink.api.scala._
-import org.apache.flink.table.annotation.{DataTypeHint, FunctionHint}
-import org.apache.flink.table.api._
-import org.apache.flink.table.api.bridge.scala._
-import org.apache.flink.table.functions.TableFunction
-import org.apache.flink.types.Row
-
-object TableFunctionExample {
-  def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setParallelism(1)
-
-    val stream = env
-      .fromElements(
-        "hello#world",
-        "atguigu#bigdata"
-      )
-
-    val settings = EnvironmentSettings
-      .newInstance()
-      .inStreamingMode()
-      .build()
-
-    val tEnv = StreamTableEnvironment.create(env, settings)
-
-    tEnv.createTemporaryView("MyTable", stream, $"s")
-
-    // 注册函数
-    tEnv.createTemporarySystemFunction("SplitFunction", classOf[SplitFunction])
-
-    // 在 Table API 里调用注册好的函数
-    tEnv
-      .from("MyTable")
-      .joinLateral(call("SplitFunction", $"s"))
-      .select($"s", $"word", $"length")
-      .toAppendStream[Row]
-      .print()
-
-    tEnv
-      .from("MyTable")
-      .leftOuterJoinLateral(call("SplitFunction", $"s"))
-      .select($"s", $"word", $"length")
-
-    // 在 SQL 里调用注册好的函数
-    tEnv.sqlQuery(
-      "SELECT s, word, length " +
-        "FROM MyTable, LATERAL TABLE(SplitFunction(s))")
-
-    tEnv.sqlQuery(
-      "SELECT s, word, length " +
-        "FROM MyTable " +
-        "LEFT JOIN LATERAL TABLE(SplitFunction(s)) ON TRUE")
-
-    env.execute()
-  }
-
-  @FunctionHint(output = new DataTypeHint("ROW<word STRING, length INT>"))
-  class SplitFunction extends TableFunction[Row] {
-
-    def eval(str: String): Unit = {
-      // use collect(...) to emit a row
-      str.split("#").foreach(s => collect(Row.of(s, Int.box(s.length))))
-    }
-  }
-}
-```
-
-**java version**
 
 ```java
 public class TableFunctionExample {
@@ -6559,55 +6849,6 @@ AggregationFunction要求必须实现的方法：
 * resetAccumulator()
 
 接下来我们写一个自定义AggregateFunction，计算一下每个sensor的平均温度值。
-
-```scala
-// 定义AggregateFunction的Accumulator
-class AvgTempAcc {
-  var sum: Double = 0.0
-  var count: Int = 0
-}
-
-class AvgTemp extends AggregateFunction[Double, AvgTempAcc] {
-  override def getValue(accumulator: AvgTempAcc): Double = accumulator.sum / accumulator.count
-
-  override def createAccumulator(): AvgTempAcc = new AvgTempAcc
-
-  def accumulate(accumulator: AvgTempAcc, temp: Double): Unit ={
-    accumulator.sum += temp
-    accumulator.count += 1
-  }
-}
-```
-
-接下来就可以在代码中调用了。
-
-```scala
-// 创建一个聚合函数实例
-val avgTemp = new AvgTemp()
-// Table API的调用
-val resultTable = sensorTable
-  .groupBy($"id")
-  .aggregate(avgTemp($"temperature") as $"avgTemp")
-  .select($"id", $"avgTemp")
-
-// SQL的实现
-tableEnv.createTemporaryView("sensor", sensorTable)
-tableEnv.registerFunction("avgTemp", avgTemp)
-val resultSqlTable = tableEnv.sqlQuery(
-  """
-    |SELECT
-    |id, avgTemp(temperature)
-    |FROM
-    |sensor
-    |GROUP BY id
-  """.stripMargin)
-
-// 转换成流打印输出
-resultTable.toRetractStream[(String, Double)].print("agg temp")
-resultSqlTable.toRetractStream[Row].print("agg temp sql")
-```
-
-**java version**
 
 ```java
 public class AggregateFunctionExample {
@@ -6707,52 +6948,6 @@ AggregationFunction要求必须实现的方法：
 
 接下来我们写一个自定义TableAggregateFunction，用来提取每个sensor最高的两个温度值。
 
-```scala
-// 先定义一个 Accumulator
-class Top2TempAcc{
-  var highestTemp: Double = Int.MinValue
-  var secondHighestTemp: Double = Int.MinValue
-}
-
-// 自定义 TableAggregateFunction
-class Top2Temp extends TableAggregateFunction[(Double, Int), Top2TempAcc]{
-
-  override def createAccumulator(): Top2TempAcc = new Top2TempAcc
-
-  def accumulate(acc: Top2TempAcc, temp: Double): Unit ={
-    if( temp > acc.highestTemp ){
-      acc.secondHighestTemp = acc.highestTemp
-      acc.highestTemp = temp
-    } else if( temp > acc.secondHighestTemp ){
-      acc.secondHighestTemp = temp
-    }
-  }
-
-  def emitValue(acc: Top2TempAcc, out: Collector[(Double, Int)]): Unit ={
-    out.collect(acc.highestTemp, 1)
-    out.collect(acc.secondHighestTemp, 2)
-  }
-}
-```
-
-接下来就可以在代码中调用了。
-
-```scala
-// 创建一个表聚合函数实例
-val top2Temp = new Top2Temp()
-// Table API的调用
-val resultTable = sensorTable
-  .groupBy($"id")
-  .flatAggregate(top2Temp($"temperature") as ($"temp", $"rank"))
-  .select($"id", $"temp", $"rank")
-
-// 转换成流打印输出
-resultTable.toRetractStream[(String, Double, Int)].print("agg temp")
-resultSqlTable.toRetractStream[Row].print("agg temp sql")
-```
-
-**java version**
-
 ```java
 public class TableAggregateFunctionExample {
     public static void main(String[] args) throws Exception {
@@ -6825,6 +7020,7 @@ public class TableAggregateFunctionExample {
     }
 }
 ```
+
 ## Flink和Hive集成
 
 Apache Hive 已经成为了数据仓库生态系统中的核心。 它不仅仅是一个用于大数据分析和ETL场景的SQL引擎，同样它也是一个数据管理平台，可用于发现，定义，和演化数据。
@@ -6844,14 +7040,14 @@ HiveCatalog的设计提供了与 Hive 良好的兼容性，用户可以”开箱
 <dependency>
   <groupId>org.apache.flink</groupId>
   <artifactId>flink-connector-hive_2.11</artifactId>
-  <version>1.11.0</version>
+  <version>${flink.version}</version>
   <scope>provided</scope>
 </dependency>
 
 <dependency>
   <groupId>org.apache.flink</groupId>
   <artifactId>flink-table-api-java-bridge_2.11</artifactId>
-  <version>1.11.0</version>
+  <version>${flink.version}</version>
   <scope>provided</scope>
 </dependency>
 
@@ -6867,13 +7063,13 @@ HiveCatalog的设计提供了与 Hive 良好的兼容性，用户可以”开箱
 	<groupId>org.apache.hadoop</groupId>
 	<artifactId>hadoop-common</artifactId>
 	<version>${hadoop.version}</version>
-	<!--            <scope>provided</scope>-->
+	<scope>provided</scope>
 </dependency>
 <dependency>
 	<groupId>org.apache.hadoop</groupId>
 	<artifactId>hadoop-hdfs</artifactId>
 	<version>${hadoop.version}</version>
-	<!--<scope>provided</scope>-->
+	<scope>provided</scope>
 </dependency>
 
 <dependency>
@@ -6881,7 +7077,9 @@ HiveCatalog的设计提供了与 Hive 良好的兼容性，用户可以”开箱
 	<artifactId>hadoop-mapreduce-client-core</artifactId>
 	<version>${hadoop.version}</version>
 </dependency>
-```### 示例程序
+```
+
+### 示例程序
 
 先在hive中新建数据库和表
 
@@ -6987,6 +7185,7 @@ object TestHiveStreaming {
   }
 }
 ```
+
 ### 彻底重置hadoop和hive的方法
 
 ```sh
@@ -7001,7 +7200,9 @@ hadoop fs -chmod g+w /user/hive/warehouse
 schematool -dbType mysql -initSchema
 hive --service metastore
 hive
-```### 将代码部署到flink运行时环境
+```
+
+### 将代码部署到flink运行时环境
 
 1. 将项目中`pom.xml`的所有依赖全部标注为`provided`
 2. 下载以下`jar`包，并存放到`flink-1.11.2/lib`中
@@ -7021,6 +7222,7 @@ flink-connector-hive_2.11-1.11.0.jar
 ```sh
 $ ./bin/flink run jar包
 ```
+
 # 第十三章，尚硅谷大数据技术之电商用户行为分析
 
 ## 数据集解析
@@ -7523,6 +7725,7 @@ public class UserBehaviorProduceToKafka {
 	<version>2.2.0</version>
 </dependency>
 ```
+
 ## 实时流量统计
 
 * 基本需求
@@ -7966,6 +8169,7 @@ public class UvStatisticsWithBloomFilter {
     }
 }
 ```
+
 ## APP分渠道数据统计
 
 完整代码如下：
@@ -8031,6 +8235,7 @@ object AppMarketingByChannel {
 
 ```java
 ```
+
 ## APP不分渠道数据统计
 
 完整代码如下：
@@ -8193,59 +8398,6 @@ val orderPayPattern = Pattern.begin[OrderEvent]("begin")
 
 完整代码如下：
 
-**scala version**
-
-```scala
-object OrderTimeoutDetect {
-   case class OrderEvent(orderId: String, eventType: String, eventTime: Long)
-
-  def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-    env.setParallelism(1)
-
-    val timeoutputTag = new OutputTag[String]("timeout-tag")
-
-    val orderStream = env
-      .fromElements(
-        OrderEvent("order_1", "create", 2000L),
-        OrderEvent("order_2", "create", 3000L),
-        OrderEvent("order_1", "pay", 4000L)
-      )
-      .assignAscendingTimestamps(_.eventTime)
-      .keyBy(r => r.orderId)
-
-    val pattern = Pattern
-      .begin[OrderEvent]("create")
-      .where(_.eventType.equals("create"))
-      .next("pay")
-      .where(_.eventType.equals("pay"))
-      .within(Time.seconds(5))
-
-    val patternedStream = CEP.pattern(orderStream, pattern)
-
-    val selectFunc = (map: scala.collection.Map[String, Iterable[OrderEvent]], out: Collector[String]) => {
-      val create = map("create").iterator.next()
-      out.collect("order id " + create.orderId + " is payed!")
-    }
-
-    val timeoutFunc = (map: scala.collection.Map[String, Iterable[OrderEvent]], ts: Long, out: Collector[String]) => {
-      val create = map("create").iterator.next()
-      out.collect("order id " + create.orderId + " is not payed! and timeout ts is " + ts)
-    }
-
-    val selectStream = patternedStream.flatSelect(timeoutputTag)(timeoutFunc)(selectFunc)
-
-    selectStream.print()
-    selectStream.getSideOutput(timeoutputTag).print()
-
-    env.execute()
-  }
-}
-```
-
-**java version**
-
 POJO类实现
 
 ```java
@@ -8342,73 +8494,8 @@ public class OrderTimeoutDetect {
     }
 }
 ```
+
 ### 使用Process Function实现订单超时需求
-
-**scala version**
-
-```scala
-object OrderTimeoutWithoutCep {
-
-  case class OrderEvent(orderId: String,
-                        eventType: String,
-                        eventTime: String)
-
-  def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-    env.setParallelism(1)
-
-    val stream = env
-      .fromElements(
-        OrderEvent("1", "create", "2"),
-        OrderEvent("2", "create", "3"),
-        OrderEvent("2", "pay", "4")
-      )
-      .assignAscendingTimestamps(_.eventTime.toLong * 1000L)
-      .keyBy(_.orderId)
-      .process(new OrderMatchFunc)
-
-    stream.print()
-    env.execute()
-  }
-
-  class OrderMatchFunc extends KeyedProcessFunction[String, OrderEvent, String] {
-    lazy val orderState = getRuntimeContext.getState(
-      new ValueStateDescriptor[OrderEvent]("saved order", Types.of[OrderEvent])
-    )
-
-    override def processElement(value: OrderEvent,
-                                ctx: KeyedProcessFunction[String, OrderEvent, String]#Context,
-                                out: Collector[String]): Unit = {
-      if (value.eventType.equals("create")) {
-        if (orderState.value() == null) { // 为什么要判空？因为可能出现`pay`先到的情况
-          // 如果orderState为空，保存`create`事件
-          orderState.update(value)
-        }
-      } else {
-        // 保存`pay`事件
-        orderState.update(value)
-      }
-
-      ctx.timerService().registerEventTimeTimer(value.eventTime.toLong * 1000 + 5000L)
-    }
-
-    override def onTimer(timestamp: Long,
-                         ctx: KeyedProcessFunction[String, OrderEvent, String]#OnTimerContext,
-                         out: Collector[String]): Unit = {
-      val savedOrder = orderState.value()
-
-      if (savedOrder != null && savedOrder.eventType.equals("create")) {
-        out.collect("超时订单的ID为：" + savedOrder.orderId)
-      }
-
-      orderState.clear()
-    }
-  }
-}
-```
-
-**java version**
 
 OrderEvent的POJO类实现
 
@@ -8504,105 +8591,10 @@ public class OrderTimeoutDetectWithoutCEP {
     }
 }
 ```
+
 ## 实时对帐：实现两条流的Join
 
 完整代码如下：
-
-**scala version**
-
-```scala
-object TwoStreamJoin {
-
-  case class OrderEvent(orderId: String, eventType: String, eventTime: Long)
-
-  case class PayEvent(orderId: String, eventType: String, eventTime: Long)
-
-  val unmatchedOrders = new OutputTag[String]("unmatched-orders")
-  val unmatchedPays   = new OutputTag[String]("unmatched-pays")
-
-  def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-    env.setParallelism(1)
-
-    val orderStream = env
-      .fromElements(
-        OrderEvent("order_1", "pay", 1000L),
-        OrderEvent("order_2", "pay", 2000L)
-      )
-      .assignAscendingTimestamps(r => r.eventTime)
-      .keyBy(r => r.orderId)
-
-    val payStream = env
-      .fromElements(
-        PayEvent("order_1", "weixin", 3000L),
-        PayEvent("order_3", "weixin", 4000L)
-      )
-      .assignAscendingTimestamps(r => r.eventTime)
-      .keyBy(r => r.orderId)
-
-    val result = orderStream
-      .connect(payStream)
-      .process(new MatchFunction)
-
-    result.print()
-
-    result.getSideOutput(unmatchedOrders).print()
-
-    result.getSideOutput(unmatchedPays).print()
-
-    env.execute()
-  }
-
-  class MatchFunction extends CoProcessFunction[OrderEvent, PayEvent, String] {
-
-    lazy val orderState = getRuntimeContext.getState(
-      new ValueStateDescriptor[OrderEvent]("order", Types.of[OrderEvent])
-    )
-
-    lazy val payState = getRuntimeContext.getState(
-      new ValueStateDescriptor[PayEvent]("pay", Types.of[PayEvent])
-    )
-
-    override def processElement1(order: OrderEvent, context: CoProcessFunction[OrderEvent, PayEvent, String]#Context, collector: Collector[String]): Unit = {
-      val pay = payState.value()
-
-      if (pay != null) {
-        payState.clear()
-        collector.collect("order id: " + order.orderId + " matched success!")
-      } else {
-        orderState.update(order)
-        context.timerService().registerEventTimeTimer(order.eventTime + 5000L)
-      }
-    }
-
-    override def processElement2(pay: PayEvent, context: CoProcessFunction[OrderEvent, PayEvent, String]#Context, collector: Collector[String]): Unit = {
-      val order = orderState.value()
-
-      if (order != null) {
-        orderState.clear()
-        collector.collect("order id: " + pay.orderId + " match success!")
-      } else {
-        payState.update(pay)
-        context.timerService().registerEventTimeTimer(pay.eventTime + 5000L)
-      }
-    }
-
-    override def onTimer(timestamp: Long, ctx: CoProcessFunction[OrderEvent, PayEvent, String]#OnTimerContext, out: Collector[String]): Unit = {
-      if (orderState.value() != null) {
-        ctx.output(unmatchedOrders, "order id: " + orderState.value().orderId + " fail match")
-        orderState.clear()
-      }
-      if (payState.value() != null) {
-        ctx.output(unmatchedPays, "order id: " + payState.value().orderId + " fail match")
-        payState.clear()
-      }
-    }
-  }
-}
-```
-
-**java version**
 
 ```java
 public class TwoStreamsJoin {
@@ -8711,65 +8703,10 @@ public class TwoStreamsJoin {
     }
 }
 ```
+
 ## 只使用Flink SQL实现TopN需求
 
 代码
-
-**scala version**
-
-```scala
-import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
-import org.apache.flink.api.scala._
-import org.apache.flink.table.api._
-import org.apache.flink.table.api.bridge.scala.StreamTableEnvironment
-import org.apache.flink.types.Row
-
-object HotItemsSQL {
-
-  case class UserBehavior(userId: String, itemId: String, categoryId: String, behavior: String, timestamp: Long)
-
-  def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setParallelism(1)
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-
-    val settings = EnvironmentSettings
-      .newInstance()
-      .inStreamingMode()
-      .build()
-
-    val tableEnv = StreamTableEnvironment.create(env, settings)
-
-    val stream = env
-      .readTextFile("UserBehavior.csv")
-      .map(line => {
-        val arr = line.split(",")
-        UserBehavior(arr(0), arr(1), arr(2), arr(3), arr(4).toLong * 1000L)
-      })
-      .filter(r => r.behavior.equals("pv"))
-      .assignAscendingTimestamps(_.timestamp)
-
-    // stream => dynamic table
-    tableEnv.createTemporaryView("t", stream, $"itemId", $"timestamp".rowtime() as "ts")
-    val result = tableEnv
-      .sqlQuery(
-        """
-          |SELECT *
-          |FROM (
-          |    SELECT *, ROW_NUMBER() OVER (PARTITION BY windowEnd ORDER BY itemCount DESC) as row_num
-          |    FROM (SELECT itemId, COUNT(itemId) as itemCount, HOP_END(ts, INTERVAL '5' MINUTE, INTERVAL '1' HOUR) as windowEnd
-          |          FROM t GROUP BY HOP(ts, INTERVAL '5' MINUTE, INTERVAL '1' HOUR), itemId)
-          |)
-          |WHERE row_num <= 3
-          |""".stripMargin)
-    tableEnv.toRetractStream[Row](result).print()
-
-    env.execute()
-  }
-}
-```
-
-**java version**
 
 ```java
 public class HotItemsSQL {
@@ -9125,8 +9062,6 @@ Kibana 还提供了非常丰富的图形和可视化选项，感兴趣的用户�
 
 在本文中，我们展示了如何使用 Flink SQL 集成 Kafka, MySQL, Elasticsearch 以及 Kibana 来快速搭建一个实时分析应用。整个过程无需一行 Java/Scala 代码，使用 SQL 纯文本即可完成。期望通过本文，可以让读者了解到 Flink SQL 的易用和强大，包括轻松连接各种外部系统、对事件时间和乱序数据处理的原生支持、维表关联、丰富的内置函数等等。希望你能喜欢我们的实战演练，并从中获得乐趣和知识！
 
-
-
 # 第十四章，常见面试题解答
 
 ## 面试题一
@@ -9342,236 +9277,3 @@ https://cloud.tencent.com/developer/article/1189624
 ## 面试题二十
 
 你们flink输出的目标数据库是什么，答看需求到es或者mysql需要自定义mysqlsink，他问自定义mysql sink里面实际上是jdbc做的？你们有没有发现用jdbc并发的写mysql他的性能很差，怎么处理的？答：一般不直接写入mysql，一般先写入消息队列（redis，kafka，rabbitmq，...），用消息队列来保护mysql。
-# Summary
-
-* [第一章，有状态的流式处理简介](chapter01-00-00-第一章，有状态的流式处理简介.md)
-  * [传统数据处理架构](chapter01-01-00-传统数据处理架构.md)
-    * [事务处理](chapter01-01-01-事务处理.md)
-    * [分析处理](chapter01-01-02-分析处理.md)
-  * [有状态的流式处理](chapter01-02-00-有状态的流式处理.md)
-    * [事件驱动应用程序](chapter01-02-01-事件驱动应用程序.md)
-    * [数据管道](chapter01-02-02-数据管道.md)
-    * [流分析](chapter01-02-03-流分析.md)
-  * [开源流处理的演进](chapter01-03-00-开源流处理的演进.md)
-    * [流处理的历史](chapter01-03-01-流处理的历史.md)
-  * [Flink简介](chapter01-04-00-Flink简介.md)
-* [第二章，流处理基础](chapter02-00-00-第二章，流处理基础.md)
-  * [数据流编程简介](chapter02-01-00-数据流编程简介.md)
-    * [数据流图](chapter02-01-01-数据流图.md)
-    * [数据并行和任务并行](chapter02-01-02-数据并行和任务并行.md)
-    * [数据交换策略](chapter02-01-03-数据交换策略.md)
-  * [并行处理流数据](chapter02-02-00-并行处理流数据.md)
-    * [延迟和吞吐量](chapter02-02-01-延迟和吞吐量.md)
-    * [延迟](chapter02-02-02-延迟.md)
-    * [吞吐量](chapter02-02-03-吞吐量.md)
-    * [延迟与吞吐量的对比](chapter02-02-04-延迟与吞吐量的对比.md)
-  * [数据流上的操作](chapter02-03-00-数据流上的操作.md)
-    * [数据摄入和数据吞吐量](chapter02-03-01-数据摄入和数据吞吐量.md)
-    * [转换算子](chapter02-03-02-转换算子.md)
-    * [滚动聚合](chapter02-03-03-滚动聚合.md)
-    * [窗口操作符](chapter02-03-04-窗口操作符.md)
-  * [时间语义](chapter02-04-00-时间语义.md)
-    * [在流处理中一分钟代表什么？](chapter02-04-01-在流处理中一分钟代表什么？.md)
-    * [处理时间](chapter02-04-02-处理时间.md)
-    * [事件时间](chapter02-04-03-事件时间.md)
-    * [水位线](chapter02-04-04-水位线.md)
-    * [处理时间和事件时间](chapter02-04-05-处理时间和事件时间.md)
-  * [状态和持久化模型](chapter02-05-00-状态和持久化模型.md)
-    * [任务失败](chapter02-05-01-任务失败.md)
-* [第三章，Flink运行架构](chapter03-00-00-第三章，Flink运行架构.md)
-  * [系统架构](chapter03-01-00-系统架构.md)
-    * [Flink运行时组件](chapter03-01-01-Flink运行时组件.md)
-    * [应用部署](chapter03-01-02-应用部署.md)
-    * [任务执行](chapter03-01-03-任务执行.md)
-    * [高可用配置](chapter03-01-04-高可用配置.md)
-  * [Flink中的数据传输](chapter03-02-Flink中的数据传输.md)
-    * [基于信任度的流控制](chapter03-02-01-基于信任度的流控制.md)
-    * [任务链](chapter03-02-02-任务链.md)
-  * [事件时间处理](chapter03-03-00-事件时间处理.md)
-    * [时间戳](chapter03-03-01-时间戳.md)
-    * [水位线](chapter03-03-02-水位线.md)
-    * [watermark的传递和事件时间](chapter03-03-03-watermark的传递和事件时间.md)
-    * [时间戳的分配和水位线的产生](chapter03-03-04-时间戳的分配和水位线的产生.md)
-  * [状态管理](chapter03-04-00-状态管理.md)
-    * [算子状态](chapter03-04-01-算子状态.md)
-    * [键控状态](chapter03-04-02-键控状态.md)
-    * [状态后端](chapter03-04-03-状态后端.md)
-    * [调整有状态算子的并行度](chapter03-04-04-调整有状态算子的并行度.md)
-  * [检查点，保存点和状态恢复](chapter03-05-00-检查点，保存点和状态恢复.md)
-    * [一致的检查点](chapter03-05-01-一致的检查点.md)
-    * [从一致检查点中恢复状态](chapter03-05-02-从一致检查点中恢复状态.md)
-    * [Flink的检查点算法](chapter03-05-03-Flink的检查点算法.md)
-    * [检查点的性能影响](chapter03-05-04-检查点的性能影响.md)
-    * [保存点](chapter03-05-05-保存点.md)
-* [第四章，编写第一个Flink程序](chapter04-00-00-第四章，编写第一个Flink程序.md)
-  * [在IDEA中编写Flink程序](chapter04-01-00-在IDEA中编写Flink程序.md)
-  * [下载Flink运行时环境，提交Jar包的运行方式](chapter04-02-00-下载Flink运行时环境，提交Jar包的运行方式.md)
-* [第五章，Flink-DataStream-API](chapter05-00-00-第五章，Flink-DataStream-API.md)
-  * [你好，Flink！](chapter05-01-00-你好，Flink！.md)
-  * [搭建执行环境](chapter05-02-00-搭建执行环境.md)
-  * [读取输入流](chapter05-03-00-读取输入流.md)
-  * [转换算子的使用](chapter05-04-00-转换算子的使用.md)
-  * [输出结果](chapter05-05-00-输出结果.md)
-  * [执行](chapter05-06-00-执行.md)
-  * [产生传感器读数代码编写](chapter05-07-00-产生传感器读数代码编写.md)
-    * [从批读取数据](chapter05-07-01-从批读取数据.md)
-    * [从文件读取数据](chapter05-07-02-从文件读取数据.md)
-    * [以Kafka消息队列的数据为数据来源](chapter05-07-03-以Kafka消息队列的数据为数据来源.md)
-    * [自定义数据源](chapter05-07-04-自定义数据源.md)
-  * [转换算子](chapter05-08-00-转换算子.md)
-    * [基本转换算子](chapter05-08-01-基本转换算子.md)
-    * [键控流转换算子](chapter05-08-02-键控流转换算子.md)
-    * [多流转换算子](chapter05-08-03-多流转换算子.md)
-    * [分布式转换算子](chapter05-08-04-分布式转换算子.md)
-  * [设置并行度](chapter05-09-00-设置并行度.md)
-  * [类型](chapter05-10-00-类型.md)
-    * [支持的数据类型](chapter05-10-01-支持的数据类型.md)
-    * [为数据类型创建类型信息](chapter05-10-02-为数据类型创建类型信息.md)
-  * [定义Key以及引用字段](chapter05-11-00-定义Key以及引用字段.md)
-    * [使用字段位置进行keyBy](chapter05-11-01-使用字段位置进行keyBy.md)
-    * [使用字段表达式来进行keyBy](chapter05-11-02-使用字段表达式来进行keyBy.md)
-    * [Key选择器](chapter05-11-03-Key选择器.md)
-  * [实现UDF函数，更细粒度的控制流](chapter05-12-00-实现UDF函数，更细粒度的控制流.md)
-    * [函数类](chapter05-12-01-函数类.md)
-    * [匿名函数](chapter05-12-02-匿名函数.md)
-    * [富函数](chapter05-12-03-富函数.md)
-  * [Sink](chapter05-13-00-Sink.md)
-    * [Kafka](chapter05-13-01-Kafka.md)
-    * [Redis](chapter05-13-02-Redis.md)
-    * [ElasticSearch](chapter05-13-03-ElasticSearch.md)
-    * [JDBC自定义sink](chapter05-13-04-JDBC自定义sink.md)
-* [第六章，基于时间和窗口的操作符](chapter06-00-00-第六章，基于时间和窗口的操作符.md)
-  * [设置时间属性](chapter06-01-00-设置时间属性.md)
-    * [指定时间戳和产生水位线](chapter06-01-01-指定时间戳和产生水位线.md)
-    * [周期性的生成水位线](chapter06-01-02-周期性的生成水位线.md)
-    * [如何产生不规则的水位线](chapter06-01-03-如何产生不规则的水位线.md)
-  * [处理函数](chapter06-02-00-处理函数.md)
-    * [时间服务和定时器](chapter06-02-01-时间服务和定时器.md)
-    * [将事件发送到侧输出](chapter06-02-02-将事件发送到侧输出.md)
-    * [CoProcessFunction](chapter06-02-03-CoProcessFunction.md)
-  * [窗口操作符](chapter06-03-00-窗口操作符.md)
-    * [定义窗口操作符](chapter06-03-01-定义窗口操作符.md)
-    * [内置的窗口分配器](chapter06-03-02-内置的窗口分配器.md)
-    * [调用窗口计算函数](chapter06-03-03-调用窗口计算函数.md)
-    * [自定义窗口操作符](chapter06-03-04-自定义窗口操作符.md)
-  * [基于时间的双流Join](chapter06-04-00-基于时间的双流Join.md)
-    * [基于间隔的Join](chapter06-04-01-基于间隔的Join.md)
-    * [基于窗口的Join](chapter06-04-02-基于窗口的Join.md)
-  * [处理迟到的元素](chapter06-05-00-处理迟到的元素.md)
-    * [抛弃迟到元素](chapter06-05-01-抛弃迟到元素.md)
-    * [重定向迟到元素](chapter06-05-02-重定向迟到元素.md)
-    * [使用迟到元素更新窗口计算结果](chapter06-05-03-使用迟到元素更新窗口计算结果.md)
-* [第七章，有状态算子和应用](chapter07-00-00-第七章，有状态算子和应用.md)
-  * [实现有状态的用户自定义函数](chapter07-01-00-实现有状态的用户自定义函数.md)
-    * [在RuntimeContext中定义键控状态](chapter07-01-01-在RuntimeContext中定义键控状态.md)
-    * [使用ListCheckpointed接口来实现操作符的列表状态](chapter07-01-02-使用ListCheckpointed接口来实现操作符的列表状态.md)
-    * [使用连接的广播状态](chapter07-01-03-使用连接的广播状态.md)
-  * [配置检查点](chapter07-02-00-配置检查点.md)
-    * [将hdfs配置为状态后端](chapter07-02-01-将hdfs配置为状态后端.md)
-  * [保证有状态应用的可维护性](chapter07-03-保证有状态应用的可维护性.md)
-    * [指定唯一的操作符标识符](chapter07-03-01-指定唯一的操作符标识符.md)
-    * [指定操作符的最大并行度](chapter07-03-02-指定操作符的最大并行度.md)
-  * [有状态应用的性能和健壮性](chapter07-04-00-有状态应用的性能和健壮性.md)
-    * [选择一个状态后端](chapter07-04-01-选择一个状态后端.md)
-    * [防止状态泄露](chapter07-04-02-防止状态泄露.md)
-* [第八章，读写外部系统](chapter08-00-00-第八章，读写外部系统.md)
-  * [应用的一致性保证](chapter08-01-00-应用的一致性保证.md)
-    * [幂等性写入](chapter08-01-01-幂等性写入.md)
-    * [事务性写入](chapter08-01-02-事务性写入.md)
-  * [Flink提供的连接器](chapter08-02-00-Flink提供的连接器.md)
-    * [Apache-Kafka-Source连接器](chapter08-02-01-Apache-Kafka-Source连接器.md)
-    * [Apache-Kafka-Sink连接器](chapter08-02-02-Apache-Kafka-Sink连接器.md)
-    * [Kakfa-Sink的at-least-once保证](chapter08-02-03-Kakfa-Sink的at-least-once保证.md)
-    * [Kafka-Sink的恰好处理一次语义保证](chapter08-02-04-Kafka-Sink的恰好处理一次语义保证.md)
-    * [文件系统source连接器](chapter08-02-05-文件系统source连接器.md)
-    * [文件系统sink连接器](chapter08-02-06-文件系统sink连接器.md)
-  * [实现自定义源函数](chapter08-03-00-实现自定义源函数.md)
-    * [可重置的源函数](chapter08-03-01-可重置的源函数.md)
-  * [实现自定义sink函数](chapter08-04-00-实现自定义sink函数.md)
-    * [幂等性sink连接器](chapter08-04-01-幂等性sink连接器.md)
-    * [事务性sink连接器](chapter08-04-02-事务性sink连接器.md)
-* [第九章，搭建Flink运行流式应用](chapter09-00-00-第九章，搭建Flink运行流式应用.md)
-  * [部署方式](chapter09-01-00-部署方式.md)
-    * [独立集群](chapter09-01-01-独立集群.md)
-    * [Apache-Hadoop-Yarn](chapter09-01-02-Apache-Hadoop-Yarn.md)
-  * [高可用配置](chapter09-02-00-高可用配置.md)
-    * [独立集群高可用配置](chapter09-02-01-独立集群高可用配置.md)
-    * [yarn集群高可用配置](chapter09-02-02-yarn集群高可用配置.md)
-  * [与Hadoop集成](chapter09-03-00-与Hadoop集成.md)
-  * [保存点操作](chapter09-04-00-保存点操作.md)
-  * [取消一个应用](chapter09-05-00-取消一个应用.md)
-  * [从保存点启动应用程序](chapter09-06-00-从保存点启动应用程序.md)
-  * [扩容，改变并行度操作](chapter09-07-00-扩容，改变并行度操作.md)
-* [第十章，Flink和流式应用运维](chapter10-00-00-第十章，Flink和流式应用运维.md)
-* [第十一章，Flink-CEP简介](chapter11-00-00-第十一章，Flink-CEP简介.md)
-* [第十二章，Table-API和Flink-SQL](chapter12-00-00-第十二章，Table-API和Flink-SQL.md)
-  * [整体介绍](chapter12-01-00-整体介绍.md)
-    * [什么是Table-API和Flink-SQL](chapter12-01-01-什么是Table-API和Flink-SQL.md)
-    * [需要引入的依赖](chapter12-01-02-需要引入的依赖.md)
-    * [两种planner（old-&-blink）的区别](chapter12-01-03-两种planner（old-&-blink）的区别.md)
-  * [API调用](chapter12-02-00-API调用.md)
-    * [基本程序结构](chapter12-02-01-基本程序结构.md)
-    * [创建表环境](chapter12-02-02-创建表环境.md)
-    * [在Catalog中注册表](chapter12-02-03-在Catalog中注册表.md)
-    * [表的查询](chapter12-02-04-表的查询.md)
-    * [将DataStream转换成表](chapter12-02-05-将DataStream转换成表.md)
-    * [创建临时视图](chapter12-02-06-创建临时视图.md)
-    * [输出表](chapter12-02-07-输出表.md)
-    * [将表转换成DataStream](chapter12-02-08-将表转换成DataStream.md)
-    * [Query的解释和执行](chapter12-02-09-Query的解释和执行.md)
-  * [流处理中的特殊概念](chapter12-03-00-流处理中的特殊概念.md)
-    * [流处理和关系代数（表，及SQL）的区别](chapter12-03-01-流处理和关系代数（表，及SQL）的区别.md)
-    * [动态表](chapter12-03-02-动态表.md)
-    * [流式持续查询的过程](chapter12-03-03-流式持续查询的过程.md)
-    * [时间特性](chapter12-03-04-时间特性.md)
-  * [窗口](chapter12-04-00-窗口.md)
-    * [分组窗口](chapter12-04-01-分组窗口.md)
-    * [Over-Windows](chapter12-04-02-Over-Windows.md)
-    * [SQL中窗口的定义](chapter12-04-03-SQL中窗口的定义.md)
-    * [代码练习（以分组滚动窗口为例）](chapter12-04-04-代码练习（以分组滚动窗口为例）.md)
-  * [函数](chapter12-05-00-函数.md)
-    * [系统内置函数](chapter12-05-01-系统内置函数.md)
-    * [UDF](chapter12-05-02-UDF.md)
-  * [Flink与Hive集成](chapter12-06-00-Flink和Hive集成.md)
-    * [Maven依赖](chapter12-06-01-Maven依赖.md)
-    * [示例程序](chapter12-06-02-示例程序.md)
-    * [一个复杂一点的程序](chapter12-06-03-一个复杂一点的程序.md)
-    * [彻底重置hadoop和hive的方法](chapter12-06-04-彻底重置hadoop和hive的方法.md)
-    * [将代码部署到flink运行时环境](chapter12-06-05-将代码部署到flink运行时环境.md)
-* [第十三章，尚硅谷大数据技术之电商用户行为分析](chapter13-00-00-第十三章，尚硅谷大数据技术之电商用户行为分析.md)
-  * [数据集解析](chapter13-01-00-数据集解析.md)
-    * [淘宝数据集解析](chapter13-01-01-淘宝数据集解析.md)
-    * [Apache服务器日志数据集解析](chapter13-01-02-Apache服务器日志数据集解析.md)
-  * [实时热门商品统计](chapter13-02-00-实时热门商品统计.md)
-  * [实时流量统计](chapter13-03-00-实时流量统计.md)
-  * [Uv统计的布隆过滤器实现](chapter13-04-00-Uv统计的布隆过滤器实现.md)
-  * [APP分渠道数据统计](chapter13-05-00-APP分渠道数据统计.md)
-  * [APP不分渠道数据统计](chapter13-06-00-APP不分渠道数据统计.md)
-  * [恶意登陆实现](chapter13-07-00-恶意登陆实现.md)
-  * [订单支付实时监控](chapter13-08-00-订单支付实时监控.md)
-    * [使用Flink-CEP来实现](chapter13-08-01-使用Flink-CEP来实现.md)
-    * [使用Process-Function实现订单超时需求](chapter13-08-02-使用Process-Function实现订单超时需求.md)
-  * [实时对帐：实现两条流的Join](chapter13-09-00-实时对帐：实现两条流的Join.md)
-  * [使用Flink-SQL实现实时热门商品统计](chapter13-10-00-使用Flink-SQL实现实时热门商品统计.md)
-  * [使用Flink-SQL实现端到端的流式应用](chapter13-11-00-使用Flink-SQL实现端到端的流式应用.md)
-* [第十四章，常见面试题解答](chapter14-00-第十四章，常见面试题解答.md)
-  * [面试题一](chapter14-01-面试题一.md)
-  * [面试题二](chapter14-02-面试题二.md)
-  * [面试题三](chapter14-03-面试题三.md)
-  * [面试题四](chapter14-04-面试题四.md)
-  * [面试题五](chapter14-05-面试题五.md)
-  * [面试题六](chapter14-06-面试题六.md)
-  * [面试题七](chapter14-07-面试题七.md)
-  * [面试题八](chapter14-08-面试题八.md)
-  * [面试题九](chapter14-09-面试题九.md)
-  * [面试题十](chapter14-10-面试题十.md)
-  * [面试题十一](chapter14-11-面试题十一.md)
-  * [面试题十二](chapter14-12-面试题十二.md)
-  * [面试题十三](chapter14-13-面试题十三.md)
-  * [面试题十四](chapter14-14-面试题十四.md)
-  * [面试题十五](chapter14-15-面试题十五.md)
-  * [面试题十六](chapter14-16-面试题十六.md)
-  * [面试题十七](chapter14-17-面试题十七.md)
-  * [面试题十八](chapter14-18-面试题十八.md)
-  * [面试题十九](chapter14-19-面试题十九.md)
-  * [面试题二十](chapter14-20-面试题二十.md)
