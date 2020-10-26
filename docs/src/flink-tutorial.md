@@ -46,7 +46,6 @@
     - [Flink中的数据传输](#flink中的数据传输)
         - [基于信任度的流控制](#基于信任度的流控制)
         - [任务链](#任务链)
-- [Flink中的数据传输](#flink中的数据传输-1)
     - [事件时间处理](#事件时间处理)
         - [时间戳](#时间戳)
         - [水位线](#水位线-1)
@@ -140,7 +139,6 @@
     - [保证有状态应用的可维护性](#保证有状态应用的可维护性)
         - [指定唯一的操作符标识符](#指定唯一的操作符标识符)
         - [指定操作符的最大并行度](#指定操作符的最大并行度)
-- [保证有状态应用的可维护性](#保证有状态应用的可维护性-1)
     - [有状态应用的性能和健壮性](#有状态应用的性能和健壮性)
         - [选择一个状态后端](#选择一个状态后端)
         - [防止状态泄露](#防止状态泄露)
@@ -159,8 +157,7 @@
         - [可重置的源函数](#可重置的源函数)
     - [实现自定义sink函数](#实现自定义sink函数)
         - [幂等sink连接器](#幂等sink连接器)
-- [幂等sink连接器](#幂等sink连接器-1)
-    - [-](#-)
+        - [事务性sink连接器](#事务性sink连接器)
 - [第九章，搭建Flink运行流式应用](#第九章搭建flink运行流式应用)
     - [部署方式](#部署方式)
         - [独立集群](#独立集群)
@@ -228,8 +225,10 @@
             - [聚合函数（Aggregate Functions）](#聚合函数aggregate-functions)
             - [表聚合函数（Table Aggregate Functions）](#表聚合函数table-aggregate-functions)
     - [Flink和Hive集成](#flink和hive集成)
+        - [示例程序](#示例程序)
         - [一个复杂一点的程序](#一个复杂一点的程序)
         - [彻底重置hadoop和hive的方法](#彻底重置hadoop和hive的方法)
+        - [将代码部署到flink运行时环境](#将代码部署到flink运行时环境)
 - [第十三章，尚硅谷大数据技术之电商用户行为分析](#第十三章尚硅谷大数据技术之电商用户行为分析)
     - [数据集解析](#数据集解析)
         - [淘宝数据集解析](#淘宝数据集解析)
@@ -248,18 +247,18 @@
         - [使用Process Function实现订单超时需求](#使用process-function实现订单超时需求)
     - [实时对帐：实现两条流的Join](#实时对帐：实现两条流的join)
     - [只使用Flink SQL实现TopN需求](#只使用flink-sql实现topn需求)
-- [Flink SQL Demo: 构建一个端到端的流式应用](#flink-sql-demo-构建一个端到端的流式应用)
-    - [准备](#准备)
-        - [使用 Docker Compose 启动容器](#使用-docker-compose-启动容器)
-        - [进入 SQL CLI 客户端](#进入-sql-cli-客户端)
-    - [使用 DDL 创建 Kafka 表](#使用-ddl-创建-kafka-表)
-    - [统计每小时的成交量](#统计每小时的成交量)
-        - [使用 DDL 创建 Elasticsearch 表](#使用-ddl-创建-elasticsearch-表)
-        - [提交 Query](#提交-query)
-        - [使用 Kibana 可视化结果](#使用-kibana-可视化结果)
-    - [统计一天每10分钟累计独立用户数](#统计一天每10分钟累计独立用户数)
-    - [顶级类目排行榜](#顶级类目排行榜)
-    - [结尾](#结尾)
+    - [Flink SQL Demo: 构建一个端到端的流式应用](#flink-sql-demo-构建一个端到端的流式应用)
+        - [准备](#准备)
+            - [使用 Docker Compose 启动容器](#使用-docker-compose-启动容器)
+            - [进入 SQL CLI 客户端](#进入-sql-cli-客户端)
+        - [使用 DDL 创建 Kafka 表](#使用-ddl-创建-kafka-表)
+        - [统计每小时的成交量](#统计每小时的成交量)
+            - [使用 DDL 创建 Elasticsearch 表](#使用-ddl-创建-elasticsearch-表)
+            - [提交 Query](#提交-query)
+            - [使用 Kibana 可视化结果](#使用-kibana-可视化结果)
+        - [统计一天每10分钟累计独立用户数](#统计一天每10分钟累计独立用户数)
+        - [顶级类目排行榜](#顶级类目排行榜)
+        - [结尾](#结尾)
 - [第十四章，常见面试题解答](#第十四章常见面试题解答)
     - [面试题一](#面试题一)
     - [面试题二](#面试题二)
@@ -796,8 +795,6 @@ Flink采用了一种称为任务链的优化技术，可以在特定条件下减
 ![](images/spaf_0307.png)
 
 任务链在Flink中默认会启用。在“控制任务链”一节中，我们展示了如何禁用应用程序的任务链，以及如何控制各个算子的链接行为。
-
-# Flink中的数据传输
 
 ## 事件时间处理
 
@@ -1868,6 +1865,61 @@ public static void main(String[] args) throws Exception {
 *Custom*
 
 当Flink提供的分区策略都不适用时，我们可以使用`partitionCustom()`方法来自定义分区策略。这个方法接收一个`Partitioner`对象，这个对象需要实现分区逻辑以及定义针对流的哪一个字段或者key来进行分区。
+
+代码示例：
+
+```java
+import org.apache.flink.api.common.functions.Partitioner;
+
+public class MyPartition implements Partitioner<Long> {
+    @Override
+    public int partition(Long key, int numPartitions) {
+        System.out.println("分区总数："+numPartitions);
+        if(key % 2 == 0){
+            return 0;
+        }else{
+            return 1;
+        }
+    }
+}
+```
+
+主体代码
+
+```java
+public class SteamingDemoWithMyParitition {
+
+    public static void main(String[] args) throws Exception{
+
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(2);
+        DataStreamSource<Long> text = env.addSource(new MyNoParalleSource());
+
+        //对数据进行转换，把long类型转成tuple1类型
+        DataStream<Tuple1<Long>> tupleData = text.map(new MapFunction<Long, Tuple1<Long>>() {
+            @Override
+            public Tuple1<Long> map(Long value) throws Exception {
+                return new Tuple1<>(value);
+            }
+        });
+        //分区之后的数据
+        DataStream<Tuple1<Long>> partitionData= tupleData.partitionCustom(new MyPartition(), 0);
+
+        DataStream<Long> result = partitionData.map(new MapFunction<Tuple1<Long>, Long>() {
+            @Override
+            public Long map(Tuple1<Long> value) throws Exception {
+                System.out.println("当前线程id：" + Thread.currentThread().getId() + ",value: " + value);
+                return value.getField(0);
+            }
+        });
+
+        result.print().setParallelism(1);
+
+        env.execute("SteamingDemoWithMyParitition");
+
+    }
+}
+```
 
 ## 设置并行度
 
@@ -4390,10 +4442,24 @@ class UpdatableTemperatureAlertFunction()
 10秒钟保存一次检查点。
 
 ```java
+//获取flink的运行环境
 StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-// set checkpointing interval to 10 seconds (10000 milliseconds)
-env.enableCheckpointing(10000L);
+// 每隔1000 ms进行启动一个检查点【设置checkpoint的周期】
+env.enableCheckpointing(1000);
+// 高级选项：
+// 设置模式为exactly-once （这是默认值）
+env.getCheckpointConfig().setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE);
+// 确保检查点之间有至少500 ms的间隔【checkpoint最小间隔】
+env.getCheckpointConfig().setMinPauseBetweenCheckpoints(500);
+// 检查点必须在一分钟内完成，或者被丢弃【checkpoint的超时时间】
+env.getCheckpointConfig().setCheckpointTimeout(60000);
+// 同一时间只允许进行一个检查点
+env.getCheckpointConfig().setMaxConcurrentCheckpoints(1);
+// 表示一旦Flink处理程序被cancel后，会保留Checkpoint数据，以便根据实际需要恢复到指定的Checkpoint【详细解释见备注】
+//ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION:表示一旦Flink处理程序被cancel后，会保留Checkpoint数据，以便根据实际需要恢复到指定的Checkpoint
+//ExternalizedCheckpointCleanup.DELETE_ON_CANCELLATION: 表示一旦Flink处理程序被cancel后，会删除Checkpoint数据，只有job执行失败的时候才会保存checkpoint
+env.getCheckpointConfig().enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
 ```
 
 ### 将hdfs配置为状态后端
@@ -4470,8 +4536,6 @@ DataStream<Tuple3<String, Double, Double>> alerts = keyedSensorData
   // override the application-wide value
   .setMaxParallelism(1024);
 ```
-
-# 保证有状态应用的可维护性
 
 ## 有状态应用的性能和健壮性
 
@@ -4964,8 +5028,6 @@ class DerbyUpsertSink extends RichSinkFunction[Event] {
 ```
 
 由于Apache Derby并没有提供内置的UPSERT方法，所以这个sink连接器实现了UPSERT写。具体实现方法是首先去尝试更新一行数据，如果这行数据不存在，则插入新的一行数据。
-
-# 幂等sink连接器
 
 ### 事务性sink连接器
 
@@ -7878,8 +7940,6 @@ object ApacheLogAnalysis {
 
 ### UV实现的最简单版本
 
-**java version**
-
 ```java
 public class UvStatistics {
     public static void main(String[] args) throws Exception {
@@ -7964,126 +8024,9 @@ public class UvStatistics {
 }
 ```
 
-**scala version**
-
-```scala
-import scala.collection.mutable.Set
-
-object UVPerWindowWithAggAndWindowProcess {
-
-  case class UserBehavior(userId: String, itemId: String, categoryId: String, behavior: String, timestamp: Long)
-
-  def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setParallelism(1)
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-
-    val stream = env
-      .readTextFile("UserBehavior.csv")
-      .map(line => {
-        val arr = line.split(",")
-        UserBehavior(arr(0), arr(1), arr(2), arr(3), arr(4).toLong * 1000L)
-      })
-      .filter(r => r.behavior.equals("pv"))
-      .assignAscendingTimestamps(_.timestamp)
-
-    stream
-      .map(r => ("key", r.userId))
-      .keyBy(r => r._1)
-      .timeWindow(Time.hours(1))
-      .aggregate(new CountAgg, new WindowResult)
-      .print()
-
-    env.execute()
-  }
-
-  class WindowResult extends ProcessWindowFunction[Long, String, String, TimeWindow] {
-    override def process(key: String, context: Context, elements: Iterable[Long], out: Collector[String]): Unit = {
-      out.collect("window end: " + new Timestamp(context.window.getEnd) + " uv count: " + elements.head)
-    }
-  }
-
-  class CountAgg extends AggregateFunction[(String, String), (Set[String], Long), Long] {
-    override def createAccumulator(): (mutable.Set[String], Long) = (mutable.Set[String](), 0L)
-
-    override def add(in: (String, String), acc: (mutable.Set[String], Long)): (mutable.Set[String], Long) = {
-      if (!acc._1.contains(in._2)) {
-        acc._1 += in._2
-        (acc._1, acc._2 + 1)
-      } else {
-        acc
-      }
-    }
-
-    override def getResult(acc: (mutable.Set[String], Long)): Long = acc._2
-
-    override def merge(acc: (mutable.Set[String], Long), acc1: (mutable.Set[String], Long)): (mutable.Set[String], Long) = ???
-  }
-}
-```
-
 ### 布隆过滤器版本
 
 完整代码如下：
-
-**scala version**
-
-```scala
-import org.apache.flink.shaded.guava18.com.google.common.hash.{BloomFilter, Funnels}
-
-object UVPerWindowWithBloomFilter {
-  case class UserBehavior(userId: String, itemId: String, categoryId: String, behavior: String, timestamp: Long)
-  def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setParallelism(1)
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-
-    val stream = env
-      .readTextFile("/home/zuoyuan/flink-tutorial/flink-scala-code/src/main/resources/UserBehavior.csv")
-      .map(line => {
-        val arr = line.split(",")
-        UserBehavior(arr(0), arr(1), arr(2), arr(3), arr(4).toLong * 1000L)
-      })
-      .filter(r => r.behavior.equals("pv"))
-      .assignAscendingTimestamps(_.timestamp)
-
-    stream
-      .map(r => ("key", r.userId.toLong))
-      .keyBy(r => r._1)
-      .timeWindow(Time.hours(1))
-      .aggregate(new CountAgg, new WindowResult)
-      .print()
-
-    env.execute()
-  }
-
-  class CountAgg extends AggregateFunction[(String, Long), (Long, BloomFilter[lang.Long]), Long] {
-    override def createAccumulator(): (Long, BloomFilter[lang.Long]) = (0, BloomFilter.create(Funnels.longFunnel(), 100000000, 0.01))
-
-    override def add(in: (String, Long), acc: (Long, BloomFilter[lang.Long])): (Long, BloomFilter[lang.Long]) = {
-      if (!acc._2.mightContain(in._2)) {
-        acc._2.put(in._2)
-        (acc._1 + 1, acc._2)
-      } else {
-        acc
-      }
-    }
-
-    override def getResult(acc: (Long, BloomFilter[lang.Long])): Long = acc._1
-
-    override def merge(acc: (Long, BloomFilter[lang.Long]), acc1: (Long, BloomFilter[lang.Long])): (Long, BloomFilter[lang.Long]) = ???
-
-  }
-
-  class WindowResult extends ProcessWindowFunction[Long, String, String, TimeWindow] {
-    override def process(key: String, context: Context, elements: Iterable[Long], out: Collector[String]): Unit = {
-      out.collect("window end: " + new Timestamp(context.window.getEnd) + " uv count: " + elements.head)
-    }
-  }
-}
-```
-
-**java version**
 
 ```java
 public class UvStatisticsWithBloomFilter {
@@ -8241,16 +8184,6 @@ object AppMarketingByChannel {
 完整代码如下：
 
 ```java
-package com.atguigu
-
-import com.atguigu.AppMarketingByChannel.SimulatedEventSource
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.api.scala.function.ProcessWindowFunction
-import org.apache.flink.streaming.api.windowing.time.Time
-import org.apache.flink.streaming.api.windowing.windows.TimeWindow
-import org.apache.flink.util.Collector
-
 object AppMarketingStatistics {
   def main(args: Array[String]): Unit = {
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
@@ -8285,89 +8218,100 @@ object AppMarketingStatistics {
 
 ## 恶意登陆实现
 
-```scala
-import com.atguigu.FlinkCepExample.LoginEvent
-import org.apache.flink.api.common.state.{ListStateDescriptor, ValueStateDescriptor}
-import org.apache.flink.api.scala.typeutils.Types
-import org.apache.flink.cep.scala.pattern.Pattern
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.functions.KeyedProcessFunction
-import org.apache.flink.streaming.api.scala._
-import org.apache.flink.util.Collector
+POJO类的代码
 
-import scala.collection.mutable.ListBuffer
+```java
+public class OrderEvent {
+    public String orderId;
+    public String eventType;
+    public Long eventTime;
 
-object LoginFailWithoutCEP {
-  def main(args: Array[String]): Unit = {
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-    env.setParallelism(1)
-
-    val stream = env
-      .fromElements(
-        LoginEvent("1", "0.0.0.0", "fail", "1"),
-        LoginEvent("1", "0.0.0.0", "success", "2"),
-        LoginEvent("1", "0.0.0.0", "fail", "3"),
-        LoginEvent("1", "0.0.0.0", "fail", "4")
-      )
-      .assignAscendingTimestamps(_.ts.toLong * 1000)
-      .keyBy(_.userId)
-      .process(new MatchFunction)
-
-    stream.print()
-    env.execute()
-  }
-
-  class MatchFunction extends KeyedProcessFunction[String, LoginEvent, String] {
-
-    lazy val loginState = getRuntimeContext.getListState(
-      new ListStateDescriptor[LoginEvent]("login-fail", Types.of[LoginEvent])
-    )
-
-    lazy val timestamp = getRuntimeContext.getState(
-      new ValueStateDescriptor[Long]("ts", Types.of[Long])
-    )
-
-    override def processElement(
-      value: LoginEvent,
-      ctx: KeyedProcessFunction[String, LoginEvent, String]#Context,
-      out: Collector[String]
-    ): Unit = {
-      if (value.loginStatus == "fail") {
-        loginState.add(value)
-        if (!timestamp.value()) {
-          timestamp.update(value.ts.toLong * 1000 + 5000L)
-          ctx
-            .timerService()
-            .registerEventTimeTimer(value.ts.toLong * 1000 + 5000L)
-        }
-      }
-
-      if (value.loginStatus == "success") {
-        loginState.clear()
-        ctx
-          .timerService()
-          .deleteEventTimeTimer(timestamp.value())
-      }
+    public OrderEvent() {
     }
 
-    override def onTimer(
-      ts: Long,
-      ctx: KeyedProcessFunction[String, LoginEvent, String]#OnTimerContext,
-      out: Collector[String]
-    ): Unit = {
-      val allLogins = ListBuffer[LoginEvent]()
-      import scala.collection.JavaConversions._
-      for (login <- loginState.get) {
-        allLogins += login
-      }
-      loginState.clear()
-
-      if (allLogins.length > 1) {
-        out.collect("5s以内连续两次登陆失败")
-      }
+    public OrderEvent(String orderId, String eventType, Long eventTime) {
+        this.orderId = orderId;
+        this.eventType = eventType;
+        this.eventTime = eventTime;
     }
-  }
+
+    @Override
+    public String toString() {
+        return "OrderEvent{" +
+                "orderId='" + orderId + '\'' +
+                ", eventType='" + eventType + '\'' +
+                ", eventTime=" + eventTime +
+                '}';
+    }
+}
+```
+
+```java
+public class OrderTimeoutDetect {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+        env.setParallelism(1);
+
+        SingleOutputStreamOperator<OrderEvent> stream = env
+                .fromElements(
+                        new OrderEvent("order_1", "create", 1000L),
+                        new OrderEvent("order_2", "create", 2000L),
+                        new OrderEvent("order_1", "pay", 3000L)
+                )
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy.<OrderEvent>forMonotonousTimestamps()
+                                .withTimestampAssigner(new SerializableTimestampAssigner<OrderEvent>() {
+                                    @Override
+                                    public long extractTimestamp(OrderEvent element, long recordTimestamp) {
+                                        return element.eventTime;
+                                    }
+                                })
+                );
+
+        Pattern<OrderEvent, OrderEvent> pattern = Pattern
+                .<OrderEvent>begin("create")
+                .where(new SimpleCondition<OrderEvent>() {
+                    @Override
+                    public boolean filter(OrderEvent value) throws Exception {
+                        return value.eventType.equals("create");
+                    }
+                })
+                .next("pay")
+                .where(new SimpleCondition<OrderEvent>() {
+                    @Override
+                    public boolean filter(OrderEvent value) throws Exception {
+                        return value.eventType.equals("pay");
+                    }
+                })
+                .within(Time.seconds(5));
+
+        PatternStream<OrderEvent> patternStream = CEP.pattern(stream.keyBy(r -> r.orderId), pattern);
+
+        SingleOutputStreamOperator<String> result = patternStream
+                .select(
+                        new OutputTag<String>("order-timeout") {
+                        },
+                        new PatternTimeoutFunction<OrderEvent, String>() {
+                            @Override
+                            public String timeout(Map<String, List<OrderEvent>> map, long l) throws Exception {
+                                return "订单ID为 " + map.get("create").get(0).orderId + " 没有支付！";
+                            }
+                        },
+                        new PatternSelectFunction<OrderEvent, String>() {
+                            @Override
+                            public String select(Map<String, List<OrderEvent>> map) throws Exception {
+                                return "订单ID为 " + map.get("pay").get(0).orderId + " 已经支付！";
+                            }
+                        }
+                );
+
+        result.print();
+
+        result.getSideOutput(new OutputTag<String>("order-timeout") {}).print();
+
+        env.execute();
+    }
 }
 ```
 
@@ -8757,7 +8701,7 @@ public class HotItemsSQL {
 }
 ```
 
-# Flink SQL Demo: 构建一个端到端的流式应用
+## Flink SQL Demo: 构建一个端到端的流式应用
 
 本文将基于 Kafka, MySQL, Elasticsearch, Kibana，使用 Flink SQL 构建一个电商用户行为的实时分析应用。本文所有的实战演练都将在 Flink SQL CLI 上执行，全程只涉及 SQL 纯文本，无需一行 Java/Scala 代码，无需安装 IDE。本实战演练的最终效果图：
 
@@ -8765,11 +8709,11 @@ public class HotItemsSQL {
 
 <!-- more -->
 
-## 准备
+### 准备
 
 一台装有 Docker 的 Linux 或 MacOS 计算机。
 
-### 使用 Docker Compose 启动容器
+#### 使用 Docker Compose 启动容器
 
 本实战演示所依赖的组件全都编排到了容器中，因此可以通过 `docker-compose` 一键启动。你可以通过 `wget` 命令自动下载该 `docker-compose.yml` 文件，也可以手动下载。
 
@@ -8803,7 +8747,7 @@ docker-compose up -d
 docker-compose down
 ```
 
-### 进入 SQL CLI 客户端
+#### 进入 SQL CLI 客户端
 
 运行如下命令进入 SQL CLI 客户端：
 
@@ -8859,7 +8803,7 @@ ______ _ _       _       _____  ____  _         _____ _ _            _  BETA
 Welcome! Enter HELP to list all available commands. QUIT to exit.
 ```
 
-## 使用 DDL 创建 Kafka 表
+### 使用 DDL 创建 Kafka 表
 
 Datagen 容器在启动后会往 Kafka 的 `user_behavior` topic 中持续不断地写入数据。数据包含了2017年11月27日一天的用户行为（行为包括点击、购买、加购、喜欢），每一行表示一条用户行为，以 JSON 的格式由用户ID、商品ID、商品类目ID、行为类型和时间组成。该原始数据集来自[阿里云天池公开数据集](https://tianchi.aliyun.com/dataset/dataDetail?dataId=649)，特此鸣谢。
 
@@ -8906,9 +8850,9 @@ https://ci.apache.org/projects/flink/flink-docs-release-1.11/dev/table/sql/creat
 
 接下来，我们会通过三个实战场景来更深入地了解 Flink SQL 。
 
-## 统计每小时的成交量
+### 统计每小时的成交量
 
-### 使用 DDL 创建 Elasticsearch 表
+#### 使用 DDL 创建 Elasticsearch 表
 
 我们先在 SQL CLI 中创建一个 ES 结果表，根据场景需求主要需要保存两个数据：小时、成交量。
 
@@ -8925,7 +8869,7 @@ CREATE TABLE buy_cnt_per_hour (
 
 我们不需要在 Elasticsearch 中事先创建 `buy_cnt_per_hour` 索引，Flink Job 会自动创建该索引。
 
-### 提交 Query
+#### 提交 Query
 
 统计每小时的成交量就是每小时共有多少 "buy" 的用户行为。因此会需要用到 TUMBLE 窗口函数，按照一小时切窗。然后每个窗口分别统计 "buy" 的个数，这可以通过先过滤出 "buy" 的数据，然后 `COUNT(*)` 实现。
 
@@ -8944,7 +8888,7 @@ GROUP BY TUMBLE(ts, INTERVAL '1' HOUR);
 
 可以看到凌晨是一天中成交量的低谷。
 
-### 使用 Kibana 可视化结果
+#### 使用 Kibana 可视化结果
 
 我们已经通过 Docker Compose 启动了 Kibana 容器，可以通过 http://localhost:5601 访问 Kibana。首先我们需要先配置一个 index pattern。点击左侧工具栏的 "Management"，就能找到 "Index Patterns"。点击 "Create Index Pattern"，然后通过输入完整的索引名 "buy_cnt_per_hour" 创建 index pattern。创建完成后， Kibana 就知道了我们的索引，我们就可以开始探索数据了。
 
@@ -8957,7 +8901,7 @@ GROUP BY TUMBLE(ts, INTERVAL '1' HOUR);
 ![](https://img.alicdn.com/tfs/TB19ae.woT1gK0jSZFhXXaAtVXa-2874-1596.png)
 
 
-## 统计一天每10分钟累计独立用户数
+### 统计一天每10分钟累计独立用户数
 
 另一个有意思的可视化是统计一天中每一刻的累计独立用户数（uv），也就是每一刻的 uv 数都代表从0点到当前时刻为止的总计 uv 数，因此该曲线肯定是单调递增的。
 
@@ -8997,7 +8941,7 @@ GROUP BY date_str;
 ![](https://img.alicdn.com/tfs/TB1xU5.wkY2gK0jSZFgXXc5OFXa-2878-1598.png)
 
 
-## 顶级类目排行榜
+### 顶级类目排行榜
 
 最后一个有意思的可视化是类目排行榜，从而了解哪些类目是支柱类目。不过由于源数据中的类目分类太细（约5000个类目），对于排行榜意义不大，因此我们希望能将其归约到顶级类目。所以笔者在 mysql 容器中预先准备了子类目与顶级类目的映射数据，用作维表。
 
@@ -9058,7 +9002,7 @@ GROUP BY category_name;
 
 Kibana 还提供了非常丰富的图形和可视化选项，感兴趣的用户可以用 Flink SQL 对数据进行更多维度的分析，并使用 Kibana 展示出可视化图，并观测图形数据的实时变化。
 
-## 结尾
+### 结尾
 
 在本文中，我们展示了如何使用 Flink SQL 集成 Kafka, MySQL, Elasticsearch 以及 Kibana 来快速搭建一个实时分析应用。整个过程无需一行 Java/Scala 代码，使用 SQL 纯文本即可完成。期望通过本文，可以让读者了解到 Flink SQL 的易用和强大，包括轻松连接各种外部系统、对事件时间和乱序数据处理的原生支持、维表关联、丰富的内置函数等等。希望你能喜欢我们的实战演练，并从中获得乐趣和知识！
 
@@ -9270,7 +9214,7 @@ https://cloud.tencent.com/developer/article/1189624
 
 ## 面试题十九
 
-* flink如何实现精准一次性？flink怎么保证容错性，说些checkPoint的内部原理，要很细节的。
+* flink如何实现精准一次性？flink怎么保证容错性，说些CheckPoint的内部原理，要很细节的。
 * flink的双流join有什么问题？写代码实现interval join的功能，怎么实现？
 * 通过双流join进行对账，有没有没join上的情况，interval join的时间是多少，你设置这个时间不会有数据丢失？
 
