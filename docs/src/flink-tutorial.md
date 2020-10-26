@@ -2262,6 +2262,8 @@ Kafka版本为2.0以上
 
 主函数中添加sink：
 
+代码默认为`at-least once`的一致性保证。
+
 ```java
 DataStream<String> stream = env.fromElements("hello world");
 
@@ -2273,6 +2275,31 @@ stream.addSink(
   )
 );
 ```
+
+如果想要实现`exactly once`的一致性保障的话，需要按照以下方式来写代码
+
+```java
+DataStreamSource<String> text = env.socketTextStream("hadoop100", 9001, "\n");
+
+String brokerList = "hadoop110:9092";
+String topic = "t1";
+
+Properties prop = new Properties();
+prop.setProperty("bootstrap.servers",brokerList);
+
+//第一种解决方案，设置FlinkKafkaProducer011里面的事务超时时间
+//设置事务超时时间
+//prop.setProperty("transaction.timeout.ms",60000*15+"");
+
+//第二种解决方案，设置kafka的最大事务超时时间
+
+//FlinkKafkaProducer011<String> myProducer = new FlinkKafkaProducer011<>(brokerList, topic, new SimpleStringSchema());
+
+//使用仅一次语义的kafkaProducer
+FlinkKafkaProducer011<String> myProducer = new FlinkKafkaProducer011<>(topic, new KeyedSerializationSchemaWrapper<String>(new SimpleStringSchema()), prop, FlinkKafkaProducer011.Semantic.EXACTLY_ONCE);
+text.addSink(myProducer);
+```
+
 ### Redis
 
 ```xml
@@ -2459,6 +2486,7 @@ public class SinkToMySQL {
     }
 }
 ```
+
 # 第六章，基于时间和窗口的操作符
 
 在本章，我们将要学习DataStream API中处理时间和基于时间的操作符，例如窗口操作符。
