@@ -171,6 +171,8 @@
     - [从保存点启动应用程序](#从保存点启动应用程序-1)
     - [扩容，改变并行度操作](#扩容改变并行度操作)
 - [第十章，Flink DataSet API讲解](#第十章flink-dataset-api讲解)
+    - [一个简单的例子](#一个简单的例子)
+    - [转换算子](#转换算子-2)
 - [第十一章，Flink CEP简介](#第十一章flink-cep简介)
 - [第十二章，Table API和Flink SQL](#第十二章table-api和flink-sql)
     - [整体介绍](#整体介绍)
