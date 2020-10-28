@@ -5446,6 +5446,260 @@ Modify job bc0b2ad61ecd4a615d92ce25390f61ad.
 
 # 第十章，Flink DataSet API讲解
 
+## 一个简单的例子
+
+我们先来看一下来自官网的word count的例子，熟悉一下api，其实和DataStream API基本一样。
+
+```java
+public class WordCountExample {
+    public static void main(String[] args) throws Exception {
+        final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+
+        DataSet<String> text = env.fromElements(
+            "Who's there?",
+            "I think I hear them. Stand, ho! Who's there?");
+
+        DataSet<Tuple2<String, Integer>> wordCounts = text
+            .flatMap(new LineSplitter())
+            .groupBy(0)
+            .sum(1);
+
+        wordCounts.print();
+    }
+
+    public static class LineSplitter implements FlatMapFunction<String, Tuple2<String, Integer>> {
+        @Override
+        public void flatMap(String line, Collector<Tuple2<String, Integer>> out) {
+            for (String word : line.split(" ")) {
+                out.collect(new Tuple2<String, Integer>(word, 1));
+            }
+        }
+    }
+}
+```
+
+## 转换算子
+
+`map`
+
+代码示例：
+
+```java
+data.map(new MapFunction<String, Integer>() {
+  public Integer map(String value) { return Integer.parseInt(value); }
+});
+```
+
+`filter`
+
+代码示例：
+
+```java
+data.filter(new FilterFunction<Integer>() {
+  public boolean filter(Integer value) { return value > 1000; }
+});
+```
+
+`flatMap`
+
+代码示例：
+
+```java
+data.flatMap(new FlatMapFunction<String, String>() {
+  public void flatMap(String value, Collector<String> out) {
+    for (String s : value.split(" ")) {
+      out.collect(s);
+    }
+  }
+});
+```
+
+`MapPartition`
+
+将每一个分区中的数据转换成一个Iterator(迭代器)进行处理。下面的例子计算了每个分区的字符串的数量。每个分区字符串的数量取决于程序的并行度。和map算子的区别在于map是处理每个元素。而mapPartition是处理每个分区。
+
+代码示例：
+
+```java
+data.mapPartition(new MapPartitionFunction<String, Long>() {
+  public void mapPartition(Iterable<String> values, Collector<Long> out) {
+    long c = 0;
+    for (String s : values) {
+      c++;
+    }
+    out.collect(c);
+  }
+});
+```
+
+`Reduce`
+
+If the reduce was applied to a grouped data set then you can specify the way that the runtime executes the combine phase of the reduce by supplying a CombineHint to setCombineHint. The hash-based strategy should be faster in most cases, especially if the number of different keys is small compared to the number of input elements (eg. 1/10).
+
+代码示例：
+
+```java
+data.reduce(new ReduceFunction<Integer> {
+  public Integer reduce(Integer a, Integer b) { return a + b; }
+});
+```
+
+`ReduceGroup`
+
+和reduce的区别在于这里的迭代器中有整个组所有的元素。
+
+代码示例：
+
+```java
+data.reduceGroup(new GroupReduceFunction<Integer, Integer> {
+  public void reduce(Iterable<Integer> values, Collector<Integer> out) {
+    int prefixSum = 0;
+    for (Integer i : values) {
+      prefixSum += i;
+      out.collect(prefixSum);
+    }
+  }
+});
+```
+
+`Aggregate`
+
+Aggregates a group of values into a single value. Aggregation functions can be thought of as built-in reduce functions. Aggregate may be applied on a full data set, or on a grouped data set.
+
+```java
+Dataset<Tuple3<Integer, String, Double>> input = // [...]
+DataSet<Tuple3<Integer, String, Double>> output = input.aggregate(SUM, 0).and(MIN, 2);
+```
+
+You can also use short-hand syntax for minimum, maximum, and sum aggregations.
+
+```java
+Dataset<Tuple3<Integer, String, Double>> input = // [...]
+DataSet<Tuple3<Integer, String, Double>> output = input.sum(0).andMin(2);
+```
+
+`Distinct`
+
+Returns the distinct elements of a data set. It removes the duplicate entries from the input DataSet, with respect to all fields of the elements, or a subset of fields.
+
+```java
+data.distinct();
+```
+
+Distinct is implemented using a reduce function. You can specify the way that the runtime executes the combine phase of the reduce by supplying a CombineHint to setCombineHint. The hash-based strategy should be faster in most cases, especially if the number of different keys is small compared to the number of input elements (eg. 1/10).
+
+`Join`
+
+示例代码：
+
+```java
+public static class User { public String name; public int zip; }
+public static class Store { public Manager mgr; public int zip; }
+DataSet<User> input1 = // [...]
+DataSet<Store> input2 = // [...]
+// result dataset is typed as Tuple2
+DataSet<Tuple2<User, Store>>
+            result = input1.join(input2)
+                           .where("zip")       // key of the first input (users)
+                           .equalTo("zip");    // key of the second input (stores)
+```
+
+```java
+// some POJO
+public class Rating {
+  public String name;
+  public String category;
+  public int points;
+}
+
+// Join function that joins a custom POJO with a Tuple
+public class PointWeighter
+         implements JoinFunction<Rating, Tuple2<String, Double>, Tuple2<String, Double>> {
+
+  @Override
+  public Tuple2<String, Double> join(Rating rating, Tuple2<String, Double> weight) {
+    // multiply the points and rating and construct a new output tuple
+    return new Tuple2<String, Double>(rating.name, rating.points * weight.f1);
+  }
+}
+
+DataSet<Rating> ratings = // [...]
+DataSet<Tuple2<String, Double>> weights = // [...]
+DataSet<Tuple2<String, Double>>
+            weightedRatings =
+            ratings.join(weights)
+
+                   // key of the first input
+                   .where("category")
+
+                   // key of the second input
+                   .equalTo("f0")
+
+                   // applying the JoinFunction on joining pairs
+                   .with(new PointWeighter());
+```
+
+```java
+public class PointWeighter
+         implements FlatJoinFunction<Rating, Tuple2<String, Double>, Tuple2<String, Double>> {
+  @Override
+  public void join(Rating rating, Tuple2<String, Double> weight,
+	  Collector<Tuple2<String, Double>> out) {
+	if (weight.f1 > 0.1) {
+		out.collect(new Tuple2<String, Double>(rating.name, rating.points * weight.f1));
+	}
+  }
+}
+
+DataSet<Tuple2<String, Double>>
+            weightedRatings =
+            ratings.join(weights) // [...]
+```
+
+```java
+DataSet<Tuple2<Integer, String>> input1 = // [...]
+DataSet<Tuple2<Integer, String>> input2 = // [...]
+
+DataSet<Tuple2<Tuple2<Integer, String>, Tuple2<Integer, String>>>
+            result1 =
+            // hint that the second DataSet is very small
+            input1.joinWithTiny(input2)
+                  .where(0)
+                  .equalTo(0);
+
+DataSet<Tuple2<Tuple2<Integer, String>, Tuple2<Integer, String>>>
+            result2 =
+            // hint that the second DataSet is very large
+            input1.joinWithHuge(input2)
+                  .where(0)
+                  .equalTo(0);
+```
+
+```java
+DataSet<SomeType> input1 = // [...]
+DataSet<AnotherType> input2 = // [...]
+
+DataSet<Tuple2<SomeType, AnotherType> result =
+      input1.join(input2, JoinHint.BROADCAST_HASH_FIRST)
+            .where("id").equalTo("key");
+```
+
+`OuterJoin`
+
+```java
+input1.leftOuterJoin(input2) // rightOuterJoin or fullOuterJoin for right or full outer joins
+      .where(0)              // key of the first input (tuple field 0)
+      .equalTo(1)            // key of the second input (tuple field 1)
+      .with(new JoinFunction<String, String, String>() {
+          public String join(String v1, String v2) {
+             // NOTE:
+             // - v2 might be null for leftOuterJoin
+             // - v1 might be null for rightOuterJoin
+             // - v1 OR v2 might be null for fullOuterJoin
+          }
+      });
+```
+
 # 第十一章，Flink CEP简介
 
 *什么是复杂事件CEP？*
