@@ -5150,69 +5150,64 @@ TwoPhaseCommitSinkFunction实现了以下协议。在sink任务发送出第一�
 
 下面的例子可能会让上面的一些概念好理解一些。
 
-```scala
-class TransactionalFileSink(val targetPath: String, val tempPath: String)
-    extends TwoPhaseCommitSinkFunction[(String, Double), String, Void](
-      createTypeInformation[String].createSerializer(new ExecutionConfig),
-      createTypeInformation[Void].createSerializer(new ExecutionConfig)) {
+```java
+public static class TransactionalFileSink extends TwoPhaseCommitSinkFunction<Long, String, Void> {
 
-  var transactionWriter: BufferedWriter = _
+    private BufferedWriter transactionWriter;
 
-  // Creates a temporary file for a transaction into
-  // which the records are written.
-  override def beginTransaction(): String = {
-    // path of transaction file
-    // is built from current time and task index
-    val timeNow = LocalDateTime.now(ZoneId.of("UTC"))
-      .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-    val taskIdx = this.getRuntimeContext.getIndexOfThisSubtask
-    val transactionFile = s"$timeNow-$taskIdx"
-
-    // create transaction file and writer
-    val tFilePath = Paths.get(s"$tempPath/$transactionFile")
-    Files.createFile(tFilePath)
-    this.transactionWriter = Files.newBufferedWriter(tFilePath)
-    println(s"Creating Transaction File: $tFilePath")
-    // name of transaction file is returned to
-    // later identify the transaction
-    transactionFile
-  }
-
-  /** Write record into the current transaction file. */
-  override def invoke(
-      transaction: String,
-      value: (String, Double),
-      context: Context[_]): Unit = {
-    transactionWriter.write(value.toString)
-    transactionWriter.write('\n')
-  }
-
-  /** Flush and close the current transaction file. */
-  override def preCommit(transaction: String): Unit = {
-    transactionWriter.flush()
-    transactionWriter.close()
-  }
-
-  // Commit a transaction by moving
-  // the precommitted transaction file
-  // to the target directory.
-  override def commit(transaction: String): Unit = {
-    val tFilePath = Paths.get(s"$tempPath/$transaction")
-    // check if the file exists to ensure
-    // that the commit is idempotent
-    if (Files.exists(tFilePath)) {
-      val cFilePath = Paths.get(s"$targetPath/$transaction")
-      Files.move(tFilePath, cFilePath)
+    public TransactionalFileSink() {
+        super(StringSerializer.INSTANCE, VoidSerializer.INSTANCE);
     }
-  }
 
-  // Aborts a transaction by deleting the transaction file.
-  override def abort(transaction: String): Unit = {
-    val tFilePath = Paths.get(s"$tempPath/$transaction")
-    if (Files.exists(tFilePath)) {
-      Files.delete(tFilePath)
+    @Override
+    protected String beginTransaction() throws Exception {
+        long timeNow = System.currentTimeMillis();
+        int taskIdx = this.getRuntimeContext().getIndexOfThisSubtask();
+        String transactionFile = timeNow + "-" + taskIdx;
+        Path tFilePath = Paths.get("/home/zuoyuan/filetemp/" + transactionFile);
+        Files.createFile(tFilePath);
+        this.transactionWriter = Files.newBufferedWriter(tFilePath);
+        System.out.println("create tx");
+        return transactionFile;
     }
-  }
+
+    @Override
+    protected void invoke(String transaction, Long value, Context context) throws Exception {
+        transactionWriter.write(value.toString());
+        transactionWriter.write('\n');
+    }
+
+    @Override
+    protected void preCommit(String transaction) throws Exception {
+        transactionWriter.flush();
+        transactionWriter.close();
+    }
+
+    @Override
+    protected void commit(String transaction) {
+        Path tFilePath = Paths.get("/home/zuoyuan/filetemp/" + transaction);
+        if (Files.exists(tFilePath)) {
+            try {
+                Path cFilePath = Paths.get("/home/zuoyuan/filetarget/" + transaction);
+                Files.move(tFilePath, cFilePath);
+                System.out.println("commit complete");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    protected void abort(String transaction) {
+        Path tFilePath = Paths.get("/home/zuoyuan/filetemp/" + transaction);
+        if (Files.exists(tFilePath)) {
+            try {
+                Files.delete(tFilePath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
 ```
 
