@@ -4726,7 +4726,7 @@ Kafka的依赖引入如下：
 <dependency>
    <groupId>org.apache.flink</groupId>
    <artifactId>flink-connector-kafka_2.12</artifactId>
-   <version>1.7.1</version>
+   <version>${flink.version}</version>
 </dependency>
 ```
 
@@ -4737,15 +4737,15 @@ Flink Kafka连接器并行的摄入事件流。每一个并行source任务可以
 Kafka source连接器使用如下代码创建
 
 ```java
-val properties = new Properties()
-properties.setProperty("bootstrap.servers", "localhost:9092")
-properties.setProperty("group.id", "test")
+Properties properties = new Properties();
+properties.setProperty("bootstrap.servers", "localhost:9092");
+properties.setProperty("group.id", "test");
 
-val stream: DataStream[String] = env.addSource(
+DataStream<String> stream = env.addSource(
   new FlinkKafkaConsumer[String](
     "topic",
     new SimpleStringSchema(),
-    properties))
+    properties));
 ```
 
 构造器接受三个参数。第一个参数定义了从哪些topic中读取数据，可以是一个topic，也可以是topic列表，还可以是匹配所有想要读取的topic的正则表达式。当从多个topic中读取数据时，Kafka连接器将会处理所有topic的分区，将这些分区的数据放到一条流中去。
@@ -4757,7 +4757,7 @@ val stream: DataStream[String] = env.addSource(
 为了抽取事件时间的时间戳然后产生水印，我们可以通过调用
 
 ```java
-FlinkKafkaConsumer.assignTimestampsAndWatermark()
+FlinkKafkaConsumer.assignTimestampsAndWatermark();
 ```
 
 方法为Kafka消费者提供AssignerWithPeriodicWatermark或者AssignerWithPucntuatedWatermark。每一个assigner都将被应用到每个分区，来利用每一个分区的顺序保证特性。source实例将会根据水印的传播协议聚合所有分区的水印。
@@ -4770,14 +4770,14 @@ FlinkKafkaConsumer.assignTimestampsAndWatermark()
 <dependency>
    <groupId>org.apache.flink</groupId>
    <artifactId>flink-connector-kafka_2.11</artifactId>
-   <version>1.11.0</version>
+   <version>${flink.version}</version>
 </dependency>
 ```
 
 下面的例子展示了如何创建一个Kafka sink
 
-```scala
-val stream: DataStream[String] = ...
+```java
+DataStream<String> stream = ...
 
 val myProducer = new FlinkKafkaProducer[String](
   "localhost:9092",         // broker list
@@ -4810,12 +4810,12 @@ Apache Flink针对文件系统实现了一个可重置的source连接器，将�
 ```java
 val lineReader = new TextInputFormat(null) 
 
-val lineStream: DataStream[String] = env.readFile[String](
+DataStream<String> lineStream = env.readFile<String>(
   lineReader,                 // The FileInputFormat
   "hdfs:///path/to/my/data",  // The path to read
   FileProcessingMode
     .PROCESS_CONTINUOUSLY,    // The processing mode
-  30000L)                     // The monitoring interval in ms
+  30000L);                     // The monitoring interval in ms
 ```
 
 StreamExecutionEnvironment.readFile()接收如下参数：
@@ -4829,21 +4829,22 @@ FileInputFormat是一个特定的InputFormat，用来从文件系统中读取文
 
 DataStream应用中使用的FileInputFormat需要实现CheckpointableInputFormat接口。这个接口定义了方法来做检查点和重置文件片段的当前的读取位置。
 
-在Flink 1.7中，Flink提供了一些类，这些类继承了FileInputFormat，并实现了CheckpointableInputFormat接口。TextInputFormat一行一行的读取文件，而CsvInputFormat使用逗号分隔符来读取文件。
+在Flink 1.11中，Flink提供了一些类，这些类继承了FileInputFormat，并实现了CheckpointableInputFormat接口。TextInputFormat一行一行的读取文件，而CsvInputFormat使用逗号分隔符来读取文件。
 
 ### 文件系统sink连接器
 
 在将流处理应用配置成exactly-once检查点机制，以及配置成所有源数据都能在故障的情况下可以重置，Flink的StreamingFileSink提供了端到端的恰好处理一次语义保证。下面的例子展示了StreamingFileSink的使用方式。
 
 ```java
-val input: DataStream[String] = …
-val sink: StreamingFileSink[String] = StreamingFileSink
+DatkaStream<String> input = ...
+
+StreamingFileSink<String> sink = StreamingFileSink
   .forRowFormat(
     new Path("/base/path"), 
     new SimpleStringEncoder[String]("UTF-8"))
-  .build()
+  .build();
 
-input.addSink(sink)
+input.addSink(sink);
 ```
 
 当StreamingFileSink接到一条数据，这条数据将被分配到一个桶（bucket）中。一个桶是我们配置的“/base/path”的子目录。
@@ -4861,7 +4862,7 @@ DataStream API提供了两个接口来实现source连接器：
 * SourceFunction和RichSourceFunction可以用来定义非并行的source连接器，source跑在单任务上。
 * ParallelSourceFunction和RichParallelSourceFunction可以用来定义跑在并行实例上的source连接器。
 
-除了并行于非并行的区别，这两种接口完全一样。就像process function的rich版本一样，RichSourceFunction和RichParallelSourceFunction的子类可以override open()和close()方法，也可以访问RuntimeContext，RuntimeContext提供了并行任务实例的数量，当前任务实例的索引，以及一些其他信息。
+除了并行与非并行的区别，这两种接口完全一样。就像process function的rich版本一样，RichSourceFunction和RichParallelSourceFunction的子类可以override open()和close()方法，也可以访问RuntimeContext，RuntimeContext提供了并行任务实例的数量，当前任务实例的索引，以及一些其他信息。
 
 SourceFunction和ParallelSourceFunction定义了两种方法：
 
@@ -4873,19 +4874,22 @@ run()方法用来读取或者接收数据然后将数据摄入到Flink应用中�
 当应用被取消或者关闭时，cancel()方法会被Flink调用。为了优雅的关闭Flink应用，run()方法需要在cancel()被调用以后，立即终止执行。下面的例子显示了一个简单的源函数的例子：从0数到Long.MaxValue。
 
 ```java
-class CountSource extends SourceFunction[Long] {
-  var isRunning: Boolean = true
+class CountSource implements SourceFunction<Long> {
+  private Boolean isRunning = true;
 
-  override def run(ctx: SourceFunction.SourceContext[Long]) = {
-
-    var cnt: Long = -1
+  @Override
+  public void run(SourceContext<Long> ctx) {
+    long cnt = -1;
     while (isRunning && cnt < Long.MaxValue) {
-      cnt += 1
-      ctx.collect(cnt)
+      cnt += 1;
+      ctx.collect(cnt);
     }
   }
 
-  override def cancel() = isRunning = false
+  @Override
+  public void cancel() {
+    isRunning = false;
+  }
 }
 ```
 
@@ -4897,53 +4901,50 @@ class CountSource extends SourceFunction[Long] {
 
 下面的例子将CountSource重写为可重置的数据源。
 
-**scala version**
+```java
+class ResettableCountSource implements SourceFunction<Long>, CheckpointedFunction {
 
-```scala
-class ResettableCountSource
-    extends SourceFunction[Long] with CheckpointedFunction {
+    private Boolean isRunning = true;
+    private Long cnt;
+    private ListState<Long> offsetState;
 
-  var isRunning: Boolean = true
-  var cnt: Long = _
-  var offsetState: ListState[Long] = _
-
-  override def run(ctx: SourceFunction.SourceContext[Long]) = {
-    while (isRunning && cnt < Long.MaxValue) {
-      // synchronize data emission and checkpoints
-      ctx.getCheckpointLock.synchronized {
-        cnt += 1
-        ctx.collect(cnt)
-      }
+    @Override
+    public void run(SourceContext<Long> ctx) {
+        while (isRunning && cnt < Long.MAX_VALUE) {
+            // synchronize data emission and checkpoints
+            synchronized (ctx.getCheckpointLock()) {
+                cnt += 1;
+                ctx.collect(cnt);
+            }
+        }
     }
-  }
 
-  override def cancel() = isRunning = false
-
-  override def snapshotState(
-    snapshotCtx: FunctionSnapshotContext
-  ): Unit = {
-    // remove previous cnt
-    offsetState.clear()
-    // add current cnt
-    offsetState.add(cnt)
-  }
-
-  override def initializeState(
-      initCtx: FunctionInitializationContext): Unit = {
-
-    val desc = new ListStateDescriptor[Long](
-      "offset", classOf[Long])
-    offsetState = initCtx
-      .getOperatorStateStore
-      .getListState(desc)
-    // initialize cnt variable
-    val it = offsetState.get()
-    cnt = if (null == it || !it.iterator().hasNext) {
-      -1L
-    } else {
-      it.iterator().next()
+    @Override
+    public void cancel() {
+        isRunning = false;
     }
-  }
+
+    @Override
+    public void snapshotState(FunctionSnapshotContext snapshotCtx) throws Exception {
+        // remove previous cnt
+        offsetState.clear();
+        // add current cnt
+        offsetState.add(cnt);
+    }
+
+    @Override
+    public void initializeState(FunctionInitializationContext initCtx) throws Exception {
+
+        ListStateDescriptor<Long> desc = new ListStateDescriptor<>("offset", Types.LONG());
+        offsetState = initCtx.getOperatorStateStore().getListState(desc);
+        // initialize cnt variable
+        Iterable<Long> it = offsetState.get();
+        if (null == it || !it.iterator().hasNext()) {
+            cnt = -1L;
+        } else {
+            cnt = it.iterator().next();
+        }
+    }
 }
 ```
 
@@ -4951,8 +4952,8 @@ class ResettableCountSource
 
 DataStream API中，任何运算符或者函数都可以向外部系统发送数据。DataStream不需要最终流向sink运算符。例如，我们可能实现了一个FlatMapFunction，这个函数将每一个接收到的数据通过HTTP POST请求发送出去，而不使用Collector发送到下一个运算符。DataStream API也提供了SinkFunction接口以及对应的rich版本RichSinkFunction抽象类。SinkFunction接口提供了一个方法：
 
-```scala
-void invode(IN value, Context ctx)
+```java
+void invoke(IN value, Context ctx)
 ```
 
 SinkFunction的Context可以访问当前处理时间，当前水位线，以及数据的时间戳。
@@ -5013,8 +5014,6 @@ val readings: DataStream[Event] = ...
 
 // write the sensor readings to a Derby table
 readings.addSink(new DerbyUpsertSink)
-
-// -----
 
 class DerbyUpsertSink extends RichSinkFunction[Event] {
   var conn: Connection = _
@@ -5226,6 +5225,8 @@ TwoPhaseCommitSinkFunction的构造器需要两个TypeSerializer。一个是TXN�
 * preCommit(txn: TXN): Unit预提交一个事务。一个预提交的事务不会接收新的写入。
 * commit(txn: TXN): Unit提交一个事务。这个操作必须是幂等的。
 * abort(txn: TXN): Unit终止一个事务。
+
+>对于MySQL sink来说，使用2PC我理解应该是不能用MySQL transaction的。因为如果你在preCommit中（或之前）开启了transaction，任务失败的话数据会直接丢失，没法实现2PC里preCommit成功后必须保证commit成功的语义。一种办法是preCommit时写入mysql临时表，在commit时将临时表数据移动入正式表。
 
 # 第九章，搭建Flink运行流式应用
 
