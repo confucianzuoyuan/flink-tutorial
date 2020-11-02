@@ -2747,16 +2747,16 @@ DataStream<String> warings = readings
 看一下TempIncreaseAlertFunction如何实现, 程序中使用了ValueState这样一个状态变量, 后面会详细讲解。
 
 ```java
-public static class TempIncreaseAlertFunction extends KeyedProcessFunction<String, Event, String> {
+public static class ValueIncreaseDetectFunction extends KeyedProcessFunction<String, Event, String> {
 
-	private ValueState<Double> lastTemp;
+	private ValueState<Long> lastValue;
 	private ValueState<Long> currentTimer;
 
 	@Override
 	public void open(Configuration parameters) throws Exception {
 		super.open(parameters);
 		lastTemp = getRuntimeContext().getState(
-				new ValueStateDescriptor<>("last-temp", Types.DOUBLE)
+				new ValueStateDescriptor<>("last-value", Types.LONG)
 		);
 		currentTimer = getRuntimeContext().getState(
 				new ValueStateDescriptor<>("current-timer", Types.LONG)
@@ -2764,25 +2764,25 @@ public static class TempIncreaseAlertFunction extends KeyedProcessFunction<Strin
 	}
 
 	@Override
-	public void processElement(Event r, Context ctx, Collector<String> out) throws Exception {
-		// 取出上一次的温度
-		Double prevTemp = 0.0;
-		if (lastTemp.value() != null) {
-			prevTemp = lastTemp.value();
+	public void processElement(Event e, Context ctx, Collector<String> out) throws Exception {
+		// 取出上一次的value
+		Double prevValue = 0L;
+		if (lastValue.value() != null) {
+			prevValue = lastValue.value();
 		}
-		// 将当前温度更新到上一次的温度这个变量中
-		lastTemp.update(r.temperature);
+		// 将当前value更新到上一次的value这个变量中
+		lastValue.update(e.value);
 
 		Long curTimerTimestamp = 0L;
 		if (currentTimer.value() != null) {
 			curTimerTimestamp = currentTimer.value();
 		}
-		if (prevTemp == 0.0 || r.temperature < prevTemp) {
+		if (prevValue == 0.0 || e.value < prevValue) {
 			// 温度下降或者是第一个温度值，删除定时器
 			ctx.timerService().deleteProcessingTimeTimer(curTimerTimestamp);
 			// 清空状态变量
 			currentTimer.clear();
-		} else if (r.temperature > prevTemp && curTimerTimestamp == 0) {
+		} else if (e.value > prevValue && curTimerTimestamp == 0) {
 			// 温度上升且我们并没有设置定时器
 			long timerTs = ctx.timerService().currentProcessingTime() + 1000L;
 			ctx.timerService().registerProcessingTimeTimer(timerTs);
@@ -2794,9 +2794,9 @@ public static class TempIncreaseAlertFunction extends KeyedProcessFunction<Strin
 	@Override
 	public void onTimer(long timestamp, OnTimerContext ctx, Collector<String> out) throws Exception {
 		super.onTimer(timestamp, ctx, out);
-		out.collect("传感器id为: "
+		out.collect("key为: "
 				+ ctx.getCurrentKey()
-				+ "的传感器温度值已经连续1s上升了。");
+				+ "的value已经连续1s上升了。");
 		currentTimer.clear();
 	}
 }
@@ -2822,11 +2822,11 @@ public class SideOutputExample {
         SingleOutputStreamOperator<Event> warnings = stream
                 .process(new ProcessFunction<Event, Event>() {
                     @Override
-                    public void processElement(Event value, Context ctx, Collector<Event> out) throws Exception {
-                        if (value.temperature < 32) {
-                            ctx.output(output, "温度小于32度！");
+                    public void processElement(Event e, Context ctx, Collector<Event> out) throws Exception {
+                        if (e.value < 32) {
+                            ctx.output(output, "value小于32");
                         }
-                        out.collect(value);
+                        out.collect(e);
                     }
                 });
 
@@ -2843,7 +2843,7 @@ public class SideOutputExample {
 对于两条输入流，DataStream API提供了CoProcessFunction这样的low-level操作。CoProcessFunction提供了操作每一个输入流的方法: processElement1()和processElement2()。类似于ProcessFunction，这两种方法都通过Context对象来调用。这个Context对象可以访问事件数据，定时器时间戳，TimerService，以及side outputs。CoProcessFunction也提供了onTimer()回调函数。下面的例子展示了如何使用CoProcessFunction来合并两条流。
 
 ```java
-public class SensorSwitch {
+public class EventSwitch {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
@@ -2877,9 +2877,9 @@ public class SensorSwitch {
         }
 
         @Override
-        public void processElement1(Event value, Context ctx, Collector<Event> out) throws Exception {
+        public void processElement1(Event e, Context ctx, Collector<Event> out) throws Exception {
             if (forwardingEnabled.value() != null && forwardingEnabled.value()) {
-                out.collect(value);
+                out.collect(e);
             }
         }
 
@@ -2947,26 +2947,26 @@ Flink创建的窗口类型是`TimeWindow`，包含开始时间和结束时间，
 ![](images/spaf_0601.png)
 
 ```java
-DataStream<Event> stream = ...
+DataStream<Event> stream = env.addSource(new EventSource());
 
-DataStream<T> avgTemp = stream
-  .keyBy(r -> r.id)
+stream
+  .keyBy(e -> e.key)
   // group readings in 1s event-time windows
   .window(TumblingEventTimeWindows.of(Time.seconds(1)))
-  .process(new TemperatureAverager);
+  .process(new ValueAverager());
 
-DataStream<T> avgTemp = stream
-  .keyBy(r -> r.id)
+stream
+  .keyBy(e -> e.key)
   // group readings in 1s processing-time windows
   .window(TumblingProcessingTimeWindows.of(Time.seconds(1)))
-  .process(new TemperatureAverager);
+  .process(new ValueAverager());
 
 // 其实就是之前的
 // shortcut for window.(TumblingEventTimeWindows.of(size))
-DataStream<T> avgTemp = stream
-  .keyBy(r -> r.id)
+stream
+  .keyBy(e -> e.key)
   .timeWindow(Time.seconds(1))
-  .process(new TemperatureAverager);
+  .process(new ValueAverager());
 ```
 
 默认情况下，滚动窗口会和`1970-01-01-00:00:00.000`对齐，例如一个1小时的滚动窗口将会定义以下开始时间的窗口：00:00:00，01:00:00，02:00:00，等等。
@@ -2980,24 +2980,24 @@ DataStream<T> avgTemp = stream
 ![](images/spaf_0602.png)
 
 ```java
-DataStream<T> slidingAvgTemp = stream
-  .keyBy(r -> r.id)
+stream
+  .keyBy(e -> e.key)
   .window(
     SlidingEventTimeWindows.of(Time.hours(1), Time.minutes(15))
   )
-  .process(new TemperatureAverager);
+  .process(new ValueAverager());
 
-DataStream<T> slidingAvgTemp = stream
-  .keyBy(r -> r.id)
+stream
+  .keyBy(e -> e.key)
   .window(
     SlidingProcessingTimeWindows.of(Time.hours(1), Time.minutes(15))
   )
-  .process(new TemperatureAverager);
+  .process(new ValueAverager());
 
-DataStream<T> slidingAvgTemp = stream
-  .keyBy(r -> r.id)
+stream
+  .keyBy(e -> e.key)
   .timeWindow(Time.hours(1), Time.minutes(15))
-  .process(new TemperatureAverager);
+  .process(new ValueAverager());
 ```
 
 *会话窗口(session windows)*
@@ -3007,13 +3007,13 @@ DataStream<T> slidingAvgTemp = stream
 ![](images/spaf_0603.png)
 
 ```java
-DataStream<T> sessionWindows = stream
-  .keyBy(r -> r.id)
+stream
+  .keyBy(e -> e.key)
   .window(EventTimeSessionWindows.withGap(Time.minutes(15)))
   .process(...);
 
-DataStream<T> sessionWindows = stream
-  .keyBy(r -> r.id)
+stream
+  .keyBy(e -> e.key)
   .window(ProcessingTimeSessionWindows.withGap(Time.minutes(15)))
   .process(...);
 ```
@@ -3088,7 +3088,7 @@ public static void main(String[] args) throws Exception {
     DataStreamSource<Event> stream = env.addSource(new EventSource());
 
     stream
-            .keyBy(r -> r.key)
+            .keyBy(e -> e.key)
             .timeWindow(Time.seconds(5))
             .aggregate(new AvgValue())
             .print();
@@ -3738,7 +3738,7 @@ public class IntervalJoinExample {
 
 下面的例子展示了如何定义基于窗口的Join。
 
-```scala
+```java
 input1.join(input2)
   .where(...)       // 为input1指定键值属性
   .equalTo(...)     // 为input2指定键值属性
@@ -4961,39 +4961,44 @@ SinkFunction的Context可以访问当前处理时间，当前水位线，以及�
 下面的例子展示了一个简单的SinkFunction，可以将传感器读数写入到socket中去。需要注意的是，我们需要在启动Flink程序前启动一个监听相关端口的进程。否则将会抛出ConnectException异常。可以运行“nc -l localhost 9191”命令。
 
 ```scala
-val readings: DataStream[Event] = ...
+DataStream<Event> readings = env.addSource(Event);
 
 // write the sensor readings to a socket
 readings.addSink(new SimpleSocketSink("localhost", 9191))
   // set parallelism to 1 because only one thread can write to a socket
   .setParallelism(1)
 
-// -----
+public static class SimpleSocketSink extends RichSinkFunction<Event> {
 
-class SimpleSocketSink(val host: String, val port: Int)
-    extends RichSinkFunction[Event] {
+  private Socket socket;
+  private PrintStream writer;
+  private String host;
+  private Integer port;
+  
+  public SimpleSocketSink(String host, Integer port) {
+    this.host = host;
+    this.port = port;
+  }
 
-  var socket: Socket = _
-  var writer: PrintStream = _
-
-  override def open(config: Configuration): Unit = {
+  @Override
+  public void open(Configuration config) {
     // open socket and writer
-    socket = new Socket(InetAddress.getByName(host), port)
-    writer = new PrintStream(socket.getOutputStream)
+    socket = new Socket(InetAddress.getByName(host), port);
+    writer = new PrintStream(socket.getOutputStream);
   }
 
-  override def invoke(
-      value: Event,
-      ctx: SinkFunction.Context[_]): Unit = {
+  @Override
+  public void invoke(Event e, Context ctx) {
     // write sensor reading to socket
-    writer.println(value.toString)
-    writer.flush()
+    writer.println(value.toString);
+    writer.flush();
   }
 
-  override def close(): Unit = {
+  @Override
+  public void close() {
     // close writer and socket
-    writer.close()
-    socket.close()
+    writer.close();
+    socket.close();
   }
 }
 ```
@@ -5085,7 +5090,7 @@ GenericWriteAheadSink的原理是将接收到的所有数据都追加到有检�
 
 还有，write-ahead运算符需要实现一个单独的方法：
 
-```scala
+```java
 boolean sendValues(Iterable<IN> values, long chkpntId, long timestamp)
 ```
 
@@ -5093,14 +5098,14 @@ boolean sendValues(Iterable<IN> values, long chkpntId, long timestamp)
 
 下面的例子展示了如何实现一个写入到标准输出的write-ahead sink。它使用了FileCheckpointCommitter。
 
-```scala
-val readings: DataStream[Event] = ...
+```java
+DataStream<Event> readings = env.addSource(new EventSource());
 
 // write the sensor readings to the standard out via a write-ahead log
 readings.transform(
-  "WriteAheadSink", new SocketWriteAheadSink)
+  "WriteAheadSink", new SocketWriteAheadSink());
 
-class StdOutWriteAheadSink extends GenericWriteAheadSink[Event](
+public static class StdOutWriteAheadSink extends GenericWriteAheadSink<Event> (
     // CheckpointCommitter that commits
     // checkpoints to the local filesystem
     new FileCheckpointCommitter(System.getProperty("java.io.tmpdir")),
@@ -5110,16 +5115,17 @@ class StdOutWriteAheadSink extends GenericWriteAheadSink[Event](
     // Random JobID used by the CheckpointCommitter
     UUID.randomUUID.toString) {
 
-  override def sendValues(
-      readings: Iterable[Event],
-      checkpointId: Long,
-      timestamp: Long): Boolean = {
+  @Override
+  public Boolean sendValues(
+      Iterable<Event> readings,
+      Long checkpointId: Long,
+      Long timestamp: Long) {
 
-    for (r <- readings.asScala) {
+    for (for Event e : readings) {
       // write record to standard out
       println(r)
     }
-    true
+    return true;
   }
 }
 ```
