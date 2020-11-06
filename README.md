@@ -282,6 +282,7 @@
     - [面试题十八](#面试题十八)
     - [面试题十九](#面试题十九)
     - [面试题二十](#面试题二十)
+- [一些资料](#一些资料)
 
 <!-- markdown-toc end -->
 
@@ -4052,6 +4053,96 @@ public class RedirectLateEvent {
 }
 ```
 
+另一个例子
+
+```java
+public class Sort {
+
+	public static final int OUT_OF_ORDERNESS = 1000;
+
+	public static void main(String[] args) throws Exception {
+
+		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+		env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+		env.setParallelism(1);
+
+		DataStream<Event> eventStream = env.addSource(new OutOfOrderEventSource())
+				.assignTimestampsAndWatermarks(new TimestampsAndWatermarks());
+
+		Pattern<Event, ?> matchEverything =
+				Pattern.<Event>begin("any")
+						.where(new SimpleCondition<Event>() {
+							@Override
+							public boolean filter(Event event) throws Exception {
+								return true;
+							}
+						});
+
+		PatternStream<Event> patternStream = CEP.pattern(eventStream, matchEverything);
+		OutputTag<Event> lateDataOutputTag = new OutputTag<Event>("late-events"){};
+
+		SingleOutputStreamOperator<Event> sorted = patternStream
+				.sideOutputLateData(lateDataOutputTag)
+				.select(new PatternSelectFunction<Event, Event>() {
+					@Override
+					public Event select(Map<String, List<Event>> map) throws Exception {
+						return map.get("any").get(0);
+					}
+				});
+
+		sorted.print();
+		sorted
+				.getSideOutput(lateDataOutputTag)
+				.map(e -> new Tuple2<>(e, "LATE"))
+				.returns(Types.TUPLE(TypeInformation.of(Event.class), Types.STRING))
+				.print();
+
+		env.execute();
+	}
+
+	public static class Event {
+		public Long ts;
+
+		Event() {
+			this.ts = Instant.now().toEpochMilli() + (new Random().nextInt(OUT_OF_ORDERNESS));
+		}
+
+		@Override
+		public String toString() {
+			return "Event@ " + ts;
+		}
+	}
+
+	private static class OutOfOrderEventSource implements SourceFunction<Event> {
+		private volatile boolean running = true;
+
+		@Override
+		public void run(SourceContext<Event> ctx) throws Exception {
+			while(running) {
+				ctx.collect(new Event());
+				Thread.sleep(1);
+			}
+		}
+
+		@Override
+		public void cancel() {
+			running = false;
+		}
+	}
+
+	private static class TimestampsAndWatermarks extends BoundedOutOfOrdernessTimestampExtractor<Event> {
+		public TimestampsAndWatermarks() {
+			super(Time.milliseconds(OUT_OF_ORDERNESS / 2));
+		}
+
+		@Override
+		public long extractTimestamp(Event event) {
+			return event.ts;
+		}
+	}
+}
+```
+
 下面这个例子展示了ProcessFunction如何过滤掉迟到的元素然后将迟到的元素发送到侧输出流中去。
 
 ```java
@@ -4210,36 +4301,36 @@ keyed state仅可用于KeyedStream。Flink支持以下数据类型的状态变�
 
 State.clear()是清空操作。
 
-**scala version**
+```java
+DataStream<Event> stream = env.addSource(new EventSource());
+KeyedStream<Event, String> keyedData = stream.keyBy(e -> e.key);
 
-```scala
-val stream: DataStream[Event] = ...
-val keyedData: KeyedStream[Event, String] = stream.keyBy(_.id)
+DataStream<Tuple3<String, Double, Double>> alerts = keyedData
+  .flatMap(new TemperatureAlertFunction(1.7));
 
-val alerts: DataStream[(String, Double, Double)] = keyedData
-  .flatMap(new TemperatureAlertFunction(1.7))
-
-class TemperatureAlertFunction(val threshold: Double)
-  extends RichFlatMapFunction[Event, (String, Double, Double)] {
-  private var lastTempState: ValueState[Double] = _
-
-  override def open(parameters: Configuration): Unit = {
-    val lastTempDescriptor = new ValueStateDescriptor[Double](
-      "lastTemp", classOf[Double])
-
-    lastTempState = getRuntimeContext.getState[Double](lastTempDescriptor)
+public static class TemperatureAlertFunction extends RichFlatMapFunction<Event, Tuple3<String, Double, Double>> {
+  private ValueState<Double> lastTempState;
+  private Double threshold;
+  
+  public TemperatureAlertFunction(Double threshold) {
+    this.threshold = threshold;
   }
 
-  override def flatMap(
-    reading: Event,
-    out: Collector[(String, Double, Double)]
-  ): Unit = {
-    val lastTemp = lastTempState.value()
-    val tempDiff = (reading.temperature - lastTemp).abs
+  @Override
+  public void open(Configuration parameters) {
+    ValueStateDescriptor<Double> lastTempDescriptor = new ValueStateDescriptor<>("lastTemp", Types.DOUBLE);
+
+    lastTempState = getRuntimeContext().getState<Double>(lastTempDescriptor);
+  }
+
+  @Override
+  public void flatMap(Event event, Collector<Tuple3<String, Double, Double>> out) {
+    Double lastTemp = lastTempState.value();
+    Double tempDiff = Math.abs(reading.temperature - lastTemp);
     if (tempDiff > threshold) {
-      out.collect((reading.id, reading.temperature, tempDiff))
+      out.collect(Tuple3.of(reading.id, reading.temperature, tempDiff));
     }
-    this.lastTempState.update(reading.temperature)
+    this.lastTempState.update(reading.temperature);
   }
 }
 ```
@@ -4253,42 +4344,18 @@ class TemperatureAlertFunction(val threshold: Double)
 
 当一个函数注册了StateDescriptor描述符，Flink会检查状态后端是否已经存在这个状态。这种情况通常出现在应用挂掉要从检查点或者保存点恢复的时候。在这两种情况下，Flink会将注册的状态连接到已经存在的状态。如果不存在状态，则初始化一个空的状态。
 
-使用FlatMap with keyed ValueState的快捷方式flatMapWithState也可以实现以上需求。
-
-**scala version**
-
-```scala
-val alerts: DataStream[(String, Double, Double)] = keyedSensorData
-  .flatMapWithState[(String, Double, Double), Double] {
-    case (in: Event, None) =>
-      // no previous temperature defined.
-      // Just update the last temperature
-      (List.empty, Some(in.temperature))
-    case (Event r, lastTemp: Some[Double]) =>
-      // compare temperature difference with threshold
-      val tempDiff = (r.temperature - lastTemp.get).abs
-      if (tempDiff > 1.7) {
-        // threshold exceeded.
-        // Emit an alert and update the last temperature
-        (List((r.id, r.temperature, tempDiff)), Some(r.temperature))
-      } else {
-        // threshold not exceeded. Just update the last temperature
-        (List.empty, Some(r.temperature))
-      }
-  }
-```
-
 ### 使用ListCheckpointed接口来实现操作符的列表状态
 
 操作符状态会在操作符的每一个并行实例中去维护。一个操作符并行实例上的所有事件都可以访问同一个状态。Flink支持三种操作符状态：list state, list union state, broadcast state。
 
 一个函数可以实现ListCheckpointed接口来处理操作符的list state。ListCheckpointed接口无法处理ValueState和ListState，因为这些状态是注册在状态后端的。操作符状态类似于成员变量，和状态后端的交互通过ListCheckpointed接口的回调函数实现。接口提供了两个方法：
 
+
 ```java
 // 返回函数状态的快照，返回值为列表
-snapshotState(checkpointId: Long, timestamp: Long): java.util.List[T]
+public List<T> snapshotState(Long checkpointId, Long timestamp)
 // 从列表恢复函数状态
-restoreState(java.util.List[T] state): Unit
+public void restoreState(List<T> state)
 ```
 
 当Flink触发stateful functon的一次checkpoint时，snapshotState()方法会被调用。方法接收两个参数，checkpointId为唯一的单调递增的检查点Id，timestamp为当master机器开始做检查点操作时的墙上时钟（机器时间）。方法必须返回序列化好的状态对象的列表。
@@ -4297,43 +4364,82 @@ restoreState(java.util.List[T] state): Unit
 
 下面的例子展示了如何实现ListCheckpointed接口。业务场景为：一个对每一个并行实例的超过阈值的温度的计数程序。
 
-```scala
-class HighTempCounter(val threshold: Double)
-    extends RichFlatMapFunction[Event, (Int, Long)]
-    with ListCheckpointed[java.lang.Long] {
-
-  // index of the subtask
-  private lazy val subtaskIdx = getRuntimeContext
-    .getIndexOfThisSubtask
-  // local count variable
-  private var highTempCnt = 0L
-
-  override def flatMap(
-      in: Event,
-      out: Collector[(Int, Long)]): Unit = {
-    if (in.temperature > threshold) {
-      // increment counter if threshold is exceeded
-      highTempCnt += 1
-      // emit update with subtask index and counter
-      out.collect((subtaskIdx, highTempCnt))
+```java
+public class HighTempCounter {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.getCheckpointConfig().setCheckpointInterval(10 * 1000);
+        env.setParallelism(1);
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+        env.getConfig().setAutoWatermarkInterval(1000L);
+        SingleOutputStreamOperator<SensorReading> stream = env
+                .addSource(new SensorSource())
+                .assignTimestampsAndWatermarks(WatermarkStrategy.<SensorReading>forBoundedOutOfOrderness(Duration.ofSeconds(5))
+                        .withTimestampAssigner(new SerializableTimestampAssigner<SensorReading>() {
+                            @Override
+                            public long extractTimestamp(SensorReading element, long recordTimestamp) {
+                                return element.timestamp;
+                            }
+                        }));
+        stream
+                .keyBy(r -> r.id)
+                .flatMap(new HighTempCounterHelper(0.0))
+                .print();
+        env.execute();
     }
-  }
 
-  override def restoreState(
-      state: util.List[java.lang.Long]): Unit = {
-    highTempCnt = 0
-    // restore state by adding all longs of the list
-    for (cnt <- state.asScala) {
-      highTempCnt += cnt
+    public static class HighTempCounterHelper implements FlatMapFunction<SensorReading, Tuple3<String, Long, Long>>, CheckpointedFunction {
+
+        // 在本地用于存储算子实例高温数目的变量
+        private Long opHighTempCnt = 0L;
+        private ValueState<Long> keyedCntState;
+        private ListState<Long> opCntState;
+        private Double threshold;
+
+        public HighTempCounterHelper(Double threshold) {
+            this.threshold = threshold;
+        }
+
+        @Override
+        public void flatMap(SensorReading value, Collector<Tuple3<String, Long, Long>> out) throws Exception {
+            if (value.temperature > this.threshold) {
+                opHighTempCnt += 1;
+                Long keyHighTempCnt = 0L;
+                if (keyedCntState.value() != null) {
+                    keyHighTempCnt = keyedCntState.value() + 1;
+                    keyedCntState.update(keyHighTempCnt);
+                } else {
+                    keyedCntState.update(1L);
+                }
+                out.collect(Tuple3.of(value.id, keyHighTempCnt, opHighTempCnt));
+            }
+        }
+
+        @Override
+        public void initializeState(FunctionInitializationContext context) throws Exception {
+            // 初始化键值分区状态
+            ValueStateDescriptor<Long> keyCntDescriptor = new ValueStateDescriptor<>("keyedCnt", Types.LONG);
+            keyedCntState = context.getKeyedStateStore().getState(keyCntDescriptor);
+            // 初始化算子状态
+            ListStateDescriptor<Long> opCntDescriptor = new ListStateDescriptor<>("opCnt", Types.LONG);
+            opCntState = context.getOperatorStateStore().getListState(opCntDescriptor);
+            // 利用算子状态初始化本地的变量
+            Iterable<Long> iter = opCntState.get();
+
+            long count = 0;
+            for (Long e : iter) {
+                count += e;
+            }
+            opHighTempCnt = count;
+        }
+
+        @Override
+        public void snapshotState(FunctionSnapshotContext context) throws Exception {
+            // 利用本地的状态更新算子状态
+            opCntState.clear();
+            opCntState.add(opHighTempCnt);
+        }
     }
-  }
-
-  override def snapshotState(
-      chkpntId: Long,
-      ts: Long): java.util.List[java.lang.Long] = {
-    // snapshot state as list with a single count
-    java.util.Collections.singletonList(highTempCnt)
-  }
 }
 ```
 
@@ -9507,3 +9613,21 @@ https://cloud.tencent.com/developer/article/1189624
 ## 面试题二十
 
 你们flink输出的目标数据库是什么，答看需求到es或者mysql需要自定义mysqlsink，他问自定义mysql sink里面实际上是jdbc做的？你们有没有发现用jdbc并发的写mysql他的性能很差，怎么处理的？答：一般不直接写入mysql，一般先写入消息队列（redis，kafka，rabbitmq，...），用消息队列来保护mysql。
+
+# 一些资料
+
+[Flink如何管理kafka的offset](http://wuchong.me/blog/2018/11/04/how-apache-flink-manages-kafka-consumer-offsets/)
+
+[Flink原理与实现：session window](http://wuchong.me/blog/2016/06/06/flink-internals-session-window/)
+
+[Flink 原理与实现：内存管理](http://wuchong.me/blog/2016/04/29/flink-internals-memory-manage/) 
+
+[Flink 原理与实现：如何处理反压问题](http://wuchong.me/blog/2016/04/26/flink-internals-how-to-handle-backpressure/)
+
+[Flink 原理与实现：理解 Flink 中的计算资源](http://wuchong.me/blog/2016/05/09/flink-internals-understanding-execution-resources/)
+
+[Key太多的时候怎么办？](https://stackoverflow.com/questions/49290784/too-many-timers-cost-too-much-time-when-checkpointing-in-flink)
+
+[无数的key怎么办](http://apache-flink-user-mailing-list-archive.2336050.n4.nabble.com/Questions-on-Unbounded-number-of-keys-td21750.html)
+
+[状态有效期TTL](https://ci.apache.org/projects/flink/flink-docs-release-1.11/zh/dev/stream/state/state.html)
