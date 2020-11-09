@@ -4362,6 +4362,64 @@ public void restoreState(List<T> state)
 
 当宕机程序从检查点或者保存点恢复时会调用restoreState()方法。restoreState使用snapshotState保存的列表来恢复。
 
+下面的例子展示了如何利用ListCheckpointed接口实现一个函数，其作用是在每个函数并行实例内，统计该分区数据超过某一阈值的温度值数目。
+
+```java
+public static class HighTempCounter extends RichFlatMapFunction<SensorReading, Tuple2<Integer, Long>> implements ListCheckpointed<Long> {
+    private int subTaskIdx;
+    private long highTempCnt = 0L;
+    private double threshold;
+    
+    public HighTempCounter(Double threshold) {
+        this.threshold = threshold;
+    }
+
+    @Override
+    public void open(Configuration parameters) throws Exception {
+        super.open(parameters);
+        subTaskIdx = getRuntimeContext().getIndexOfThisSubtask();
+    }
+
+    @Override
+    public void flatMap(SensorReading value, Collector<Tuple2<Integer, Long>> out) throws Exception {
+       if (value.temperature > this.threshold) {
+           highTempCnt += 1;
+           out.collect(Tuple2.of(subTaskIdx, highTempCnt));
+       }
+    }
+
+    @Override
+    public void restoreState(List<Long> state) throws Exception {
+        highTempCnt = 0;
+        for (Long l : state) {
+            highTempCnt += l;
+        }
+    }
+
+    @Override
+    public List<Long> snapshotState(long checkpointId, long timestamp) throws Exception {
+        return Collections.singletonList(highTempCnt);
+    }
+}
+```
+
+上述例子中的函数会统计每个并行实例中超过阈值的温度值数目。它其中用到了算子状态，该状态会为每个并行算子实例保存一个状态变量并通过ListCheckpointed接口定义的方法创建检查点和进行修复。列表结构允许对使用了算子状态的函数修改并行度。为了达到该目的，Flink需要将算子状态重新分配到更多或者更少的任务实例上。这就需要拆分或者合并状态对象。由于每个函数都有自己的状态拆分及合并逻辑，所以这两个过程无法对任意状态类型都自动完成。
+
+通过提供状态对象列表，有状态函数就能使用snapshotState()和restoreState()方法来实现自动化逻辑。snapshotState()方法能够将算子状态分为多个部分，而restoreState()方法也可以利用(一个或者)多个部分对算子状态进行组装。在函数进行状态恢复时，Flink会将状态的各个部分分发到函数的相关并行实例上，并使用每个实例上已经分发的状态调用restoreState()方法。如果并行子任务的数量多于状态对象，那么有些子任务在启动时就会获取不到状态，此时传入restoreState()方法的就会是一个空列表。
+
+回顾一下上面的例子，每个算子并行实例所提供的状态列表都只包含了一个项目。如果我们增加算子的并行度，那么部分新的子任务就只能得到空的状态，从而需要从零开始计数。为了让状态在HighTempCounter函数扩缩容时分布的更好，我们可以像下面的例子那样，在实现snapshotState()方法时将计数值分成多个子部分。
+
+```java
+@Override
+public List<Long> snapshotState(Long chkpntId, Long ts) {
+    Integer div = highTempCnt / 10;
+    Integer mod = Integer.parseInteger(highTempCnt % 10);
+    return List.fill(mod)(Long.parseLong(div + 1)) ++ List.fill(10 - mod)(Long.parseLong(div)) // 伪代码
+}
+```
+
+>请更新为CheckpointedFunction替代掉ListCheckpointed接口。
+
 下面的例子展示了如何实现ListCheckpointed接口。业务场景为：一个对每一个并行实例的超过阈值的温度的计数程序。
 
 ```java
@@ -4443,27 +4501,6 @@ public class HighTempCounter {
 }
 ```
 
-上面的例子中，每一个并行实例都计数了本实例有多少温度值超过了设定的阈值。例子中使用了操作符状态，并且每一个并行实例都拥有自己的状态变量，这个状态变量将会被检查点操作保存下来，并且可以通过使用ListCheckpointed接口来恢复状态变量。
-
-看了上面的例子，我们可能会有疑问，那就是为什么操作符状态是状态对象的列表。这是因为列表数据结构支持包含操作符状态的函数的并行度改变的操作。为了增加或者减少包含了操作符状态的函数的并行度，操作符状态需要被重新分区到更多或者更少的并行任务实例中去。而这样的操作需要合并或者分割状态对象。而对于每一个有状态的函数，分割和合并状态对象都是很常见的操作，所以这显然不是任何类型的状态都能自动完成的。
-
-通过提供一个状态对象的列表，拥有操作符状态的函数可以使用snapshotState()方法和restoreState()方法来实现以上所说的逻辑。snapshotState()方法将操作符状态分割成多个部分，restoreState()方法从所有的部分中将状态对象收集起来。当函数的操作符状态恢复时，状态变量将被分区到函数的所有不同的并行实例中去，并作为参数传递给restoreState()方法。如果并行任务的数量大于状态对象的数量，那么一些并行任务在开始的时候是没有状态的，所以restoreState()函数的参数为空列表。
-
-再来看一下上面的程序，我们可以看到操作符的每一个并行实例都暴露了一个状态对象的列表。如果我们增加操作符的并行度，那么一些并行任务将会从0开始计数。为了获得更好的状态分区的行为，当HighTempCounter函数扩容时，我们可以按照下面的程序来实现snapshotState()方法，这样就可以把计数值分配到不同的并行计数中去了。
-
-```scala
-override def snapshotState(
-    chkpntId: Long,
-    ts: Long): java.util.List[java.lang.Long] = {
-  // split count into ten partial counts
-  val div = highTempCnt / 10
-  val mod = (highTempCnt % 10).toInt
-  // return count as ten parts
-  (List.fill(mod)(new java.lang.Long(div + 1)) ++
-    List.fill(10 - mod)(new java.lang.Long(div))).asJava
-}
-```
-
 ### 使用连接的广播状态
 
 一个常见的需求就是流应用需要将同样的事件分发到操作符的所有的并行实例中，而这样的分发操作还得是可恢复的。
@@ -4475,23 +4512,22 @@ override def snapshotState(
 下面的例子实现了一个温度报警应用，应用有可以动态设定的阈值，动态设定通过广播流来实现。
 
 ```scala
-val stream: DataStream[Event] = ...
-val thresholds: DataStream[ThresholdUpdate] = ...
-val keyedSensorData: KeyedStream[Event, String] = stream
-  .keyBy(_.id)
+DataStream<Event> stream = env.addSource(new EventSource());
+DataStream<ThresholdUpdate> thresholds = ...
+KeyedStream<Event, String> keyedEventData= stream.keyBy(r -> r.key);
 
 // the descriptor of the broadcast state
-val broadcastStateDescriptor =
-  new MapStateDescriptor[String, Double](
-    "thresholds", classOf[String], classOf[Double])
+MapStateDescriptor<String, Double> broadcastStateDescriptor =
+  new MapStateDescriptor<String, Double>(
+    "thresholds", Types.STRING, Types.DOUBLE);
 
-val broadcastThresholds: BroadcastStream[ThresholdUpdate] = thresholds
-  .broadcast(broadcastStateDescriptor)
+BroadcastStream<ThresholdUpdate> broadcastThresholds = thresholds
+  .broadcast(broadcastStateDescriptor);
 
 // connect keyed sensor stream and broadcasted rules stream
-val alerts: DataStream[(String, Double, Double)] = keyedSensorData
+DataStream<Tuple3<String, Double, Double>> alerts = keyedSensorData
   .connect(broadcastThresholds)
-  .process(new UpdatableTemperatureAlertFunction())
+  .process(new UpdatableTemperatureAlertFunction());
 ```
 
 带有广播状态的函数在应用到两条流上时分三个步骤：
@@ -4502,10 +4538,10 @@ val alerts: DataStream[(String, Double, Double)] = keyedSensorData
 
 下面的例子实现了动态设定温度阈值的功能。
 
-```scala
-class UpdatableTemperatureAlertFunction()
-    extends KeyedBroadcastProcessFunction[String,
-      Event, ThresholdUpdate, (String, Double, Double)] {
+```java
+public static class UpdatableTemperatureAlertFunction
+    extends KeyedBroadcastProcessFunction<String,
+      Event, ThresholdUpdate, Tuple3<String, Double, Double>> {
 
   // the descriptor of the broadcast state
   private lazy val thresholdStateDescriptor =
@@ -4515,7 +4551,8 @@ class UpdatableTemperatureAlertFunction()
   // the keyed state handle
   private var lastTempState: ValueState[Double] = _
 
-  override def open(parameters: Configuration): Unit = {
+  @Override
+  public void open(Configuration parameters) {
     // create keyed state descriptor
     val lastTempDescriptor = new ValueStateDescriptor[Double](
       "lastTemp", classOf[Double])
@@ -4524,12 +4561,13 @@ class UpdatableTemperatureAlertFunction()
       .getState[Double](lastTempDescriptor)
   }
 
-  override def processBroadcastElement(
+  @Override
+  public void processBroadcastElement(
       update: ThresholdUpdate,
       ctx: KeyedBroadcastProcessFunction[String,
         Event, ThresholdUpdate,
         (String, Double, Double)]#Context,
-      out: Collector[(String, Double, Double)]): Unit = {
+      out: Collector[(String, Double, Double)]) {
     // get broadcasted state handle
     val thresholds = ctx
       .getBroadcastState(thresholdStateDescriptor)
@@ -4543,12 +4581,13 @@ class UpdatableTemperatureAlertFunction()
     }
   }
 
-  override def processElement(
+  @Override
+  public void processElement(
       reading: Event,
       readOnlyCtx: KeyedBroadcastProcessFunction
         [String, Event, ThresholdUpdate,
         (String, Double, Double)]#ReadOnlyContext,
-      out: Collector[(String, Double, Double)]): Unit = {
+      out: Collector[(String, Double, Double)]) {
     // get read-only broadcast state
     val thresholds = readOnlyCtx
       .getBroadcastState(thresholdStateDescriptor)
@@ -4568,7 +4607,7 @@ class UpdatableTemperatureAlertFunction()
     }
 
     // update lastTemp state
-    this.lastTempState.update(reading.temperature)
+    this.lastTempState.update(reading.temperature);
   }
 }
 ```
