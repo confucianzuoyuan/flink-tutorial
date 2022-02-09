@@ -49,7 +49,7 @@ under the License.
 		<scala.version>2.11.12</scala.version>
 		<log4j.version>2.12.1</log4j.version>
 		<hive.version>3.1.2</hive.version>
-		<hadoop.version>3.2.0</hadoop.version>
+		<hadoop.version>3.2.2</hadoop.version>
 	</properties>
 
 	<dependencies>
